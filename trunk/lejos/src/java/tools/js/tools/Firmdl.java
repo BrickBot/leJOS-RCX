@@ -22,7 +22,7 @@ import org.apache.commons.cli.ParseException;
 /**
  * Java RCX firmware downloader - replaces lejosfirmdl
  * 
- * @author Lawrie Griffiths
+ * @author Lawrie Griffiths, Markus Heiden
  */
 public class Firmdl extends FirmdlTool
 {
