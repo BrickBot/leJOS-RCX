@@ -62,7 +62,7 @@ public class RCXPort extends DataPort {
 
     // If its a serial tower send a keep alive byte every 5 seconds
 
-    if (usbFlag == 1 && bytesRead == 0) {
+    if (usbFlag == 0 && bytesRead == 0) {
       int currTime = (int)System.currentTimeMillis();
       if ((currTime - sendTime) >= 5000) {
         tower.write(keepAlive,1);
