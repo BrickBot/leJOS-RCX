@@ -1,6 +1,6 @@
-// Low-level communication functions to send and receive single bytes.
+// Low-level communication functions to send and receive bytes.
 // Based on code in Legos 0.2.6 by Markus L. Noga.
-// These functions do the minimum necessary to send and receive single 
+// These functions do the minimum necessary to send and receive  
 // bytes, leaving it to Java code to do timing and error handling, and to
 // implement communication protocols. This means that the impact on the 
 // footprint of the lejos firmware is minimized.
@@ -105,17 +105,24 @@ extern void *tei_vector;        // TEI interrupt vector
 
 #define MAX_BUFFER 64
 
-static short sending;		// transmission state
+static unsigned char sending;   // transmission state
 
 #define NOT_SENDING 0
 #define SENDING 1
-#define SENT_BUT_NOT_VALIDATED 2
+
+// Re-use the Rom Serial output buffer as the input buffer
 
 extern unsigned char serial_output_buffer;
 
-static unsigned char send_byte;
-static unsigned char start, next;
-static unsigned char *buffer = &serial_output_buffer;
+static unsigned char start, next; // Index of bytes in the input buffer
+static unsigned char *buffer = &serial_output_buffer; // input buffer
+
+static unsigned char *tx_ptr, *tx_verify, *tx_end; // Pointers to send buffer
+
+static unsigned char send_error; // Error from last send
+
+#define NO_ERROR 0
+#define COLLISION 1
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -134,24 +141,24 @@ __asm__ (".text\n.align 1\n.global _" wrapstring "\n_" wrapstring \
 void llc_rx_handler(void);
 void llc_rxerror_handler(void);
 void llc_tx_handler(void);
-void llc_rxerror_core(void);
-void llc_show(short);
 
 void llc_init(void) {
   sending = NOT_SENDING;         // Not transmitting
+  send_error = NO_ERROR;
   start = 0;                     // Intitialise cyclic receive buffer pointers
   next = 0;
-  eri_vector = &llc_rxerror_handler; // Set IRQ handlers
+  eri_vector = &llc_rxerror_handler; // Set interrupt handlers
   rxi_vector = &llc_rx_handler;
   txi_vector = &llc_tx_handler;
 }
 
-// Send a single byte to the IR port.
-// Just initiates the transfer and returns
+// Write bytes to the IR port
 
-void llc_write(unsigned char b) {
-  send_byte = b;
-  sending = SENDING;
+void llc_writebytes(unsigned char *buf, int len) {
+  tx_ptr = tx_verify = buf;
+  tx_end = buf + len;
+  sending = SENDING;   
+  send_error = NO_ERROR;
   S_SR &= ~(SSR_TRANS_EMPTY | SSR_TRANS_END);	  // clear flags
   S_CR |= SCR_TRANSMIT | SCR_TX_IRQ | SCR_TE_IRQ; // enable transmit & irqs
 }
@@ -168,6 +175,18 @@ int llc_read(void) {
   } 
 }
 
+// Are we currently sending?
+
+int llc_is_sending(void) {
+  return sending;
+}
+
+// Did a colision occur?
+
+int llc_send_error(void) {
+  return send_error;
+}
+
 // The byte received interrupt handler
 // Adds the byte to the input cyclic buffer.
 // Note that data is silently discarded if 
@@ -181,11 +200,13 @@ void llc_rx_core(void) {
     if (++next == MAX_BUFFER) next = 0;
   } else {
     // echos of own bytes -> collision detection
-    if (S_RDR != send_byte) {
+    if (S_RDR != *(tx_verify++)) {
       S_CR &= ~(SCR_TX_IRQ | SCR_TRANSMIT | SCR_TE_IRQ); // Disable transmit
       S_SR &= ~(SSR_ERRORS | SSR_TRANS_EMPTY | SSR_TRANS_END); // Clear error etc.
+      sending = NOT_SENDING;
+      send_error = COLLISION;
     }
-    sending = NOT_SENDING;
+    if (tx_verify == tx_end) sending = NOT_SENDING;
   }
   S_SR &= ~SSR_RECV_FULL;
 }
@@ -193,30 +214,22 @@ void llc_rx_core(void) {
 // The receive error interrupt handler
 // Does not currently record the parity check error -
 // the erroneous byte is just discarded
-// Clear transmit as this is also used after a collision
 
 HANDLER_WRAPPER("llc_rxerror_handler","llc_rxerror_core");
 void llc_rxerror_core(void) {
-  S_CR &= ~(SCR_TX_IRQ | SCR_TRANSMIT | SCR_TE_IRQ); // Disable transmit
   S_SR &= ~(SSR_ERRORS | SSR_TRANS_EMPTY | SSR_TRANS_END); // Clear error etc.
 }
 
 // The transmit byte interrupt handler
-// This is called twice for a single byte transfer.
-// Note the three values for the sending state indicator.
-// It is called before the echoed byte is received 
-// by the receive handler.
 // Write the byte if not done, otherwise unhook irq.
 
 HANDLER_WRAPPER("llc_tx_handler","llc_tx_core");
 void llc_tx_core(void) {
-  if(sending == SENDING) {
-    S_TDR = send_byte ;      // transmit byte
-    sending = SENT_BUT_NOT_VALIDATED; 
+  if (tx_ptr < tx_end) {
+    S_TDR = *(tx_ptr++);      // transmit byte
     S_SR &= ~SSR_TRANS_EMPTY;
   } else {
     S_CR &= ~SCR_TX_IRQ;     // disable transmission interrupt
   }
 }
- 
 
