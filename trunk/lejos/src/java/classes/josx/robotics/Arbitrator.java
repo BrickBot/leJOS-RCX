@@ -58,6 +58,7 @@ public class Arbitrator {
 
                   // Run the currentBehavior.behaviorAction()
                   actionThread.execute(i);
+                  Thread.yield();
                }  
                break; // Breaks out of for() loop
             }
