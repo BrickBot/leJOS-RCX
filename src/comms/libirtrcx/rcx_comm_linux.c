@@ -21,6 +21,7 @@
  *
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
  *
+ *  03/03/2005 Matthias Paul Scholz read tty from env variable RCXTTY at need
  *  03/03/2005 Matthias Paul Scholz replaced exit statements in rcx_open with return NULL
  *  27/01/2003 david <david@csse.uwa.edu.au> changed to factor out platform specific
  *  code
@@ -140,6 +141,16 @@ rcx_dev_t *__rcx_open(char *tty, int is_fast)
 
 	if (__comm_debug) printf("mode = %s\n", is_fast ? "fast" : "slow");
 	if (__comm_debug) printf("tty= %s\n", tty);
+		
+	/* if tty is not set, read it from env variable RCXTTY */
+	/* if RCXTTY is not set also, return NULL */
+	if(strlen(tty)==0) {
+		tty = getenv("RCXTTY");
+		if (__comm_debug) printf("tty is now %s\n", tty);
+		if(!tty)
+			return NULL;
+	}
+		
 
 	port = malloc(sizeof(rcx_dev_t));
 	if (!port) {
