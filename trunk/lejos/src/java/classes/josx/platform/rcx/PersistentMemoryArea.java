@@ -10,7 +10,7 @@ public class PersistentMemoryArea
   private static final int MAGIC_ADDRESS = 0xf010;
   private static final int SIZE_ADDRESS  = MAGIC_ADDRESS+2;
   private static final int START_ADDRESS = MAGIC_ADDRESS+4;
-  private static final int END_ADDRESS   = 0xfd80;
+  private static final int END_ADDRESS   = 0xfb80;
 
   private static PersistentMemoryArea singleton = null;
 
