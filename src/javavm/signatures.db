@@ -79,3 +79,10 @@ setThrottle(I)V
 # josx.util.Assertion
 test(Ljava/lang/String;Z)V
 testEQ(Ljava/lang/String;II)V
+
+# java.lang.Float
+floatToIntBits(F)I
+intBitsToFloat(I)F
+
+
+
