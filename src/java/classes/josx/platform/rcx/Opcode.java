@@ -108,6 +108,7 @@ public interface Opcode
 
   public static final byte OPCODE_CLEAR_SENSOR_VALUE = (byte)0xd1;
   public static final byte OPCODE_START_TASK_DOWNLOAD_REPLY = (byte)0xd2;
+  public static final byte OPCODE_REMOTE_COMMAND = (byte)0xd2;
   public static final byte OPCODE_ADD_TO_VARIABLE_REPLY = (byte)0xd3;
   public static final byte OPCODE_PLAY_TONE_REPLY = (byte)0xd4;
   public static final byte OPCODE_SET_TIME_REPLY = (byte)0xd5;
