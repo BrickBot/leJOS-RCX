@@ -37,7 +37,7 @@ public class BinaryReport
       // all classes
       for (int pIndex = 0; pIndex < _binary.iClassTable.size(); pIndex++)
       {
-         ClassRecord pRec = (ClassRecord) _binary.iClassTable.get(pIndex);
+         ClassRecord pRec = (ClassRecord) _binary.iClassTable.elementAt(pIndex);
          out.println("Class " + pIndex + ": " + pRec.iName);
       }
 

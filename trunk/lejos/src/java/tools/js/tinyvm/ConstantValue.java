@@ -39,21 +39,16 @@ public class ConstantValue extends WritableDataWithOffset
       assert _value != null: "Postconditon: result != null";
    }
 
-   /**
-    * equals.
-    */
-   public boolean equals (Object object)
-   {
-      return object instanceof ConstantValue
-         && _value.equals(((ConstantValue) object)._value);
-   }
+   // use Object.equals() for equality
+   // use Object.hashCode() for hash code
 
    /**
-    * hashCode.
+    * Dereferenced value.
     */
-   public int hashCode ()
+   public Object value ()
    {
-      return _value.hashCode();
+      assert _value != null: "Postconditon: result != null";
+      return _value;
    }
 
    /**

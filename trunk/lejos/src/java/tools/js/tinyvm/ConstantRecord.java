@@ -11,6 +11,11 @@ import org.apache.bcel.classfile.ConstantPool;
 public class ConstantRecord implements WritableData
 {
    /**
+    * Constant.
+    */
+   Constant _constant;
+
+   /**
     * Deferenced value.
     */
    ConstantValue _constantValue;
@@ -41,7 +46,8 @@ public class ConstantRecord implements WritableData
    public boolean equals (Object object)
    {
       return object instanceof ConstantRecord
-         && _constantValue.equals(((ConstantRecord) object)._constantValue);
+         && _constantValue.value().equals(
+            ((ConstantRecord) object)._constantValue.value());
    }
 
    /**
@@ -49,7 +55,7 @@ public class ConstantRecord implements WritableData
     */
    public int hashCode ()
    {
-      return _constantValue.hashCode();
+      return _constantValue.value().hashCode();
    }
 
    /**

@@ -1,5 +1,7 @@
 package js.tinyvm;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -8,28 +10,26 @@ import java.util.logging.Logger;
 import js.tinyvm.io.ByteWriter;
 import js.tinyvm.util.HashVector;
 
-import org.apache.bcel.util.ClassPath;
-
 /**
  * Abstraction for dumped binary.
  */
 public class Binary
 {
    // State that is written to the binary:
-   final RecordTable iEntireBinary = new RecordTable(false);
+   final RecordTable iEntireBinary = new Sequence();
 
    // Contents of binary:
    final MasterRecord iMasterRecord = new MasterRecord(this);
-   final RecordTable iClassTable = new RecordTable(false);
-   final RecordTable iConstantTable = new RecordTable(false);
-   final RecordTable iEntryClassIndices = new RecordTable(false);
-   final RecordTable iMethodTables = new RecordTable(false);
-   final RecordTable iInstanceFieldTables = new RecordTable(false);
-   final RecordTable iStaticFields = new RecordTable(false);
-   final RecordTable iExceptionTables = new RecordTable(false);
-   final RecordTable iStaticState = new RecordTable(true);
-   final RecordTable iCodeSequences = new RecordTable(false);
-   final RecordTable iConstantValues = new RecordTable(false);
+   final EnumerableSet iClassTable = new EnumerableSet();
+   final EnumerableSet iConstantTable = new EnumerableSet();
+   final RecordTable iEntryClassIndices = new Sequence();
+   final RecordTable iMethodTables = new Sequence();
+   final RecordTable iInstanceFieldTables = new Sequence();
+   final RecordTable iStaticFields = new Sequence();
+   final EnumerableSet iExceptionTables = new EnumerableSet();
+   final RecordTable iStaticState = new Sequence(true);
+   final RecordTable iCodeSequences = new Sequence();
+   final RecordTable iConstantValues = new Sequence();
 
    // Other state:
    final Hashtable iSpecialSignatures = new Hashtable();
@@ -148,7 +148,7 @@ public class Binary
    {
       assert index >= 0: "Precondition: index >= 0";
 
-      return (ConstantRecord) iConstantTable.get(index);
+      return (ConstantRecord) iConstantTable.elementAt(index);
    }
 
    /**
@@ -241,7 +241,7 @@ public class Binary
       // Yes, call iClassTable.size() in every pass of the loop.
       for (int pIndex = 0; pIndex < iClassTable.size(); pIndex++)
       {
-         ClassRecord classRecord = (ClassRecord) iClassTable.get(pIndex);
+         ClassRecord classRecord = (ClassRecord) iClassTable.elementAt(pIndex);
          classRecord.storeReferredClasses(iClasses, iClassTable, classPath,
             pInterfaceMethods);
       }
@@ -250,7 +250,7 @@ public class Binary
       int pSize = iClassTable.size();
       for (int pIndex = 0; pIndex < pSize; pIndex++)
       {
-         ClassRecord classRecord = (ClassRecord) iClassTable.get(pIndex);
+         ClassRecord classRecord = (ClassRecord) iClassTable.elementAt(pIndex);
          for (int i = 0; i < pInterfaceMethods.size(); i++)
          {
             classRecord.addUsedMethod((String) pInterfaceMethods.elementAt(i));
@@ -281,7 +281,7 @@ public class Binary
       int pSize = iClassTable.size();
       for (int pIndex = 0; pIndex < pSize; pIndex++)
       {
-         ClassRecord pRec = (ClassRecord) iClassTable.get(pIndex);
+         ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
          pRec.storeConstants(iConstantTable, iConstantValues);
       }
    }
@@ -297,7 +297,7 @@ public class Binary
       int pSize = iClassTable.size();
       for (int pIndex = 0; pIndex < pSize; pIndex++)
       {
-         ClassRecord classRecord = (ClassRecord) iClassTable.get(pIndex);
+         ClassRecord classRecord = (ClassRecord) iClassTable.elementAt(pIndex);
          classRecord.storeMethods(iMethodTables, iExceptionTables, iSignatures, iAll);
       }
    }
@@ -307,7 +307,7 @@ public class Binary
       int pSize = iClassTable.size();
       for (int pIndex = 0; pIndex < pSize; pIndex++)
       {
-         ClassRecord pRec = (ClassRecord) iClassTable.get(pIndex);
+         ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
          pRec.storeFields(iInstanceFieldTables, iStaticFields, iStaticState);
       }
    }
@@ -317,7 +317,7 @@ public class Binary
       int pSize = iClassTable.size();
       for (int pIndex = 0; pIndex < pSize; pIndex++)
       {
-         ClassRecord pRec = (ClassRecord) iClassTable.get(pIndex);
+         ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
          pRec.storeCode(iCodeSequences, aPostProcess);
       }
    }
@@ -355,7 +355,7 @@ public class Binary
       int pSize = iMethodTables.size();
       for (int i = 0; i < pSize; i++)
       {
-         pTotal += ((RecordTable) iMethodTables.get(i)).size();
+         pTotal += ((RecordTable) iMethodTables.elementAt(i)).size();
       }
       return pTotal;
    }
@@ -366,7 +366,7 @@ public class Binary
       int pSize = iInstanceFieldTables.size();
       for (int i = 0; i < pSize; i++)
       {
-         pTotal += ((RecordTable) iInstanceFieldTables.get(i)).size();
+         pTotal += ((RecordTable) iInstanceFieldTables.elementAt(i)).size();
       }
       return pTotal;
    }

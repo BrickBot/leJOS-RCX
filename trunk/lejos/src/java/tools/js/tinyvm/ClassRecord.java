@@ -3,8 +3,8 @@ package js.tinyvm;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,7 +29,6 @@ import org.apache.bcel.classfile.ConstantString;
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
-import org.apache.bcel.util.ClassPath;
 
 /**
  * Abstraction for a class record (see vmsrc/language.h).
@@ -44,8 +43,8 @@ public class ClassRecord implements WritableData
    int iClassSize = -1;
    JavaClass iCF;
    Binary iBinary;
-   final RecordTable iMethodTable = new RecordTable(false);
-   final RecordTable iInstanceFields = new RecordTable(false);
+   final EnumerableSet iMethodTable = new EnumerableSet();
+   final RecordTable iInstanceFields = new Sequence();
    final Hashtable iStaticValues = new Hashtable();
    final Hashtable iStaticFields = new Hashtable();
    final Hashtable iMethods = new Hashtable();
@@ -188,9 +187,10 @@ public class ClassRecord implements WritableData
    {
       ClassRecord pParent = getParent();
       int pSize = (pParent != null)? pParent.getClassSize() : 0;
-      for (Iterator iter = iInstanceFields.iterator(); iter.hasNext();)
+      Enumeration pEnum = iInstanceFields.elements();
+      while (pEnum.hasMoreElements())
       {
-         InstanceFieldRecord pRec = (InstanceFieldRecord) iter.next();
+         InstanceFieldRecord pRec = (InstanceFieldRecord) pEnum.nextElement();
          pSize += pRec.getFieldSize();
       }
       return pSize;
@@ -337,9 +337,10 @@ public class ClassRecord implements WritableData
    {
       ClassRecord pParent = getParent();
       int pOffset = (pParent != null)? pParent.getClassSize() : 0;
-      for (Iterator iter = iInstanceFields.iterator(); iter.hasNext();)
+      Enumeration pEnum = iInstanceFields.elements();
+      while (pEnum.hasMoreElements())
       {
-         InstanceFieldRecord pRec = (InstanceFieldRecord) iter.next();
+         InstanceFieldRecord pRec = (InstanceFieldRecord) pEnum.nextElement();
          if (pRec.getName().equals(aName))
             return pOffset;
          pOffset += pRec.getFieldSize();
@@ -370,7 +371,7 @@ public class ClassRecord implements WritableData
       if (pRecord == null)
          return -1;
       // TBD: This indexOf call is slow
-      return iBinary.iStaticFields.indexOf(pRecord);
+      return ((Sequence) iBinary.iStaticFields).indexOf(pRecord);
    }
 
    public void storeConstants (RecordTable aConstantTable,
@@ -378,6 +379,7 @@ public class ClassRecord implements WritableData
    {
       _logger.log(Level.INFO, "Processing other constants in " + iName);
 
+      EnumerableSet pConstantSet = (EnumerableSet) aConstantTable;
       ConstantPool pPool = iCF.getConstantPool();
       Constant[] constants = pPool.getConstantPool();
       for (int i = 0; i < constants.length; i++)
@@ -390,9 +392,9 @@ public class ClassRecord implements WritableData
             || pEntry instanceof ConstantLong)
          {
             ConstantRecord pRec = new ConstantRecord(pPool, pEntry);
-            if (aConstantTable.indexOf(pRec) != -1)
+            if (!pConstantSet.contains(pRec))
             {
-               aConstantTable.add(pRec);
+               pConstantSet.add(pRec);
                aConstantValues.add(pRec.constantValue());
             }
          }
@@ -463,9 +465,10 @@ public class ClassRecord implements WritableData
    public void storeCode (RecordTable aCodeSequences, boolean aPostProcess)
       throws TinyVMException
    {
-      for (Iterator iter = iMethodTable.iterator(); iter.hasNext();)
+      Enumeration pMethods = iMethodTable.elements();
+      while (pMethods.hasMoreElements())
       {
-         MethodRecord pRec = (MethodRecord) iter.next();
+         MethodRecord pRec = (MethodRecord) pMethods.nextElement();
          if (aPostProcess)
             pRec.postProcessCode(aCodeSequences, iCF, iBinary);
          else
@@ -482,12 +485,8 @@ public class ClassRecord implements WritableData
       assert className.indexOf('.') == -1: "Precondition: className is in correct form: "
          + className;
 
-      InputStream pIn;
-      try
-      {
-         pIn = aCP.getInputStream(className);
-      }
-      catch (IOException e)
+      InputStream pIn = aCP.getInputStream(className);
+      if (pIn == null)
       {
          throw new TinyVMException("Class " + className.replace('/', '.')
             + " (file " + className + ".class) not found in CLASSPATH " + aCP);

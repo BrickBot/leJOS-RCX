@@ -79,7 +79,7 @@ public class MethodRecord implements WritableData
 
       if (pCodeAttrib != null)
       {
-         iExceptionTable = new RecordTable(false);
+         iExceptionTable = new Sequence();
          CodeException[] pExcepTable = pCodeAttrib.getExceptionTable();
          iNumExceptionHandlers = pExcepTable.length;
          if (iNumExceptionHandlers > TinyVMConstants.MAX_EXCEPTION_HANDLERS)
