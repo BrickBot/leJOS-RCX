@@ -28,8 +28,6 @@ public class Button
    */
   public static final Button[] BUTTONS = { Button.RUN, Button.VIEW, Button.PRGM };
   
-  private static final ButtonListenerThread LISTENER_THREAD = new ButtonListenerThread();
-
   private int iCode;
   private ButtonListener[] iListeners = new ButtonListener[4];
   private int iNumListeners;
@@ -39,6 +37,14 @@ public class Button
     iCode = aCode;
   }
 
+  /**
+   * Return the ID of the button. One of 1, 2 or 4.
+   */
+  public final int getId()
+  {
+    return iCode;
+  }
+    
   /**
    * @return <code>true</code> if button is pressed, <code>false</code> otherwise.
    */
@@ -64,21 +70,12 @@ public class Button
    */
   public synchronized void addButtonListener (ButtonListener aListener)
   {
-    if (!LISTENER_THREAD.isAlive())
+    if (iListeners == null)
     {
-      // Hack: Force initialization of Native
-      Native.getDataAddress (null);
-      // Initialize each button
-      VIEW.iNumListeners = 0;
-      RUN.iNumListeners = 0;
-      PRGM.iNumListeners = 0;      
-      // Start thread
-      LISTENER_THREAD.setDaemon(true);
-      LISTENER_THREAD.setPriority(Thread.MAX_PRIORITY);
-      LISTENER_THREAD.start();
+      iListeners = new ButtonListener[4];
     }
     iListeners[iNumListeners++] = aListener;
-    LISTENER_THREAD.addToMask(iCode);
+    ListenerThread.get().addButtonToMask(iCode);
   }
 
   /**
@@ -97,43 +94,13 @@ public class Button
     }
   }
 
-  private synchronized void callListeners()
+  synchronized void callListeners()
   {
     for( int i = 0; i < iNumListeners; i++) {
       if( isPressed())
         iListeners[i].buttonPressed( this);
       else
         iListeners[i].buttonReleased( this);
-    }
-  }
-
-  static class ButtonListenerThread extends Thread
-  {
-    int mask;
-    Poll poller = new Poll();   
-
-    public void addToMask(int id) {
-        mask |= id << Poll.BUTTON_MASK_SHIFT;
-        
-        // Interrupt the polling thread, not the current one!
-        interrupt();
-    }
-    
-    public void run()
-    {
-        for (;;) {
-            try  {
-                int changed = poller.poll(mask, 0);
-                
-                if ((changed & Poll.RUN_MASK) != 0)
-                    RUN.callListeners();
-                if ((changed & Poll.VIEW_MASK) != 0)
-                    VIEW.callListeners();
-                if ((changed & Poll.PRGM_MASK) != 0)
-                    PRGM.callListeners();
-            } catch (InterruptedException ie) {
-            }
-        }
     }
   }
 }

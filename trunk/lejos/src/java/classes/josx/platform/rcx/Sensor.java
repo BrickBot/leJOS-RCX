@@ -41,9 +41,8 @@ public class Sensor
 {
   private int iSensorId;
   private short iNumListeners = 0;
-  private final SensorListener[] iListeners = new SensorListener[8];
+  private SensorListener[] iListeners;
   private int iPreviousValue;
-  private static final SensorThread SENSOR_THREAD = new SensorThread();
   
   /**
    * Sensor labeled 1 on RCX.
@@ -115,20 +114,12 @@ public class Sensor
    */
   public synchronized void addSensorListener (SensorListener aListener)
   {
-    // Hack: Make sure Native is initialized before thread is created.
-    Native.getDataAddress (null);
-    if (!SENSOR_THREAD.isAlive())
+    if (iListeners == null)
     {
-      SENSOR_THREAD.setDaemon(true);
-      SENSOR_THREAD.setPriority(Thread.MAX_PRIORITY);
-      SENSOR_THREAD.start();
-      for (int i = 0; i < 3; i++)
-      {
-    SENSORS[i].iNumListeners = 0;
-      }
+        iListeners = new SensorListener[8];
     }
     iListeners[iNumListeners++] = aListener;
-    SENSOR_THREAD.addToMask(iSensorId);
+    ListenerThread.get().addSensorToMask(iSensorId);
   }
 
   /**
@@ -173,16 +164,6 @@ public class Sensor
     setSensorValue (iSensorId, aValue, 2);    
   }
   
-//   /**
-//    * Sets type of sensor and default mode for type. 
-//    * @param aType 0 = RAW (mode RAW), 1 = TOUCH (mode BOOLEAN),
-//    * 2 = TEMPERATURE (mode DEGC), 3 = LIGHT (mode PERCENTAGE), 4 = ROTATION (mode ANGLE).
-//    */
-//   public final void setType (int aType)
-//   {
-//     setSensorValue (iSensorId, aType, 1);
-//   }
-
   /**
    * <i>Low-level API</i> for reading sensor values.
    * @param aSensorId Sensor ID (0..2).
@@ -192,43 +173,11 @@ public class Sensor
   
   private static native void setSensorValue (int aSensorId, int aVal, int aRequestType);
   
-  private synchronized void callListeners() {
+  synchronized void callListeners() {
     int newValue = readSensorValue( iSensorId, 1);
     for (int i = 0; i < iNumListeners; i++) {
       iListeners[i].stateChanged( this, iPreviousValue, newValue);
     }
     iPreviousValue = newValue;
   }
-
-  private static class SensorThread extends Thread
-  {
-    int mask;
-    Poll poller = new Poll();
-    
-    public void addToMask(int id) {
-        mask |= 1 << id;
-        
-        // Interrupt the polling thread, not the current one!
-        interrupt();
-    }
-    
-    public void run()
-    {
-      for (;;)
-      {
-        try  {
-            int changed = poller.poll(mask, 0);
-        
-            if ((changed & Poll.SENSOR1_MASK) != 0)
-                S1.callListeners();
-            if ((changed & Poll.SENSOR2_MASK) != 0)
-                S2.callListeners();
-            if ((changed & Poll.SENSOR3_MASK) != 0)
-                S3.callListeners();
-        } catch (InterruptedException ie) {
-        }   
-      }     
-    }         
-  }
-  
 }

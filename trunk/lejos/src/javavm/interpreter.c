@@ -211,7 +211,7 @@ void engine()
       ticks_until_switch--;
 
     if( requestCode == REQUEST_SWITCH_THREAD
-        || ticks_until_switch <= 0){
+        || ticks_until_switch == 0){
       ticks_until_switch = TICKS_PER_TIME_SLICE;
 #if DEBUG_THREADS
       printf ("switching thread: %d\n", (int)ticks_until_switch);
