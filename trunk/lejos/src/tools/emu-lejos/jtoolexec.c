@@ -30,6 +30,7 @@
 #endif
 
 #define REL_JAR_PATH "/../lib/classes.jar"
+#define REL_COMM_JAR_PATH "/../lib/rcxrcxcomm.jar"
 
 char *get_classpath (char *program)
 {
@@ -37,6 +38,8 @@ char *get_classpath (char *program)
   char *cpath;
   char *oldcpath;
   char *lejosjar;
+  char *lejoscommjar;
+
   #ifdef __CYGWIN__
   char *auxstr;
   #endif // __CYGWIN__
@@ -44,6 +47,7 @@ char *get_classpath (char *program)
   dname = pdirname (program);
   if (dname == NULL)
     return NULL;
+
   lejosjar = append (dname, REL_JAR_PATH);
   
   #ifdef __CYGWIN__
@@ -57,7 +61,22 @@ char *get_classpath (char *program)
   
   #endif // __CYGWIN__
   
+  lejoscommjar = append (dname, REL_COMM_JAR_PATH);
+  
+  #ifdef __CYGWIN__
+  auxstr = (char *) malloc (MAX_PATH);
+  cygwin_conv_to_win32_path (lejoscommjar, auxstr);
+  lejoscommjar = auxstr;
+
+  #if TRACE
+  printf ("converted comm=%s\n", lejoscommjar);
+  #endif
+  
+  #endif // __CYGWIN__
+  
   cpath = lejosjar;   
+  cpath = append(cpath,PATH_SEPARATOR);
+  cpath = append(cpath,lejoscommjar);
   
   #ifndef JAVA2
   oldcpath = getenv ("CLASSPATH");
