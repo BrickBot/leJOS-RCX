@@ -237,6 +237,7 @@ public class Tower
             // System.err.println("Unable to load native lib: " + e1.getMessage());
          }
       }
+      init();
    }
 
    //
@@ -312,4 +313,8 @@ public class Tower
     */
    protected final native int receive (byte b[]);
 
+   /**
+    * JNI init.
+    */
+   private static native void init ();
 }

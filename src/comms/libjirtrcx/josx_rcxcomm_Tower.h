@@ -71,6 +71,14 @@ JNIEXPORT jint JNICALL Java_josx_rcxcomm_Tower_send
 JNIEXPORT jint JNICALL Java_josx_rcxcomm_Tower_write
   (JNIEnv *, jobject, jbyteArray, jint);
 
+/*
+ * Class:     josx_rcxcomm_Tower
+ * Method:    init
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_josx_rcxcomm_Tower_init
+  (JNIEnv *env, jclass clazz);
+
 #ifdef __cplusplus
 }
 #endif

@@ -27,16 +27,7 @@
 
 #include <windows.h>
 
-#define USB_TOWER_NAME "\\\\.\\LEGOTOWER1"
-#define DEFAULTTTY "usb"
-
 #define FILEDESCR HANDLE
-
-extern void* __rcx_open (char *tty, int fast);
-extern void __rcx_close (void* port);
-extern int __rcx_write(void* port, void* buffer, int length);
-extern int __rcx_read(void* port, void* buffer, int maxLength, int timeout_ms);
-extern void __rcx_flush(void* port);
 
 #define usleep(x) Sleep(x/1000)
 

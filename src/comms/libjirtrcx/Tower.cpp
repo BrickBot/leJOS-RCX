@@ -30,8 +30,18 @@ int GetLastError() {
 }
 #endif
 
-// open - Open the IR Tower
+//
+// Constants
+//
 
+static jfieldID _fieldIDPort;
+static jfieldID _fieldIDError;
+
+//
+// public interface
+//
+
+// open - Open the IR Tower
 JNIEXPORT jint JNICALL 
 Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport, jboolean fastMode)
 {
@@ -65,12 +75,10 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport, jboolean f
 #ifdef TRACE
   printf("Exiting open\n");
 #endif
-
   return (jint) result;
 }
 
 // close - Close the IR Tower
-
 JNIEXPORT jint JNICALL 
 Java_josx_rcxcomm_Tower_close(JNIEnv *env, jobject obj)
 {
@@ -85,7 +93,6 @@ Java_josx_rcxcomm_Tower_close(JNIEnv *env, jobject obj)
 #ifdef TRACE
       printf("File already closed\n");
 #endif
-
       return (jint) RCX_ALREADY_CLOSED;
   }
   
@@ -98,7 +105,6 @@ Java_josx_rcxcomm_Tower_close(JNIEnv *env, jobject obj)
 }
 
 // write - write bytes to IR Tower
-
 JNIEXPORT jint JNICALL
 Java_josx_rcxcomm_Tower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 {
@@ -113,31 +119,21 @@ Java_josx_rcxcomm_Tower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 #ifdef TRACE
         printf("File not open\n");
 #endif
-
         return (jint) RCX_NOT_OPEN;
     }
 
-    // Get the array
     jbyte* body = env->GetByteArrayElements(arr, 0);
-#ifdef TRACE
-    hexdump("tower writes", body, n);
-#endif
-
     int result = rcxWrite(port, body, n);
-
     setError(env, obj, result < 0);
-
     env->ReleaseByteArrayElements(arr, body, 0);
 
 #ifdef TRACE
     printf("Exiting write\n");
 #endif
-
     return (jint) result;
 }
 
 // read - Read Bytes from IR Tower
-
 JNIEXPORT jint JNICALL
 Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr)
 {
@@ -152,29 +148,23 @@ Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr)
 #ifdef TRACE
         printf("File not open\n");
 #endif
-
         return (jint) RCX_NOT_OPEN;
     }
 
-    // Get the array
     int size = env->GetArrayLength(arr);
     jbyte* body = env->GetByteArrayElements(arr, 0);
-
     int result = rcxRead(port, body, size, TIME_OUT);
+    env->ReleaseByteArrayElements(arr, body, 1);
 
 	 setError(env, obj, result < 0);
-
-    env->ReleaseByteArrayElements(arr, body, 1);
 
 #ifdef TRACE
     printf("Exiting read\n");
 #endif  
-
     return (jint) result;
 }
 
 // send - send a message to IR Tower
-
 JNIEXPORT jint JNICALL
 Java_josx_rcxcomm_Tower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 {
@@ -193,30 +183,19 @@ Java_josx_rcxcomm_Tower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
         return (jint) RCX_NOT_OPEN;
     }
 
-    // Get the array
     jbyte* body = env->GetByteArrayElements(arr, 0);
-
-    // Write the bytes
     int result = rcxSend(port, body, n);
-
-    // Flush buffers
-#if defined(_WIN32) || defined(__CYGWIN32__)
-    FlushFileBuffers (((Port*) port)->fileHandle);
-#endif
+    env->ReleaseByteArrayElements(arr, body, 0);
 
     setError(env, obj, result < 0);
-
-    env->ReleaseByteArrayElements(arr, body, 0);
 
 #ifdef TRACE
     printf("Exiting send\n");
 #endif
-
     return (jint) result;
 }
 
 // read - Read Bytes from IR Tower
-
 JNIEXPORT jint JNICALL
 Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
 {
@@ -235,26 +214,20 @@ Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
         return (jint) RCX_NOT_OPEN;
     }
 
-    // Get the array
     int size = env->GetArrayLength(arr);
     jbyte* body = env->GetByteArrayElements(arr, 0);
-
-    // Receive a packet
     int actual = rcxReceive(port, body, size, TIME_OUT);
+    env->ReleaseByteArrayElements(arr, body, 1);
 
     setError(env, obj, actual < 0);
-
-    env->ReleaseByteArrayElements(arr, body, 1);
 
 #ifdef TRACE
     printf("Exiting receive\n");
 #endif  
-
     return (jint) actual;
 }
 
 // isRCXAlive - test if RCX is alive
-
 JNIEXPORT jboolean JNICALL
 Java_josx_rcxcomm_Tower_isRCXAlive(JNIEnv *env, jobject obj)
 {
@@ -269,12 +242,10 @@ Java_josx_rcxcomm_Tower_isRCXAlive(JNIEnv *env, jobject obj)
 #ifdef TRACE
     printf("Exiting isRCXAlive\n");
 #endif
-
-    return (jboolean) result;
+    return result? JNI_TRUE : JNI_FALSE;
 }
 
 // isUSB - test if IR Tower is an usb tower
-
 JNIEXPORT jboolean JNICALL
 Java_josx_rcxcomm_Tower_isUSB(JNIEnv *env, jobject obj)
 {
@@ -289,8 +260,7 @@ Java_josx_rcxcomm_Tower_isUSB(JNIEnv *env, jobject obj)
 #ifdef TRACE
     printf("Exiting isUSB\n");
 #endif
-
-    return (jboolean) result;
+    return result? JNI_TRUE : JNI_FALSE;
 }
 
 //
@@ -299,51 +269,45 @@ Java_josx_rcxcomm_Tower_isUSB(JNIEnv *env, jobject obj)
 
 void setError (JNIEnv* env, jobject obj, bool error)
 {
-   jclass cls = env->GetObjectClass(obj);
-   jfieldID fid = env->GetFieldID(cls, "_error", "I");
-   if (fid != 0)
-   {
-      env->SetIntField(obj, fid, error? GetLastError() : 0);
-   }
-#ifdef TRACE
-   else
-   {
-      printf("Could not get error code field.\n");
-   }
-#endif
+   env->SetIntField(obj, _fieldIDError, error? GetLastError() : 0);
 }
 
 void setPort (JNIEnv* env, jobject obj, void* port)
 {
-   jclass cls = env->GetObjectClass(obj);
-   jfieldID fid = env->GetFieldID(cls, "_port", "J");
-   if (fid != 0)
-   {
-      // the warning regarding this cast may be ignored
-      env->SetLongField(obj,fid,(jlong) port);
-   }
-#ifdef TRACE
-   else
-   {
-      printf("Could not get file handle field.\n");
-   }
-#endif
+   // the warning regarding this cast may be ignored
+   env->SetLongField(obj, _fieldIDPort, (jlong) port);
 }
 
 void* getPort (JNIEnv* env, jobject obj)
 {
-   jclass cls = env->GetObjectClass(obj);
-   jfieldID fid = env->GetFieldID(cls, "_port", "J");
-   if (fid == 0)
+   // the warning regarding this cast may be ignored
+   return (void*) env->GetLongField(obj, _fieldIDPort);
+}
+
+// init - Init class
+JNIEXPORT void JNICALL 
+Java_josx_rcxcomm_Tower_init(JNIEnv *env, jclass clazz)
+{
+#ifdef TRACE
+  printf("Entering init\n");
+#endif
+   _fieldIDPort = env->GetFieldID(clazz, "_port", "J");
+   if (_fieldIDPort == NULL)
    {
 #ifdef TRACE
-      printf("Could not get file handle field.\n");
+      printf("Could not get port field.\n");
 #endif
-
-		return NULL;
+   	return;
    }
-
-   // the warning regarding this cast may be ignored
-   void* port = (void*) env->GetLongField(obj, fid);
-   return port;
+   _fieldIDError = env->GetFieldID(clazz, "_error", "I");
+   if (_fieldIDError == NULL)
+   {
+#ifdef TRACE
+      printf("Could not get error code field.\n");
+#endif
+   	return;
+   }
+#ifdef TRACE
+  printf("Exiting init\n");
+#endif
 }
