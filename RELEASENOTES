@@ -1,5 +1,6 @@
 
 Version 0.1.2 (latest):
+-----------------------
 
   - Fixed serial comm bug. (If you tried to download
     a program to the RCX while another program was
@@ -46,7 +47,14 @@ Version 0.1.2 (latest):
 
   - tvmfirmdl doesn't need an argument now.
 
+  - Added the Serial API and a corresponding example.
+
+  - Footprint report:
+    Test13 creates 4262 objects.
+    The firmware download count is about 1000.    
+
 Version 0.1.1:
+--------------
 
   - Fixed PUTSTATIC bug. (Setting a static field
     in uninitialized class could produce subsequent
