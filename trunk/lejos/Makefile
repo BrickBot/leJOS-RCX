@@ -22,7 +22,7 @@ release:
 	cvs commit
 	cvs tag RELEASE_`cat VERSION`
 	rm -rf ${TEMP}/tinyvm_release
-	cvs export -d ${TEMP}/tinyvm_release tinyvm
+	cvs export -D tomorrow -d ${TEMP}/tinyvm_release tinyvm
 	zip -r ${TEMP}/tinyvm_`cat VERSION` ${TEMP}/tinyvm_release
 	diff bin/tinyvm.srec ${TEMP}/tinyvm_release/bin/tinyvm.srec
 	export TINYVM_HOME=${RELEASE_DIR}
