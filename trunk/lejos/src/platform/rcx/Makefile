@@ -4,8 +4,8 @@
 
 include ../Makefile.config
 
-CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -I. -O2 -Wall
-#CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -I. -O2 -Wall -fgcse -frerun-cse-after-loop -fstrength-reduce -fomit-frame-pointer
+#CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -I. -O2 -Wall
+CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -I. -O2 -Wall -fomit-frame-pointer
 LFLAGS += -L${LIBRCX_HOME}/lib -L${LIBRCX_HOME}/float
 
 LIBS = -lrcx -lfloat

@@ -68,11 +68,12 @@ extern void enqueue_thread(Thread *thread);
 static inline void init_threads()
 {
   int i;
+  Thread **pQ = threadQ;
   gThreadCounter = 0;
   currentThread = JNULL;
   for (i = 0; i<10; i++)
   {
-    threadQ[i] = null;
+    *pQ++ = null;
   }
 }
 
