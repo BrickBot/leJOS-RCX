@@ -10,8 +10,7 @@ public class Receiver
 {
   public static void main (String[] arg)
   {
-    LCD.clear();
-    LCD.refresh();
+    LCD.showNumber (1111);
     int pCount = 0;
     byte[] pPacket = new byte[10];
     for (;;)
@@ -40,6 +39,14 @@ public class Receiver
             pPacket[8] = 0x09;
             Serial.sendPacket (pPacket, 0, 9);
         }
+  	else if (pOpCode == 0x30)
+	{
+	    // Get battery power
+            pPacket[0] = (byte) ~(pPacket[0] & 0xFF);
+            pPacket[1] = 0x20;
+            pPacket[2] = 0x00;
+            Serial.sendPacket (pPacket, 0, 3);
+	}
   	else if (pOpCode == 0x65)
 	{
             // Delete firmware
