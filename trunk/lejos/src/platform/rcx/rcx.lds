@@ -41,14 +41,17 @@ OUTPUT_ARCH(h8300)
 ENTRY(__start)
 MEMORY
 {
-    rom (r) : o = 0x0000, l = 0x8000
-    mem     : o = 0x8000, l = 0x6f00
-    extra0  : o = 0xef10, l = 0x0040
-    extra1  : o = 0xef50, l = 0x00b0
-    extra2  : o = 0xf010, l = 0x0d70
-    romdata : o = 0xfd80, l = 0x0040     /* for interupt vectors */
-    extra3  : o = 0xfe00, l = 0x0100
-    eight   : o = 0xff00, l = 0x0100
+    rom (r)     : o = 0x0000, l = 0x8000
+    mem         : o = 0x8000, l = 0x6f00
+    romdata1    : o = 0xef00, l = 0x0100     /* exact boundaries unclear */
+    extra1      : o = 0xf010, l = 0x0b70
+    hwreserved1 : o = 0xfb80, l = 0x0200     /* reserved by hardware */
+    romdata2    : o = 0xfd80, l = 0x0010     /* used in init_timer */
+    intvectors  : o = 0xfd90, l = 0x0030     /* interrupt vectors */
+    stack       : o = 0xfdc0, l = 0x0220     /* grows down below 0xff80 */
+    extra2      : o = 0xff80, l = 0x0008
+    hwreserved2 : o = 0xff88, l = 0x0008     /* reserved by hardware */
+    hwregisters : o = 0xff90, l = 0x0070     /* hardware registers */
 }
 SECTIONS
 {
@@ -75,19 +78,19 @@ SECTIONS
         __end = ALIGN(2) ;
     } > mem
 
-    .extra0 : {
-        _angle_state = 0x22 ; 
-    } > extra0
+    .romdata1 : {
+        _angle_state = 0x32 ; /* 0xef32 */
+    } > romdata1
 
     .extra : {
-        __extraMemory = . ; 
-    } > extra2
+        __extraMemory = . ;
+    } > extra
 
-    .romdata : {
-       _ocia_vector  = 0x22 ;
-    } > romdata
+    .intvectors : {
+       _ocia_vector  = 0x12 ; /* 0xfda2 */
+    } > intvectors
 
-    .eight : {
-       _T_IER        = 0x90 ;
-    } > eight
+    .hwregisters : {
+       _T_IER        = 0x00 ; /* 0xff90 */
+    } > hwregisters
 }
