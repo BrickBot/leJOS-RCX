@@ -13,6 +13,8 @@
  *  License for the specific language governing rights and limitations
  *  under the License.
  *
+ *  rcxcomm version by Lawrie Griffiths, Feb 2002.
+ *  
  *  The Original Code is Firmdl code, released October 3, 1998.
  *
  *  The Initial Developer of the Original Code is Kekoa Proudfoot.
@@ -156,7 +158,7 @@ int nbread (FILEDESCR fd, void *buf, int maxlen, int timeout)
 
 	if (select(fd+1, &fds, NULL, NULL, &tv) < 0) {
 	    perror("select");
-	    exit(1);
+	    return RCX_READ_ERR;
 	}
 
 	if (!FD_ISSET(fd, &fds))
@@ -164,7 +166,7 @@ int nbread (FILEDESCR fd, void *buf, int maxlen, int timeout)
 
 	if ((count = read(fd, &bufp[len], maxlen - len)) < 0) {
 	    perror("read");
-	    exit(1);
+	    retun RCX_READ_ERR;
 	}
 
         len += count;
@@ -253,13 +255,13 @@ FILEDESCR rcx_init(char *tty, int is_fast)
 
     if ((fd = open(tty, O_RDWR)) < 0) {
 		perror(tty);
-		exit(1);
+		return BADFILE;
     }
 
     if (!isatty(fd)) {
 		close(fd);
-		fprintf(stderr, "%s: not a tty\n", tty);
-		exit(1);
+		if (__comm_debug) fprintf(stderr, "%s: not a tty\n", tty);
+		return BADFILE;
     }
 
     memset(&ios, 0, sizeof(ios));
@@ -277,7 +279,7 @@ FILEDESCR rcx_init(char *tty, int is_fast)
 
     if (tcsetattr(fd, TCSANOW, &ios) == -1) {
 		perror("tcsetattr");
-		exit(1);
+		return BADFILE;
     }
 #endif
 
