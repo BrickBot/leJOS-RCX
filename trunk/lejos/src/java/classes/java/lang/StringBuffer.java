@@ -22,6 +22,7 @@ public class StringBuffer
     char[] nc = new char[sl + cl];
     System.arraycopy (characters, 0, nc, 0, cl);
     System.arraycopy (sc, 0, nc, cl, sl);
+    characters = nc;
     return this;
   }
 
