@@ -1,7 +1,6 @@
 CC=$(shell $(LEJOS_HOME)/cctest.sh)
 
-JDK=$(shell dirname $(shell dirname $(shell which java)))
-
+JAVA_INCL="$(JAVA_HOME)"/include
 
 OS=${OSTYPE}
 ifeq ($(OSTYPE),linux-gnu)
@@ -14,7 +13,7 @@ IRTRCX_INCL=$(LEJOS_HOME)/src/comms/libirtrcx
 ifneq (,$(findstring cygwin,$(OSTYPE)))
     # Windows with CygWin installed
     IRTOWER=$(LEJOS_HOME)/bin/jirtrcx.dll
-    CCOPT= -mno-cygwin -I$(IRTRCX_INCL) -I${JDK}/include -I${JDK}/include/win32 -Wl,--add-stdcall-alias -shared -L$(LEJOS_HOME)/bin -lirtrcx
+    CCOPT= -mno-cygwin -I$(IRTRCX_INCL) -I${JAVA_INCL} -I${JAVA_INCL}/win32 -Wl,--add-stdcall-alias -shared -L$(LEJOS_HOME)/bin -lirtrcx
 else
 ifneq (,$(findstring darwin,$(OSTYPE)))
     # Mac OS X
@@ -35,7 +34,7 @@ ifneq (,$(findstring darwin,$(OSTYPE)))
   else
     # Linux/Solaris/FreeBSD/other unices.
     IRTOWER=$(LEJOS_HOME)/bin/libjirtrcx.so
-    CCOPT=-rdynamic -ldl -shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) -I$(IRTRCX_INCL) -L$(LEJOS_HOME)/bin -lirtrcx
+    CCOPT=-rdynamic -ldl -shared -fpic -I${JAVA_INCL} -I${JAVA_INCL}/$(OS) -I$(IRTRCX_INCL) -L$(LEJOS_HOME)/bin -lirtrcx
     COMM_OBJ = $(IRTRCX_INCL)/rcx_comm_linux.o
   endif
 endif
@@ -49,5 +48,4 @@ ${IRTOWER}: irtower.cpp josx_rcxcomm_Tower.h
 clean:
 	rm -rf *.o *~ core
 	rm -f ${IRTOWER}
-
 
