@@ -29,6 +29,7 @@ public class Vision extends Frame implements ControllerListener {
   static boolean isRecording = false;
   static Recorder recorder;
   static boolean captureColor = false;
+  static Vision visionFrame;
 
   // private instance variables
 
@@ -170,6 +171,14 @@ public class Vision extends Frame implements ControllerListener {
     return true;
   }
 
+  /**
+   * Close Video viewer
+   */
+  public static void stopViewer() {
+    visionFrame.hide();
+    p.close();
+  }
+    
   public void addNotify() {
     super.addNotify();
     pack();
@@ -256,7 +265,7 @@ public class Vision extends Frame implements ControllerListener {
     MediaLocator ml = device.getLocator();
 
     // Create the frame
-    Vision visionFrame = new Vision(title);
+    visionFrame = new Vision(title);
 
     // Start the video viewer
     if (!visionFrame.open(ml)) System.exit(1);
