@@ -289,6 +289,7 @@ int mywrite(FILEDESCR fd, const void *buf, size_t len) {
 			if (retry < 1) {
 				return actual;
 			}
+			usleep(50);
 		}
 
 		return len;
