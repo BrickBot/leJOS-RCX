@@ -1,4 +1,4 @@
-# Makefile for librcxcomm : library for communicating with the RCX
+# Makefile for libirtrcx : shared library for communicating with the RCX
 # via serial and usb IR towers.
 # The contents of this file are subject to the Mozilla Public License
 # Version 1.0 (the "License"); you may not use this file except in
@@ -30,14 +30,14 @@ ifndef OSTYPE
 endif
 
 ifneq (,$findstring $(OSTYPE), linux LINUX linux-gnu)
-        CFLAGS=-O2 -I../../tools/linux/legousbtower -shared -fpic	
+        CFLAGS=-O2 -I$(LEJOS_HOME)/src/tools/linux/legousbtower -shared -fpic	
 	RCXCOMM_OS_C=rcx_comm_linux.c
 	RCXCOMM_OS_H=rcx_comm_linux.h
 	RCXCOMM_OS_OBJ=rcx_comm_linux.o
 	LIBIRTRCX=$(LEJOS_HOME)/bin/libirtrcx.so
 endif
 
-ifneq (,$(findstring $(OSTYPE),cygwin32 cygwin_nt-5.0 CYGWIN_NT-4.0 WindowsNT Windows_NT))
+ifneq (,$(findstring $(OSTYPE),cygwin32 cygwin_nt-5.0 cygwin_nt-5.1 CYGWIN_NT-4.0 WindowsNT Windows_NT))
 	EXT=.exe
 	LIBIRTRCX=$(LEJOS_HOME)/bin/irtrcx.dll
         CFLAGS=-mno-cygwin -Wl,--add-stdcall-alias -shared -D__CYGWIN32__
