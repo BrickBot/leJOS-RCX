@@ -9,16 +9,26 @@ PATH=$PATH:$TINYVM_HOME/bin
 
 Tools      : cd $TINYVM_HOME; make
 Firmware   : tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
-Compilation: tvmc <class>.java
+Compiling  : tvmc <class>.java
 Linking    : tvmld <class> -o <class>.tvm
 Running    : tvm <class>.tvm
+
+Deleting the TinyVM firmware: Hold Prgm & Run, and press On/Off,
+                              while in program-download mode.
+
+Exceptions                  : [XXXX Y], XXXX = method sig.; 
+                              Y = exception class index % 10.
+                              Press View to continue.
 
 What is TinyVM?
 ---------------
 
 TinyVM is a virtual machine that can execute 
 post-processed Java class files inside the Lego
-RCX. TinyVM cannot be called a Java virtual 
+RCX. It's yet another firmware replacement for
+the RCX.
+
+TinyVM probably cannot be called a Java virtual 
 machine because of certain limitations, lack of 
 APIs, and other non-compliance issues. However,
 TinyVM supports most of the Java *language*
@@ -30,8 +40,11 @@ How does it work?
 
 The virtual machine (tinyvm.srec) contains all
 the code necessary to execute (post-processed)
-Java bytecodes. It's yet another firmware
-replacement, like Markus Noga's legOS.
+Java bytecodes. Source is compiled by a regular
+Java compiler. A javac wrapper, tvmc, is provided
+to take care of setup issues, like using 
+$TINYVM_HOME/lib/classes.jar instead of the
+JDK's classes.zip.
 
 To keep the VM's footprint as small as possible,
 no class-loading code was included in it. Instead,
@@ -41,35 +54,21 @@ the RCX for execution. (See vmsrc/language.h and
 jtools/js/tinyvm/Binary.java for details on the
 format).
 
-The RCX is controlled from Java through native
-APIs. (See common/signatures.db and vmsrc/native.c).
-
-Limitations
------------
-
-Due to size constraints, some language features
-have been omitted. Others just haven't been 
-implemented yet. The limitations that come to 
-mind are:
-
-  - Garbage collection is not performed.
-    (The number of objects in your program
-    should be bounded).
-  - Switch statements are not supported.
-  - Floating point operations are not supported.
-  - Operations on variables of type long are not 
-    suported.
-  - Strings aren't totally supported.
-  - There are no objects of type java.lang.Class, 
-    which means that the ".class" construct won't
-    work. Class.forName() throws NoSuchMethorError.
-  - Most JDK APIs are unavailable, of course.
+The RCX is controlled from your Java code through 
+native APIs. (See common/signatures.db and vmsrc/native.c).
+The native mechanism is very simple: TinyVM and
+the linker agree in advance about certain special
+method signatures, and classes. The mechanism is 
+clearly not JNI compliant, but it suffices.
 
 Requirements
 ------------
 
 - JDK1.1.7B, available from http://java.sun.com.
   Other VMs should work but they haven't been tested.
+  (The JDK is used for running a few building and
+  linking tools. The fact that they are written in 
+  Java is incidental).
 
 - If you're planning to change the source code and
   rebuild it, you should get Kekoa's librcx package,
@@ -110,7 +109,8 @@ Downloading the Firmware:
 
 Deleting the Firmware:
   When the TinyVM firmware is ready to download 
-  linked binaries, you can remove the firmware
+  linked binaries (i.e. when it's in program-download
+  mode [0000 0]), you can remove the firmware
   by holding both the Prgm and Run buttons down
   while you press the On-Off button. 
 
@@ -144,20 +144,52 @@ Running a Example
 
      tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
 
-     This may take a minute or so. When the
+     This may take a couple of minutes. When the
      firmware is done getting downloaded, you
-     should hear a beep, and the LCD should 
-     show look pretty much like this: [ 0000 0]
+     should hear two beeps, and the LCD should 
+     look pretty much like this: [0000 0].
+     TinyVM is in program-download mode at 
+     this point.
 
   6. Download the program.
 
      tvm HelloRCX.tvm
  
-     The LCD will show the download count as 
-     the number of bytes divided by 100. Then 
-     TinyVM will execute the program. As soon 
-     as all threads are finished, the firmware 
-     will return to program-download state.
+     If the RCX is in range, the LCD will show 
+     the download count as  the number of bytes 
+     divided by 100. (As of this writing, tvm
+     does not report communication errors).
+     TinyVM will execute the program, as soon as
+     the download has been completed. When 
+     all non-daemon threads are finished, 
+     the firmware will return to program-download 
+     state. As you may have guessed, you can only 
+     download programs when the firmware is in
+     program-download state.
+
+Exceptions
+----------
+
+TinyVM can show an exception "trace" in the RCX's LCD.
+It will look like this: [XXXX Y]. You'll also hear a
+low buzzing sound, and a wedge (^) will be shown right 
+below sensor 2. The meaning of the trace is as follows:
+
+  XXXX = Method signature id.
+  Y    = Exception class index % 10.
+
+For example, at the time of this writing, 
+if you see a trace that looks like [0000 0],
+it means that an ArrayIndexOutOfBoundsException
+(class index = 10) was thrown in method main(String[])
+(method signature = 0), and uncaught.
+
+When you link a program with tvmld -verbose, you will 
+get a list of class indices and (hopefully by the 
+time this is released) one for method signatures.
+
+NOTE: You must press View to continue after you see
+a trace.
 
 Emulation
 ---------
@@ -166,6 +198,41 @@ You should be able to run linked programs in the
 development machine. All you need to do is use
 tvmld-emul instead of tvmld, and tvm-emul instead
 of tvm.
+
+Limitations
+-----------
+
+Due to size constraints, some language features
+have been omitted. Others just haven't been 
+implemented yet. The limitations that come to 
+mind are:
+
+  - Garbage collection is not performed.
+    (The number of objects in your program
+    should be bounded).
+  - Switch statements are not supported.
+  - Floating point operations are not supported.
+  - Operations on variables of type long are not 
+    suported.
+  - Strings aren't totally supported.
+  - The instanceof operator will always return true  
+    for interfaces. In bytecode, checkcast is not
+    performed on interface classes (which is a bit
+    unsafe).
+  - There are no objects of type java.lang.Class, 
+    which means that the ".class" construct won't
+    work. Class.forName() throws NoSuchMethorError.
+  - Most JDK APIs are unavailable.
+
+Documentation
+-------------
+
+The only documentation currently available is this
+README file and the API documentation, which you should
+be able to obtain by running:
+
+  javadoc -sourcepath $TINYVM_HOME/classes \
+    java.lang tinyvm.rcx -d /tmp
 
 Questions/Problems
 ------------------

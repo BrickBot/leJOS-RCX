@@ -162,11 +162,13 @@ void dispatch_virtual (Object *ref, TWOBYTES signature, byte *retAddr)
   gMethodRecord = find_method (gClassRecord, signature);
   if (gMethodRecord == null)
   {
+    #if SAFE
     if (gByte2 == JAVA_LANG_OBJECT)
     {
       throw_exception (noSuchMethodError);
       return;
     }
+    #endif
     gByte2 = gClassRecord->parentClass;
     goto LABEL_METHODLOOKUP;
   }
@@ -219,6 +221,9 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   StackFrame *stackFrame;
   byte newStackFrameIndex;
 
+  #if DEBUG_BYTECODE
+  printf ("\n------ dispatch special --------------------\n\n");
+  #endif
   #if DEBUG_METHODS
   printf ("dispatch_special: %d, %d, %d\n", 
           (int) classRecord, (int) methodRecord, (int) retAddr);
@@ -347,6 +352,9 @@ STACKWORD instance_of (Object *obj, byte classIndex)
   if (obj == null)
     return 0;
   rtType = get_class_index(obj);
+  // TBD: support for interfaces
+  if (is_interface (get_class_record(classIndex)))
+    return 1;
  LABEL_INSTANCE:
   if (rtType == classIndex)
     return 1;
