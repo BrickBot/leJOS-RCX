@@ -197,6 +197,12 @@ long send_message (long fd, byte opcode, byte *buffer, long length)
   #endif  
 
   numWriten = write (fd, actualBuffer, actualLength);
+  if (numWriten != actualLength)
+  {
+    fprintf (stderr, "Write error: Wrote only %d of %d bytes. Probably a "
+                     "resource allocation problem.\n", (int) numWriten, (int) actualLength);
+    exit (1);
+  }
 
   #if DEBUG > 1
   printf ("Wrote %d bytes.\n", (int) numWriten);

@@ -3,6 +3,8 @@ TVMFIRMDL=../bin/lejosfirmdl
 TVM=../bin/lejosrun
 TVMC=../bin/lejosc
 TVMP=../bin/lejosp
+TVMC1=../bin/lejosc1
+TVMP1=../bin/lejosp1
 RCXLOADERNAME=lejos
 UNIXLOADERNAME=lejos-unix
 RCXLOADER=../bin/${RCXLOADERNAME}
@@ -11,16 +13,20 @@ CC=gcc
 CCOPT=-I../vmsrc -O2 -Wall -Wno-unused
 LIBS=
 TVMFIRMDL_OBJ=tvm_firmdl3.o util.o
-TVMCDEFS=-DTOOL_NAME=\"javac\" -DTOOL_ALT_VAR=\"JAVAC\"
-TVMPDEFS=-DTOOL_NAME=\"javap\" -DTOOL_ALT_VAR=\"JAVAP\"
+TVMCDEFS=-DTOOL_NAME=\"javac\" -DTOOL_ALT_VAR=\"JAVAC\" -DJAVA2
+TVMPDEFS=-DTOOL_NAME=\"javap\" -DTOOL_ALT_VAR=\"JAVAP\" -DJAVA2
+TVMC1DEFS=-DTOOL_NAME=\"javac\" -DTOOL_ALT_VAR=\"JAVAC\"
+TVMP1DEFS=-DTOOL_NAME=\"javap\" -DTOOL_ALT_VAR=\"JAVAP\"
 
 LEJOSRCXDEFS=-DWRITE_ORDER=\"BE\" -DLOADER_TOOL=\"lejosrun\" 
 
 LEJOSUNIXDEFS=-DWRITE_ORDER=\"LE\" -DLOADER_TOOL=\"lejosrun-unix\"
 
+PROGRAMS=${TVMFIRMDL} ${TVM} ${TVMC} ${TVMP} ${TVMC1} ${TVMP1} ${RCXLOADER} ${UNIXLOADER}
+
 default: programs
 
-programs: ${TVMFIRMDL} ${TVM} ${TVMC} ${TVMP} ${RCXLOADER} ${UNIXLOADER}
+programs: ${PROGRAMS}
 
 %.o: %.c
 	${CC} ${CCOPT} -c $*.c
@@ -39,6 +45,14 @@ ${TVMP}: jtoolexec.c util.o
 	${CC} ${TVMPDEFS} -c jtoolexec.c
 	${CC} jtoolexec.o util.o -o ${TVMP}
 
+${TVMC1}: jtoolexec.c util.o
+	${CC} ${TVMC1DEFS} -c jtoolexec.c
+	${CC} jtoolexec.o util.o -o ${TVMC1}
+
+${TVMP1}: jtoolexec.c util.o
+	${CC} ${TVMP1DEFS} -c jtoolexec.c
+	${CC} jtoolexec.o util.o -o ${TVMP1}
+
 ${RCXLOADER}: javaexec.c util.o
 	${CC} ${LEJOSRCXDEFS} -c javaexec.c
 	${CC} javaexec.o util.o -o ${RCXLOADER}
@@ -48,7 +62,7 @@ ${UNIXLOADER}: javaexec.c util.o
 	${CC} javaexec.o util.o -o ${UNIXLOADER}
 	
 clean:
-	rm -rf *.o *~ core ${TVMFIRMDL} ${TVM}
+	rm -rf *.o ../bin/*.exe *~ core ${PROGRAMS}
 
 
 
