@@ -36,7 +36,6 @@
 #include <unistd.h>
 #include <termios.h>
 #include <sys/time.h>
-#include <asm/ioctl.h>
 #endif
 
 #include <stdio.h>
@@ -50,7 +49,10 @@
 
 #include "rcx_comm.h"
 
+
 #if defined(LINUX) || defined(linux)
+#include "stropts.h"
+#include <asm/ioctl.h>
 #include "legousbtower.h"
 #endif
 
