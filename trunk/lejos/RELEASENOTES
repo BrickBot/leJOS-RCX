@@ -29,7 +29,8 @@ leJOS 1.0.2:
   
   Juergen Stuber has added:
   - Fixed rotational sensor mode.
-  
+  - SLEEP_TIME now 20ms everywhere, 60ms reaction time for buttons & sensors
+
   Brian Bagnall has added:
   - Behavioural API
   - Navigation API
