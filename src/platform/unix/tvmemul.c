@@ -68,7 +68,8 @@ void timer_handler(int signo)
 {
   gettimeofday(&now, 0);
   // 11/17/01: Jose commented out:
-  //timersub(&now, &gStart, &now);
+  // 03/29/02: Paul put back in. Regression tests will fail otherwise.
+  timersub(&now, &gStart, &now);
   sys_time = now.tv_sec*1000 + now.tv_usec/1000;
   signal(SIGALRM, timer_handler);
 }
