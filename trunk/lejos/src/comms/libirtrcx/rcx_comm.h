@@ -25,11 +25,16 @@
 #ifndef RCX_COMM_H_INCLUDED
 #define RCX_COMM_H_INCLUDED
 
+#ifndef FILEDESCR
+#define FILEDESCR	int
+#endif
+
+typedef struct _port port_t;
+
+
 #define BUFFERSIZE  4096
 
-//
-// Error codes
-//
+/* Error codes */
 
 #define RCX_OK               0
 #define RCX_NO_TOWER        -1
@@ -48,116 +53,130 @@
 
 #define RCX_NOT_IMPL -256
 
-//
-// getter functions
-//
+/* getter functions */
 
-// Is tower attached to an usb port?
-// port: port handle
-bool rcxIsUsb(void* port);
+/* Is tower attached to an usb port?
+ * port: port handle
+ */
+int rcx_is_usb(port_t *port);
 
-// Is tower set to fast mode?
-// port: port handle
-bool rcxIsFast(void* port);
+/* Is tower set to fast mode?
+ * port: port handle
+ */
+int rcx_is_fast(port_t *port);
 
-//
-// RCX functions
-//
+/* RCX functions */
 
-// Open tower on specific port.
-// port: port handle
-// fast: use fast mode?
-// Returns port handle.
-void* rcxOpen(char* port, bool fast);
+/* Open tower on specific port.
+ * port: port handle
+ * fast: use fast mode?
+ * Returns port handle.
+ */
+port_t *rcx_open(char *port, int fast);
 
-// Close tower.
-// port: port handle
-void rcxClose(void* port);
+/* Close tower.
+ * port: port handle
+ */
+void rcx_close(port_t *port);
 
-// Wake up tower / RCX.
-// port: port handle
-// timeout_ms: timeout in ms
-// Returns error code.
-int rcxWakeupTower (void* port, int timeout_ms);
+/* Wake up tower / RCX.
+ * port: port handle
+ * timeout_ms: timeout in ms
+ * Returns error code.
+ */
+int rcx_wakeup_tower(port_t *port, int timeout_ms);
 
-// Read raw bytes.
-// port: port handle
-// buf: buffer to read into
-// maxlen: maximum number of bytes to read
-// timeout_ms: timeout in ms
-// Returns number of read bytes or an error code.
-int rcxRead (void* port, void* buf, int maxlen, int timeout_ms);
+/* Read raw bytes.
+ * port: port handle
+ * buf: buffer to read into
+ * maxlen: maximum number of bytes to read
+ * timeout_ms: timeout in ms
+ * Returns number of read bytes or an error code.
+ */
+int rcx_read(port_t *port, void *buf, int maxlen, int timeout_ms);
 
-// Write raw bytes.
-// port: port handle
-// buf: buffer to write from
-// len: number of bytes to write
-// Returns number of written bytes or an error code.
-int rcxWrite(void* port, void* buf, int len);
+/* Write raw bytes.
+ * port: port handle
+ * buf: buffer to write from
+ * len: number of bytes to write
+ * Returns number of written bytes or an error code.
+ */
+int rcx_write(port_t *port, void *buf, int len);
 
-// Send a packet.
-// port: port handle
-// buf: buffer to write from
-// len: number of bytes to write
-// Returns number of sent bytes or an error code.
-int rcxSend (void* port, void *buf, int len);
+/* Send a packet.
+ * port: port handle
+ * buf: buffer to write from
+ * len: number of bytes to write
+ * Returns number of sent bytes or an error code.
+ */
+int rcx_send(port_t *port, void *buf, int len);
 
-// Receive a packet.
-// port: port handle
-// buf: buffer to read into
-// maxlen: maximum number of bytes to read
-// timeout_ms: timeout in ms
-// Returns number of received bytes or an error code.
-int rcxReceive (void* port, void* buf, int maxlen, int timeout_ms);
+/* Receive a packet.
+ * port: port handle
+ * buf: buffer to read into
+ * maxlen: maximum number of bytes to read
+ * timeout_ms: timeout in ms
+ * Returns number of received bytes or an error code.
+ */
+int rcx_receive(port_t *port, void *buf, int maxlen, int timeout_ms);
 
-// Send a packet and receive a response.
-// port: port handle
-// send: buffer to write from
-// slen: maximum number of bytes to write
-// recv: buffer to read into
-// rlen: maximum number of bytes to read
-// retries: number of retries
-// Returns number of received bytes or an error code.
-int rcxSendReceive (void* port, void* send, int slen, void* recv, int rlen, int timeout, int retries);
-		  
-// Clear input and output buffers.
-// port: port handle
-void rcxPurge(void* port);
+/* Send a packet and receive a response.
+ * port: port handle
+ * send: buffer to write from
+ * slen: maximum number of bytes to write
+ * recv: buffer to read into
+ * rlen: maximum number of bytes to read
+ * retries: number of retries
+ * Returns number of received bytes or an error code.
+ */
+int rcx_send_receive(port_t *port,
+		     void *send, int slen,
+		     void *recv, int rlen,
+		     int timeout, int retries);
 
-// Flush output buffers.
-// port: port handle
-void rcxFlush(void* port);
+/* Clear input and output buffers.
+ * port: port handle
+ */
+void rcx_purge(port_t *port);
 
-// Is RCX alive?
-bool rcxIsAlive (void* port);
+/* Flush output buffers.
+ * port: port handle
+ */
+void rcx_flush(port_t *port);
 
-//
-// error handling
-//
+/* Is RCX alive?
+ */
+int rcx_is_alive (port_t *port);
 
-// Get string representation for error code.
-// error: error code as returned by above methods
-char* rcxStrerror (int error);
+/* error handling */
 
-// Print error message
-// message: error message
-void rcxPerror(char* message);
+/* Get string representation for error code.
+ * error: error code as returned by above methods
+ */
+char *rcx_strerror (int error);
 
-//
-// debug stuff
-//
+/* Print error message
+ * message: error message
+ */
+void rcx_perror(char *message);
 
-// Set debug mode.
-// debug: do debug output?
-void rcxSetDebug(bool debug);
 
-// Is librcx in debug mode?
-bool rcIsDebug();
+/* debuging */
 
-// Hexdump routine.
-// prefix: prefix for each line
-// buf: buffer to dump
-// len: number of bytes to dump
-void hexdump(char* prefix, void* buf, int len);
+/* Set debug mode.
+ * debug: do debug output?
+ */
+void rcx_set_debug(int debug);
+
+/* Is librcx in debug mode?
+ */
+int rcx_is_debug();
+
+/* Hexdump routine.
+ * prefix: prefix for each line
+ * buf: buffer to dump
+ * len: number of bytes to dump
+ */
+void hexdump(char *prefix, void *buf, int len);
 
 #endif /* RCX_COMM_H_INCLUDED */
