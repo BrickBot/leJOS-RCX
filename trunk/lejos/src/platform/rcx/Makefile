@@ -6,9 +6,9 @@ include ../Makefile.config
 
 #CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -I. -O2 -Wall
 CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -I. -O2 -Wall -fomit-frame-pointer
-LFLAGS += -L${LIBRCX_HOME}/lib -L${LIBRCX_HOME}/float
+LFLAGS += -L${LIBRCX_HOME}/lib --relax -L${LIBRCX_HOME}/float
 
-LIBS = -lrcx -lfloat
+LIBS = -lrcx -lfloat -lc
 
 CC = $(BINDIR)/$(BINPREFIX)gcc
 AS = $(BINDIR)/$(BINPREFIX)as
@@ -55,14 +55,14 @@ OBJS = interpreter.o threads.o exceptions.o poll.o \
 all: ${PROGS}
 	@echo Done building TinyVM srec
 
+rcx.map: rcx.lds $(OBJS)
+	$(LD) $(LFLAGS) -Trcx.lds -Map rcx.map -o ${TINYVMBINARY} $(OBJS) $(LIBS)
+	
+rcx_gen.lds: rcx.map
+	${JAVA} -classpath ../jtools js.tools.CodePacker rcx.lds rcx.map rcx_gen.lds
+
 clean:
-	rm -f core ../bin/*.srec *.o *~
+	rm -f core ../bin/*.srec *.o *~ *.bak rcx.map rcx_gen.lds
 
-${TINYVMBINARY}: $(OBJS) rcx.lds
-	$(LD) $(LFLAGS) -Trcx.lds -o ${TINYVMBINARY} $(OBJS) $(LIBS)
-
-
-
-
-
-
+${TINYVMBINARY}: rcx_gen.lds
+	$(LD) $(LFLAGS) -Trcx_gen.lds -o ${TINYVMBINARY} $(OBJS) $(LIBS)

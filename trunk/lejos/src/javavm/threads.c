@@ -160,6 +160,7 @@ boolean init_thread (Thread *thread)
  * @return false iff there are no live threads
  *         to switch to.
  */
+ 
 boolean switch_thread()
 {
   Thread *anchorThread, *previousThread, *candidate;
@@ -178,7 +179,7 @@ boolean switch_thread()
     if (currentThread->state == DEAD)
     {
       #if DEBUG_THREADS
-      printf ("Tidying up DEAD thread %d: %d\n", (int) candidate, (int)candidate->threadId);
+      printf ("Tidying up DEAD thread %d: %d\n", (int) currentThread, (int)currentThread->threadId);
       #endif
   
       #if REMOVE_DEAD_THREADS
@@ -305,12 +306,13 @@ boolean switch_thread()
             candidate->state = RUNNING;
             if (candidate == bootThread)
             {
+              MethodRecord *mRec;
               ClassRecord *classRecord;
-    
               classRecord = get_class_record (get_entry_class (gProgramNumber));
               // Initialize top word with fake parameter for main():
               set_top_ref (JNULL);
               // Push stack frame for main method:
+              mRec= find_method (classRecord, main_4_1Ljava_3lang_3String_2_5V);
               dispatch_special (find_method (classRecord, main_4_1Ljava_3lang_3String_2_5V), null);
               // Push another if necessary for the static initializer:
               dispatch_static_initializer (classRecord, pc);

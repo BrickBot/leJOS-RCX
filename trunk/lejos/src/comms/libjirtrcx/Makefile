@@ -6,8 +6,8 @@ OS=${OSTYPE}
 ifeq ($(OSTYPE),linux-gnu)
 OS=linux
 endif
-OSCYG=$(findstring $(OSTYPE),cygwin)
-ifneq (,$(findstring $(OSTYPE),cygwin))
+OSCYG=$(findstring cygwin,$(OSTYPE))
+ifneq (,$(findstring cygwin,$(OSTYPE)))
 IRTOWER=../../bin/irtower.dll
 CCOPT=-mno-cygwin -I${JDK}/include -I${JDK}/include/win32 -Wl,--add-stdcall-alias -shared -o ${IRTOWER}
 else

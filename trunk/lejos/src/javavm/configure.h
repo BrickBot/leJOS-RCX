@@ -29,6 +29,11 @@
 #define COALESCE                         1
 
 /**
+ * If not 0 allow multiple heap segments
+ */
+#define SEGMENTED_HEAP                 0
+
+/**
  * Iff not 0, threads in the DEAD state are
  * removed from the circular list. Recommended.
  */
@@ -40,10 +45,3 @@
 #define SAFE                             1
 
 #endif
-
-
-
-
-
-
-

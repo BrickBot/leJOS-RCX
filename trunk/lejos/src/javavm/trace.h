@@ -44,6 +44,10 @@
 #define LANGUAGE2    52
 #define LANGUAGE3    53
 
+#define BAD_MAGIC	 54
+
+#define ASSERT_TOP	100
+
 #define assert( cond, code)  assert_hook( cond, code);
 
 extern void assert_hook (boolean aCond, int aCode);
