@@ -94,7 +94,15 @@ public class Sensor
     iSensorId = aId;
     setTypeAndMode (3, 0x80);
   }
-  
+
+  /**
+   * Return the ID of the sensor. One of 0, 1 or 2.
+   */
+  public final int getId()
+  {
+    return iSensorId;
+  }
+    
   /**
    * Adds a sensor listener.
    * <p>

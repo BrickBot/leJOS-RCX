@@ -99,7 +99,7 @@ core_classes:
 
 javadoc:
 	if [ ! -d apidocs ]; then mkdir apidocs; fi
-	${JAVADOC} -author -d apidocs -sourcepath classes java.io java.lang java.util josx.platform.rcx
+	${JAVADOC} -author -d apidocs -sourcepath classes java.io java.lang java.util josx.platform.rcx josx.robotics
 
 clean:
 	rm -f `find . -name '*.class'`
