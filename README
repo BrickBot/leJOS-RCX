@@ -10,7 +10,7 @@ Summary
 -- Download firmware using lejosfirmdl.
 -- Compile using lejosc instead of javac.
 -- Run programs in the RCX using lejos.
--- Run programs in the host using lejos-unix.
+-- Run programs in the host using emu-lejos.
 -- Exceptions: Use lejos -verbose. Exceptions
    are shown in the RCX as [XXXX Y], where 
    XXXX = method_signature, and 
@@ -66,7 +66,7 @@ Requirements
   and to run some tools provided with leJOS, e.g. the linker).
 
 - leJOS is known to work on Linux and Windows. It should 
-  work on other Unix systems.
+  work on Unix systems in general.
 
 Setup
 -----
@@ -82,7 +82,7 @@ Environment:
     to COM2 under Windows.
 
 Building the Tools:
-  Simply go to installation directory and
+  Under Unix, simply go to installation directory and
   type 'make'. At this point all of the tools necessary
   to run leJOS should be available under bin.
 
@@ -124,7 +124,7 @@ Emulation
 ---------
 
 You should be able to run linked programs in the 
-host computer. All you need to do is use lejos-unix 
+host computer. All you need to do is use emu-lejos 
 instead of lejos.
 
 In some cases it might be easier to debug
@@ -188,14 +188,15 @@ for now, since Kekoa Proudfoot's librcx is under that same
 license, and leJOS is linked against -lrcx and -lfloat, which
 are part of librcx. No changes have been made to those libraries, 
 so they haven't been redistributed. They are only needed if you 
-are planning to modify the native C source code. See docs/hacking. 
+are planning to modify the native C source code. See docs/hacking.
+The founder and maintainer of leJOS is Jose Solorzano. 
 
 Questions/Problems
 ------------------
 
-Please direct feedback to jhsolorz@yahoo.com. You can also
-subscribe to the tinyvm-discussion mailing list. Look for
-the "Mailing Lists" section at http://sourceforge.net/projects/tinyvm.
+Please direct feedback to Jose Solorzano at jhsolorz@yahoo.com. 
+You can also subscribe to the tinyvm-discussion mailing list. Look 
+for the "Mailing Lists" section at http://sourceforge.net/projects/tinyvm.
 
 
 

@@ -16,6 +16,7 @@ leJOS 1.0.0alpha5:
   - Forced persistence across runs was taken out, i.e. all memory 
     is reinitialized every time you rerun a program.
   - Prgm-On/Off does nothing. Run-On/Off kills a running program.
+  - Emulation tools have been renamed.
   
 leJOS 1.0.0alpha4:
 ------------------
