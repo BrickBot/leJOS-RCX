@@ -6,10 +6,6 @@ COMMON_FOLDER=${TINYVM_HOME}/common
 CLASSES_DIR=${TINYVM_HOME}/classes
 LIB_DIR=${TINYVM_HOME}/lib
 
-RELEASE_PREFIX=tinyvm_`cat VERSION`
-RELEASE_DIR=${TEMP}/${RELEASE_DIRNAME}
-RELEASE_FILE=${TEMP}/${RELEASE_DIRNAME}.zip
-
 JAVAC=javac
 JAVADOC=javadoc
 JAVA=java
@@ -23,15 +19,14 @@ all: default tinyvm_bin
 
 release:
 	make all
-	cd regression; ./run.sh
 	cvs commit
 	cvs tag RELEASE_`cat VERSION`
-	rm -rf ${RELEASE_DIR}
-	cvs export -d ${RELEASE_DIR} tinyvm
-	zip -r ${RELEASE_FILE} ${RELEASE_DIR}
-	diff bin/tinyvm.srec ${RELEASE_DIR}/bin/tinyvm.srec
+	rm -rf ${TEMP}/tinyvm_release
+	cvs export -d ${TEMP}/tinyvm_release tinyvm
+	zip -r ${TEMP}/tinyvm_`cat VERSION` ${TEMP}/tinyvm_release
+	diff bin/tinyvm.srec ${TEMP}/tinyvm_release/bin/tinyvm.srec
 	export TINYVM_HOME=${RELEASE_DIR}
-	cd ${RELEASE_DIR}; make; cd regression; ./run/sh
+	cd ${RELEASE_DIR}; export TINYVM_HOME=${TEMP}/tinyvm_release; export PATH=${TINYVM_HOME}:${PATH}; make; cd regression; ./run/sh
 
 check:
 	@if [ -f ${TINYVM_HOME} ]; then \
