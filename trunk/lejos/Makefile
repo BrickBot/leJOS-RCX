@@ -40,8 +40,8 @@ check:
 
 check_release:
 	@echo TINYVM_HOME=${TINYVM_HOME}
-	@echo Location of tvmc=`which tvmc`
-	@echo Location of tvmld=`which tvmld`
+	@echo Location of lejosc=`which lejosc`
+	@echo Location of lejos=`which lejos`
 	make
 	cd regression; ./run.sh
 
@@ -56,7 +56,7 @@ generated_files: common/classes.db common/signatures.db
 	${JAVA} -Dtinyvm.home="." js.tools.GenerateConstants
 
 java_loader:
-	@echo "====> Making loader/linker (tvmld)"
+	@echo "====> Making loader/linker (lejos)"
 	${JAVAC} jtools/js/tinyvm/*.java
 
 all_ctools:

@@ -10,6 +10,7 @@ implements Constants
   static final String CP_PROPERTY = "tinyvm.class.path";
   static final String WO_PROPERTY = "tinyvm.write.order";
   static final String TINYVM_HOME = System.getProperty ("tinyvm.home");
+  static final String TINYVM_LOADER = System.getProperty ("tinyvm.loader");
   static final String TEMP_FILE = "__tinyvm__temp.tvm__";
   static String iClassPath = System.getProperty (CP_PROPERTY);
   static String iWriteOrder = System.getProperty (WO_PROPERTY);
@@ -31,20 +32,52 @@ implements Constants
   public static void invokeTvm (String aFileName)
   {
     Utilities.assert (TINYVM_HOME != null);
+    Utilities.assert (TINYVM_LOADER != null);
     String pTvmExec = TINYVM_HOME + File.separator + "bin" +
-                      File.separator + "tvm"; 
+                      File.separator + TINYVM_LOADER; 
     String[] pParams = new String[] { pTvmExec, aFileName };
     try {
       Utilities.verbose (1, "Executing " + pTvmExec + " (downloading) ...");
       Process p = Runtime.getRuntime().exec (pParams);
-      if (p.waitFor() != 0)
-        System.err.println ("tvm: returned error status.");
+      pipeStream (p.getInputStream(), System.out);
+      pipeStream (p.getErrorStream(), System.err);
+      int pStatus;
+      if ((pStatus = p.waitFor()) != 0)
+      { 
+        System.err.println (TINYVM_LOADER + ": returned status " + pStatus + ".");
+      }
     } catch (InterruptedException e) {
       Utilities.fatal ("Execution of " + pTvmExec + " was interrupted.");
     } catch (IOException e) {
       Utilities.fatal ("Problem executing " + pTvmExec + ". " +
                        "Apparently, the program was not found. ");
     }
+  }
+
+  static void pipeStream (final InputStream aIn, final OutputStream aOut)
+  {
+    Thread pThread = new Thread ("output-pipe")
+    {
+      public void run()
+      {
+        try {
+          int c;
+          for (;;)
+	  {
+            c = aIn.read();
+            if (c == -1)
+              Thread.sleep (1);
+            else
+              aOut.write (c);
+	  }
+	} catch (Exception e) {
+          e.printStackTrace();
+	}
+      }
+    };
+
+    pThread.setDaemon (true);
+    pThread.start();
   }
   
   public static void main (String aClassName)
@@ -59,13 +92,7 @@ implements Constants
     if ("BE".equals (iWriteOrder))
       pBW = new BEDataOutputStream (pOut);
     else if ("LE".equals (iWriteOrder))
-    {
       pBW = new LEDataOutputStream (pOut);
-      if (iDoDownload)
-        Utilities.fatal ("The -d option cannot be used with tvmld-emul. " +
-                         "Use -o <file> instead.");
-      System.out.println ("Warning: Output for emulation only.");
-    }
     else
       Utilities.fatal (WO_PROPERTY + " not BE or LE.");
     pBin.dump (pBW);
@@ -95,13 +122,6 @@ implements Constants
         iDumpFile = true;
         iOutputFile = pOpt.iArgument;
       }
-      if (pOpt.iOption.equals ("-d"))
-      {
-        if (iDumpFile)
-          Utilities.fatal ("You cannot specify both -d and -o options.");
-        iDoDownload = true;
-        iOutputFile = TEMP_FILE;
-      }
       else if (pOpt.iOption.equals ("-verbose"))
       {
         int pLevel = 1;
@@ -114,6 +134,11 @@ implements Constants
         Utilities.setVerboseLevel (pLevel);
       }     
     }
+    if (!iDumpFile)
+    {
+      iDoDownload = true;
+      iOutputFile = TEMP_FILE;
+    }
   }
 
   public static void main (Vector aArgs, Vector aOptions)
@@ -121,12 +146,9 @@ implements Constants
   {
     if (aArgs.size() != 1)
     {
-      System.out.println (TOOL_NAME + " " + VERSION + 
-                          ". Copyright (c) 2000 Jose Solorzano.");
       System.out.println ("Use: " + TOOL_NAME + " [options] className");
       System.out.println ("Options:");
       System.out.println ("  -o <path>         Dump binary into path");
-      System.out.println ("  -d                Download to RCX");
       System.out.println ("  -verbose[=<n>]    Print additional messages");
       System.exit (1);
     }

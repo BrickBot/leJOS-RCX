@@ -1,6 +1,6 @@
 
 TVMFIRMDL=../bin/old-tvmfirmdl
-TVM=../bin/tvm
+TVM=../bin/lejosrun
 CC=gcc
 CCOPT=-I../vmsrc -O2 -Wall -Wno-unused
 

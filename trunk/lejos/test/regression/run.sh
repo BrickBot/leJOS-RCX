@@ -9,12 +9,12 @@ rm $OUT_FILE
 for i in $TEST_CLASSES
 do
   echo ------------------ Compiling $i
-  tvmc $i.java
+  lejosc $i.java
   echo ------------------ Linking $i
-  tvmld-emul $i -o $i.tvm
+  lejos-unix $i -o $i.tvm
   echo ------------------ Running $i
   echo "----------------- Run of $i.tvm" >> $OUT_FILE
-  tvm-emul $i.tvm >> $OUT_FILE
+  lejosrun-unix $i.tvm >> $OUT_FILE
 done
 
 if [ ! -f $GOLD_FILE ]; 

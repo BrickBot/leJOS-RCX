@@ -11,6 +11,7 @@
 #include "language.h"
 #include "exceptions.h"
 #include "specialclasses.h"
+#include "fields.h"
 #include "stack.h"
 
 #define F_OFFSET_MASK  0x0F
@@ -152,8 +153,6 @@ void engine()
   switch_thread();
   numOpcodes = OPCODES_PER_TIME_SLICE;
  LABEL_ENGINELOOP: 
-  if (gMustExit)
-    return;
   if (!(--numOpcodes))
   {
     #if DEBUG_THREADS
@@ -162,13 +161,16 @@ void engine()
     switch_thread();
     numOpcodes = OPCODES_PER_TIME_SLICE;
   }
+  if (gMustExit)
+    return;
 
   //-----------------------------------------------
   // SWITCH BEGINS HERE
   //-----------------------------------------------
 
   #ifdef DEBUG_BYTECODE
-  printf ("OPCODE: (0x%X) %s\n", (int) *pc, OPCODE_NAME[*pc]);
+  printf ("0x%X: \n", (int) pc);
+  printf ("OPCODE (0x%X) %s\n", (int) *pc, OPCODE_NAME[*pc]);
   #endif
 
   switch (*pc++)

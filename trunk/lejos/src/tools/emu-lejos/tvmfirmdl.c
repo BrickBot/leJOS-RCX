@@ -417,7 +417,7 @@ main(int argc, char **argv)
     {
       fileName = (char *) malloc (strlen (tinyvmHome) + 32);
       strcpy (fileName, tinyvmHome);
-      strcat (fileName, "/bin/tinyvm.srec");
+      strcat (fileName, "/bin/lejos.srec");
       printf ("Firmware file: %s\n", fileName);
     }      
     else if (argc == 2)
@@ -516,7 +516,7 @@ main(int argc, char **argv)
     /* Open the serial port */
 
     if ((tty = getenv("RCXTTY")) == NULL) {
-	fprintf(stderr, "Your RCXTTY variable is undefined. It must be defined as the IR device (e.g. /dev/ttyS1, com1, etc.)\n");
+	fprintf(stderr, "Your RCXTTY variable is undefined. It must be defined as the IR device (e.g. /dev/ttyS0, /dev/ttyS1, com1, com2, etc.)\n");
 	exit(1);
     }
 

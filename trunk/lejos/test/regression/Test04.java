@@ -24,6 +24,7 @@ public class Test04
     pObj.iShortField = 4000;
     iObj2.iByteField = 125;
     iObj2.iShortField = 4175;
+    LCD.showNumber (pObj.iIntField + pObj.iByteField - 999999);
     int k = pObj.iStatic;   
     LCD.showNumber (k);
     Test04.iStatic = 4491;
@@ -31,6 +32,7 @@ public class Test04
                pObj.iByteField;   
     LCD.showNumber (lvar - 999999);
     LCD.showNumber (iObj2.iByteField + iObj2.iShortField);
+    LCD.showNumber (iObj2.iShortField + iObj2.iByteField2);
   }
 }
 

@@ -1,9 +1,13 @@
 ----------------- Run of Test04.tvm
+& ROM call 3: 0x1FF2 (12319, 101, 12290)
+& ROM call 0: 0x27C8
 & ROM call 3: 0x1FF2 (12319, 4490, 12290)
 & ROM call 0: 0x27C8
 & ROM call 3: 0x1FF2 (12319, 4181, 12290)
 & ROM call 0: 0x27C8
 & ROM call 3: 0x1FF2 (12319, 4300, 12290)
+& ROM call 0: 0x27C8
+& ROM call 3: 0x1FF2 (12319, 4175, 12290)
 & ROM call 0: 0x27C8
 ----------------- Run of Test06.tvm
 & ROM call 3: 0x1A4E (8192, 1, 1)
@@ -16,7 +20,7 @@
 & ROM call 3: 0x1A4E (8192, 1, 1)
 & ROM call 3: 0x1A4E (8192, 3, 1)
 *** UNCAUGHT EXCEPTION: 
---  Exception class   : 7
+--  Exception class   : 8
 --  Thread            : 1
 --  Method signature  : 0
 --  Root method sig.  : 0
@@ -39,12 +43,12 @@
 & ROM call 3: 0x327C (6003, 2000, 20)
 & ROM call 3: 0x327C (6003, 200, 20)
 & ROM call 3: 0x327C (6003, 2000, 20)
-& ROM call 3: 0x327C (6003, 2000, 20)
 & ROM call 3: 0x327C (6003, 200, 20)
+& ROM call 3: 0x327C (6003, 2000, 20)
 & ROM call 3: 0x327C (6003, 200, 20)
 & ROM call 3: 0x327C (6003, 2000, 20)
 ----------------- Run of Test12.tvm
-& ROM call 3: 0x1FF2 (12319, 34, 12290)
+& ROM call 3: 0x1FF2 (12319, 24, 12290)
 & ROM call 0: 0x27C8
 & ROM call 3: 0x1FF2 (12319, 40, 12290)
 & ROM call 0: 0x27C8
@@ -53,21 +57,21 @@
 ----------------- Run of Test13.tvm
 & ROM call 3: 0x1FF2 (12319, 0, 12290)
 & ROM call 0: 0x27C8
-& ROM call 3: 0x1FF2 (12319, 4005, 12290)
+& ROM call 3: 0x1FF2 (12319, 7835, 12290)
 & ROM call 0: 0x27C8
 & ROM call 3: 0x1FF2 (12311, 5, 0)
 & ROM call 0: 0x27C8
 *** UNCAUGHT EXCEPTION: 
---  Exception class   : 4
+--  Exception class   : 5
 --  Thread            : 1
 --  Method signature  : 0
 --  Root method sig.  : 0
 --  Bytecode offset   : 24
 ----------------- Run of Test14.tvm
-& ROM call 3: 0x1FF2 (12319, 7, 12290)
+& ROM call 3: 0x1FF2 (12319, 11, 12290)
 & ROM call 0: 0x27C8
 *** UNCAUGHT EXCEPTION: 
---  Exception class   : 6
+--  Exception class   : 7
 --  Thread            : 1
 --  Method signature  : 0
 --  Root method sig.  : 0
