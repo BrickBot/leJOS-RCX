@@ -1,16 +1,20 @@
 # Makefile for legousbtower
 #
-# use uname -r to get correct version
 
-KERNEL_VER=$(uname -r)
-LINUXSRC=/usr/src/linux
+KERNDIR=/lib/modules/$(shell uname -r)
 
-MODULE_DIR = /lib/modules/$(KERNEL_VER)/kernel
+
+# this is slightly more brain-dead, but works..
+ifeq ($(shell if test -d $(KERNDIR)/build; then echo yes; fi),yes)
+KERNINC=$(KERNDIR)/build/include
+else
+KERNINC=/usr/src/linux/include
+endif
 
 CFLAGS= -D__KERNEL__ -DMODULE -Wall -Wstrict-prototypes -O2 \
 -fomit-frame-pointer -fno-strict-aliasing -pipe -fno-strength-reduce \
 -falign-loops=2 -falign-jumps=2 -falign-functions=2 \
- -I$(LINUXSRC)/include -I$(LINUXSRC)/drivers/usb
+ -I$(KERNINC) -I$(KERNINC)/drivers/usb
 
 all:	legousbtower.o
 
@@ -18,8 +22,6 @@ legousbtower.o : legousbtower.c
 
 clean:
 	rm -f *.o *~
-	/sbin/modprobe -r legousbtower
-	rm -f /dev/lego0
 
 install: legousbtower.o
 	/sbin/modprobe -r legousbtower
