@@ -440,12 +440,15 @@ int main (int argc, char **argv)
 	tty = DEFAULTTTY;
     }
 
+#if defined(_WIN32) || defined(__CYGWIN32__)
+    /* stricmp not available on Linux */
     if ( stricmp( tty , "usb" ) == 0 ) {
 	usb_flag = 1;
 	if ( __comm_debug ) fprintf(stderr, "USB IR Tower mode.\n");
 	tty="\\\\.\\legotower1";
     }
-    
+#endif
+
     if (use_fast && usb_flag == 0 ) {
 	// usb do not support fast mode.
 	/* Try to wake up the tower in fast mode */
