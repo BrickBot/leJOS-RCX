@@ -16,6 +16,7 @@ public abstract class DataPort extends java.lang.Object {
    protected RCXInputStream rcxin;
    protected RCXOutputStream rcxout;
    protected Object monitor;
+   protected boolean listen = false;
 
    protected DataPort() {
       monitor = this;
@@ -35,6 +36,7 @@ public abstract class DataPort extends java.lang.Object {
     * @return an input stream for reading bytes from this DataPort.
     */
    public InputStream getInputStream() {
+      listen = true;
       return (InputStream)rcxin;
    }
 
