@@ -3,7 +3,7 @@ SHELL=/bin/sh
 CLASSPATH=jtools
 
 #JAVAC=jikes -bootclasspath c:/jdk1.3/jre/lib/rt.jar
-JAVAC=javac
+JAVAC=javac -target 1.1
 JAVADOC=javadoc
 JAVA=java
 TEMP=/usr/tmp
@@ -37,7 +37,7 @@ dir_and_zip:
 	rm -rf ${TEMP}/${TINYVM_VERSION}.doc
 	mkdir ${TEMP}/${TINYVM_VERSION}.doc
 	tar cf - apidocs docs README RELEASENOTES CLICKME.html LICENSE ACKNOWLEDGMENTS Makefile | (cd ${TEMP}/${TINYVM_VERSION}.doc; tar xfpB -)
-	cd ${TEMP}/${TINYVM_VERSION}.doc; make distclean_src
+	cd ${TEMP}/${TINYVM_VERSION}.doc
 	rm -f ${TEMP}/${TINYVM_VERSION}.doc/Makefile
 	cd ${TEMP}; tar cvf ${TINYVM_VERSION}.doc.tar ${TINYVM_VERSION}.doc; gzip ${TINYVM_VERSION}.doc.tar
 	diff bin/lejos.srec ${TEMP}/${TINYVM_VERSION}/bin/lejos.srec
