@@ -15,4 +15,4 @@ if [ -z "$LEJOS_HOME" ]; then
     LEJOS_HOME="$(dirname $(dirname $0))"
 fi
 
-java -classpath "$LEJOS_HOME/lib/bcel-5.1.jar$LEJOS_HOME/lib/commons-cli-1.0.jar$SEP$LEJOS_HOME/lib/jtools.jar$SEP${CLASSPATH:-.}" js.tinyvm.TinyVM --writeorder BE --classpath "$LEJOS_HOME/lib/classes.jar$SEP${CLASSPATH:-.}" "$@"
+java -classpath "$LEJOS_HOME/lib/bcel-5.1.jar$SEP$LEJOS_HOME/lib/commons-cli-1.0.jar$SEP$LEJOS_HOME/lib/jtools.jar$SEP${CLASSPATH:-.}" js.tinyvm.TinyVM --writeorder BE --classpath "$LEJOS_HOME/lib/classes.jar$SEP${CLASSPATH:-.}" "$@"
