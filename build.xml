@@ -16,6 +16,7 @@
   <property name="src" value="${basedir}/src"/>
   <property name="javasrc" value="${src}/java"/>
   <property name="build" value="${basedir}/build"/>
+  <property name="bin" value="${basedir}/bin"/>
 
   <path id="lejos.classpath">
     <pathelement location="${build}/classes"/>
@@ -82,8 +83,8 @@
   	</java>
     <javac srcdir="${javasrc}/classes" destdir="${build}/classes" fork="yes" optimize="on" debug="on" target="1.1" classpathref="lejos.classpath"/>
     <javac srcdir="${javasrc}/rcxcomm" destdir="${build}/rcxcomm" fork="yes" optimize="on" debug="on" target="1.1" classpathref="lejos.classpath"/>
-    <javac srcdir="${javasrc}/vision" destdir="${build}/vision" fork="yes" optimize="on" debug="on" target="1.1" classpathref="lejos.classpath"/>
     <javac srcdir="${javasrc}/pcrcxcomm" destdir="${build}/pcrcxcomm" fork="yes" optimize="on" debug="on" source="1.4" classpathref="lejos.classpath"/>
+    <javac srcdir="${javasrc}/vision" destdir="${build}/vision" fork="yes" optimize="on" debug="on" target="1.1" classpathref="lejos.classpath"/>
     <javac srcdir="${javasrc}/tools" destdir="${build}/tools" fork="yes" optimize="on" debug="on" source="1.4" classpathref="lejos.classpath"/>
   </target>
 
@@ -97,7 +98,11 @@
     <jar destfile="${build}/pcrcxcomm.jar" basedir="${build}/pcrcxcomm"/>
     <jar destfile="${build}/rcxcomm.jar" basedir="${build}/rcxcomm"/>
     <jar destfile="${build}/vision.jar" basedir="${build}/vision"/>
-    <jar destfile="${build}/tools.jar" basedir="${build}/tools"/>
+    <jar destfile="${build}/tools.jar" basedir="${build}/tools">
+      <fileset dir="${bin}">
+      	<include name="lejos.srec"/>
+      </fileset>
+    </jar>
   </target>
 
 </project>
