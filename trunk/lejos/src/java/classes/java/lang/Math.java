@@ -3,7 +3,7 @@ package java.lang;
 /**
  * Mathematical functions.
  *
- * @author <a href="bbagnall@escape.ca">Brian Bagnall</a>
+ * @author <a href="mailto:bbagnall@escape.ca">Brian Bagnall</a>
  */
 public final class Math {
 
@@ -18,6 +18,13 @@ public final class Math {
 	private static final int COS = 1;
 	private static final int TAN = 2;
 
+	private Math()
+	{
+	}
+	
+	/**
+	 * Cosine function.
+	 */
 	public static double cos(double a) {
 		return trig(a, COS);
 	}
