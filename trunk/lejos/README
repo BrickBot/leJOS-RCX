@@ -160,7 +160,10 @@ Running a Example
      the download has been completed. When 
      all non-daemon threads are finished, 
      the firmware will return to program-download 
-     state. As you may have guessed, you can only 
+     state. (Note that any pending queued tones 
+     will not be heard).
+    
+     As you may have guessed, you can only 
      download programs when the firmware is in
      program-download state.
 
