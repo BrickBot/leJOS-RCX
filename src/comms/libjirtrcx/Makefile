@@ -1,51 +1,38 @@
 CC=$(shell $(LEJOS_HOME)/cctest.sh)
 
 JAVA_INCL="$(JAVA_HOME)"/include
-
-OS=${OSTYPE}
-ifeq ($(OSTYPE),linux-gnu)
-OS=linux
-endif
-
 IRTRCX_H=$(LEJOS_HOME)/src/comms/libirtrcx/rcx_comm.h
 IRTRCX_INCL=$(LEJOS_HOME)/src/comms/libirtrcx
 
+# Default: Unix
+JIRTRCX=$(LEJOS_HOME)/bin/libjirtrcx.so
+CCOPT=-rdynamic -ldl -shared -fpic -I${JAVA_INCL} -I${JAVA_INCL}/$(OS) -I$(IRTRCX_INCL) -L$(LEJOS_HOME)/bin -lirtrcx
+
+# Windows with CygWin installed
 ifneq (,$(findstring cygwin,$(OSTYPE)))
-    # Windows with CygWin installed
-    IRTOWER=$(LEJOS_HOME)/bin/jirtrcx.dll
-    CCOPT= -mno-cygwin -I$(IRTRCX_INCL) -I${JAVA_INCL} -I${JAVA_INCL}/win32 -Wl,--add-stdcall-alias -shared $(LEJOS_HOME)/bin/irtrcx.dll -DTRACE
-else
-  ifneq (,$(findstring darwin,$(OSTYPE)))
-    # Mac OS X
-    # uname -r is 1.4 on 10.1, 5.x on following SU's (yeah, baby !) and 6.0 on Jaguar (10.2)
-    OS_VERSION = $(shell uname -r | cut -f1 -d'.')
-    ifneq (,$(findstring $(OS_VERSION),1)$(findstring $(OS_VERSION),5))
-      JNILIB_TYPE = -bundle
-    else
-      # Jaguar onwards supports plain dylib JNI libraries
-      JNILIB_TYPE = -dynamiclib
-    endif
-    LFLAGS = $(JNILIB_TYPE) -framework IOKit -framework CoreFoundation
-    LFLAGS += -L$(LEJOS_HOME)/bin -lirtrcx
-    # Mac OS X compiles PIC by default
-    CFLAGS = -g -O -I$(IRTRCX_INCL) -I/System/Library/Frameworks/JavaVM.framework/Headers 
-    CCOPT = $(CFLAGS) $(LFLAGS)
-    IRTOWER=$(LEJOS_HOME)/bin/libjirtrcx.jnilib 
-  else
-    # Linux/Solaris/FreeBSD/other unices.
-    IRTOWER=$(LEJOS_HOME)/bin/libjirtrcx.so
-    CCOPT=-rdynamic -ldl -shared -fpic -I${JAVA_INCL} -I${JAVA_INCL}/$(OS) -I$(IRTRCX_INCL) -L$(LEJOS_HOME)/bin -lirtrcx
-    COMM_OBJ = $(IRTRCX_INCL)/rcx_comm_linux.o
-  endif
+  JIRTRCX=$(LEJOS_HOME)/bin/jirtrcx.dll
+  CCOPT= -mno-cygwin -I${JAVA_INCL} -I${JAVA_INCL}/win32 -I$(IRTRCX_INCL) -Wl,--add-stdcall-alias -shared -L$(LEJOS_HOME)/bin -lirtrcx
+endif
+    
+# MacOS X
+ifneq (,$(findstring darwin,$(OSTYPE)))
+  JIRTRCX=$(LEJOS_HOME)/bin/libjirtrcx.jnilib 
+  # Mac OS X compiles PIC by default
+  CFLAGS = -g -O -I$(IRTRCX_INCL) -I/System/Library/Frameworks/JavaVM.framework/Headers -I$(IRTRCX_INCL) 
+  LFLAGS = -dynamiclib -framework IOKit -framework CoreFoundation -L$(LEJOS_HOME)/bin -lirtrcx
+  CCOPT = $(CFLAGS) $(LFLAGS)
 endif
 
 .EXPORT_ALL_VARIABLES :
 
+default: all
+all: ${JIRTRCX}
+	@echo Built $(JIRTRCX)
+
 # Use CXX to get correct linkage (need C++ libraries)
-${IRTOWER}: Tower.cpp josx_rcxcomm_Tower.h
-	$(CXX) $(CCOPT) $(COMM_OBJ) -o $@ *.cpp
+${JIRTRCX}: Tower.cpp
+	$(CXX) $(CCOPT) -DTRACE -o $@ *.cpp
 
 clean:
-	rm -rf *.o *~ core
-	rm -f ${IRTOWER}
-
+	rm -rf *.o
+	rm -f ${JIRTRCX}

@@ -40,11 +40,12 @@
 
 typedef struct timeval timeval_t;
 
-#include "rcx_comm.h"
 #include "rcx_comm_win.h"
+#include "rcx_comm.h"
+#include "rcx_comm.cpp"
 
 //
-// some internal methods
+// prototypes for some internal methods
 //
 
 // Set port parameters.
@@ -66,13 +67,7 @@ int __rcx_read_serial (void* port, void *buf, int maxlen, int timeout_ms);
 void gettimeofday(struct timeval *tv, void *tzp);
 
 //
-// attributes
-//
-
-extern bool __comm_debug;
-
-//
-// interface
+// implementation
 //
 
 void __rcx_perror(char *str) 
