@@ -290,15 +290,16 @@ public final class Math {
     }
   }
 
-   /**
+  /**
    * Arc cosine function.
    * @author Matthias Paul Scholz
    */
-   public static double acos(double a) {
-    if((a<-1)||(a>1)
-        return Double.NaN;
+  public static double acos(double a) {
+    if ((a<-1)||(a>1)) {
+      return Double.NaN;
+    }
     return PI/2 - atan(a/sqrt(1 - a * a));
-   }
+  }
 	
    /**
    * Arc sine function.
