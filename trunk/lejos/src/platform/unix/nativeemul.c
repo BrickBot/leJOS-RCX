@@ -86,6 +86,16 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
     case RESETSERIAL_V:
       printf ("& Call to resetRcx");
       return;
+    case READSENSORVALUE_I:
+      // Parameters: int romId (0..2), int requestedValue (0..2).
+      if (gSensorValue > 100)
+	gSensorValue = 0;
+      push_word (gSensorValue++);
+      return;
+    case SETSENSORVALUE_V:
+      // Arguments: int romId (1..3), int value, int requestedValue (0..3) 
+      gSensorValue = paramBase[1];
+      return;
     default:
       throw_exception (noSuchMethodError);
   }

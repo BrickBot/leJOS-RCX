@@ -3,7 +3,7 @@
 # The VM will index these special classes based on their
 # order here. Rebuild from the top if this file changes.
 
-# Indices start at 1 (0 is for entry class).
+# Since 1.0.0alpha5, indices start at zero.
 
 # One class per line.
 

@@ -63,14 +63,15 @@ import josx.platform.rcx.*;
  *     probably about 5% to 10%, on carpet.
  */
 public class Rotator
+implements SensorConstants
 {
   // You'll probably need to change these
   // constants. Note that LENGTH is
   // the length of an array, and TinyVM does
   // not accept arrays longer than 255 elements.
 
-  private static final int SAMPLINGS = 3;
-  private static final int LENGTH = 200;
+  private static final int SAMPLINGS = 10;
+  private static final int LENGTH = 240;
   private static final int MATCHLEN = 10;
   private static final int MOTOR_POWER = 3;
   static int[] iSamples = new int[LENGTH];
@@ -88,7 +89,7 @@ public class Rotator
     {
       iSamples[i] = 0;
       for (int j = 0; j < SAMPLINGS; j++)
-        iSamples[i] += Sensor.S2.readPercentage();
+        iSamples[i] += Sensor.S2.readValue();
     }
     Motor.A.stop();
     Motor.C.stop();
@@ -109,7 +110,7 @@ public class Rotator
     {
       iSamples[i] = 0;
       for (int j = 0; j < SAMPLINGS; j++)
-        iSamples[i] += Sensor.S2.readPercentage();
+        iSamples[i] += Sensor.S2.readValue();
     }
     Motor.A.stop();
     Motor.C.stop();
@@ -159,24 +160,27 @@ public class Rotator
   }
 
   static void flashNumbers (int aNum, int aPrg)
+  throws Exception
   {
     for (int i = 0; i < 4; i++)
     {
       LCD.showNumber (aNum);
       LCD.showProgramNumber (aPrg);
-      for (int k = 0; k < 5000; k++) {}
+      Thread.sleep (400);
       LCD.clear();
       LCD.refresh();
-      for (int k = 0; k < 2000; k++) {}
+      Thread.sleep (100);
     }
   }
 
   public static void main (String[] arg)
+  throws Exception
   {
     // [1] FIRST SAMPLING
 
     beepAndDelay();
 
+    Sensor.S2.setTypeAndMode (SENSOR_TYPE_LIGHT, SENSOR_MODE_PCT);
     Sensor.S2.activate();
     delayedScan (0, LENGTH);
     Sensor.S2.passivate();

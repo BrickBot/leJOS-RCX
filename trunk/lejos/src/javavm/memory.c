@@ -49,23 +49,59 @@ static TWOBYTES freeOffset;
  */
 static TWOBYTES *startPtr;
 
-extern Object *memcheck_allocate (TWOBYTES size);
-extern void initialize_state (Object *objRef, TWOBYTES numWords);
 extern void deallocate (TWOBYTES *ptr, TWOBYTES size);
 extern TWOBYTES *allocate (TWOBYTES size);
 
-static inline void set_class (Object *obj, byte classIndex)
+/**
+ * Zeroes out memory.
+ * @param ptr The starting address.
+ * @param numWords Number of two-byte words to clear.
+ */
+void zero_mem (register TWOBYTES *ptr, register TWOBYTES numWords)
+{
+  while (numWords--)
+    *ptr++ = 0;
+}
+
+static inline void set_class (Object *obj, const byte classIndex)
 {
   obj->flags = CLASS_MASK & classIndex;
 }
 
-static inline void set_array (Object *obj, byte elemSize, byte length)
+static inline void set_array (Object *obj, const byte elemSize, const byte length)
 {
   obj->flags = ARRAY_MASK | ((TWOBYTES) (elemSize - 1) << ELEM_SIZE_SHIFT) | 
                length;
   #ifdef VERIFY
   assert (is_array(obj), MEMORY0);
   #endif
+}
+
+/**
+ * @param numWords Number of 2-byte words used in allocating the object.
+ */
+inline void initialize_state (const Object *objRef, const TWOBYTES numWords)
+{
+  zero_mem (((TWOBYTES *) objRef) + NORM_OBJ_SIZE, numWords - NORM_OBJ_SIZE);
+}
+
+inline Object *memcheck_allocate (const TWOBYTES size)
+{
+  Object *ref;
+  ref = (Object *) allocate (size);
+  if (ref == null)
+  {
+    #ifdef VERIFY
+    assert (outOfMemoryError != null, MEMORY5);
+    #endif
+    throw_exception (outOfMemoryError);
+    return JNULL;
+  }
+  ref->syncInfo = 0;
+  #ifdef SAFE
+  ref->flags = 0;
+  #endif
+  return ref;
 }
 
 /**
@@ -79,7 +115,7 @@ static inline void set_array (Object *obj, byte elemSize, byte length)
  *         NullPointerException had to be thrown or
  *         static initializer had to be invoked.
  */
-Object *new_object_checked (byte classIndex, byte *btAddr)
+Object *new_object_checked (const byte classIndex, byte *btAddr)
 {
   #if 0
   trace (-1, classIndex, 0);
@@ -93,9 +129,10 @@ Object *new_object_checked (byte classIndex, byte *btAddr)
 
 /**
  * Allocates and initializes the state of
- * an object.
+ * an object. It does not dispatch static
+ * initializers.
  */
-Object *new_object_for_class (byte classIndex)
+Object *new_object_for_class (const byte classIndex)
 {
   Object *ref;
   TWOBYTES instanceSize;
@@ -126,22 +163,7 @@ Object *new_object_for_class (byte classIndex)
   return ref;
 }
 
-/**
- * @param numWords Number of 2-byte words used in allocating the object.
- */
-void initialize_state (Object *objRef, TWOBYTES numWords)
-{
-  register TWOBYTES *ptr;
-
-  numWords -= NORM_OBJ_SIZE;
-  ptr = ((TWOBYTES *) objRef) + NORM_OBJ_SIZE;
-  while (numWords-- > 0)
-  {
-    *ptr++ = 0x0000;
-  }  
-}
-
-TWOBYTES get_array_size (byte length, byte elemSize)
+TWOBYTES get_array_size (const byte length, const byte elemSize)
 {
   return NORM_OBJ_SIZE + (((TWOBYTES) length * elemSize) + 1) / 2;
 }
@@ -151,7 +173,7 @@ TWOBYTES get_array_size (byte length, byte elemSize)
  * plus the size necessary to allocate <code>length</code> elements
  * of the given type.
  */
-Object *new_primitive_array (byte primitiveType, STACKWORD length)
+Object *new_primitive_array (const byte primitiveType, STACKWORD length)
 {
   Object *ref;
   byte elemSize;
@@ -274,25 +296,6 @@ void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr)
   ((AuxStackUnion *) aWordPtr)->st.byte2 = ptr[2];  
   ((AuxStackUnion *) aWordPtr)->st.byte3 = ptr[3];  
   #endif
-}
-
-Object *memcheck_allocate (TWOBYTES size)
-{
-  Object *ref;
-  ref = (Object *) allocate (size);
-  if (ref == null)
-  {
-    #ifdef VERIFY
-    assert (outOfMemoryError != null, MEMORY5);
-    #endif
-    throw_exception (outOfMemoryError);
-    return JNULL;
-  }
-  ref->syncInfo = 0;
-  #ifdef SAFE
-  ref->flags = 0;
-  #endif
-  return ref;
 }
 
 // Notes on allocation:

@@ -20,7 +20,7 @@
 & ROM call 3: 0x1A4E (8192, 1, 1)
 & ROM call 3: 0x1A4E (8192, 3, 1)
 *** UNCAUGHT EXCEPTION/ERROR: 
---  Exception class   : 8
+--  Exception class   : 7
 --  Thread            : 1
 --  Method signature  : 0
 --  Root method sig.  : 0
@@ -62,7 +62,7 @@
 & ROM call 3: 0x1FF2 (12311, 5, 0)
 & ROM call 0: 0x27C8
 *** UNCAUGHT EXCEPTION/ERROR: 
---  Exception class   : 5
+--  Exception class   : 4
 --  Thread            : 1
 --  Method signature  : 0
 --  Root method sig.  : 0
@@ -71,7 +71,7 @@
 & ROM call 3: 0x1FF2 (12319, 11, 12290)
 & ROM call 0: 0x27C8
 *** UNCAUGHT EXCEPTION/ERROR: 
---  Exception class   : 7
+--  Exception class   : 6
 --  Thread            : 1
 --  Method signature  : 0
 --  Root method sig.  : 0

@@ -66,6 +66,8 @@ void run(void)
   int count = 0;
   #endif
 
+  // Initialize binary image state
+  initialize_binary();
   // Initialize memory
   gMemory = (TWOBYTES *) malloc (gMemorySize * sizeof (TWOBYTES));
   init_memory (gMemory, gMemorySize);
@@ -73,6 +75,7 @@ void run(void)
   init_exceptions();
   // Create the boot thread (bootThread is a special global)
   bootThread = (Thread *) new_object_for_class (JAVA_LANG_THREAD);
+  
   #if DEBUG_THREADS
   printf ("Created bootThread: %d. Initializing...\n", (int) bootThread);
   #endif

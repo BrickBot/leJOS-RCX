@@ -91,7 +91,7 @@ boolean init_thread (Thread *thread)
   #ifdef VERIFY
   assert (is_array (word2obj (thread->stackFrameArray)), THREADS0);
   assert (is_array (word2obj (thread->stackArray)), THREADS1);
-  assert (is_array (word2obj (thread->isReferenceArray)), THREADS1);
+  assert (is_array (word2obj (thread->isReferenceArray)), THREADS2);
   #endif
 
   thread->stackFrameArraySize = 0;
@@ -129,7 +129,7 @@ void switch_thread()
   #endif
 
   #ifdef VERIFY
-  assert (currentThread != null, THREADS0);
+  assert (currentThread != null, THREADS4);
   #endif
   
   anchorThread = currentThread;
@@ -143,7 +143,7 @@ void switch_thread()
   
   #ifdef VERIFY
   assert (stackFrame != null || currentThread->state == STARTED,
-          THREADS4);
+          THREADS5);
   #endif
 
   if (stackFrame != null)
@@ -173,7 +173,7 @@ void switch_thread()
   {
     case MON_WAITING:
       #ifdef VERIFY
-      assert (currentThread->waitingOn != JNULL, THREADS3);
+      assert (currentThread->waitingOn != JNULL, THREADS6);
       #endif
 
       if (get_thread_id (word2obj (currentThread->waitingOn)) == NO_OWNER)
@@ -242,7 +242,7 @@ void switch_thread()
       {
         ClassRecord *classRecord;
 
-        classRecord = get_class_record (ENTRY_CLASS);
+        classRecord = get_class_record (get_entry_class (0));
         // Initialize top word with fake parameter for main():
         set_top_ref (JNULL);
         // Push stack frame for main method:
@@ -333,8 +333,8 @@ void exit_monitor (Object* obj)
   }
 
   #ifdef VERIFY
-  assert (get_thread_id(obj) == currentThread->threadId, THREADS1);
-  assert (get_monitor_count(obj) > 0, THREADS2);
+  assert (get_thread_id(obj) == currentThread->threadId, THREADS7);
+  assert (get_monitor_count(obj) > 0, THREADS8);
   #endif
 
   newMonitorCount = get_monitor_count(obj)-1;

@@ -6,7 +6,7 @@ TVMP=../bin/lejosp
 TVMC1=../bin/lejosc1
 TVMP1=../bin/lejosp1
 RCXLOADERNAME=lejos
-UNIXLOADERNAME=lejos-unix
+UNIXLOADERNAME=emu-lejos
 RCXLOADER=../bin/${RCXLOADERNAME}
 UNIXLOADER=../bin/${UNIXLOADERNAME}
 CC=gcc
@@ -20,7 +20,7 @@ TVMP1DEFS=-DTOOL_NAME=\"javap\" -DTOOL_ALT_VAR=\"JAVAP\"
 
 LEJOSRCXDEFS=-DWRITE_ORDER=\"BE\" -DLOADER_TOOL=\"lejosrun\" 
 
-LEJOSUNIXDEFS=-DWRITE_ORDER=\"LE\" -DLOADER_TOOL=\"lejosrun-unix\"
+LEJOSUNIXDEFS=-DWRITE_ORDER=\"LE\" -DLOADER_TOOL=\"emu-lejosrun\"
 
 PROGRAMS=${TVMFIRMDL} ${TVM} ${TVMC} ${TVMP} ${TVMC1} ${TVMP1} ${RCXLOADER} ${UNIXLOADER}
 
@@ -62,7 +62,7 @@ ${UNIXLOADER}: javaexec.c util.o
 	${CC} javaexec.o util.o -o ${UNIXLOADER}
 	
 clean:
-	rm -rf *.o ../bin/*.exe *~ core ${PROGRAMS}
+	rm -rf *.o *~ core ${PROGRAMS}
 
 
 

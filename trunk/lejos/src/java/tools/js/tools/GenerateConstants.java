@@ -149,7 +149,8 @@ public class GenerateConstants
     Vector pSignatureVec = ListReader.loadStrings(pSignatures);
 
     // Add a fake entry for the main class
-    pClassVec.insertElementAt ("entry/class", 0);
+    // (Not done since 1.0.0alpha5)
+    // pClassVec.insertElementAt ("entry/class", 0);
 
     generateClassConstants (pClassVec, pClassIndexH, pJavaClass);
     generateSignatureConstants (pSignatureVec, pSignaturesH, pJavaSig);

@@ -83,13 +83,35 @@ implements Constants
     pThread.setDaemon (true);
     pThread.start();
   }
-  
-  public static void main (String aClassName)
+
+  static void main (String aClassList)
   throws Exception
   {
+    Vector pVec = new Vector();
+    StringTokenizer pTok = new StringTokenizer (aClassList, ",");
+    while (pTok.hasMoreTokens())
+    {
+      String pClassName = pTok.nextToken();
+      pVec.addElement (pClassName.replace ('.', '/').trim());
+    }
+    main (pVec);
+  }
+  
+  static void main (Vector aEntryClasses)
+  throws Exception
+  {
+    if (aEntryClasses.size() >= 256)
+      Utilities.fatal ("Too many entry classes (max is 255!)");
     ClassPath pCP = new ClassPath (iClassPath);
-    String pNormName = aClassName.replace ('.', '/');
-    Binary pBin = Binary.createFromClosureOf (pNormName, pCP);
+    Binary pBin = Binary.createFromClosureOf (aEntryClasses, pCP);
+    int pNum = aEntryClasses.size();
+    for (int i = 0; i < pNum; i++)
+    {
+      String pName = (String) aEntryClasses.elementAt (i);
+      if (!pBin.hasMain (pName))
+        Utilities.fatal ("Class " + pName + " doesn't have a " +
+                         "static void main(String[]) method");
+    }
     OutputStream pOut =
       new BufferedOutputStream (new FileOutputStream (iOutputFile), 4096);
     ByteWriter pBW = null;
@@ -151,7 +173,7 @@ implements Constants
     if (aArgs.size() != 1)
     {
       System.out.println (TOOL_NAME + " links and downloads a program.");
-      System.out.println ("Use: " + TOOL_NAME + " [options] className");
+      System.out.println ("Use: " + TOOL_NAME + " [options] class1[,class2,...] [arg1 arg2 ...]");
       System.out.println ("Options:");
       System.out.println ("  -o <path>         Dump binary into path (no download)");
       System.out.println ("  -verbose[=<n>]    Print class and signature information");

@@ -44,7 +44,8 @@ public class ConstantValue extends WritableDataWithOffset
   }
 
   public void dump (ByteWriter aOut) throws Exception
-  {
+  { 
+    // Constant values must be dumped in Big Endian order.
     DataOutputStream pDataOut = (DataOutputStream) aOut;
     if (iEntry instanceof JCPE_String)
     {

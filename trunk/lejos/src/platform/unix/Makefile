@@ -10,8 +10,8 @@ VMEMUL_OBJ=interpreter.o threads.o exceptions.o \
 	   memory.o language.o \
            tvmemul.o traceemul.o nativeemul.o load.o opcodeinfo.o
 
-DUMP_TARGET=../bin/dump
-VMEMUL_TARGET=../bin/lejosrun-unix
+DUMP_TARGET=../bin/emu-dump
+VMEMUL_TARGET=../bin/emu-lejosrun
 
 # EXTRADEP used in vmsrc/Makefile.include
 
@@ -41,5 +41,5 @@ ${VMEMUL_TARGET}: ${VMEMUL_OBJ}
 	${CC} ${VMEMUL_OBJ} -o ${VMEMUL_TARGET}
 
 clean:
-	rm -rf ${VMSRC}/*.o *.o ../bin/*.exe core platform_config.h ${DUMP_TARGET} ${VMEMUL_TARGET}
+	rm -rf ${VMSRC}/*.o *.o ../bin/emu-*.exe core platform_config.h ${DUMP_TARGET} ${VMEMUL_TARGET}
 

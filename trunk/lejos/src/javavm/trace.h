@@ -19,6 +19,10 @@
 #define THREADS2       22
 #define THREADS3       23
 #define THREADS4       24
+#define THREADS5       25
+#define THREADS6       26
+#define THREADS7       27
+#define THREADS8       28
 
 #define MEMORY0        30
 #define MEMORY1        31
