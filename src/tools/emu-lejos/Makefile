@@ -35,6 +35,8 @@ programs: ${PROGRAMS}
 ${TVMFIRMDL}: ${TVMFIRMDL_OBJ}
 	${CC} ${TVMFIRMDL_OBJ} -o ${TVMFIRMDL} ${LIBS}
 
+tvm.o: tvm.c ../vmsrc/magic.h
+
 ${TVM}: tvm.o
 	${CC} tvm.o -o ${TVM}
 
@@ -61,10 +63,7 @@ ${RCXLOADER}: javaexec.c util.o
 ${UNIXLOADER}: javaexec.c util.o
 	${CC} ${LEJOSUNIXDEFS} -c javaexec.c
 	${CC} javaexec.o util.o -o ${UNIXLOADER}
-	
+
 clean:
 	rm -rf *.o *~ core ${PROGRAMS}
 	cd firmdl; make clean
-
-
-
