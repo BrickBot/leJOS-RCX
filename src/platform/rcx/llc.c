@@ -103,7 +103,7 @@ extern void *tei_vector;        // TEI interrupt vector
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#define MAX_BUFFER 8
+#define MAX_BUFFER 64
 
 static short sending;		// transmission state
 
@@ -111,9 +111,12 @@ static short sending;		// transmission state
 #define SENDING 1
 #define SENT_BUT_NOT_VALIDATED 2
 
+extern unsigned char serial_output_buffer;
+
 static unsigned char send_byte;
-static unsigned char buffer[MAX_BUFFER];
 static unsigned char start, next;
+static unsigned char *buffer = &serial_output_buffer;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
