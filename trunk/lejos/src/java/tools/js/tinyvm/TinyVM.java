@@ -11,12 +11,14 @@ implements Constants
   static final String WO_PROPERTY = "tinyvm.write.order";
   static final String TINYVM_HOME = System.getProperty ("tinyvm.home");
   static final String TINYVM_LOADER = System.getProperty ("tinyvm.loader");
+  static final String TEMP_DIR = System.getProperty ("temp.dir");
   static final String TEMP_FILE = "__tinyvm__temp.tvm__";
   static String iClassPath = System.getProperty (CP_PROPERTY);
   static String iWriteOrder = System.getProperty (WO_PROPERTY);
   static String iOutputFile;
   static boolean iDoDownload = false;
   static boolean iDumpFile = false;
+  static boolean iDumpGameboyRom = false;
 
   private static class Option
   {
@@ -112,8 +114,19 @@ implements Constants
         Utilities.fatal ("Class " + pName + " doesn't have a " +
                          "static void main(String[]) method");
     }
+    ByteArrayOutputStream pGbStream = null;
+    OutputStream pBaseStream;
+    if (iDumpGameboyRom)
+    {
+        pGbStream = new ByteArrayOutputStream (1024);
+        pBaseStream = pGbStream;
+    }
+    else
+    {
+        pBaseStream = new FileOutputStream (iOutputFile);
+    }
     OutputStream pOut =
-      new BufferedOutputStream (new FileOutputStream (iOutputFile), 4096);
+      new BufferedOutputStream (pBaseStream, 4096);
     ByteWriter pBW = null;
     if ("BE".equals (iWriteOrder))
       pBW = new BEDataOutputStream (pOut);
@@ -127,6 +140,11 @@ implements Constants
     {
       invokeTvm (TEMP_FILE);
       new File (TEMP_FILE).delete();
+    }
+    if (iDumpGameboyRom)
+    {
+      GbMerger merger = new GbMerger (TEMP_DIR);
+      merger.dumpRom (pGbStream.toByteArray(), (String) aEntryClasses.elementAt (0));
     }
   }
 
@@ -148,6 +166,10 @@ implements Constants
         iDumpFile = true;
         iOutputFile = pOpt.iArgument;
       }
+      else if (pOpt.iOption.equals ("-gb"))
+      {
+        iDumpGameboyRom = true;
+      }
       else if (pOpt.iOption.equals ("-verbose"))
       {
         int pLevel = 1;
@@ -160,7 +182,7 @@ implements Constants
         Utilities.setVerboseLevel (pLevel);
       }     
     }
-    if (!iDumpFile)
+    if (!iDumpFile && !iDumpGameboyRom)
     {
       iDoDownload = true;
       iOutputFile = TEMP_FILE;
@@ -222,6 +244,10 @@ implements Constants
 	{
           pOption.iOption = "-d";
         }
+        else if (arg[i].equals ("-gb"))
+	{
+          pOption.iArgument = arg[++i];
+	}
         pOptions.addElement (pOption);
       }
       else

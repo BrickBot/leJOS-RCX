@@ -1,10 +1,13 @@
-leJOS 1.0.0beta4:
------------------
+leJOS 1.0.1:
+------------
 
+  - Fixed bug in java.util.Vector: NoSuchMethodError after 7
+    elements added.
+  --------------------------------------------------------------
   - Phil Berry has contributed some documentation (see
     doc/phil_berry) and more meaningful trace output
     for emu-lejosrun -v.
-  - Hajime Murao reporded a but in jtoolexec.c. The first
+  - Hajime Murao reporded a bug in jtoolexec.c. The first
     argument was not initialized properly, which
     means that in some systems (e.g. W2K) you'd see a message 
     saying that lejosc was unable to execute javac or something 

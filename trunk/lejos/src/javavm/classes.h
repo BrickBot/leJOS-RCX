@@ -35,9 +35,6 @@
 
 #define is_array(OBJ_)           (((OBJ_)->flags & IS_ARRAY_MASK) != 0)
 #define is_allocated(OBJ_)       (((OBJ_)->flags & IS_ALLOCATED_MASK) != 0)
-#define get_na_class_index(OBJ_) (((OBJ_)->flags & CLASS_MASK) >> CLASS_SHIFT)
-#define get_element_type(ARR_)   (((ARR_)->flags & ELEM_TYPE_MASK) >> ELEM_TYPE_SHIFT)
-#define get_array_length(ARR_)   (((ARR_)->flags & ARRAY_LENGTH_MASK) >> ARRAY_LENGTH_SHIFT)
 #define get_monitor_count(OBJ_)  ((OBJ_)->syncInfo & COUNT_MASK)
 
 // Double-check these data structures with the 
@@ -94,6 +91,50 @@ typedef struct S_String
 
   REFERENCE characters;
 } String;
+
+
+#ifdef WIMPY_MATH
+
+static inline TWOBYTES get_array_length (Object *obj)
+{
+   TWOBYTES aux;
+   aux = obj->flags & ARRAY_LENGTH_MASK;
+   #if (ARRAY_LENGTH_SHIFT == 0)
+   return aux;
+   #else
+   return (aux >> ARRAY_LENGTH_SHIFT);
+   #endif
+}
+
+static inline TWOBYTES get_element_type (Object *obj)
+{
+   TWOBYTES aux;
+   aux = obj->flags & ELEM_TYPE_MASK;
+   #if (ELEM_TYPE_SHIFT == 0)
+   return aux;
+   #else
+   return (aux >> ELEM_TYPE_SHIFT);
+   #endif
+}
+
+static inline TWOBYTES get_na_class_index (Object *obj)
+{
+   TWOBYTES aux;
+   aux = obj->flags & CLASS_MASK;
+   #if (CLASS_SHIFT == 0)
+   return aux;
+   #else
+   return (aux >> CLASS_SHIFT);
+   #endif
+}
+
+#else
+
+#define get_array_length(ARR_)   (((ARR_)->flags & ARRAY_LENGTH_MASK) >> ARRAY_LENGTH_SHIFT)
+#define get_element_type(ARR_)   ((ARR_)->flags & ELEM_TYPE_MASK) >> ELEM_TYPE_SHIFT
+#define get_na_class_index(OBJ_) (((OBJ_)->flags & CLASS_MASK) >> CLASS_SHIFT)
+
+#endif WIMPY_MATH
 
 #endif _CLASSES_H
 

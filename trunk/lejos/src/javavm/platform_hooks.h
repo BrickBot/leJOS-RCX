@@ -30,3 +30,7 @@ extern void switch_thread_hook();
 extern void dispatch_native (TWOBYTES signature, STACKWORD *paramBase);				      
 
 #endif _PLATFORM_HOOKS_H
+
+
+
+

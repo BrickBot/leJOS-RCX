@@ -103,6 +103,7 @@ void run(void)
     exit (1);	  
   }
   // Execute the bytecode interpreter
+  set_program_number (0);
   engine();
   // Engine returns when all non-daemon threads are dead
   #if DEBUG_STARTUP

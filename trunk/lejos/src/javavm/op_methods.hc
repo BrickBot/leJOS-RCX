@@ -6,9 +6,28 @@ case OP_INVOKEVIRTUAL:
   // Stack: (see method)
   // Arguments: 2
   // Note: pc is updated by dispatch method
-  dispatch_virtual (word2obj (get_ref_at (pc[0] >> 4)), 
-    (TWOBYTES) pc[1] | (TWOBYTES) (pc[0] & 0x0F), pc + 2);
+  {
+    #ifdef WIMPY_MATH
+
+    TWOBYTES mr;
+    STACKWORD sw;
+    TWOBYTES offset;
+
+    
+    mr = (TWOBYTES) pc[1] | (TWOBYTES) (pc[0] & 0x0F);
+    offset = pc[0] >> 4;
+    sw = get_ref_at (offset);
+    dispatch_virtual (word2obj (sw), mr, pc + 2);
+
+    #else
+
+    dispatch_virtual (word2obj (get_ref_at (pc[0] >> 4)), 
+      (TWOBYTES) pc[1] | (TWOBYTES) (pc[0] & 0x0F), pc + 2);
+ 
+    #endif
+  }
   goto LABEL_ENGINELOOP;
+
 case OP_INVOKESPECIAL:
 case OP_INVOKESTATIC:
   // Stack: (see method)
@@ -16,6 +35,7 @@ case OP_INVOKESTATIC:
   // Note: pc is updated by dispatch method
   dispatch_special_checked (pc[0], pc[1], pc + 2, pc - 1);
   goto LABEL_ENGINELOOP;
+
 case OP_IRETURN:
 case OP_LRETURN:
 case OP_FRETURN:
@@ -31,11 +51,13 @@ case OP_RETURN:
   do_return (0);
   goto LABEL_ENGINELOOP;
 
+
 // Notes:
 // * INVOKEINTERFACE cannot occur because it's replaced
 //   by INVOKEVIRTUAL and a couple of NOOPs.
 
 /*end*/
+
 
 
 

@@ -23,7 +23,7 @@ case OP_PUTSTATIC:
   // Stack: +1 or +2 for GETSTATIC, -1 or -2 for PUTSTATIC
   {
     STATICFIELD fieldRecord;
-    byte *fieldBase;
+    byte *fbase1 = null;
     byte fieldType;
     byte fieldSize;
     boolean wideWord;
@@ -40,40 +40,42 @@ case OP_PUTSTATIC:
     fieldType = (fieldRecord >> 12) & 0x0F;
     isRef = (fieldType == T_REFERENCE);
     fieldSize = typeSize[fieldType];
-    wideWord = (fieldSize > 4);
+    wideWord = false;
+    if (fieldSize > 4)
+    {
+       wideWord = true;
+       fieldSize = 4;
+    }
 
-
-    if (wideWord)
-      fieldSize = 4;
-    fieldBase = get_static_state_base() + get_static_field_offset (fieldRecord);
+    fbase1 = get_static_state_base() + get_static_field_offset (fieldRecord);
 
     #if DEBUG_FIELDS
     printf ("fieldSize  = %d\n", (int) fieldSize);
-    printf ("fieldBase  = %d\n", (int) fieldBase);
+    printf ("fbase1  = %d\n", (int) fbase1);
     #endif
 
     if (*(pc-1) == OP_GETSTATIC)
     {
-      make_word (fieldBase, fieldSize, &tempStackWord);
+      make_word (fbase1, fieldSize, &tempStackWord);
       push_word_or_ref (tempStackWord, isRef);
       if (wideWord)
       {
-        make_word (fieldBase + 4, 4, &tempStackWord);
+        make_word (fbase1 + 4, 4, &tempStackWord);
         push_word (tempStackWord);
       }
     }
     else
     {
       if (wideWord)
-        store_word (fieldBase + 4, 4, pop_word());
-      store_word (fieldBase, fieldSize, pop_word_or_ref (isRef));
+        store_word (fbase1 + 4, 4, pop_word());
+      store_word (fbase1, fieldSize, pop_word_or_ref (isRef));
     }
     pc += 2;
   }
   goto LABEL_ENGINELOOP;
 case OP_GETFIELD:
   {
-    byte *fieldBase;
+    byte *fbase2 = null;
     byte fieldType;
     byte fieldSize;
     boolean wideWord;
@@ -86,10 +88,13 @@ case OP_GETFIELD:
     }
     fieldType = get_pgfield_type(pc[0]);
     fieldSize = typeSize[fieldType];
-    wideWord = (fieldSize > 4);
+    wideWord = fieldSize > 4;
     if (wideWord)
+    {
       fieldSize = 4;
-    fieldBase = ((byte *) word2ptr (tempStackWord)) + 
+    }
+
+    fbase2 = ((byte *) word2ptr (tempStackWord)) + 
                 get_pgfield_offset(pc[0], pc[1]);
 
     #ifdef DEBUG_FIELDS
@@ -100,12 +105,16 @@ case OP_GETFIELD:
     printf ("reference: %d\n", (int) tempStackWord);
     #endif
 
-    make_word (fieldBase, fieldSize, &tempStackWord);
-    //printf ("### get_field base=%d size=%d pushed=%d\n", (int) fieldBase, (int) fieldSize, (int) tempStackWord);
+    make_word (fbase2, fieldSize, &tempStackWord);
+   
+    #if 0
+    printf ("### get_field base=%d size=%d pushed=%d\n", (int) fbase2, (int) fieldSize, (int) tempStackWord);
+    #endif
+
     set_top_word_or_ref (tempStackWord, (fieldType == T_REFERENCE));
     if (wideWord)
     {
-      make_word (fieldBase + 4, 4, &tempStackWord);
+      make_word (fbase2 + 4, 4, &tempStackWord);
       push_word (tempStackWord);
     }
     pc += 2;
@@ -113,7 +122,7 @@ case OP_GETFIELD:
   goto LABEL_ENGINELOOP;
 case OP_PUTFIELD:
   {
-    byte *fieldBase;
+    byte *fbase3;
     byte fieldType;
     byte fieldSize;
     boolean wideWord;
@@ -139,12 +148,16 @@ case OP_PUTFIELD:
       throw_exception (nullPointerException);
       goto LABEL_ENGINELOOP;
     }
-    fieldBase = ((byte *) word2ptr (tempStackWord)) +
+    fbase3 = ((byte *) word2ptr (tempStackWord)) +
                 get_pgfield_offset (pc[0], pc[1]); 
     if (wideWord)
-      store_word (fieldBase + 4, 4, pop_word());
-    //printf ("### put_field base=%d size=%d stored=%d\n", (int) fieldBase, (int) fieldSize, (int) get_top_word());
-    store_word (fieldBase, fieldSize, pop_word_or_ref (fieldType == T_REFERENCE));
+      store_word (fbase3 + 4, 4, pop_word());
+
+    #if 0
+    printf ("### put_field base=%d size=%d stored=%d\n", (int) fbase3, (int) fieldSize, (int) get_top_word());
+    #endif
+
+    store_word (fbase3, fieldSize, pop_word_or_ref (fieldType == T_REFERENCE));
     just_pop_ref();
     pc += 2;
   }

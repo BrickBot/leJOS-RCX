@@ -1,17 +1,21 @@
 
 #include "types.h"
 #include "trace.h"
+
 #include "threads.h"
 #include "constants.h"
 #include "specialsignatures.h"
 #include "specialclasses.h"
 #include "exceptions.h"
 #include "classes.h"
+
 #include "language.h"
 #include "configure.h"
 #include "interpreter.h"
+
 #include "memory.h"
 #include "stack.h"
+
 #include "platform_hooks.h"
 
 Object *outOfMemoryError;
@@ -21,7 +25,6 @@ Object *nullPointerException;
 Object *classCastException;
 Object *arithmeticException;
 Object *arrayIndexOutOfBoundsException;
-//Object *threadDeath;
 
 // Temporary globals:
 
@@ -33,6 +36,7 @@ static byte gNumExceptionHandlers;
 static MethodRecord *gExcepMethodRec = null;
 static byte *gExceptionPc;
 
+
 void init_exceptions()
 {
   outOfMemoryError = new_object_for_class (JAVA_LANG_OUTOFMEMORYERROR);
@@ -42,7 +46,6 @@ void init_exceptions()
   classCastException = new_object_for_class (JAVA_LANG_CLASSCASTEXCEPTION);
   arithmeticException = new_object_for_class (JAVA_LANG_ARITHMETICEXCEPTION);
   arrayIndexOutOfBoundsException = new_object_for_class (JAVA_LANG_ARRAYINDEXOUTOFBOUNDSEXCEPTION);
-//  threadDeath = new_object_for_class (JAVA_LANG_THREADDEATH);
 }
 
 /**
@@ -95,7 +98,7 @@ void throw_exception (Object *exception)
       if (instance_of (exception, gExceptionRecord->classIndex))
       {
         // Clear operand stack
-        init_stack_ptr (tempStackFrame, tempMethodRecord);
+        init_sp (tempStackFrame, tempMethodRecord);
         // Push the exception object
         push_ref (ptr2word (exception));
         // Jump to handler:
@@ -121,7 +124,12 @@ void throw_exception (Object *exception)
     return;
   }
   goto LABEL_PROPAGATE; 
+
+
 }
+
+
+
 
 
 

@@ -122,7 +122,7 @@ extern MethodRecord *find_method (ClassRecord *classRec, TWOBYTES signature);
 extern STACKWORD instance_of (Object *obj, byte classIndex);
 extern void do_return (byte numWords);
 extern boolean dispatch_static_initializer (ClassRecord *aRec, byte *rAddr);
-extern boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord, byte *retAddr);
+extern boolean dispatch_special (MethodRecord *methodRecord, byte *retAddr);
 void dispatch_special_checked (byte classIndex, byte methodIndex, byte *retAddr, byte *btAddr);
 extern void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStatic, byte *btAddr);
 
@@ -184,6 +184,8 @@ static inline void initialize_binary()
 }  
 
 #endif _LANGUAGE_H
+
+
 
 
 

@@ -40,7 +40,7 @@ JFLOAT tempFloat;
 ConstantRecord *tempConstRec;
 STACKWORD tempStackWord;
 STACKWORD *tempWordPtr;
-JINT tempInt;
+JSHORT tempInt;
   
 /**
  * Assumes pc points to 2-byte offset, and jumps.
@@ -91,7 +91,7 @@ static inline Object *create_string (ConstantRecord *constantRecord,
 {
   Object *ref;
   Object *arr;
-  JINT    i;
+  TWOBYTES i;
 
   ref = new_object_checked (JAVA_LANG_STRING, btAddr);
   if (ref == JNULL)
@@ -125,7 +125,7 @@ static inline Object *create_string (ConstantRecord *constantRecord,
  */
 boolean array_load_helper()
 {
-  tempInt = word2jint(pop_word());
+  tempInt = word2jshort(pop_word());
   tempBytePtr = word2ptr(get_top_ref());
   if (tempBytePtr == JNULL)
     throw_exception (nullPointerException);
@@ -199,29 +199,43 @@ void engine()
 
   switch (*pc++)
   {
+    case OP_NOP:
+        goto LABEL_ENGINELOOP;
 
     #include "op_stack.hc"
     #include "op_locals.hc"
     #include "op_arrays.hc"
     #include "op_objects.hc"
     #include "op_control.hc"
-    #include "op_methods.hc"
     #include "op_other.hc"
-    #include "op_skip.hc"
     #include "op_conversions.hc"
     #include "op_logical.hc"
     #include "op_arithmetic.hc"
-    
+    #include "op_methods.hc"
+
+
   }
 
   //-----------------------------------------------
   // SWITCH ENDS HERE
   //-----------------------------------------------
 
-  // This point should never be reached
+   #if !FP_ARITHMETIC
 
-  #ifdef VERIFY
-  assert (false, 1000 + *pc);
-  #endif VERIFY
+   throw_exception (noSuchMethodError);
+
+   #else
+  
+   // This point should never be reached
+
+   #ifdef VERIFY
+   assert (false, 1000 + *pc);
+   #endif VERIFY
+
+   #endif FP_ARITHMETIC
 }
+
+
+
+
 

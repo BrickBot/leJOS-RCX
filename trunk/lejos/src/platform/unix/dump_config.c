@@ -34,6 +34,7 @@ int main (int argc, char **argv)
   printf ("\n");
   printf ("#include <stdio.h>\n");
 
+  printf ("typedef unsigned char byte;\n");
   printf ("typedef signed char JBYTE;\n");
   printf ("typedef signed short JSHORT;\n");
   printf ("typedef signed long JINT;\n");

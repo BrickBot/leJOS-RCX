@@ -29,13 +29,13 @@ public class Vector
   public synchronized void setSize (int aSize)
   {
     iSize = aSize;
-    if (iElements.length < iSize)
+    if (iElements.length < aSize)
     {
-      int pNewCapacity = iElements.length * 2;
-      if (pNewCapacity < iSize)
-	pNewCapacity = iSize;
+      int pNewCapacity = aSize * 2;
       Object[] pNewElements = new Object[pNewCapacity];
-      arraycopy (iElements, 0, pNewElements, 0, iElements.length);
+      // TBD: Replace this with arraycopy:
+      for (int i = 0; i < iElements.length; i++)
+          pNewElements[i] = iElements[i];
       iElements = pNewElements;
     }
   }
@@ -45,5 +45,5 @@ public class Vector
     return iSize;
   }
   
-  private native void arraycopy (Object aSource, int aOffset1, Object aDest, int aOffset2, int aLength);
+  //private native void arraycopy (Object aSource, int aOffset1, Object aDest, int aOffset2, int aLength);
 }	
