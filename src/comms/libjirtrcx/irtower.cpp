@@ -70,11 +70,15 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport)
 
   if ( (!tty) || *tty == 0) tty = DEFAULTTTY;
 
-  if ((strcmp( tty , "usb" ) == 0) ) {
+  usb_flag = 0;
+
+#if defined(_WIN32) || defined(__CYGWIN32__)
+  /* stricmp not available on Linux */
+  if ((stricmp( tty , "usb" ) == 0) ) {
     usb_flag = 1;
     tty = TOWER_NAME;
   }
-  else usb_flag = 0;
+#endif
 
   // Set debugging if RCXCOMM_DEBUG=Y 
 
