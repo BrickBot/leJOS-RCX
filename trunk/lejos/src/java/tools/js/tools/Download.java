@@ -2,6 +2,8 @@ package js.tools;
 
 import josx.rcxcomm.Tower;
 import josx.rcxcomm.TowerException;
+import js.common.ToolException;
+import js.common.ToolProgressListener;
 
 /**
  * RCX Downloading utilities

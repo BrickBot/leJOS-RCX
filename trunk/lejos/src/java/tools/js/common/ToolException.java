@@ -1,4 +1,4 @@
-package js.tools;
+package js.common;
 
 /**
  * Generic tool exception.

@@ -5,6 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import js.common.ToolException;
+import js.common.ToolProgressListener;
+import js.common.ToolProgressListenerImpl;
+
 /**
  * Simple Lejos program downloader.
  */

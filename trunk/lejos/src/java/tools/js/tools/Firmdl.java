@@ -5,6 +5,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import js.common.ToolException;
+import js.common.ToolProgressListener;
+import js.common.ToolProgressListenerImpl;
+
 /**
  * Java RCX firmware downloader - replaces lejosfirmdl
  * 

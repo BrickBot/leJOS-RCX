@@ -1,10 +1,12 @@
-package js.tools;
+package js.common;
 
 /**
  * Simple implementation of ToolProgressListener woith output to System.out.
  */
 public class ToolProgressListenerImpl implements ToolProgressListener
 {
+  private boolean _verbose = false;
+  
   /* (non-Javadoc)
    * @see js.tools.ToolProgressListener#operation(java.lang.String)
    */
@@ -37,5 +39,13 @@ public class ToolProgressListenerImpl implements ToolProgressListener
     {
       System.out.println();
     }
+  }
+
+  /**
+   * Be verbose?
+   */
+  public void setVerbose(boolean verbose)
+  {
+    _verbose = verbose;
   }
 }
