@@ -162,155 +162,145 @@ boolean init_thread (Thread *thread)
  */
 boolean switch_thread()
 {
-  Thread *anchorThread, *previousThread, *threadToRun = null, *lastRunnableThread = null;
+  Thread *anchorThread, *previousThread, *candidate;
   Thread **pThreadQ;
   boolean interruptMe = false;
   boolean nonDaemonRunnable = false;
-  StackFrame *stackFrame;
-  int i;
+  StackFrame *stackFrame = null;
+  short i;
 
   #if DEBUG_THREADS || DEBUG_BYTECODE
   printf ("------ switch_thread: currentThread at %d\n", (int) currentThread);
   #endif
 
-  #ifdef VERIFY
-  assert (currentThread != null, THREADS4);
-  #endif
+  if (currentThread != null)
+  {
+    // Only current threads can die. Tidy up dead threads
+    if (currentThread->state == DEAD)
+    {
+      #if DEBUG_THREADS
+      printf ("Tidying up DEAD thread %d: %d\n", (int) candidate, (int)candidate->threadId);
+      #endif
+  
+      #if REMOVE_DEAD_THREADS
+      // This order of deallocation is actually crucial to avoid leaks
+      free_array ((Object *) word2ptr (currentThread->stackArray));
+      free_array ((Object *) word2ptr (currentThread->stackFrameArray));
 
-  // Save context information
-  stackFrame = current_stackframe();
+      #ifdef SAFE
+      currentThread->stackFrameArray = JNULL;
+      currentThread->stackArray = JNULL;
+      #endif // SAFE
+      #endif // REMOVE_DEAD_THREADS
+    
+      // Remove thread from queue.
+      dequeue_thread(currentThread);
+    }
+    else // Save context information
+    	stackFrame = current_stackframe();
+  }
 
   #if DEBUG_THREADS
   printf ("switchThread: current stack frame: %d\n", (int) stackFrame);
   #endif
   
-  #ifdef VERIFY
-  assert (stackFrame != null || currentThread->state == STARTED,
-          THREADS5);
-  #endif
-
   if (stackFrame != null)
   {
     update_stack_frame (stackFrame);
   }
 
-  do
+  currentThread = null;
+  
+  // Loop until a frame is found that can be made to run.
+  for (i=MAX_PRIORITY-1, pThreadQ=&threadQ[MAX_PRIORITY-1]; i >= 0; i--, pThreadQ--)
   {
-    // Loop until a frame is found that can be made to run.
-    for (i=MAX_PRIORITY-1, pThreadQ=&threadQ[MAX_PRIORITY-1]; i >= 0; i--, pThreadQ--)
+    previousThread = anchorThread = *pThreadQ;
+    if (!previousThread)
+      continue;
+
+    do
     {
-      previousThread = anchorThread = *pThreadQ;
-      if (!previousThread)
-        continue;
-        
-      do
+      candidate = word2ptr(previousThread->nextThread);
+
+      #if DEBUG_THREADS
+      printf ("Checking state of thread %d(%d)(s=%d,p=%d,i=%d,d=%d)\n",
+      	(int)candidate,
+      	(int)candidate->threadId,
+      	(int)candidate->state,
+      	(int)candidate->priority,
+      	(int)candidate->interrupted,
+      	(int)candidate->daemon
+             );
+      #endif
+      if (!currentThread)	// We don't have a running thread yet
       {
-        currentThread = word2ptr(previousThread->nextThread);
-      
-        #if DEBUG_THREADS
-        printf ("Calling switch_thread_hook\n");
-        #endif
-        switch_thread_hook();
-        if (gMakeRequest && gRequestCode == REQUEST_EXIT)
-          return false;
-        #if DEBUG_THREADS
-        printf ("Checking state of thread %d(%d)(s=%d,p=%d,i=%d,d=%d)\n",
-        	(int)currentThread,
-        	(int)currentThread->threadId,
-        	(int)currentThread->state,
-        	(int)currentThread->priority,
-        	(int)currentThread->interrupted,
-        	(int)currentThread->daemon
-               );
-        #endif
-        switch (currentThread->state)
+      	// See if we can move a thread to the running state
+        switch (candidate->state)
         {
-          case RUNNING:
-            // We were set to running at some point. That's OK.
-            break;
           case CONDVAR_WAITING:
             // We are waiting to be notified
-            if ((currentThread->sleepUntil > 0) && (get_sys_time() >= (FOURBYTES) currentThread->sleepUntil))
+            if ((candidate->sleepUntil > 0) && (get_sys_time() >= (FOURBYTES) candidate->sleepUntil))
             {
-#if DEBUG_MONITOR
-        printf ("Waking up waiting thread %d: %d\n", (int) currentThread, currentThread->threadId);
-#endif
-                currentThread->state = MON_WAITING;
+  #if DEBUG_MONITOR
+        printf ("Waking up waiting thread %d: %d\n", (int) candidate, candidate->threadId);
+  #endif
+              // We will drop through to mon waiting.
             }
-            else if (!currentThread->interrupted)
+            else if (!candidate->interrupted)
             	break;
             else
             	interruptMe = true;
             // drop through
           case MON_WAITING:
-            // We are waiting to enter a synchronized block
-            #ifdef VERIFY
-            assert (currentThread->waitingOn != JNULL, THREADS6);
-            #endif
-    
-            if (get_thread_id (word2obj (currentThread->waitingOn)) == NO_OWNER)
             {
-              // NOW enter the monitor (guaranteed to succeed)
-              enter_monitor (word2obj (currentThread->waitingOn));
-              
-              // Set the monitor depth to whatever was saved.
-              set_monitor_count(word2obj(currentThread->waitingOn), currentThread->monitorCount);
-              
-              // Let the thread run.
-              currentThread->state = RUNNING;
-
-              #ifdef SAFE
-              currentThread->waitingOn = JNULL;
+              Object *pObj = word2obj(candidate->waitingOn);
+              // We are waiting to enter a synchronized block
+              #ifdef VERIFY
+              assert (pObj != JNULL, THREADS6);
               #endif
+      
+              if (get_thread_id(pObj) == NO_OWNER)
+              {
+                // NOW enter the monitor (guaranteed to succeed)
+                enter_monitor(candidate, pObj);
+                
+                // Set the monitor depth to whatever was saved.
+                set_monitor_count(pObj, candidate->monitorCount);
+                
+                // Let the thread run.
+                candidate->state = RUNNING;
+    
+                #ifdef SAFE
+                candidate->waitingOn = JNULL;
+                #endif
+              }
             }
             break;
           case SLEEPING:
-            if (!threadToRun && (currentThread->interrupted || (get_sys_time() >= (FOURBYTES) currentThread->sleepUntil)))
+            if (candidate->interrupted || (get_sys_time() >= (FOURBYTES) candidate->sleepUntil))
             {
         #if DEBUG_THREADS
-        printf ("Waking up sleeping thread %d: %d\n", (int) currentThread, currentThread->threadId);
+        printf ("Waking up sleeping thread %d: %d\n", (int) candidate, candidate->threadId);
         #endif
-              currentThread->state = RUNNING;
-              if (currentThread->interrupted)
+              candidate->state = RUNNING;
+              if (candidate->interrupted)
                 interruptMe = true;
               #ifdef SAFE
-    	    currentThread->sleepUntil = JNULL;
+    	    candidate->sleepUntil = JNULL;
               #endif // SAFE
             }
-            break;
-          case DEAD:
-        #if DEBUG_THREADS
-        printf ("Tidying up DEAD thread %d: %d\n", (int) currentThread, (int)currentThread->threadId);
-        #endif
-    
-            #if REMOVE_DEAD_THREADS
-            // This order of deallocation is actually crucial to avoid leaks
-            free_array ((Object *) word2ptr (currentThread->stackArray));
-            free_array ((Object *) word2ptr (currentThread->stackFrameArray));
-    
-            #ifdef SAFE
-            currentThread->stackFrameArray = JNULL;
-            currentThread->stackArray = JNULL;
-            #endif // SAFE
-            #endif // REMOVE_DEAD_THREADS
-          
-            // Remove thread from queue.
-            dequeue_thread(currentThread);
-            if (currentThread == anchorThread)
-              anchorThread = previousThread;
-              
-            currentThread = previousThread;     
             break;
           case STARTED:      
             // Put stack ptr at the beginning of the stack so we can push arguments
             // to entry methods. This assumes set_top_word or set_top_ref will
             // be called immediately below.
         #if DEBUG_THREADS
-        printf ("Starting thread %d: %d\n", (int) currentThread, currentThread->threadId);
+        printf ("Starting thread %d: %d\n", (int) candidate, candidate->threadId);
         #endif
+            currentThread = candidate;	// Its just easier this way.
             init_sp_pv();
-            currentThread->state = RUNNING;
-            if (currentThread == bootThread)
+            candidate->state = RUNNING;
+            if (candidate == bootThread)
             {
               ClassRecord *classRecord;
     
@@ -324,98 +314,93 @@ boolean switch_thread()
             }
             else
             {
-              set_top_ref (ptr2word (currentThread));
-              dispatch_virtual ((Object *) currentThread, run_4_5V, null);
+              set_top_ref (ptr2word (candidate));
+              dispatch_virtual ((Object *) candidate, run_4_5V, null);
             }
             // The following is needed because the current stack frame
             // was just created
             stackFrame = current_stackframe();
             update_stack_frame (stackFrame);
             break;
+          case RUNNING:
+            // Its running already
+          case DEAD:
+            // Dead threads should be handled earlier
           default:
-            // Shouldn't get here. Not much we can do about it though.
+            // ???
             break;
         }
-        #if DEBUG_THREADS
-        printf ("switch_thread: done processing thread %d: %d\n", (int) currentThread,
-                (int) (currentThread->state == RUNNING));
-        #endif
-  
-        // May not be any more threads left of priority 'i' but
-        // currentThread should always point at a valid thread.
-        if (*pThreadQ == null) {
-          currentThread = lastRunnableThread;
-          break;
-        }
-        
-        // We've got at least one thread that isn't DEAD.
-        if (currentThread->state != DEAD)
-        {
-          // If it isn't a daemon thread we won't be terminating
-          if (!currentThread->daemon)
-          {
-#if DEBUG_THREADS
-  printf ("Found a non-daemon thread %d: %d(%d)\n", (int) currentThread, (int)currentThread->threadId, (int) currentThread->state);
-#endif
-             nonDaemonRunnable = true;
-          }
 
-          // May need it later             
-          lastRunnableThread = currentThread;
-        }
-        
-        // Always use the first running thread as the thread
-        if ((currentThread->state == RUNNING) && (threadToRun == null))
+        // Do we now have a thread we want to run?
+        // Note we may later decide not to if all non-daemon threads have died        
+        if (candidate->state == RUNNING)
         {
-          threadToRun = currentThread;
+          currentThread = candidate;
           // Move thread to end of queue
-          *pThreadQ = currentThread;
+          *pThreadQ = candidate;
         }
-        
-        // Keep looping: cull dead threads, check there's at least one non-daemon thread
-        previousThread = currentThread;   
-      } while (previousThread != anchorThread);
-    } // end for
-    
+      }
+      
+      if (!candidate->daemon)
+      {
+      	// May or may not be running but it could do at some point
 #if DEBUG_THREADS
-  printf ("threadToRun=%d, ndr=%d\n", (int) threadToRun, (int)nonDaemonRunnable);
+printf ("Found a non-daemon thread %d: %d(%d)\n", (int) candidate, (int)candidate->threadId, (int) candidate->state);
 #endif
-    // If no thread can be run yet and there is at least one non-daemon thread
-    // keep looping.
-  } while ((threadToRun == null) && nonDaemonRunnable);
+           nonDaemonRunnable = true;
+      }
+      
+      #if DEBUG_THREADS
+      printf ("switch_thread: done processing thread %d: %d\n", (int) candidate,
+              (int) (candidate->state == RUNNING));
+      #endif
+
+      // Always use the first running thread as the thread
+      // Keep looping: cull dead threads, check there's at least one non-daemon thread
+    } while ((previousThread = candidate) != anchorThread);
+  } // end for
+  
+#if DEBUG_THREADS
+printf ("currentThread=%d, ndr=%d\n", (int) currentThread, (int)nonDaemonRunnable);
+#endif
 
 #if DEBUG_THREADS
   printf ("Leaving switch_thread()\n");
 #endif
-  // If we found a running thread and there is at least one
-  // non-daemon thread left somewhere in the queue...
-  if ((threadToRun != null) && nonDaemonRunnable)
-  {  
-    currentThread = threadToRun;
-    #if DEBUG_THREADS
-    printf ("Current thread is %d: %d(%d)\n", (int) currentThread, (int)currentThread->threadId, (int) currentThread->state);
-    printf ("getting current stack frame...\n");
-    #endif
-  
-    stackFrame = current_stackframe();
-  
-    #if DEBUG_THREADS
-    printf ("updating registers...\n");
-    #endif
-  
-    update_registers (stackFrame);
-  
-    #if DEBUG_THREADS
-    printf ("done updating registers\n");
-    #endif
-  
-    if (interruptMe)
-      throw_exception(interruptedException);
+  if (nonDaemonRunnable)
+  {
+    // There is at least one non-daemon thread left alive
+    if (currentThread != null)
+    {
+      // If we found a running thread and there is at least one
+      // non-daemon thread left somewhere in the queue...
+      #if DEBUG_THREADS
+      printf ("Current thread is %d: %d(%d)\n", (int) currentThread, (int)currentThread->threadId, (int) currentThread->state);
+      printf ("getting current stack frame...\n");
+      #endif
     
+      stackFrame = current_stackframe();
+    
+      #if DEBUG_THREADS
+      printf ("updating registers...\n");
+      #endif
+    
+      update_registers (stackFrame);
+    
+      #if DEBUG_THREADS
+      printf ("done updating registers\n");
+      #endif
+    
+      if (interruptMe)
+        throw_exception(interruptedException);
+    }
+      
     return true;
   }
-  
+
+  schedule_request(REQUEST_EXIT);
   currentThread = null;
+  
   return false;
 }
 
@@ -468,9 +453,6 @@ void monitor_wait(Object *obj, const FOURBYTES time)
  */
 void monitor_notify(Object *obj, const boolean all)
 {
-  int i;
-  Thread *pThread;
-  
 #if DEBUG_MONITOR
   printf("monitor_notify of %d, thread %d(%d)\n",(int)obj, (int)currentThread, currentThread->threadId);
 #endif
@@ -479,7 +461,21 @@ void monitor_notify(Object *obj, const boolean all)
     throw_exception(illegalMonitorStateException);
     return;
   }
+  
+  monitor_notify_unchecked(obj, all);
+}
 
+/*
+ * wake up any objects waiting on the passed object.
+ */
+void monitor_notify_unchecked(Object *obj, const boolean all)
+{
+  short i;
+  Thread *pThread;
+  
+#if DEBUG_MONITOR
+  printf("monitor_notify_unchecked of %d, thread %d(%d)\n",(int)obj, (int)currentThread, currentThread->threadId);
+#endif
   // Find a thread waiting on us and move to WAIT state.
   for (i=MAX_PRIORITY-1; i >= 0; i--)
   {
@@ -508,7 +504,7 @@ void monitor_notify(Object *obj, const boolean all)
  * 
  * Note that this operation is atomic as far as the program is concerned.
  */
-void enter_monitor (Object* obj)
+void enter_monitor (Thread *pThread, Object* obj)
 {
 #if DEBUG_MONITOR
   printf("enter_monitor of %d\n",(int)obj);
@@ -520,18 +516,18 @@ void enter_monitor (Object* obj)
     return;
   }
 
-  if (get_monitor_count (obj) != NO_OWNER && currentThread->threadId != get_thread_id (obj))
+  if (get_monitor_count (obj) != NO_OWNER && pThread->threadId != get_thread_id (obj))
   {
     // There is an owner, but its not us.
     // Make thread wait until the monitor is relinquished.
-    currentThread->state = MON_WAITING;
-    currentThread->waitingOn = ptr2word (obj);
-    currentThread->monitorCount = 1;
+    pThread->state = MON_WAITING;
+    pThread->waitingOn = ptr2word (obj);
+    pThread->monitorCount = 1;
     // Gotta yield
     schedule_request (REQUEST_SWITCH_THREAD);    
     return;
   }
-  set_thread_id (obj, currentThread->threadId);
+  set_thread_id (obj, pThread->threadId);
   inc_monitor_count (obj);
 }
 
@@ -539,7 +535,7 @@ void enter_monitor (Object* obj)
  * Decrement monitor count
  * Release monitor if count reaches zero
  */
-void exit_monitor (Object* obj)
+void exit_monitor (Thread *pThread, Object* obj)
 {
   byte newMonitorCount;
 
@@ -554,7 +550,7 @@ void exit_monitor (Object* obj)
   }
 
   #ifdef VERIFY
-  assert (get_thread_id(obj) == currentThread->threadId, THREADS7);
+  assert (get_thread_id(obj) == pThread->threadId, THREADS7);
   assert (get_monitor_count(obj) > 0, THREADS8);
   #endif
 
@@ -576,7 +572,7 @@ void join_thread(Thread *thread)
 void dequeue_thread(Thread *thread)
 {
   // First take it out of its current queue
-  int cIndex = thread->priority-1;
+  byte cIndex = thread->priority-1;
   Thread **pThreadQ = &threadQ[cIndex];
   
   // Find the previous thread at the old priority
@@ -607,7 +603,7 @@ void dequeue_thread(Thread *thread)
 void enqueue_thread(Thread *thread)
 {
   // Could insert it anywhere. Just insert it at the end.
-  int cIndex = thread->priority-1;
+  byte cIndex = thread->priority-1;
   Thread *previous = threadQ[cIndex];
   threadQ[cIndex] = thread;
   if (previous == null)

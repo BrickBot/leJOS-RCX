@@ -33,7 +33,7 @@ public class Test06
     } catch (Exception e) {
       Sound.playTone (1000, 100);
     }
-    for (int i = 0; i < 100000; i++) {}
+    for (int i = 0; i < 10000; i++) {}
     try {
       int[] x = null;
       x[0] = 0;

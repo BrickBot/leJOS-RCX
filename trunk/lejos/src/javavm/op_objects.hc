@@ -25,6 +25,9 @@ case OP_PUTSTATIC:
     STATICFIELD fieldRecord;
     byte *fbase1 = null;
     byte fieldType;
+#if RECORD_REFERENCES
+    byte isRef;
+#endif
     byte fieldSize;
     boolean wideWord;
 
@@ -37,6 +40,9 @@ case OP_PUTSTATIC:
     fieldRecord = ((STATICFIELD *) get_static_fields_base())[pc[1]];
 
     fieldType = (fieldRecord >> 12) & 0x0F;
+#if RECORD_REFERENCES
+    isRef = (fieldType == T_REFERENCE);
+#endif
     fieldSize = typeSize[fieldType];
     wideWord = false;
     if (fieldSize > 4)
@@ -55,6 +61,11 @@ case OP_PUTSTATIC:
     if (*(pc-1) == OP_GETSTATIC)
     {
       make_word (fbase1, fieldSize, &tempStackWord);
+#if RECORD_REFERENCES
+      if (isRef)
+        push_ref(tempStackWord);
+      else
+#endif
       push_word (tempStackWord);
       if (wideWord)
       {
@@ -66,6 +77,11 @@ case OP_PUTSTATIC:
     {
       if (wideWord)
         store_word (fbase1 + 4, 4, pop_word());
+#if RECORD_REFERENCES
+      if (isRef)
+        store_word (fbase1, fieldSize, pop_ref());
+      else
+#endif
       store_word (fbase1, fieldSize, pop_word());
     }
     pc += 2;
@@ -109,6 +125,11 @@ case OP_GETFIELD:
     printf ("### get_field base=%d size=%d pushed=%d\n", (int) fbase2, (int) fieldSize, (int) tempStackWord);
     #endif
 
+#ifdef RECORD_REFERENCES
+    if (fieldType == T_REFERENCE)
+      set_top_ref (tempStackWord);
+    else
+#endif
     set_top_word (tempStackWord);
     if (wideWord)
     {
@@ -155,6 +176,11 @@ case OP_PUTFIELD:
     printf ("### put_field base=%d size=%d stored=%d\n", (int) fbase3, (int) fieldSize, (int) get_top_word());
     #endif
 
+#ifdef RECORD_REFERENCES
+    if (fieldType == T_REFERENCE)
+      store_word (fbase3, fieldSize, pop_ref());
+    else
+#endif
     store_word (fbase3, fieldSize, pop_word());
     just_pop_ref();
     pc += 2;

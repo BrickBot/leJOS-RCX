@@ -14,6 +14,7 @@
 #include "exceptions.h"
 #include "systime.h"
 #include "sensors.h"
+#include "poll.h"
 
 extern void reset_rcx_serial();
 
@@ -158,6 +159,12 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       return;
     case resetSerial_4_5V:
       reset_rcx_serial();
+      return;
+    case setPoller_4_5V:
+      set_poller(word2ptr(paramBase[0]));
+      return;
+    case setThrottle_4I_5V:
+      throttle = paramBase[0];
       return;
     case readSensorValue_4II_5I:
       // Parameters: int romId (0..2), int requestedValue (0..2).

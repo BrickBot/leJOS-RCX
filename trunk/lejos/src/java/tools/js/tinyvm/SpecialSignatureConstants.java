@@ -43,6 +43,8 @@ public interface SpecialSignatureConstants {
     "setMemoryBit(III)V",
     "resetSerial()V",
     "readSensorValue(II)I",
+    "setPoller()V",
+    "setThrottle(I)V",
     "setSensorValue(III)V",
     "assert(Ljava/lang/String;Z)V",
     "assertEQ(Ljava/lang/String;II)V"

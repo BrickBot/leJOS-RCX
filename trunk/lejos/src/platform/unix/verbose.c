@@ -37,6 +37,14 @@
 #include	"types.h"
 char *get_lcd_segment_msg(char *, STACKWORD);
 
+static char* motorModes[5] = {
+  "UNKNOWN",
+  "FORWARD",
+  "BACKWARD",
+  "BRAKE",
+  "FLOAT"
+};
+
 char	outstring[80];	/* No line should be longer than 80 chars. */
 
 /***************************************************************************
@@ -119,16 +127,12 @@ char *get_meaning(STACKWORD *paramBase)
 		 *******************************************/
 		switch (paramBase[1]) {
 		case 0x2000:
-			sprintf(outstring, "control_motor 0");
-			return outstring;
 		case 0x2001:
-			sprintf(outstring, "control_motor 1");
-			return outstring;
 		case 0x2002:
-			sprintf(outstring, "control_motor 2");
+			sprintf(outstring, "set_motor %ld %s %ld", paramBase[1] & 3, motorModes[paramBase[2]], paramBase[3] & 7);
 			return outstring;
 		default:
-			sprintf(outstring, "control_motor: unknown code: 0x%0lx", paramBase[1]);
+			sprintf(outstring, "set_motor: unknown code: 0x%0lx", paramBase[1]);
 			return outstring;
 		}
 	case 0x1aba:

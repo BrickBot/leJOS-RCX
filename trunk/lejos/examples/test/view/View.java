@@ -64,34 +64,58 @@ public class View
   public static void main (String[] arg)
   {
     boolean quit = false;
+	Poll poller = new Poll();
 
     iCurrentView = 0;
     show();
+	new Monitor().start();
+    long t = 0;
+
     while( !quit)
     {
-      for (int i = 0; i < 3; i++)
-      {
-        Button b = Button.BUTTONS[i];
-        if (b.isPressed())
-        {
-          long t = System.currentTimeMillis();
-          while (b.isPressed()) { }
+      int changed = 0;
 
-          if (b == Button.VIEW)
-            viewPressed();
-          else if (b == Button.PRGM)
-            prgmPressed();
-          else if (b == Button.RUN)
-            if( (int)System.currentTimeMillis()-(int)t > QUIT_DELAY)
-              quit = true;
-            else
-              runPressed();
-        }
+	  try {
+        changed = poller.poll(Poll.ALL_BUTTONS, 0);
+      } catch (InterruptedException ie) {
       }
+
+      if ((changed & Poll.VIEW_MASK) != 0 && !Button.VIEW.isPressed())
+        viewPressed();
+      if ((changed & Poll.PRGM_MASK) != 0 && !Button.PRGM.isPressed())
+        prgmPressed();
+      if ((changed & Poll.RUN_MASK) != 0)
+      {
+        if (Button.RUN.isPressed())
+          t = System.currentTimeMillis();
+        else
+        {
+          if( (int)System.currentTimeMillis()-(int)t > QUIT_DELAY)
+            quit = true;
+          else
+            runPressed();
+        }
+	  }
+
       show();
     }
     for( int i=0; i<VIEWS.length; i++){
       VIEWS[i].shutdown();
+    }
+  }
+
+  static class Monitor extends Thread {
+    public void run() {
+      setDaemon(true);
+      Poll poller = new Poll();
+      while (true)
+      {
+        try {
+          poller.poll(Poll.ALL_SENSORS, 0);
+          show();
+        } catch (InterruptedException ie) {
+        }
+      }
     }
   }
 }

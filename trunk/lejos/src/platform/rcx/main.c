@@ -159,7 +159,7 @@ void wait_for_release (short code)
 }
 
 /**
- * This function is invoked by switch_thread
+ * This function is invoked by engine()
  * and the download loop.
  */
 void switch_thread_hook()

@@ -10,8 +10,10 @@ package josx.platform.rcx;
  */
 public class Button
 {
-  static final long SLEEP_TIME = 20;
-  
+  /**
+   * The Run button.
+   */
+  public static final Button RUN = new Button (0x01);
   /**
    * The View button.
    */
@@ -20,15 +22,11 @@ public class Button
    * The Prgm button.
    */
   public static final Button PRGM = new Button (0x04);
-  /**
-   * The Run button.
-   */
-  public static final Button RUN = new Button (0x01);
-
+  
   /**
    * Array containing VIEW, PRGM and RUN, in that order.
    */
-  public static final Button[] BUTTONS = { Button.VIEW, Button.PRGM, Button.RUN };
+  public static final Button[] BUTTONS = { Button.RUN, Button.VIEW, Button.PRGM };
   
   private static final ButtonListenerThread LISTENER_THREAD = new ButtonListenerThread();
 
@@ -50,14 +48,14 @@ public class Button
   }
 
   /**
-   * Loops until the button is released.
+   * Wait until the button is released.
    */
   public final void waitForPressAndRelease() throws InterruptedException
   {
-    while (!isPressed())
-      	Thread.sleep(SLEEP_TIME);
-    while (isPressed())
-    	Thread.sleep(SLEEP_TIME);
+  	Poll poller = new Poll();
+	do {
+		poller.poll(iCode << Poll.BUTTON_MASK_SHIFT, 0);
+	} while (isPressed());
   }
 
   /**
@@ -80,6 +78,7 @@ public class Button
       LISTENER_THREAD.start();
     }
     iListeners[iNumListeners++] = aListener;
+    LISTENER_THREAD.addToMask(iCode);
   }
 
   /**
@@ -99,56 +98,49 @@ public class Button
   }
 
   static class ButtonListenerThread extends Thread
-  {    
-    static boolean[] WAS_PRESSED = new boolean[3];
+  {
+  	int mask;
+    Poll poller = new Poll();   
+    boolean[] iPreviousValue = new boolean[3];
     
-    void snooze(long millis) {
-    	try {
-          sleep( millis);
-    	} catch (InterruptedException ie) {
-    	}
+    private void call(int sid) {
+    	Button button = BUTTONS[sid];
+        synchronized (button){
+			boolean newValue = button.isPressed();
+    		int numListeners = button.iNumListeners;
+    		for (int i = 0; i < numListeners; i++) {
+	    		if (newValue)
+	    			button.iListeners[i].buttonPressed (button);
+	    		else
+	    			button.iListeners[i].buttonReleased (button);
+    		}
+            iPreviousValue[sid] = newValue;
+        }
+    }
+
+    public void addToMask(int id) {
+    	mask |= id << Poll.BUTTON_MASK_SHIFT;
+    	
+    	// Interrupt the polling thread, not the current one!
+    	interrupt();
     }
     
     public void run()
     {
-      Button[] pButtons = BUTTONS;
-      boolean[] pWasPressedArray = WAS_PRESSED;
-      for (;;)
-      {
-        for (int i = 0; i < 3; i++)
-        {
-	  Button pButton = pButtons[i];
-          boolean pPressed = pButton.isPressed();
-	  if (pPressed != pWasPressedArray[i])
-	  {
-  	    synchronized (pButton)
-	    {
-              int pNumListeners = pButton.iNumListeners;
-  	      ButtonListener[] pListeners = pButton.iListeners;
-	      if (pPressed)
-	      {
-	        for (int j = 0; j < pNumListeners; j++)
-	        {
-	          pListeners[j].buttonPressed (pButton);
-		  snooze(SLEEP_TIME);
-	        }
-	      }
-	      else
-	      {
-	        for (int j = 0; j < pNumListeners; j++)
-	        {
-	          pListeners[j].buttonReleased (pButton);
-		  snooze(SLEEP_TIME);
-	        } 		    
-	      }
-	    }
-	    pWasPressedArray[i] = pPressed;
-  	  }
-	  snooze(SLEEP_TIME);
-        }
-      }	    
+		for (;;) {
+		  	try  {
+				int changed = poller.poll(mask, 0);
+				
+			  	if ((changed & Poll.RUN_MASK) != 0)
+			  		call(0);
+			  	if ((changed & Poll.VIEW_MASK) != 0)
+			  		call(1);
+			  	if ((changed & Poll.PRGM_MASK) != 0)
+			  		call(2);
+		  	} catch (InterruptedException ie) {
+		  	}
+	  	}
     }
   }
-  
 }
 

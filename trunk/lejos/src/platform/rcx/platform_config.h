@@ -1,7 +1,6 @@
 #ifndef _PLATFORM_CONFIG_H
 #define _PLATFORM_CONFIG_H
 
-#include "sensors.h"
 #include "systime.h"
 
 // Basic types
@@ -46,6 +45,8 @@ typedef unsigned long FOURBYTES;
 // hardware polling
 
 extern char timerdata1[6];
+
+extern void poll_sensors();
 
 static inline void poll_hardware()
 {

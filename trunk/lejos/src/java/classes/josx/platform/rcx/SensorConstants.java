@@ -20,4 +20,8 @@ public interface SensorConstants
 	public static final int SENSOR_MODE_DEGC   = 0xa0;
 	public static final int SENSOR_MODE_DEGF   = 0xc0;
 	public static final int SENSOR_MODE_ANGLE  = 0xe0;
+	
+	public static final int RAW_VALUE          = 0;
+	public static final int CANONICAL_VALUE    = 1;
+	public static final int BOOLEAN_VALUE      = 2;
 }

@@ -126,11 +126,11 @@ public class Main {
 	public static void runIt() {
 	  	Sense s1 = new SenseNoOwner(new Actuator(getWanderFSM()));
 		s1.setPri(Thread.MIN_PRIORITY);
+
 		Sense s2 = new SenseBumper(Sensor.S3, new Actuator(getAvoidLeftFSM()));
-
 		s2.setPri(Thread.MIN_PRIORITY+1);
-		Sense s3 = new SenseBumper(Sensor.S1, new Actuator(getAvoidRightFSM()));
 
+		Sense s3 = new SenseBumper(Sensor.S1, new Actuator(getAvoidRightFSM()));
 		s3.setPri(Thread.MIN_PRIORITY+1);
 	
 		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
