@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jardesc>
+	<jar path="/home/Bert/workspace/lejos/lejos.jar"/>
+	<options compress="true"
+		descriptionLocation="/lejos/scripts/src-lejos.jardesc"
+		exportErrors="true" exportWarnings="true" logErrors="true"
+		logWarnings="true" overwrite="false" saveDescription="true" useSourceFolders="false"/>
+	<manifest generateManifest="false"
+		manifestLocation="/lejos/src-lejos/META-INF/MANIFEST.MF"
+		manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="false">
+		<sealing sealJar="false"><packagesToSeal/><packagesToUnSeal/></sealing>
+	</manifest>
+	<selectedElements exportClassFiles="true" exportJavaFiles="false">
+		<javaElement handleIdentifier="=lejos/src-lejos"/>
+	</selectedElements>
+</jardesc>

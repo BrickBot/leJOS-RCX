@@ -1,0 +1,137 @@
+<html>
+	<head>
+		<title>leJOS Plugin for Eclipse</title>
+	</head>
+	<body>
+
+<hr>
+<center><h1>leJOS Plugin for Eclipse</h1></center>
+<hr>
+
+<h2>Outline</h2>
+
+This plugin provides the extensions in order to interface with an
+<b>externally provided</b> leJOS (or tinyVM) distribution.
+
+The following extensions are availables:
+<ul>
+<li>A standard eclipse <a href="eclipse-lejos-pref.jpg">preference page</a> 
+in order to configure the external leJOS installation directory 
+and hardware parameters to access the RCX (communication port and 
+data transfert speed).
+
+<li>A <a href="eclipse-lejos-workbench.jpg">leJOS menu contribution</a>
+to the main menu in order to:
+<ul>
+<li>download <a href="eclipse-lejos-firmware.jpg">firmware</a> to the RCX
+<li>download <a href="eclipse-lejos-bytecode.jpg">byte-code</a> to the RCX
+<li>configure user preferences (actually a shortcut to the plugin preference page)
+</ul>
+This menu is contextual to the Java editor: it only appears when editing
+Java code.
+
+<li>A <a href="eclipse-lejos-wizard.jpg">leJOS project wizard</a>
+which extends the java wizard in order to properly configure 
+the build classpath.
+</ul>
+
+<h2>Installation procedure</h2>
+
+<ul>
+<li>Have a <a href="http://lejos.sourceforge.net/">lejos distribution</a>
+installed.
+<li>Download the following zip-bundle <a href="org.lejos_1.0.2.zip">org.lejos_1.0.2.zip</a>.
+<li>Unzip it into your eclipse plugin directory.
+<li>Go to the leJOS preference page, using <code>Window->Preferences->Lejos page</code>.
+<ul>
+<li>Make the installation path point to a valid lejos installation. 
+You can using the directory dialog or type directly the location.
+An error message will appear if the path is invalid.
+
+<blockquote><i>Be warned that invalid location will result 
+in an invalid build path when initializing a Java project
+using the wizard. In such case, the classpath can be corrected 
+by accessing the project properties and correcting the 
+<code><lejos_home>/lib/classes.jar</code> entry.
+</i></blockquote>
+
+<li>Configure the RCX tower communication port (com1, com2 or usb)
+and data transfert speed. Fast mode and com1 are the default.
+Use slow mode if you have data transfert problem (also check for
+possible interferring lights)
+</ul>
+</ul>
+
+<h2>Usage</h2>
+
+<ul>
+<li>Create a new leJOS project using File->New->Project, then select the leJOS Wizard.
+The wizard looks like the java wizard: just type a project name, add some library
+if you wish. Don't care about the lejos libs (classes.jar, rcxrcxcomm.jar, pcrcxcomm.jar):
+they will be added automatically.
+<li>Switch to a Java perspective and create new Java files in that perspective. For now,
+the leJOS menu only appears when editing a Java file. As stated before, the menu allows 
+you to download the firmware and the current file (which must provide a main method). It
+also provided a quick shortcut to the preference page.
+</ul>
+
+<h2>Limitations/TODO list</h2>
+
+<ul>
+<li>Run on Windows & Linux
+<li>Download progress bars are blocking the IDE 
+(although they are forked to a separate thread, maybe an interface issue)
+<li>Error handling is present but could be improved.
+<li>Method index is not captured.
+<li>Lejos source/API doc not linked.
+<li>My first plugin... Eclipse API certainly not best used...
+</ul>
+
+<h2>Tests</h2>
+
+<b>Successfully tested on following config</b>:
+<ul>
+<li>windows XP, JDK1.4, eclipse 2.0 and lejos 1.0.5
+<li>Linux RedHat 6.2, JDK1.3.1_04, eclipse 2.0 and lejos 1.0.5
+</ul>
+
+<h2>History</h2>
+
+<blockquote>
+
+<h4>1.0.2</h4>
+<ul>
+<li>added Linux support (fixed OS-specific paths, separators, comm device names)
+<li>bug fix in lejos preference dialog
+</ul>
+
+<h4>1.0.1</h4>
+<ul>
+<li>added configuration options (lejos dir, comm port&speed) in preference dialog
+</ul>
+
+<h4>1.0.0</h4>
+<ul>
+<li>initial release - internal
+</ul>
+
+</blockquote>
+
+<h2>Source</h2>
+
+Included in the distribution
+<br>
+<br>
+
+Enjoy !
+<p>
+Feedback welcome.
+
+<hr WIDTH="100%">
+<a href="mailto:chp@info.ucl.ac.be">chp@info.ucl.ac.be</a> 
+ - July 2002
+ - <a href="..">To my RCX page</a>
+ - <a href="/people/chp">To my homepage</a>
+
+</body>
+</html>

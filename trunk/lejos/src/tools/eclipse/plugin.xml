@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+   id="lejos"
+   name="Lejos Plug-in"
+   version="1.1.0"
+   provider-name="lejos.org"
+   class="org.lejos.eclipse.LejosPlugin">
+
+   <runtime>
+      <library name="lejos.jar"/>
+   </runtime>
+   <requires>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.jdt.ui"/>
+      <import plugin="org.eclipse.jdt.core"/>
+      <import plugin="org.eclipse.jdt.launching"/>
+   </requires>
+
+
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <wizard
+            name="Ecplise leJOS Plug-in"
+            icon="icons/rcx.gif"
+            category="org.eclipse.jdt.ui.java"
+            class="org.lejos.eclipse.LejosWizard"
+            project="true"
+            id="org.lejos.eclipse.wizard">
+         <description>
+            Create a Lejos project
+         </description>
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            name="leJOS"
+            class="org.lejos.eclipse.LejosPreference"
+            id="org.lejos.eclipse.pref">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            targetID="org.eclipse.jdt.ui.CompilationUnitEditor"
+            id="org.lejos.eclipse.editorContribution">
+         <menu
+               label="leJOS"
+               path="additions"
+               id="lejosMenu">
+            <separator
+                  name="lejosGroup">
+            </separator>
+         </menu>
+         <action
+               label="&amp;Preferences"
+               class="org.lejos.eclipse.actions.PreferenceAction"
+               menubarPath="lejosMenu/lejosGroup"
+               id="org.lejos.eclipse.actions.PreferenceAction">
+         </action>
+         <action
+               label="&amp;Firmware Download"
+               class="org.lejos.eclipse.actions.FirmwareAction"
+               menubarPath="lejosMenu/lejosGroup"
+               id="org.lejos.eclipse.actions.FirmwareAction">
+         </action>
+         <action
+               label="&amp;Bytecode Download"
+               class="org.lejos.eclipse.actions.DownloadAction"
+               menubarPath="lejosMenu/lejosGroup"
+               id="org.lejos.eclipse.actions.DownloadAction">
+         </action>
+      </editorContribution>
+   </extension>
+
+</plugin>
