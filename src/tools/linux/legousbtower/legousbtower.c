@@ -31,6 +31,10 @@
  *   - changed wake_up to wake_up_interruptible
  *   - changed to use lego0 rather than tower0
  *   - changed dbg() to use __func__ rather than deprecated __FUNCTION__
+ * 2003-01-12 - 0.53 david (david@csse.uwa.edu.au)
+ *   - changed read and write to write everything or timeout (from a patch by Chris Riesen and 
+ *     Brett Thaeler driver)
+ *   - added ioctl functionality to set timeouts
  */
 
 #include <linux/config.h>
@@ -48,10 +52,13 @@
 #include <linux/smp_lock.h>
 #include <linux/devfs_fs_kernel.h>
 #include <linux/usb.h>
+#include "legousbtower.h"
 
 #ifndef USB_DIR_MASK
 #define USB_DIR_MASK 0x80       /* should be in usb.h */
 #endif
+
+#define COMMAND_TIMEOUT    (2 * HZ)
 
 #ifdef CONFIG_USB_DEBUG
 	static int debug = 4;
@@ -65,7 +72,7 @@
 
 
 /* Version Information */
-#define DRIVER_VERSION "v0.52"
+#define DRIVER_VERSION "v0.53"
 #define DRIVER_AUTHOR "Juergen Stuber, stuber@loria.fr"
 #define DRIVER_DESC "LEGO USB Tower Driver"
 
@@ -138,6 +145,8 @@ struct lego_usb_tower {
                                 /* device specific: */
 	int			power_level;	/* 1: low, 2: medium, 3: high */
 	int			mode;		/* 1: VLL, 2: IR */
+	int                     read_timeout;
+	int                     write_timeout;
 };
 
 /* Note that no locking is needed:
@@ -278,6 +287,11 @@ static int tower_open (struct inode *inode, struct file *file)
 	/* lock this device */
 	down (&dev->sem);
 
+	if (dev->open_count == 0) {
+		dev->read_timeout = 0;
+		dev->write_timeout = COMMAND_TIMEOUT;
+	}
+        
 	/* increment our usage count for the device */
 	++dev->open_count;
 
@@ -289,7 +303,8 @@ static int tower_open (struct inode *inode, struct file *file)
         }
 	/* save device in the file's private structure */
 	file->private_data = dev;
-        
+
+
         /* set power level and mode */
         retval = tower_set (dev, LEGO_USB_TOWER_ADDRESS_POWER_LEVEL, dev->power_level);
         if (retval != 0) {
@@ -490,6 +505,7 @@ static ssize_t tower_read (struct file *file, char *buffer, size_t count, loff_t
         size_t bytes_to_read;
         int i;
         int retval = 0;
+	int timeout = 0;
 
 	dbg(2," %s : enter, count = %d", __func__, count);
 
@@ -512,18 +528,26 @@ static ssize_t tower_read (struct file *file, char *buffer, size_t count, loff_t
         	goto exit;
 	}
 
-        while (bytes_read == 0) {
-                if (dev->read_buffer_length == 0) {
-                        if (file->f_flags & O_NONBLOCK) {
-                                retval = -EAGAIN;
-                                goto exit;
-                        }
-                        up (&dev->sem);
-                        retval = wait_event_interruptible (dev->read_wait, dev->read_buffer_length > 0);
-                        down (&dev->sem);
-                        if (retval == -ERESTARTSYS) {
-                                goto exit;
-                        }
+	timeout = dev->read_timeout;
+
+	while (1) {
+		if (dev->read_buffer_length == 0) {
+
+			if (timeout <= 0) {
+			        retval = -ETIMEDOUT;
+			        goto exit;
+			}
+
+			if (signal_pending(current)) {
+
+				retval = -EINTR;
+				goto exit;
+			}
+
+			up (&dev->sem);
+			timeout = interruptible_sleep_on_timeout (&dev->read_wait, timeout);
+			down (&dev->sem);
+
                 } else {
                         /* copy the data from read_buffer into userspace */
                         bytes_to_read = count > dev->read_buffer_length ? dev->read_buffer_length : count;
@@ -539,8 +563,14 @@ static ssize_t tower_read (struct file *file, char *buffer, size_t count, loff_t
                         buffer += bytes_to_read;
                         count -= bytes_to_read;
                         bytes_read += bytes_to_read;
+			if (count == 0) {
+				break;
+			}
                 }
+
+
         }
+
         retval = bytes_read;
 
  exit:
@@ -562,6 +592,7 @@ static ssize_t tower_write (struct file *file, const char *buffer, size_t count,
 	size_t bytes_to_write;
         size_t buffer_size;
 	int retval = 0;
+	int timeout = 0;
 
 	dbg(2," %s : enter, count = %d", __func__, count);
 
@@ -585,24 +616,39 @@ static ssize_t tower_write (struct file *file, const char *buffer, size_t count,
 	}
 
 
-        while (bytes_written == 0) {
+        while (count > 0) {
                 if (dev->interrupt_out_urb->status == -EINPROGRESS) {
+		        timeout = dev->write_timeout;
+			dbg(1," %s : enter timeout: %d", __func__, timeout);
+			while (timeout > 0) {
+				if (signal_pending(current)) {
+					dbg(1," %s : interrupted", __func__);
+					return -EINTR;
+				}
+				up (&dev->sem);
+				timeout = interruptible_sleep_on_timeout (&dev->write_wait, timeout);
+				down (&dev->sem);
+				if (timeout > 0) {
+					break;
+				}
+				dbg(1," %s : interrupted timeout: %d", __func__, timeout);
+			}
+
+			dbg(1," %s : final timeout: %d", __func__, timeout);
+			if (timeout == 0) {
+				dbg(1, "%s - command timed out.", __func__);
+				retval = -ETIMEDOUT;
+				goto exit;
+			}
+
                 	dbg(4," %s : in progress, count = %d", __func__, count);
-                        if (bytes_written > 0) {
-			        dbg(4," %s : bytes written = %d", __func__, bytes_written);
-                                retval = bytes_written;
-                                goto exit;
-                        }
-                        if (file->f_flags & O_NONBLOCK) {
-			        dbg(4," %s : retval = _EAGAIN", __func__);
-                                retval = -EAGAIN;
-                                goto exit;
-                        }
-                        retval = wait_event_interruptible (dev->write_wait, dev->interrupt_out_urb->status != -EINPROGRESS);
-                        if (retval == -ERESTARTSYS) {
-			        dbg(4," %s : retval = %d", __func__, retval);
-                                goto exit;
-                        }
+
+                        // retval = wait_event_interruptible (dev->write_wait, dev->interrupt_out_urb->status != -EINPROGRESS);
+
+                        // if (retval == -ERESTARTSYS) {
+			// dbg(4," %s : retval = -ERESTARTSYS", __func__);
+			// goto exit;
+			// }
                 } else {
 		        dbg(4," %s : sending, count = %d", __func__, count);
 
@@ -610,6 +656,7 @@ static ssize_t tower_write (struct file *file, const char *buffer, size_t count,
                         buffer_size = dev->interrupt_out_endpoint->wMaxPacketSize;
                         bytes_to_write = count > buffer_size ? buffer_size : count;
 			dbg(4," %s : buffer_size = %d, count = %d, bytes_to_write = %d", __func__, buffer_size, count, bytes_to_write);
+
                         if (copy_from_user (dev->interrupt_out_buffer, buffer, bytes_to_write) != 0) {
                                 retval = -EFAULT;
                                 goto exit;
@@ -675,7 +722,20 @@ static int tower_ioctl (struct inode *inode, struct file *file, unsigned int cmd
 	}
 
         switch (cmd) {
-                /* FIXME: set RCX/VLL, set power level low/medium/high */
+                
+                // FIXME: set RCX/VLL, set power level low/medium/high 
+	case LEGO_TOWER_SET_READ_TIMEOUT:
+		retval = 0;
+		dev->read_timeout = ((int) arg);
+		break;
+	case LEGO_TOWER_SET_WRITE_TIMEOUT:
+		retval = 0;
+		dev->write_timeout = ((int) arg);
+		break;
+	default:
+		retval = -ENOTTY;
+		break;
+
         }
 	
  unlock_exit:

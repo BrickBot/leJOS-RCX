@@ -1,14 +1,18 @@
-legousbtower version 0.52
+legousbtower version 0.53
 
-legousbtower is a kernel usb driver which allows communication with the Lego RCX 2.0 brick. It is distributed as part of the LeJOS project <http://www.lejos.org>
+legousbtower is a kernel usb driver which allows communication with the Lego RCX 2.0 brick. 
+It is distributed as part of the LeJOS project <http://www.lejos.org>
 
 * Installation
 
 type: make
 
-If you have any problems, it is likely to be with the location of your kernel include files. If you have not installed the kernel source, use /usr/include instead of the build includes which are the default.
+If you have any problems, it is likely to be with the location of your kernel include files. Normally,
+the Makefile will try and use the the include files in the build directory in /lib/modules - otherwise
+it will use /usr/src/linux/include.
 
 As root, type: make install
 
-NOTE: this won't install the module into the modules directory. You can do this manually and edit your rc scripts to automatically load the module at boot time.
+NOTE: this won't install the module into the modules directory. You can do this manually and 
+edit your rc scripts to automatically load the module at boot time.
 
