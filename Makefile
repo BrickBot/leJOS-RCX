@@ -18,8 +18,8 @@ MFLAGS = OSTYPE=$(OSTYPE)
 
 PC_JAVADOC_SOURCE="rcxcomm/classes"
 
-ifneq (,$(findstring $(OSTYPE),cygwin))
-  PATH_SEP=\;
+ifneq (,$(findstring cygwin,$(OSTYPE)))
+  PATH_SEP=;
 else
   PATH_SEP=:
 endif
@@ -94,7 +94,7 @@ all_jtools: java_tools generated_files java_loader
 
 java_tools:
 	@echo "====> Making java tools"
-	${JAVAC} -classpath jtools${PATH_SEP}lib/pcrcxcomm.jar jtools/js/tools/*.java
+	${JAVAC} -classpath "jtools${PATH_SEP}./lib/pcrcxcomm.jar" jtools/js/tools/*.java
 
 generated_files: common/classes.db common/signatures.db
 	${JAVA} -Dtinyvm.home="." js.tools.GenerateConstants
