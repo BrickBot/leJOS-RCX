@@ -1,14 +1,14 @@
 Java Tools
 ----------
 
-Java versions of the the lejos Tools are now available.
+Java versions of the LeJOS tools are now available.
 
 These are:
 
-firml - downloads the lejos firmware
-lejosjc - compiles lejos java source files
-lejoslink - links lejos programs and produces a binary file for download
-lejosdl - downloads lejos programs
+firmdl    : downloads the lejos firmware
+lejosjc   : compiles lejos java source files
+lejoslink : links lejos programs and produces a binary file for download
+lejosdl   : downloads lejos programs
 
 These are equivalents of lejosfirmdl, lejosc, lejos and lejosrun.
 
@@ -27,35 +27,43 @@ on Windows you might do:
 
 set LEJOS_HOME=c:\lejos
 
+on Linux the equivalent command would be something like:
+
+export LEJOS_HOME=/home/username/lejos
+
 The port that the IR Tower is connected to is specified in the normal way -
 either by RCXTTY=COM1 or RCXTTY=usb etc, or by a --tty option on the command.
 
 The normal usage of the commands is:
 
-firmdl
-       - to download the firmware
+To download the firmware:
 
-lejosjc MyClass.java
-                     - to compile a java class
+   firmdl
 
-lejoslink MyClass -o MyClass.bin
-                                 - to link the program and produce a binary file
+To compile a java class:
+ 
+   lejosjc MyClass.java
 
-lejosdl MyClass.bin 
-                    - to download the binary file
+To link the program and produce a binary file:
+
+   lejoslink MyClass -o MyClass.bin
+
+To download the binary file:
+
+   lejosdl MyClass.bin 
 
 The other commonly used options are compiling multiple source files with lejosjc,
 linking multiple class files with lejoslink and producing verbose output from 
 lejoslink by:
 
-lejoslink -verbose MyClass1 MyClass2 ... -o MyClass.bin >MyClass.sig
+   lejoslink -verbose MyClass1 MyClass2 ... -o MyClass.bin > MyClass.sig
 
 The verbose output lets you see which classes and methods are included and excluded
 in your linked binary.
 
 Use the -h or --help flag to get help on options, e.g:
 
-firmdl -h
+   firmdl -h
 
 The advantages of the Java Tools over the current C tools are:
 
