@@ -35,7 +35,7 @@ public class Firmdl
       Firmdl firmdl = new Firmdl(new ToolProgressListenerImpl());
       firmdl.start(args);
     }
-    catch (ToolException e)
+    catch (FirmdlException e)
     {
       System.err.println(e.getMessage());
       System.exit(1);
@@ -58,7 +58,7 @@ public class Firmdl
    * @param args command line
    * @throws ToolException
    */
-  public void start (String[] args) throws ToolException
+  public void start (String[] args) throws FirmdlException
   {
     // parameters
     String fileName;
@@ -88,7 +88,7 @@ public class Firmdl
         }
         else if (args[i].equals("--help") || args[i].equals("-h"))
         {
-          throw new ToolException("Help:");
+          throw new FirmdlException("Help:");
         }
         else if (args[i].equals("--nodl") || args[i].equals("-n"))
         {
@@ -96,7 +96,7 @@ public class Firmdl
         }
         else if (args[i].equals("--debug"))
         {
-          throw new ToolException("For debug output set RCXCOMM_DEBUG=Y");
+          throw new FirmdlException("For debug output set RCXCOMM_DEBUG=Y");
         }
         else if (args[i].equals("--fast") || args[i].equals("-f"))
         {
@@ -108,9 +108,9 @@ public class Firmdl
         }
       }
     }
-    catch (ToolException e)
+    catch (FirmdlException e)
     {
-      throw new ToolException(e.getMessage() + "usage: firmdl [options]"
+      throw new FirmdlException(e.getMessage() + "usage: firmdl [options]"
           + "\n--tty=<tty>   assume tower connected to <tty>"
           + "\n--tty=usb     assume tower connected to usb"
           + "\n-n, --nodl    do not download image"
@@ -131,7 +131,7 @@ public class Firmdl
    * @throws ToolException
    */
   public void start (String tty, boolean download, boolean fastMode)
-      throws ToolException
+      throws FirmdlException
   {
     // Get firmware
     Reader reader = new InputStreamReader(Firmdl.class
@@ -167,6 +167,10 @@ public class Firmdl
           d.installFirmware(image.data, length, image.entry, true);
           d.close();
         }
+        catch (ToolException e)
+        {
+          throw new FirmdlException(e);
+        }
         finally
         {
           if (d.isOpen())
@@ -197,7 +201,7 @@ public class Firmdl
    * Load image from srec.
    */
   private Image srecLoad (Reader reader, int numimage_def, int maxlen)
-      throws ToolException
+      throws FirmdlException
   {
     BufferedReader bufferedReader = new BufferedReader(reader);
     Image image = new Image();
@@ -236,7 +240,7 @@ public class Firmdl
         }
         catch (IOException e)
         {
-          throw new ToolException("Error on line " + line + " : "
+          throw new FirmdlException("Error on line " + line + " : "
               + e.getMessage(), e);
         }
 
@@ -260,7 +264,7 @@ public class Firmdl
             image.segments[segIndex] = new Segment();
             if (segIndex >= numimage_def)
             {
-              throw new ToolException("Expected number of image_def exceeded");
+              throw new FirmdlException("Expected number of image_def exceeded");
             }
             image.segments[segIndex].length = 0;
             segStartAddr = srec.addr;
@@ -271,7 +275,7 @@ public class Firmdl
           if (srec.addr < IMAGE_START
               || srec.addr + srec.count > IMAGE_START + maxlen)
           {
-            throw new ToolException("Address (" + srec.addr
+            throw new FirmdlException("Address (" + srec.addr
                 + ") out of bounds (srec) on line " + line + "\nCount = "
                 + srec.count + "\nmaxlen = " + maxlen);
           }
@@ -294,7 +298,7 @@ public class Firmdl
           // Process image entry point
           if (srec.addr < IMAGE_START || srec.addr > IMAGE_START + maxlen)
           {
-            throw new ToolException("Address out of bounds (image) on line"
+            throw new FirmdlException("Address out of bounds (image) on line"
                 + line);
           }
 
@@ -319,12 +323,12 @@ public class Firmdl
 
       if (length == 0)
       {
-        throw new ToolException("Image contains no data");
+        throw new FirmdlException("Image contains no data");
       }
     }
     catch (IOException e)
     {
-      throw new ToolException("Unable to read srec: " + e.getMessage(), e);
+      throw new FirmdlException("Unable to read srec: " + e.getMessage(), e);
     }
     finally
     {

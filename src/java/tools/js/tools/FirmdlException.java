@@ -1,9 +1,11 @@
 package js.tools;
 
+import js.common.ToolException;
+
 /**
  * Firmdl exception.
  */
-public class FirmdlException extends Exception
+public class FirmdlException extends ToolException
 {
   /**
    * @param message

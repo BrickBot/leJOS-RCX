@@ -1,9 +1,11 @@
 package js.tinyvm;
 
+import js.common.ToolException;
+
 /**
  * Generic tiny vm exception.
  */
-public class TinyVMException extends Exception
+public class TinyVMException extends ToolException
 {
   /**
    * @param message
