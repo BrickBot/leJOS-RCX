@@ -8,8 +8,6 @@ import java.util.logging.Logger;
 import js.tinyvm.io.ByteWriter;
 import js.tinyvm.util.HashVector;
 
-import org.apache.bcel.util.ClassPath;
-
 /**
  * Abstraction for dumped binary.
  */
