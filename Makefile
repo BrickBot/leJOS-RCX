@@ -51,6 +51,7 @@ dir_and_zip_win:
 	mkdir ${TEMP}/lejos
 	cp -r . ${TEMP}/lejos
 	cd ${TEMP}/lejos; make remove_useless_files_win
+	cp /bin/cygwin1.dll ${TEMP}/lejos/bin
 	cd ${TEMP}; jar cvf ${TINYVM_VERSION}.zip lejos
 	diff bin/lejos.srec ${TEMP}/lejos/bin/lejos.srec
 

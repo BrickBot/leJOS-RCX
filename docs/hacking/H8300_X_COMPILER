@@ -24,7 +24,7 @@ Cross-compiler for CygWin
 
 (Stolen from legOS pages at SourceForge)
 
-Download the cross-compiler from
+This assumes CygWin B20. Download the cross-compiler from
 http://legos.sourceforge.net/files/windows/cygwin/win-h8-egcs-1.1.2.zip
 and unzip it in c:\cygnus\cygwin-b20\H-i586-cygwin32. Create a soft-link
 from /bin to /cygnus/cygwin-b20/H-i586-cygwin32/bin.
