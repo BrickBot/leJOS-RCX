@@ -32,6 +32,11 @@ extern StackFrame *current_stackframe();
 extern void enter_monitor (Object* obj);
 extern void exit_monitor (Object* obj);
 
+/**
+ * Must be written by user of threads.h.
+ */
+extern void switch_thread_hook();
+
 #define stackframe_array_ptr() (word2ptr(currentThread->stackFrameArray))
 #define stack_array_ptr()      (word2ptr(currentThread->stackArray))
 #define stackframe_array()     ((StackFrame *) ((byte *) stackframe_array_ptr() + HEADER_SIZE))

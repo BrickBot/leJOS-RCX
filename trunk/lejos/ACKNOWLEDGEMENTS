@@ -36,8 +36,13 @@ Jose's comments (02/28/00):
 - SPECIAL THANKS to my wife, Erika, for putting up 
   with me during the development of this project.
 
-Post-release Notes:
--------------------
+After 0.1beta1:
+---------------
+
+- Thanks to Christophe Vanhecke, for lending TinyVM
+  some webspace at his site: www.crazyrobots.com.
+- Carlos Solorzano (my brother) helped me port
+  TinyVM to JDK1.2 over the phone.
 
 
 

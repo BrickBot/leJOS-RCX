@@ -18,3 +18,18 @@ Version 0.1.1 (latest):
   - Added a few classes: LCD, Sound, MinLCD, MinSound,
     Button. 
 
+  - Improved the usability of the firmware a bit.
+    Basically, you can now press the On/Off button
+    to turn off the RCX and kill running programs.
+
+  - To continue on exception "traces" you have to
+    press On/Off instead of View.
+
+  - TinyVM has been ported to JDK1.2. This required
+    a couple of fixes under jtools.
+
+
+
+
+
+

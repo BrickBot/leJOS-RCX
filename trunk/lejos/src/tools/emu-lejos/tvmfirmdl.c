@@ -496,8 +496,10 @@ main(int argc, char **argv)
 
     /* Open the serial port */
 
-    if ((tty = getenv("RCXTTY")) == NULL)
-	tty = DEFAULTTTY;
+    if ((tty = getenv("RCXTTY")) == NULL) {
+	fprintf(stderr, "Your RCXTTY variable is undefined.\n");
+	exit(1);
+    }
 
     fd = rcx_init(tty);
 
@@ -566,7 +568,7 @@ main(int argc, char **argv)
 		break;
 	}
 	if (i == 5) {
-	    fprintf(stderr, "%s: Transfer data failed.\n", progname);
+	    fprintf(stderr, "%s: Transfer data failed. Check range of IR tower.\n", progname);
 	    exit(1);
 	}
     }

@@ -276,8 +276,10 @@ public class JClassFile implements IDumpable, IConstants
     if (DEBUG_READ)
       System.out.println ("# Reading attributes");
     iAttributes.read (aIn);
-    if (aIn.available() != 0)
-      throw new EExtraBytes ("Extra bytes in class input stream");
+
+    // JDK 1.2 doesn't like this:
+//     if (aIn.available() != 0)
+//       throw new EExtraBytes ("Extra bytes in input stream of class file");
   }
 
   public boolean isInterface()
