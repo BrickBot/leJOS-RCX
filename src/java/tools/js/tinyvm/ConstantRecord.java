@@ -18,7 +18,7 @@ public class ConstantRecord implements WritableData, Constants
       iSize = ((JCPE_String) aEntry).getSize();
       if (iSize > MAX_STRING_CONSTANT_LENGTH)
       {
-        Utilities.fatal ("String constant of length more than " +
+        Assertion.fatal ("String constant of length more than " +
         MAX_STRING_CONSTANT_LENGTH + " not accepted: " +
         aEntry);
       }
@@ -28,7 +28,7 @@ public class ConstantRecord implements WritableData, Constants
     else if (aEntry instanceof JCPE_Integer || aEntry instanceof JCPE_Float)
       iSize = 4;
     else
-      Utilities.assert (false);
+      Assertion.test (false);
   }
 
   public static int getType (JConstantPoolEntry aEntry)
@@ -43,7 +43,7 @@ public class ConstantRecord implements WritableData, Constants
       return T_FLOAT;
     else
     {
-      Utilities.assert (false);
+      Assertion.test (false);
       return -1;
     }
   }
@@ -73,8 +73,8 @@ public class ConstantRecord implements WritableData, Constants
 
   public void dump (ByteWriter aOut) throws Exception
   {
-    Utilities.assert (iSize != -1);
-    Utilities.assert (iConstantValue != null);
+    Assertion.test (iSize != -1);
+    Assertion.test (iConstantValue != null);
     aOut.writeU2 (iConstantValue.getOffset());
     aOut.writeU1 (getType (iEntry));
     aOut.writeU1 (iSize);

@@ -18,7 +18,7 @@ implements OpCodeConstants, OpCodeInfo, Constants
 
   public void exitOnBadOpCode (int aOpCode)
   {
-    Utilities.fatal (
+    Assertion.fatal (
       "Unsupported " + OPCODE_NAME[aOpCode] + " in " + iFullName + ".\n" +
       "The following features/conditions are currently unsupported::\n" +
       "- Switch statements.\n" +
@@ -49,7 +49,7 @@ implements OpCodeConstants, OpCodeInfo, Constants
         !(pEntry instanceof JCPE_Double) &&
         !(pEntry instanceof JCPE_Long))
     {
-      Utilities.fatal ("Classfile error: LDC-type instruction " +
+      Assertion.fatal ("Classfile error: LDC-type instruction " +
                        "does not refer to a suitable constant. ");
     }
 
@@ -61,7 +61,7 @@ implements OpCodeConstants, OpCodeInfo, Constants
     if (pIdx == -1)
 
     {
-      Utilities.fatal ("Bug CU-2: Didn't find constant " + pEntry + 
+      Assertion.fatal ("Bug CU-2: Didn't find constant " + pEntry + 
                        " of class " + pEntry.getClass().getName());
     }
 
@@ -87,7 +87,7 @@ implements OpCodeConstants, OpCodeInfo, Constants
     }
     if (!(pEntry instanceof JCPE_Class))
     {
-      Utilities.fatal ("Classfile error: Instruction requiring " +
+      Assertion.fatal ("Classfile error: Instruction requiring " +
                        "CONSTANT_Class entry got " +
                        (pEntry == null ? "null" : 
                        pEntry.getClass().getName()));
@@ -96,14 +96,14 @@ implements OpCodeConstants, OpCodeInfo, Constants
     String pClassName = pClassEntry.getName();
     if (pClassName.startsWith ("["))
     {
-      Utilities.fatal ("In " + iFullName + ": Operations instanceof or " +
+      Assertion.fatal ("In " + iFullName + ": Operations instanceof or " +
                        "checkcast on array classes (" + pClassName + 
                        " in this case) are not yet supported by TinyVM.");
     }
     int pIdx = iBinary.getClassIndex (pClassName);
     if (pIdx == -1)
     {
-      Utilities.fatal ("Bug CU-3: Didn't find class " + pEntry + 
+      Assertion.fatal ("Bug CU-3: Didn't find class " + pEntry + 
                        " from class " + iCF.getThisClass().getName());
     }
     return pIdx;                           
@@ -119,16 +119,16 @@ implements OpCodeConstants, OpCodeInfo, Constants
     }
     if (!(pEntry instanceof JCPE_Class))
     {
-      Utilities.fatal ("Classfile error: Instruction requiring " +
+      Assertion.fatal ("Classfile error: Instruction requiring " +
                        "CONSTANT_Class entry got " +
                        (pEntry == null ? "null" : 
                        pEntry.getClass().getName()));
     }
     JCPE_Class pClassEntry = (JCPE_Class) pEntry;
     int[] pTypeDim = JClassName.getTypeAndDimensions (pClassEntry.getName());
-    Utilities.assert (pTypeDim[0] <= 0xFF);
-    Utilities.assert (pTypeDim[1] <= 0xFF);
-    Utilities.assert (pTypeDim[1] > 0);
+    Assertion.test (pTypeDim[0] <= 0xFF);
+    Assertion.test (pTypeDim[1] <= 0xFF);
+    Assertion.test (pTypeDim[1] > 0);
     return pTypeDim[0] << 8 | pTypeDim[1];
   }
 
@@ -146,7 +146,7 @@ implements OpCodeConstants, OpCodeInfo, Constants
     }
     if (!(pEntry instanceof JCPE_Fieldref))
     {
-      Utilities.fatal ("Classfile error: Instruction requiring " +
+      Assertion.fatal ("Classfile error: Instruction requiring " +
                        "CONSTANT_Fieldref entry got " +
                        (pEntry == null ? "null" : 
                        pEntry.getClass().getName()));
@@ -156,18 +156,18 @@ implements OpCodeConstants, OpCodeInfo, Constants
     ClassRecord pClassRecord = iBinary.getClassRecord (pClass.getName());
     if (pClassRecord == null)
     {
-      Utilities.fatal ("Bug CU-3: Didn't find class " + pClass + 
+      Assertion.fatal ("Bug CU-3: Didn't find class " + pClass + 
                        " from class " + iCF.getThisClass().getName());
     }
     String pName = pFieldEntry.getNameAndType().getName();
     if (aStatic)
     {
       int pClassIndex = iBinary.getClassIndex (pClassRecord);
-      Utilities.assert (pClassIndex >= 0);
-      Utilities.assert (pClassIndex <= 0xFF);
+      Assertion.test (pClassIndex >= 0);
+      Assertion.test (pClassIndex <= 0xFF);
       int pFieldIndex = pClassRecord.getStaticFieldIndex (pName);
-      Utilities.assert (pFieldIndex >= 0);
-      Utilities.assert (pFieldIndex <= 0xFF);
+      Assertion.test (pFieldIndex >= 0);
+      Assertion.test (pFieldIndex <= 0xFF);
       return (pClassIndex << 8) | pFieldIndex;
     }
     else
@@ -175,14 +175,14 @@ implements OpCodeConstants, OpCodeInfo, Constants
       int pOffset = pClassRecord.getInstanceFieldOffset (pName);
       if (pOffset == -1)
       {
-        Utilities.fatal ("Error: Didn't find field " + pClass + ":" + pName +
+        Assertion.fatal ("Error: Didn't find field " + pClass + ":" + pName +
                          " from class " + iCF.getThisClass().getName());
       }
-      Utilities.assert (pOffset <= MAX_FIELD_OFFSET);
+      Assertion.test (pOffset <= MAX_FIELD_OFFSET);
       int pFieldType = InstanceFieldRecord.descriptorToType (
                        pFieldEntry.getNameAndType().getDescriptor());
-      Utilities.assert (pFieldType >= 0);
-      Utilities.assert (pFieldType <= 0xF);
+      Assertion.test (pFieldType >= 0);
+      Assertion.test (pFieldType <= 0xF);
       return (pFieldType << F_SIZE_SHIFT) | pOffset;
     }
   }
@@ -201,7 +201,7 @@ implements OpCodeConstants, OpCodeInfo, Constants
     }
     if (!(pEntry instanceof JCPE_RefEntry))
     {
-      Utilities.fatal ("Classfile error: Instruction requiring " +
+      Assertion.fatal ("Classfile error: Instruction requiring " +
                        "CONSTANT_MethodRef or CONSTANT_InterfaceMethodRef " +
                        "got " +
                        (pEntry == null ? "null" : 
@@ -213,31 +213,31 @@ implements OpCodeConstants, OpCodeInfo, Constants
     ClassRecord pClassRecord = iBinary.getClassRecord (pClassName);
     if (pClassRecord == null)
     {
-      Utilities.fatal ("Bug CU-4: Didn't find class " + pClass + 
+      Assertion.fatal ("Bug CU-4: Didn't find class " + pClass + 
                        " from class " + iCF.getThisClass().getName());
     }
     JCPE_NameAndType pNT = pMethodEntry.getNameAndType();
     Signature pSig = new Signature (pNT.getName(), pNT.getDescriptor());
     MethodRecord pMethod = pClassRecord.getVirtualMethodRecord (pSig);
     if (pMethod == null)
-      Utilities.fatal ("Method " + pSig + " not found  in " + pClass);
+      Assertion.fatal ("Method " + pSig + " not found  in " + pClass);
     ClassRecord pTopClass = pMethod.getClassRecord();
     if (aSpecial)
     {
       int pClassIndex = iBinary.getClassIndex (pTopClass);
-      Utilities.assert (pClassIndex != -1 && pClassIndex < MAX_CLASSES);
+      Assertion.test (pClassIndex != -1 && pClassIndex < MAX_CLASSES);
       int pMethodIndex = pTopClass.getMethodIndex (pMethod);
-      Utilities.assert (pMethodIndex != -1 && pMethodIndex < MAX_METHODS);
-      Utilities.trace ("processMethod: special: " + pClassIndex + ", " +
+      Assertion.test (pMethodIndex != -1 && pMethodIndex < MAX_METHODS);
+      Assertion.trace ("processMethod: special: " + pClassIndex + ", " +
                        pMethodIndex);
       return (pClassIndex << 8) | (pMethodIndex & 0xFF);
     }
     else
     {
       int pNumParams = pMethod.getNumParameterWords() - 1;
-      Utilities.assert (pNumParams < MAX_PARAMETER_WORDS);
+      Assertion.test (pNumParams < MAX_PARAMETER_WORDS);
       int pSignature = pMethod.getSignatureId();
-      Utilities.assert (pSignature < MAX_SIGNATURES);
+      Assertion.test (pSignature < MAX_SIGNATURES);
       return (pNumParams << M_ARGS_SHIFT) | pSignature;
     }
   }
@@ -288,7 +288,7 @@ implements OpCodeConstants, OpCodeInfo, Constants
         case OP_INSTANCEOF:
           int pIdx3 = processClassIndex ((aCode[i] & 0xFF) << 8 | 
                                          (aCode[i+1] & 0xFF));
-          Utilities.assert (pIdx3 < MAX_CLASSES);
+          Assertion.test (pIdx3 < MAX_CLASSES);
           pOutCode[i++] = (byte) (pIdx3 >> 8);
           pOutCode[i++] = (byte) (pIdx3 & 0xFF);
           break;         
@@ -355,14 +355,14 @@ implements OpCodeConstants, OpCodeInfo, Constants
           exitOnBadOpCode (pOpCode);
           break;
         case OP_BREAKPOINT:
-          Utilities.fatal ("Invalid opcode detected: " + pOpCode + " " +
+          Assertion.fatal ("Invalid opcode detected: " + pOpCode + " " +
                            OPCODE_NAME[pOpCode]);
           break;
         default:
           int pArgs = OPCODE_ARGS[pOpCode];
           if (pArgs == -1)
 	  {
-            Utilities.fatal ("Bug CU-1: Got " + pOpCode + " in " +
+            Assertion.fatal ("Bug CU-1: Got " + pOpCode + " in " +
                              iFullName + ".");
 	  }
           for (int ctr = 0; ctr < pArgs; ctr++)

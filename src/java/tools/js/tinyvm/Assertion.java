@@ -2,7 +2,7 @@ package js.tinyvm;
 
 import java.util.*;
 
-public class Utilities
+public class Assertion
 {
   static int iVerboseLevel;
   static boolean iTrace = Boolean.getBoolean ("trace");
@@ -17,7 +17,7 @@ public class Utilities
     return iVerboseLevel;
   }
 
-  public static void assert (boolean aCond)
+  public static void test (boolean aCond)
   {
     if (!aCond)
     {

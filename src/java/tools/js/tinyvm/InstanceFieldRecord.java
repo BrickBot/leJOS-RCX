@@ -44,7 +44,7 @@ public class InstanceFieldRecord implements WritableData, Constants
       case '[':
         return T_REFERENCE;
       default:
-        Utilities.fatal ("Bug IFR-2: " + aDesc);  
+        Assertion.fatal ("Bug IFR-2: " + aDesc);  
     }
     return 0;
   }
@@ -77,7 +77,7 @@ public class InstanceFieldRecord implements WritableData, Constants
       case T_DOUBLE:
         return 8;
       default:
-        Utilities.fatal ("Bug SV-1: " + aType);
+        Assertion.fatal ("Bug SV-1: " + aType);
     }
     return 0;
   }

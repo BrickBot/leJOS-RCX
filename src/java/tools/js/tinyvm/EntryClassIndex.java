@@ -23,7 +23,7 @@ public class EntryClassIndex implements WritableData, Constants
   public void dump (ByteWriter aOut) throws Exception
   {
     int pIndex = iBinary.getClassIndex (iClassName);
-    Utilities.assert (pIndex >= 0 && pIndex < 256);
+    Assertion.test (pIndex >= 0 && pIndex < 256);
     aOut.writeU1 (pIndex);
   }
 }

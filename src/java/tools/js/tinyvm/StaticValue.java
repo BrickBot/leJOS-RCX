@@ -53,7 +53,7 @@ implements Constants
         pDataOut.writeFloat ((float) 0.0);
         break;
       default:
-        Utilities.assert (false);
+        Assertion.test (false);
     }
   }
 

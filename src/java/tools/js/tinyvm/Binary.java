@@ -92,13 +92,13 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
       // Update table of indices to entry classes
       iEntryClassIndices.add (new EntryClassIndex (this, pName));
     }      
-    Utilities.trace ("Starting with " + iClassTable.size() + " classes.");
+    Assertion.trace ("Starting with " + iClassTable.size() + " classes.");
     // Now add the closure.
     // Yes, call iClassTable.size() in every pass of the loop.
     for (int pIndex = 0; pIndex < iClassTable.size(); pIndex++)
     {
       ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
-      Utilities.verbose (1, "Class " + pIndex + ": " + pRec.iName);
+      Assertion.verbose (1, "Class " + pIndex + ": " + pRec.iName);
       pRec.storeReferredClasses (iClasses, iClassTable, aClassPath);
     }
     // Initialize indices and flags
@@ -219,7 +219,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
 
   public void report()
   {
-    if (Utilities.getVerboseLevel() == 0)
+    if (Assertion.getVerboseLevel() == 0)
       return;
     int pSize = iSignatures.size();
     for (int i = 0; i < pSize; i++)
@@ -227,7 +227,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
       Signature pSig = (Signature) iSignatures.elementAt (i);
       System.out.println ("Signature " + i + ": " + pSig.getImage());
     }
-    if (Utilities.getVerboseLevel() <= 1)
+    if (Assertion.getVerboseLevel() <= 1)
       return;
     System.out.println ("Master record : " + iMasterRecord.getLength() + 
                         " bytes.");
@@ -240,10 +240,10 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     System.out.println ("Code          : " + iCodeSequences.size() + " (" +
                         iCodeSequences.getLength() + " bytes).");
 
-    Utilities.verbose (2, "Class table offset   : " + iClassTable.getOffset());
-    Utilities.verbose (2, "Constant table offset: " + iConstantTable.getOffset());
-    Utilities.verbose (2, "Method tables offset : " + iMethodTables.getOffset());
-    Utilities.verbose (2, "Excep tables offset  : " + iExceptionTables.getOffset());
+    Assertion.verbose (2, "Class table offset   : " + iClassTable.getOffset());
+    Assertion.verbose (2, "Constant table offset: " + iConstantTable.getOffset());
+    Assertion.verbose (2, "Method tables offset : " + iMethodTables.getOffset());
+    Assertion.verbose (2, "Excep tables offset  : " + iExceptionTables.getOffset());
   }
 		       
   public static Binary createFromClosureOf (Vector aEntryClasses, ClassPath aClassPath)

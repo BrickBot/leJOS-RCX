@@ -23,7 +23,7 @@ public class CodeSequence extends WritableDataWithOffset
   {
     if (iBytes == null)
     {
-      Utilities.trace ("Not writing code sequence");
+      Assertion.trace ("Not writing code sequence");
       return;
     }
     aOut.write (iBytes, 0, iBytes.length);

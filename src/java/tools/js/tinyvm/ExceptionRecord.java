@@ -27,7 +27,7 @@ public class ExceptionRecord implements WritableData, Constants
     }
     if (iClassIndex == -1)
     {
-      Utilities.fatal ("Error: Exception not found: " + iExcep);
+      Assertion.fatal ("Error: Exception not found: " + iExcep);
     }
   }
 
@@ -48,7 +48,7 @@ public class ExceptionRecord implements WritableData, Constants
     int pHandler = iExcep.getHandlerPc();
     if (pStart > MAX_CODE || pEnd > MAX_CODE || pHandler > MAX_CODE)
     {
-      Utilities.fatal ("Error: Exception handler with huge PCs.");
+      Assertion.fatal ("Error: Exception handler with huge PCs.");
     }
     aOut.writeU2 (pStart);
     aOut.writeU2 (pEnd);
