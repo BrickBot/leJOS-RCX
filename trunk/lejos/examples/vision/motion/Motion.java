@@ -10,6 +10,7 @@ public class Motion implements MotionListener {
 
   private void run() {
     Vision.setImageSize(320, 240);
+    Vision.flipHorizontal(true);
     Vision.addRectRegion(1, 0, 0, 320, 240);
     Vision.addMotionListener(1, this);
     Vision.startViewer("Test Vision");
