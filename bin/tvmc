@@ -1,0 +1,22 @@
+#!/bin/sh
+
+if [ "${TINYVM_HOME}" = "" ]; 
+then
+  echo Error: TINYVM_HOME undefined.
+  exit 1
+fi
+
+if [ "${TINYVMPATH}" = "" ];
+then
+  echo Warning: TINYVMPATH undefined.
+fi
+
+if [ "${JAVAC}" = "" ];
+then
+  JAVAC=javac
+fi
+
+JCCP=${TINYVMPATH}:${TINYVM_HOME}/lib/classes.jar
+${JAVAC} -classpath ${JCCP} $@
+
+

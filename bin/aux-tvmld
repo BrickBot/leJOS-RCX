@@ -1,0 +1,15 @@
+#!/bin/sh
+
+if [ "${TINYVMPATH}" = "" ];
+then
+  echo Warning: TINYVMPATH undefined.
+fi
+
+JAVAVM=java
+
+TINYVMPATH=${TINYVMPATH}:${TINYVM_HOME}/lib/classes.jar
+CLASSPATH=$CLASSPATH:${TINYVM_HOME}/lib/jtools.jar
+#echo TINYVMOPTIONS=${TINYVMOPTIONS}
+${JAVAVM} ${TINYVMOPTIONS} js.tinyvm.TinyVM -classpath ${TINYVMPATH} $@
+
+

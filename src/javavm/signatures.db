@@ -1,0 +1,30 @@
+# This file contains a list of special signatures for
+# methods used by the VM.
+
+# The VM will index these special signatures based on their
+# order here. Rebuild the VM if this file changes.
+
+# Indices start at 0.
+
+#--------------------------------------
+# Methods invoked by the VM
+#--------------------------------------
+
+main([Ljava/lang/String;)V
+run()V
+<init>()V
+<clinit>()V
+
+#--------------------------------------
+# Native methods
+#--------------------------------------
+
+start()V
+arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V
+
+#--------------------------------------
+# Native methods for VM support
+#--------------------------------------
+
+_TVM_main_method()V
+
