@@ -35,6 +35,8 @@ public final class Math {
 	//  return d != d;
 	//}
 	
+	private Math() {} // To make sure this class is not instantiated
+
 	/**
 	* Returns the smallest (closest to negative infinity) double value that is not
 	* less than the argument and is equal to a mathematical integer.
