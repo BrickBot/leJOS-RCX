@@ -33,7 +33,7 @@ void poll_inputs()
   short i;
   short *pOldValue = old_sensor_values;
   sensor_t *pSensor = &sensors[0];
-  boolean packet_available;
+  byte packet_available;
 
   throttle_count--;
   if( throttle_count == 0){
@@ -49,7 +49,7 @@ void poll_inputs()
     // anyway.
       
     // Check the sensor canonical values.
-    for (i = 1<<SENSOR_POS; i<BUTTON_POS; i <<= 1, pOldValue++, pSensor++)
+    for (i = 1<<SENSOR_POS; i<(1<<BUTTON_POS); i <<= 1, pOldValue++, pSensor++)
     {
       if (*pOldValue != pSensor->value) {
         changed |= i;
