@@ -37,7 +37,7 @@
  */
 
 OUTPUT(firmware.srec)
-OUTPUT_FORMAT(srec)
+OUTPUT_FORMAT(coff-h8300)
 OUTPUT_ARCH(h8300)
 ENTRY(__start)
 
