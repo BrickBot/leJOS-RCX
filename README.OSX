@@ -6,9 +6,10 @@ Please also read the REAME file!
 
 Compilation:
 If you updated from CVS: 
-in Terminal cd to the lejos directory, the make cctest.sh executable:
+in Terminal cd to the lejos directory, then make cctest.sh executable:
 % chmod a+x cctest.sh
-Then type make:
+
+Then just type make:
 % make
 This should be it.
 For more inforamtion see the leJOS FAQ at <http://lejos.sourceforge.net/faq/>.
@@ -22,16 +23,15 @@ See the leJOS FAQ (<http://lejos.sourceforge.net/faq/> for more information.
 USB support:
 WARNING!
 This version contains experimental support for USB on MAC OS X.
-It's largely untested. And while it works for me, it doesn't mean that it couldn't damage your RXC, tower or even your MAC.
+It's largely untested. And while it works for me, it doesn't mean that it couldn't damage your RCX, tower or even your MAC.
 So use completely at your own risk!
 
-To use USB, set the RXCTTY environment variable to usb.
-% setenv RXCTTY usb
+To use USB, set the RCXTTY environment variable to usb.
+% setenv RCXTTY usb
 USB currently works best when you compile your code first
 % lejos -c outfile.bin infile
 and then download it with lejosrun
 % lejosrun outfile.bin
 
 - Fast mode is currently unsupported.
-- firmdl has not yet been ported
-- rcxcomm functions have not yet been ported
+- rcxcomm functions (i.e. communication from a Java program with the RCX) have not yet been ported
