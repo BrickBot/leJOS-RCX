@@ -1,11 +1,13 @@
+LEJOS_HOME=../../..
+VMSRC=$(LEJOS_HOME)/src/javavm
 
 # Makefile
 # Adapted from config.mk in librcx by Kekoa Proudfoot.
 
-include ../Makefile.config
+include $(LEJOS_HOME)/Makefile.config
 
-#CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -I. -O2 -Wall
-CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -I. -O2 -Wall -fomit-frame-pointer
+#CFLAGS += -I${LIBRCX_HOME}/lib -I$(VMSRC) -I. -O2 -Wall
+CFLAGS += -I${LIBRCX_HOME}/lib -I$(VMSRC) -I. -O2 -Wall -fomit-frame-pointer
 LFLAGS += -L${LIBRCX_HOME}/lib --relax -L${LIBRCX_HOME}/float -L/usr/local/h8300-hms/lib
 
 LIBS = -lrcx -lfloat -lc
@@ -19,7 +21,7 @@ OC = $(BINDIR)/$(BINPREFIX)objcopy -I coff-h8300 -O srec
 # other variables
 
 COFF = --oformat coff-h8300
-TINYVMBINARY = ../bin/lejos.srec
+TINYVMBINARY = $(LEJOS_HOME)/bin/lejos.srec
 
 # special targets
 
@@ -31,8 +33,7 @@ default: ${TINYVMBINARY}
 # The following should be used in all impl Makefiles.
 # VMSRC and CFLAGS must be defined.
 
-VMSRC=../vmsrc
-include ../vmsrc/Makefile.include
+include $(VMSRC)/Makefile.include
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(INCS) -c $*.c
@@ -61,10 +62,10 @@ rcx.map: rcx.lds $(OBJS)
 	$(OC)  ${TINYVMBINARY}
 
 rcx_gen.lds: rcx.map
-	${JAVA} -classpath ../jtools js.tools.CodePacker rcx.lds rcx.map rcx_gen.lds
+	${JAVA} -classpath $(LEJOS_HOME)/lib/jtools.jar js.tools.CodePacker rcx.lds rcx.map rcx_gen.lds
 
 clean:
-	rm -f core ../bin/*.srec *.o *~ *.bak rcx.map rcx_gen.lds
+	rm -f core $(LEJOS_HOME)/bin/*.srec *.o *~ *.bak rcx.map rcx_gen.lds
 
 ${TINYVMBINARY}: rcx_gen.lds
 	$(LD) $(LFLAGS) -Trcx_gen.lds -o ${TINYVMBINARY} $(OBJS) $(LIBS)
