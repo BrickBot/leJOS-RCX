@@ -52,9 +52,7 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
  */
 public class Vision extends Frame implements ControllerListener
 {
-
    // package protected fields
-
    static int imageWidth = -1, imageHeight = -1;
    static float frameRate = 15;
    static String snapshotFilename;
@@ -733,5 +731,9 @@ public class Vision extends Frame implements ControllerListener
    {
       flipEffect.flip = flip;
    }
-}
 
+   /**
+    * Comment for <code>serialVersionUID</code>
+    */
+   private static final long serialVersionUID = 3257286945972432951L;
+}

@@ -13,5 +13,10 @@ public class EPolyClassLoader extends ClassNotFoundException
    {
       return iWrapped.toString();
    }
+
+   /**
+    * Comment for <code>serialVersionUID</code>
+    */
+   private static final long serialVersionUID = 3257847684051251252L;
 }
 

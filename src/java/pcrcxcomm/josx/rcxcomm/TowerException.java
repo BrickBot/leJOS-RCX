@@ -60,4 +60,9 @@ public class TowerException extends Exception
             return "unknown error (error code " + status + ")";
       }
    }
+
+   /**
+    * Comment for <code>serialVersionUID</code>
+    */
+   private static final long serialVersionUID = 3258410638383854137L;
 }
