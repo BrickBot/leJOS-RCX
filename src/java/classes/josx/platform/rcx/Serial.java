@@ -48,12 +48,13 @@ package josx.platform.rcx;
  */
 public class Serial
 {
-  private static final byte[] buffer = new byte[6]; // opcode + at most 5 data 
+  static final byte[] buffer = new byte[6]; // opcode + at most 5 data 
   private static final byte[] iAuxBuffer = new byte[4];
   private static final int iAuxBufferAddr = Memory.getDataAddress (iAuxBuffer);
 
   private static SerialListener[] iListeners = null;
   private static int iNumListeners;
+  private static SerialListenerCaller singleton;
 
   private Serial()
   {
@@ -183,17 +184,24 @@ public class Serial
     if (iListeners == null)
     {
       iListeners = new SerialListener[4];
+      singleton = new SerialListenerCaller();
     }
     iListeners[iNumListeners++] = aListener;
-    ListenerThread.get().addSerialToMask();
+    ListenerThread.get().addSerialToMask(singleton);
   }
 
+  /**
+   * private static inner class which allows a ListenerCaller object 
+   * to be registered to call the Serial Listeners.
+   */
+  private static class SerialListenerCaller implements ListenerCaller {
 
-  static synchronized void callListeners()
-  {
-    int length = Serial.readPacket (buffer); 
-    for( int i = 0; i < iNumListeners; i++) {
-      iListeners[i].packetAvailable (buffer, length);
+    public synchronized void callListeners()
+    {
+      int length = Serial.readPacket (Serial.buffer); 
+      for( int i = 0; i < Serial.iNumListeners; i++) {
+        Serial.iListeners[i].packetAvailable (Serial.buffer, length);
+      }
     }
   }
 }

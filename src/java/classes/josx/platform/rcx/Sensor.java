@@ -37,7 +37,7 @@ package josx.platform.rcx;
  * @see josx.platform.rcx.SensorConstants
  * @see josx.platform.rcx.SensorListener
  */
-public class Sensor
+public class Sensor implements ListenerCaller
 {
   private int iSensorId;
   private short iNumListeners = 0;
@@ -119,7 +119,7 @@ public class Sensor
         iListeners = new SensorListener[8];
     }
     iListeners[iNumListeners++] = aListener;
-    ListenerThread.get().addSensorToMask(iSensorId);
+    ListenerThread.get().addSensorToMask(iSensorId, this);
   }
 
   /**
@@ -173,7 +173,7 @@ public class Sensor
   
   private static native void setSensorValue (int aSensorId, int aVal, int aRequestType);
   
-  synchronized void callListeners() {
+  public synchronized void callListeners() {
     int newValue = readSensorValue( iSensorId, 1);
     for (int i = 0; i < iNumListeners; i++) {
       iListeners[i].stateChanged( this, iPreviousValue, newValue);
