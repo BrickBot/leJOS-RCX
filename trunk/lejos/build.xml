@@ -148,7 +148,7 @@
   <target name="all" depends="clean, classes, rcxcomm, pcrcxcomm, vision, jtools" description="generate all jar files">
     <mkdir dir="${org.lejos}/lib"/>
     <delete>
-      <fileset dir="${org.lejos}">
+      <fileset dir="${org.lejos}/lib">
         <include name="*.jar"/>
       </fileset>
     </delete>
