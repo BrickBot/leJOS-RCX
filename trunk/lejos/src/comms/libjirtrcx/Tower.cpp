@@ -95,6 +95,8 @@ Java_josx_rcxcomm_Tower_close(JNIEnv *env, jobject obj)
 #ifdef TRACE
   printf("Exiting close\n");
 #endif
+
+  return RCX_OK;
 }
 
 // write - write bytes to IR Tower
