@@ -93,7 +93,7 @@ public class Button
     synchronized (Native.MEMORY_MONITOR)
     {
       int pAddr = Native.iAuxDataAddr;
-      Native.callRom2 ((short) 0x1fb6, (short) 0x3000, (short) pAddr);
+      Native.callRom ((short) 0x1fb6, (short) 0x3000, (short) pAddr);
       return Native.readMemoryShort (pAddr);
     }
   }

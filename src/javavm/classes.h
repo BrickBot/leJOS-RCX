@@ -84,10 +84,12 @@ typedef struct S_Thread
 
   REFERENCE nextThread;      // Intrinsic circular list of threads
   JINT waitingOn;            // Object who's monitor we want
+  JINT sleepUntil;           // Time to wake up
   JINT stackFrameArray;      // Array of stack frames
   JINT stackArray;           // The stack itself
   JINT isReferenceArray;     // Array indicating if a stack entry is a reference or not
   JBYTE stackFrameArraySize; // Number of stack frames in use.
+  JBYTE monitorCount;        // Saved monitor depth for context switches
   JBYTE threadId;            // Unique thread ID
   JBYTE state;               // RUNNING, DEAD, etc.
   JBYTE priority;            // The priority

@@ -32,11 +32,11 @@
 #define totalMemory_4_5J 25
 #define getRuntime_4_5Ljava_3lang_3Runtime_2 26
 #define getMessage_4_5Ljava_3lang_3String_2 27
-#define callRom0_4S_5V 28
-#define callRom1_4SS_5V 29
-#define callRom2_4SSS_5V 30
-#define callRom3_4SSSS_5V 31
-#define callRom4_4SSSSS_5V 32
+#define callRom_4S_5V 28
+#define callRom_4SS_5V 29
+#define callRom_4SSS_5V 30
+#define callRom_4SSSS_5V 31
+#define callRom_4SSSSS_5V 32
 #define readMemoryByte_4I_5B 33
 #define writeMemoryByte_4IB_5V 34
 #define setMemoryBit_4III_5V 35

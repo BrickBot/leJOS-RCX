@@ -17,11 +17,11 @@ class Native
   static final byte[] iAuxData = new byte[7];
   static final int iAuxDataAddr = getDataAddress (iAuxData);
 
-  native static void callRom0 (short aAddr);
-  native static void callRom1 (short aAddr, short a1);
-  native static void callRom2 (short aAddr, short a1, short a2);
-  native static void callRom3 (short aAddr, short a1, short a2, short a3);
-  native static void callRom4 (short aAddr, short a1, short a2, short a3, short a4);
+  native static void callRom (short aAddr);
+  native static void callRom (short aAddr, short a1);
+  native static void callRom (short aAddr, short a1, short a2);
+  native static void callRom (short aAddr, short a1, short a2, short a3);
+  native static void callRom (short aAddr, short a1, short a2, short a3, short a4);
 
   native static byte readMemoryByte (int aAddr);
   native static void writeMemoryByte (int aAddr, byte aByte);

@@ -21,6 +21,7 @@ public interface SpecialClassConstants {
     "java/lang/IllegalArgumentException",
     "java/lang/InterruptedException",
     "java/lang/IllegalStateException",
+    "java/lang/IllegalMonitorStateException",
     "java/lang/ThreadDeath",
     "josx/util/Test"
   };

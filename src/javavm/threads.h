@@ -7,12 +7,13 @@
 #ifndef _THREADS_H
 #define _THREADS_H
 
-#define NEW           0 /* see java.lang.Thread#isAlive */
-#define DEAD          1
-#define STARTED       2
-#define RUNNING       3
-#define MON_WAITING   4
-#define SLEEPING      5
+#define NEW              0 // Just been created
+#define DEAD             1 // run() has exited
+#define STARTED          2 // start() has been called but we haven't run yet
+#define RUNNING          3 // We're running!
+#define MON_WAITING      4 // Trying to enter a synchronized block
+#define CONDVAR_WAITING  5 // Someone called wait() on us in a synchronized block.
+#define SLEEPING         6 // ZZZZZzzzzzzzz
 
 // These values must match the statics in Thread.java
 #define MIN_PRIORITY  1
@@ -50,10 +51,11 @@ extern StackFrame *current_stackframe();
 extern void enter_monitor (Object* obj);
 extern void exit_monitor (Object* obj);
 extern boolean switch_thread();
-extern void interrupt_thread(Thread *thread);
 extern void join_thread(Thread *thread);
 extern void dequeue_thread(Thread *thread);
 extern void enqueue_thread(Thread *thread);
+extern void monitor_wait(Object *obj, const FOURBYTES time);
+extern void monitor_notify(Object *obj, const boolean all);
 
 #define stackframe_array_ptr()   (word2ptr(currentThread->stackFrameArray))
 #define stack_array_ptr()        (word2ptr(currentThread->stackArray))
@@ -89,7 +91,7 @@ static inline void sleep_thread (const FOURBYTES time)
   #endif
 
   currentThread->state = SLEEPING;
-  currentThread->waitingOn = get_sys_time() + time; 	
+  currentThread->sleepUntil = get_sys_time() + time; 	
 }
 
 static inline int get_thread_priority(Thread *thread)
@@ -98,6 +100,14 @@ static inline int get_thread_priority(Thread *thread)
   printf("Thread priority is %d\n", thread->priority);
   #endif
   return thread->priority;
+}
+
+/**
+ * Mark thread as interrupted.
+ */
+static inline void interrupt_thread(Thread *thread)
+{
+  thread->interrupted = 1;
 }
 
 extern void set_thread_priority(Thread *thread, const FOURBYTES priority);

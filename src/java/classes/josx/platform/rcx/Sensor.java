@@ -131,7 +131,7 @@ public class Sensor
    */
   public final void activate()
   {
-    Native.callRom1 ((short) 0x1946, (short) (0x1000 + iSensorId));
+    Native.callRom ((short) 0x1946, (short) (0x1000 + iSensorId));
   }
 
   /**
@@ -139,7 +139,7 @@ public class Sensor
    */
   public final void passivate()
   {
-    Native.callRom1 ((short) 0x19C4, (short) (0x1000 + iSensorId));
+    Native.callRom ((short) 0x19C4, (short) (0x1000 + iSensorId));
   }
 
   /**

@@ -230,7 +230,22 @@ boolean switch_thread()
           case RUNNING:
             // We were set to running at some point. That's OK.
             break;
+          case CONDVAR_WAITING:
+            // We are waiting to be notified
+            if ((currentThread->sleepUntil > 0) && (get_sys_time() >= (FOURBYTES) currentThread->sleepUntil))
+            {
+#if DEBUG_MONITOR
+        printf ("Waking up waiting thread %d: %d\n", (int) currentThread, currentThread->threadId);
+#endif
+                currentThread->state = MON_WAITING;
+            }
+            else if (!currentThread->interrupted)
+            	break;
+            else
+            	interruptMe = true;
+            // drop through
           case MON_WAITING:
+            // We are waiting to enter a synchronized block
             #ifdef VERIFY
             assert (currentThread->waitingOn != JNULL, THREADS6);
             #endif
@@ -239,15 +254,20 @@ boolean switch_thread()
             {
               // NOW enter the monitor (guaranteed to succeed)
               enter_monitor (word2obj (currentThread->waitingOn));
+              
+              // Set the monitor depth to whatever was saved.
+              set_monitor_count(word2obj(currentThread->waitingOn), currentThread->monitorCount);
+              
               // Let the thread run.
               currentThread->state = RUNNING;
+
               #ifdef SAFE
               currentThread->waitingOn = JNULL;
               #endif
             }
             break;
           case SLEEPING:
-            if (!threadToRun && (currentThread->interrupted || (get_sys_time() >= (FOURBYTES) currentThread->waitingOn)))
+            if (!threadToRun && (currentThread->interrupted || (get_sys_time() >= (FOURBYTES) currentThread->sleepUntil)))
             {
         #if DEBUG_THREADS
         printf ("Waking up sleeping thread %d: %d\n", (int) currentThread, currentThread->threadId);
@@ -256,7 +276,7 @@ boolean switch_thread()
               if (currentThread->interrupted)
                 interruptMe = true;
               #ifdef SAFE
-    	    currentThread->waitingOn = JNULL;
+    	    currentThread->sleepUntil = JNULL;
               #endif // SAFE
             }
             break;
@@ -403,6 +423,87 @@ boolean switch_thread()
   return false;
 }
 
+/*
+ * Current thread owns object's monitor (we hope) and wishes to relinquish
+ * it temporarily (by calling Object.wait()).
+ */
+void monitor_wait(Object *obj, const FOURBYTES time)
+{
+#if DEBUG_MONITOR
+  printf("monitor_wait of %d, thread %d(%d)\n",(int)obj, (int)currentThread, currentThread->threadId);
+#endif
+  if (currentThread->threadId != get_thread_id (obj))
+  {
+    throw_exception(illegalMonitorStateException);
+    return;
+  }
+  
+  // Great. We own the monitor which means we can give it up, but
+  // indicate that we are listening for notify's.
+  currentThread->state = CONDVAR_WAITING;
+  
+  // Save monitor depth
+  currentThread->monitorCount = get_monitor_count(obj);
+  
+  // Save the object who's monitor we will want back
+  currentThread->waitingOn = ptr2word (obj);
+  
+  // Might be an alarm set too.
+  if (time > 0)
+    currentThread->sleepUntil = get_sys_time() + time; 	
+  else
+    currentThread->sleepUntil = 0;
+  
+#if DEBUG_MONITOR
+  printf("monitor_wait of %d, thread %d(%d) until %ld\n",(int)obj, (int)currentThread, currentThread->threadId, time);
+#endif
+
+  // Indicate that the object's monitor is now free.
+  set_thread_id (obj, NO_OWNER);
+  set_monitor_count(obj, 0);
+  
+  // Gotta yield
+  switch_thread();
+}
+
+/*
+ * Current thread owns object's monitor (we hope) and wishes to wake up
+ * any other threads waiting on it. (by calling Object.notify()).
+ */
+void monitor_notify(Object *obj, const boolean all)
+{
+  int i;
+  Thread *pThread;
+  
+#if DEBUG_MONITOR
+  printf("monitor_notify of %d, thread %d(%d)\n",(int)obj, (int)currentThread, currentThread->threadId);
+#endif
+  if (currentThread->threadId != get_thread_id (obj))
+  {
+    throw_exception(illegalMonitorStateException);
+    return;
+  }
+
+  // Find a thread waiting on us and move to WAIT state.
+  for (i=MAX_PRIORITY-1; i >= 0; i--)
+  {
+    pThread = threadQ[i];
+    if (!pThread)
+      continue;
+      
+    do {
+      // Remember threadQ[i] is the last thread on the queue
+      pThread = word2ptr(pThread->nextThread);
+      if (pThread->state == CONDVAR_WAITING && pThread->waitingOn == ptr2word (obj))
+      {
+        pThread->state = MON_WAITING;
+        if (!all)
+          return;
+      }
+    } while (pThread != threadQ[i]);
+  }
+}
+
 /**
  * currentThread enters obj's monitor:
  *
@@ -413,9 +514,6 @@ boolean switch_thread()
  */
 void enter_monitor (Object* obj)
 {
-  byte owner;
-  byte tid;
-
 #if DEBUG_MONITOR
   printf("enter_monitor of %d\n",(int)obj);
 #endif
@@ -425,18 +523,19 @@ void enter_monitor (Object* obj)
     throw_exception (nullPointerException);
     return;
   }
-  owner = get_thread_id (obj);
-  tid = currentThread->threadId;
-  if (owner != NO_OWNER && tid != owner)
+
+  if (get_monitor_count (obj) != NO_OWNER && currentThread->threadId != get_thread_id (obj))
   {
+    // There is an owner, but its not us.
     // Make thread wait until the monitor is relinquished.
     currentThread->state = MON_WAITING;
     currentThread->waitingOn = ptr2word (obj);
+    currentThread->monitorCount = 1;
     // Gotta yield
     schedule_request (REQUEST_SWITCH_THREAD);    
     return;
   }
-  set_thread_id (obj, tid);
+  set_thread_id (obj, currentThread->threadId);
   inc_monitor_count (obj);
 }
 
@@ -467,14 +566,6 @@ void exit_monitor (Object* obj)
   if (newMonitorCount == 0)
     set_thread_id (obj, NO_OWNER);
   set_monitor_count (obj, newMonitorCount);
-}
-
-/**
- * Mark thread as interrupted.
- */
-void interrupt_thread(Thread *thread)
-{
-  thread->interrupted = 1;
 }
 
 /**
