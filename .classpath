@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry including="**/*.java" kind="src" path="src/java/pcrcxcomm"/>
+	<classpathentry including="**/*.java" kind="src" path="src/java/vision"/>
 	<classpathentry including="**/*.java" kind="src" path="src/java/tools"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="build/bin"/>
