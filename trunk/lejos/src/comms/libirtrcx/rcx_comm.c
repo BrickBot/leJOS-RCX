@@ -700,7 +700,7 @@ int rcx_is_alive (FILEDESCR fd, int use_comp)
     unsigned char send[1] = { 0x10 };
     unsigned char recv[1];
 
-    return (rcx_sendrecv(fd, send, 1, recv, 1, 10, 5, use_comp) == 1);
+    return (rcx_sendrecv(fd, send, 1, recv, 1, 50, 5, use_comp) == 1);
 }
 
 char *rcx_strerror (int error)
