@@ -15,7 +15,9 @@ public class ColorDetectionControl implements Control, ActionListener, ChangeLis
   private Component component;
   private JButton button;
   private JSlider threshold;
+  private JSlider proportionThreshold;
   private JLabel label;
+  private JLabel proportionLabel;
   private ColorEffect effect;
   private boolean debug;
   private int thresholdValue;
@@ -33,7 +35,9 @@ public class ColorDetectionControl implements Control, ActionListener, ChangeLis
    **/
   public Component getControlComponent () {
     if (component == null) {
-      label = new JLabel("Set Color threshold:");
+      label = new JLabel("Set Pixel difference threshold:");
+      proportionLabel = new JLabel("Set Proportion threshold:");
+      
       button = new JButton("Color Debug");
       button.addActionListener(this);
 
@@ -48,11 +52,21 @@ public class ColorDetectionControl implements Control, ActionListener, ChangeLis
       threshold.setPaintLabels(true);
       threshold.addChangeListener(this);
 
-      Panel componentPanel = new Panel();
-      componentPanel.setLayout(new BorderLayout());
-      componentPanel.add("South", button);
-      componentPanel.add("Center", threshold);
-      componentPanel.add("North", label);
+      proportionThreshold = new JSlider(JSlider.HORIZONTAL,
+                                        0,
+                                        (int) (effect.MAX_PROPORTION / effect.PROPORTION_INC),
+                                        (int) (effect.requiredProportion / effect.PROPORTION_INC));
+
+      proportionThreshold.setMajorTickSpacing(1);
+      proportionThreshold.setPaintLabels(true);
+      proportionThreshold.addChangeListener(this);
+
+      Box componentPanel = Box.createVerticalBox();
+      componentPanel.add(label);
+      componentPanel.add(threshold);
+      componentPanel.add(proportionLabel);
+      componentPanel.add(proportionThreshold);
+
       componentPanel.invalidate();
       component = componentPanel;
     }
@@ -79,5 +93,8 @@ public class ColorDetectionControl implements Control, ActionListener, ChangeLis
     if (o == threshold) {
       effect.pixelThreshold = threshold.getValue()*4;
     }
-  }
+     if (o == proportionThreshold) {
+      effect.requiredProportion = proportionThreshold.getValue()*effect.PROPORTION_INC;
+    }
+ }
 }

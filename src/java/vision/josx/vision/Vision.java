@@ -31,7 +31,10 @@ public class Vision extends Frame implements ControllerListener {
   static Recorder recorder;
   static boolean captureColor = false;
   static Vision visionFrame;
-  static ColorEffect colorEffect;
+  static ColorEffect colorEffect = new ColorEffect();
+  static FlipEffect flipEffect = new FlipEffect();
+  static RegionEffect regionEffect = new RegionEffect();
+  static MotionDetectionEffect motionDetectionEffect = new MotionDetectionEffect();
 
   // private instance variables
 
@@ -127,10 +130,10 @@ public class Vision extends Frame implements ControllerListener {
     // Instantiate and set the frame access codec to the data flow path.
 
     try {
-      Codec codec[] = {  new FlipEffect(),
-                         new MotionDetectionEffect(), 
-                         new RegionEffect(), 
-                         colorEffect = new ColorEffect()};
+      Codec codec[] = {  flipEffect,
+                         motionDetectionEffect, 
+                         regionEffect, 
+                         colorEffect};
       videoTrack.setCodecChain(codec);
     } catch (UnsupportedPlugInException e) {
       System.err.println("The processor does not support effects.");
@@ -555,14 +558,6 @@ public class Vision extends Frame implements ControllerListener {
   }
 
   /**
-   * Toggle Capture Color
-   * @param true to write the average color to System.out, false to suppress it.
-   */
-  public static void captureColor(boolean capture) {
-    captureColor = capture;
-  }
-
-  /**
    * Get the average red value for the region
    * @param region the region
    * @return the average red value
@@ -587,6 +582,23 @@ public class Vision extends Frame implements ControllerListener {
    */
   public static int getAvgBlue(int region) {
     return colorEffect.averageBlue[region-1];
+  }
+
+  /**
+   * Get the average RGB value for the region
+   * @param region the region
+   * @return the average RGB value
+   */
+  public static int getAvgRGB(int region) {
+    return ((new Color(getAvgRed(region), getAvgGreen(region), getAvgBlue(region))).getRGB()) & 0xffffff;
+  }
+
+  /**
+   * Flip the image in the image viewer horizontally
+   * @param true to flip, else false
+   */
+  public static void flipHorizontal(boolean flip) {
+    flipEffect.flip = flip;
   }
 }
 
