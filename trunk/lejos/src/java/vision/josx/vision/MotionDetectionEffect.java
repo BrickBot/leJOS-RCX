@@ -41,7 +41,7 @@ import java.io.*;
  * </ol>
  *
  * <br><br>
- * @author: Konrad Rzeszutek <konrad@darnok.org>
+ * @author : Konrad Rzeszutek <konrad@darnok.org>
  * 
  * Modified by Lawrie Griffiths to fit in with lejos vision system.
  */
@@ -108,7 +108,7 @@ public class MotionDetectionEffect extends VisionEffect {
    * Process the image, detecting motion in the regions
    * @param inBuffer the input Buffer
    * @param outBuffer the output Buffer
-   * @result BUFFER_PROCESSED_OK or BUFFER_PROCESSED_FAILED
+   * @return BUFFER_PROCESSED_OK or BUFFER_PROCESSED_FAILED
    */
   public int process(Buffer inBuffer, Buffer outBuffer) {
     /*
