@@ -46,10 +46,5 @@
 #define FILEDESCR	int
 #define BADFILE	-1
 
-extern int       __rcx_write(FILEDESCR fd, const void *buf, size_t len);
-extern int       __rcx_read(FILEDESCR fd, void *buf, int maxlen, int timeout);
-extern FILEDESCR __rcx_init (char *tty, int is_fast);
-extern void      __rcx_close (FILEDESCR fd);
-
 #endif /* RCX_COMM_LINUX_H_INCLUDED */
 
