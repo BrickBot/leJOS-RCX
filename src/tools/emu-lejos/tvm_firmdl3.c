@@ -217,8 +217,8 @@ static void sleep_us (unsigned long us)
   printf ("sleeping\n");
   #endif
 
-  tval.tv_sec = us / 1000000;
-  tval.tv_usec = us % 1000000;
+  tval.tv_sec = us / 1000000L;
+  tval.tv_usec = us % 1000000L;
   select (0, NULL, NULL, NULL, &tval);	
 
   #if TRACE
@@ -596,10 +596,12 @@ rcx_sendrecv (int fd, void *send, int slen, void *recv, int rlen,
     while (retries--) {
 	if ((status = rcx_send(fd, send, slen, use_comp)) < 0) {
 	    if (__comm_debug) printf("status = %s\n", rcx_strerror(status));
+	    sleep_us (500000L);
 	    continue;
 	}
 	if ((status = rcx_recv(fd, recv, rlen, timeout, use_comp)) < 0) {
 	    if (__comm_debug) printf("status = %s\n", rcx_strerror(status));
+	    sleep_us (500000L);
 	    continue;
 	}
 	break;

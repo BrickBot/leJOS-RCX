@@ -18,6 +18,7 @@
 extern Thread *currentThread;
 extern Thread *bootThread;
 extern byte gThreadCounter;
+extern byte gProgramNumber;
 extern boolean gRequestSuicide;
 
 typedef struct S_StackFrame
@@ -45,6 +46,9 @@ extern boolean switch_thread();
 #define stackframe_array()       ((StackFrame *) ((byte *) stackframe_array_ptr() + HEADER_SIZE))
 #define stack_array()            ((STACKWORD *) ((byte *) stack_array_ptr() + HEADER_SIZE))
 #define is_reference_array()     ((JBYTE *) ((byte *) is_reference_array_ptr() + HEADER_SIZE))
+#define set_program_number(N_)   {gProgramNumber = (N_);}
+#define inc_program_number()     {if (++gProgramNumber >= get_num_entry_classes()) gProgramNumber = 0;}
+#define get_program_number()     gProgramNumber 
 
 static inline void init_threads()
 {

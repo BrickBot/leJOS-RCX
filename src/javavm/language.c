@@ -44,7 +44,7 @@ byte get_class_index (Object *obj)
   byte f;
 
   f = obj->flags;
-  if (f & ARRAY_MASK)
+  if (f & IS_ARRAY_MASK)
     return JAVA_LANG_OBJECT;
   return (f & CLASS_MASK);
 }
@@ -220,6 +220,9 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
 
   init_stack_ptr (stackFrame, methodRecord);
   update_constant_registers (stackFrame);
+  
+  //printf ("m %d stack = %d\n", (int) methodRecord->signatureId, (int) (localsBase - stack_array())); 
+  
   // Check for stack overflow
   if (is_stack_overflow (methodRecord))
   {

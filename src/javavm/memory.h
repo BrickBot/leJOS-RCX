@@ -30,15 +30,6 @@ extern void scan_memory (TWOBYTES *numNodes, TWOBYTES *biggest, TWOBYTES *freeMe
 
 #define get_array_element_ptr(ARR_,ESIZE_,IDX_) ((byte *) (ARR_) + (IDX_) * (ESIZE_) + HEADER_SIZE)
 
-#if 0
-
-#define get_array_word(ARR_,ESIZE_,IDX_,WPT_)        (make_word (get_array_element_ptr(ARR_,ESIZE_,IDX_), ESIZE_, WPT_))
-#define set_array_word(ARR_,ESIZE_,IDX_,WRD_)   (save_word (get_array_element_ptr(ARR_,ESIZE_,IDX_), ESIZE_, WRD_))
-
-#endif
-
-TWOBYTES get_array_size (byte length, byte elemSize);
-
 #define array_start(OBJ_)   ((byte *) (OBJ_) + HEADER_SIZE)
 #define jbyte_array(OBJ_)   ((JBYTE *) array_start(OBJ_))
 #define word_array(OBJ_)    ((STACKWORD *) array_start(OBJ_))

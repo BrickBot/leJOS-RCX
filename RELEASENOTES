@@ -1,3 +1,21 @@
+leJOS 1.0.0beta1:
+-----------------
+
+  - Multi-program downloading. All programs are linked and
+    downloaded in one shot and override previously downloaded 
+    programs. Use: lejos Class0,Class1,...
+  - Auto power off, but only while in program-download mode.
+  - Increased default stack size.
+  - Brian Bagnall's latest changes to Math (log, exp, sqrt, and more!)
+  - Changed memory allocation and deallocation routines, in preparation
+    for upcoming implementation of garbage collection.
+  - Longest array length is now 511 (was 255).
+  - Linker warns about truncated long and double constants.
+  - Battery power shown as percentage in program-download mode.
+  - This should now work: To kill a running program, hold Run while 
+    you press On/Off.
+  - Miscellaneous bug fixes.
+
 leJOS 1.0.0alpha5:
 ------------------
 

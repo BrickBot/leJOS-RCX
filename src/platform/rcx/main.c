@@ -52,6 +52,12 @@ Thread *bootThread;
 #define HP_INTERRUPTED     1
 #define HP_NOT_STARTED     2
 
+#define BUTTON_VIEW 0x02
+#define BUTTON_PRGM 0x04
+#define BUTTON_RUN 0x01
+
+#define POWER_OFF_TIMEOUT  (8L * 60L * 1000L)
+ 
 #ifdef VERIFY
 
 void assert (boolean aCond, int aCode)
@@ -78,6 +84,7 @@ boolean isReadyToTransfer;
 //TWOBYTES noTransferCount;
 TWOBYTES seqNumber;
 TWOBYTES currentIndex;
+FOURBYTES powerOffTime;
 
 //char runStatus = RS_NO_PROGRAM;
 
@@ -87,23 +94,26 @@ set_data_pointer (void *ptr)
   play_sound_or_set_data_pointer(0x1771, (short)ptr, 0);
 }
 
-void delay()
+void delay (unsigned long count)
 {
-  int i;
+  unsigned long i;
 	
-  for (i = 0; i  < 100; i++) { }
+  for (i = 0; i  < count; i++) { }
 }
 
-void wait_for_power_release()
+void wait_for_power_release (unsigned short count)
 {
-  //TWOBYTES debouncer;
+  TWOBYTES debouncer = 0;
 
-  delay();
   do
   {
+    delay (20);
     get_power_status (POWER_KEY, &status);
-  } while (status == 0);
-  delay();
+    if (status == 0)
+      debouncer = 0;
+    else
+      debouncer++;
+  } while (debouncer <= count);
 }
 
 void trace (short s, short n1, short n2)
@@ -119,7 +129,7 @@ void trace (short s, short n1, short n2)
     get_power_status (POWER_KEY, &status);
   } while (status != 0);
   // Wait for power release
-  wait_for_power_release();
+  wait_for_power_release (30);
 }
 
 void handle_uncaught_exception (Object *exception,
@@ -131,6 +141,20 @@ void handle_uncaught_exception (Object *exception,
   trace (4, methodRecord->signatureId, get_class_index (exception) % 10);
 }
 
+void wait_for_release (short code)
+{
+  short st;
+  short debouncer = 0;
+  
+  do 
+  {
+    read_buttons (0x3000, &st);
+    if (st & code)
+      debouncer = 0;
+    else
+      debouncer++;
+  } while (debouncer < 100);
+}
 
 /**
  * This function is invoked by switch_thread
@@ -145,21 +169,18 @@ void switch_thread_hook()
     
     read_buttons (0x3000, &st);
     // Power button pressed - wait for release
-    wait_for_power_release();
+    wait_for_power_release (150);
     schedule_request (REQUEST_EXIT);
-    if (st & 0x01)
+    if (st & BUTTON_RUN)
     {
-      do
-      {
-	read_buttons (0x3000, &status);
-      } while ((status & 0x01) != 0); 
+      wait_for_release (BUTTON_RUN);
       hookCommand = HC_EXIT_PROGRAM;
     }
     else
     {
       hookCommand = HC_SHUTDOWN_POWER;      
       play_system_sound (SOUND_QUEUED, 0);
-      for (status = 0; status < 100; status++) { }
+      delay (40000);
     }
   }
 }
@@ -178,14 +199,12 @@ int main (void)
   // The following call always needs to be the first one.
   init_timer (&timerdata0, &timerdata1[0]);
   sys_time = 0l;
+  set_program_number (0);
   init_power();
   systime_init();
   init_sensors();
   // If power key pressed, wait until it's released.
-  for (status = 0; status < 200; status++) { }
-  get_power_status (POWER_KEY, &status);
-  if (status == 0)  
-    wait_for_power_release();
+  wait_for_power_release (600);
  LABEL_NEW_PROGRAM:
   hookCommand = HC_NONE;
  LABEL_DOWNLOAD:
@@ -195,9 +214,12 @@ int main (void)
   play_system_sound (SOUND_QUEUED, 1);
   clear_display();
   get_power_status (POWER_BATTERY, &status);
+  status = (status * 100L) / 355L;
   set_lcd_number (LCD_UNSIGNED, status, 3002);
-  set_lcd_number (LCD_PROGRAM, (short) 0, 0);
+ LABEL_SHOW_PROGRAM_NUMBER:
+  set_lcd_number (LCD_PROGRAM, get_program_number(), 0);
  LABEL_START_TRANSFER:
+  powerOffTime = sys_time + POWER_OFF_TIMEOUT;
   clear_lcd_segment (LCD_WALKING);
   if (hasProgram != HP_NO_PROGRAM)
   {
@@ -210,7 +232,7 @@ int main (void)
   refresh_display();
   currentIndex = 1;
  LABEL_COMM_LOOP:
-  while (1)
+  for (;;)
   {
     check_for_data (&valid, &nextByte);
     if (valid)
@@ -285,6 +307,8 @@ int main (void)
 	hasProgram = HP_NOT_STARTED;
         // Make sure memory allocation starts at an even address.
         mmStart = (((TWOBYTES) nextByte) & 0x0001) ? nextByte + 1 : nextByte;
+	// Initialize program number shown on LCD.
+	set_program_number (0);
         goto LABEL_DOWNLOAD_INIT;
       }
       if (nextByte >= MAXNEXTBYTEPTR || seqNumber != currentIndex)
@@ -299,20 +323,31 @@ int main (void)
     }
     else
     {
+      if (sys_time >= powerOffTime)
+      {
+	play_system_sound (SOUND_QUEUED, 0);
+	delay (30000);
+	goto LABEL_SHUTDOWN_POWER;
+      }
       switch_thread_hook();
       if (hookCommand == HC_SHUTDOWN_POWER)
         goto LABEL_SHUTDOWN_POWER;
-      if (hookCommand == HC_EXIT_PROGRAM)
-	goto LABEL_COMM_LOOP;
+      if (hookCommand != HC_NONE)
+	goto LABEL_START_TRANSFER;
       if (hasProgram != HP_NO_PROGRAM)
       {
         read_buttons (0x3000, &status);
-	if ((status & 0x01) != 0)
+	if (status & BUTTON_RUN)
 	{
-          do {
-            read_buttons (0x3000, &status);
-	  } while ((status & 0x01) != 0);
-          goto LABEL_PROGRAM_STARTUP;
+          wait_for_release (BUTTON_RUN);
+	  goto LABEL_PROGRAM_STARTUP;
+	}
+	else if (status & BUTTON_PRGM)
+	{
+	  play_system_sound (SOUND_QUEUED, 0);
+	  wait_for_release (BUTTON_PRGM);
+	  inc_program_number();
+	  goto LABEL_SHOW_PROGRAM_NUMBER;
 	}
       }
     }
@@ -360,7 +395,9 @@ int main (void)
   // Show walking man.
   clear_lcd_segment (LCD_STANDING);
   set_lcd_segment (LCD_WALKING);
-  refresh_display();  
+  refresh_display();
+  
+  //delay (200000);  
 
   // Execute the bytecode interpreter.
   engine();
@@ -368,7 +405,8 @@ int main (void)
   // Engine returns when all threads are done or
   // when power has been shut down. The following
   // delay is so that motors get a chance to stop.
-  for (status = 0; status < 10000; status++) { }
+  delay (20000);
+
   if (hookCommand == HC_EXIT_PROGRAM)
   {
     // Program must be deleted from memory

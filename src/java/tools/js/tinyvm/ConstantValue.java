@@ -61,14 +61,20 @@ public class ConstantValue extends WritableDataWithOffset
     else if (iEntry instanceof JCPE_Long)
     {
       long pValue = ((JCPE_Long) iEntry).getValue();
-      pDataOut.writeLong (pValue);      
+      int pIntValue = (int) pValue;
+      if (pIntValue != pValue)
+	System.out.println ("Warning: Long " + pValue + "L truncated to " + pIntValue + ".");
+      pDataOut.writeInt (0);
+      pDataOut.writeInt (pIntValue);      
     }
     else if (iEntry instanceof JCPE_Double)
     {
       double pDoubleValue = ((JCPE_Double) iEntry).getValue();
-      //System.out.println ("Double value " + pDoubleValue);
       float pValue = (float) pDoubleValue;
-      //System.out.println ("Writing " + pValue);
+      if (pDoubleValue != 0.0 && Math.abs ((pDoubleValue - pValue) / pDoubleValue) > 0.1)
+      {
+	System.out.println ("Warning: Double " + pDoubleValue + " truncated to " + pValue + "f.");
+      }
       pDataOut.writeInt (0);
       pDataOut.writeInt (Float.floatToIntBits (pValue));
     }

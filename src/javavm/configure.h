@@ -11,7 +11,7 @@
  * Maximum number of words in a thread's stack
  * (for both locals and operands).
  */
-#define STACK_SIZE                       54
+#define STACK_SIZE                       70
 
 /**
  * Should always be 1.
