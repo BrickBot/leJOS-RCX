@@ -1,7 +1,7 @@
 package josx.rcxcomm;
 
 import java.io.*;
-import josx.rcxcomm.irTower;
+import josx.rcxcomm.Tower;
 
 /** A DataPort designed for use on a computer with a serial or a USB-connected
  * IR Tower. The USB implementation only currently works for Windows.
@@ -11,7 +11,7 @@ import josx.rcxcomm.irTower;
  */
 public class RCXPort extends DataPort {
 
-  private irTower tower;
+  private Tower tower;
   int bytesRead;
   boolean open = false;
   int usbFlag = 0;
@@ -35,7 +35,7 @@ public class RCXPort extends DataPort {
   }
 
   private void open(String port) throws IOException {
-    tower = new irTower();
+    tower = new Tower();
     int r = tower.open(port);
 
     // Throw an IO Exception if the Open fails
