@@ -38,10 +38,10 @@ public class CLIToolProgressMonitor implements ToolProgressMonitor
     */
    public void progress (int progress)
    {
-      assert progress >= 0 && progress <= 100: "Precondition: progress >= 0 && progress <= 100";
+      assert progress >= 0 && progress <= 1000: "Precondition: progress >= 0 && progress <= 1000";
 
-      System.out.print("\r  " + progress + "%\r");
-      if (progress >= 100)
+      System.out.print("\r  " + (progress/10) + "%\r");
+      if (progress >= 1000)
       {
          System.out.println();
       }
