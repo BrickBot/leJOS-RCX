@@ -1,235 +1,238 @@
 package js.tools;
 
 import josx.rcxcomm.Tower;
+import josx.rcxcomm.TowerException;
 
 /**
  * RCX Downloading utilities
+ * 
  * @author Lawrie Griffiths
  */
-public class Download {
-
+public class Download
+{
   private static final int TOWRITEMAX = 200;
   private static final int MAGIC = 0xCAF6;
-  private static Tower tower;
+  private Tower _tower;
+  private ToolProgressListener _progress = null;
+
 
   /**
-   * Open the tower
-   **/
-  public static void open(String port, boolean fastMode) {
-    tower = new Tower();
-    int r;
-    tower.setFast((fastMode ? 1 : 0));
-    if ((r=tower.open(port)) < 0) {
-      System.err.println("Open failed: " + tower.strerror(-r) +
-                 ", errno = " + tower.getError());
-      System.exit(1);
-    }
-    if (tower.isAlive() == 0) {
-      System.err.println("Tower not responding");
-      System.exit(1);
-    }
-  }
-
-  /**
-   * Close the tower
+   * Constructor.
    */
-  public static void close() {
-    tower.close();
-  }
-
-  /**
-   * Transfer a block of data
-   **/
-  public static int transfer_data (
-                      byte opcode, 
-                      int index,
-                      byte [] buffer,
-                      int offset, 
-                      int length)
+  public Download(ToolProgressListener listener)
   {
-    byte checkSum;
-    byte [] response = new byte[2];
-    int  i, r = 0;
-
-    byte [] actualBuffer = new byte[length + 6];
-
-    actualBuffer[0] = opcode;
-    actualBuffer[1] = (byte) ((index >> 0) & 0xFF);
-    actualBuffer[2] = (byte) ((index >> 8) & 0xFF);
-    actualBuffer[3] = (byte) ((length >> 0) & 0xFF);
-    actualBuffer[4] = (byte) ((length >> 8) & 0xFF);
-
-    checkSum = 0;
-
-    // Don't include opcode in this checksum!
-
-    for (i = 0; i < length; i++)
-    {
-      checkSum += buffer[offset+i];
-      actualBuffer[5 + i] = buffer[offset+i];
-    }
-
-    actualBuffer[5 + i] = checkSum;
-
-    // Try 10 times
-
-    for(i=0;i<10 && r <=0;i++) {
-      tower.send(actualBuffer, length + 6);
-      r = tower.receive(response);
-    }
-
-    if (r >=0 && response[1] == 3)
-    {
-      System.err.println("Checksum failed");
-      r = -3;
-    }
-    if (r < 0) {
-      System.err.println("Response = " + r);
-      System.exit(1);
-    }
-    return r;
+    assert listener != null : "Precondition: listener != null";
+    
+    _progress = listener;
   }
 
   /**
-   * Download a java program
-   **/
-  public static void downloadProgram(byte [] buffer, int len) {
-    byte [] send = new byte[3];
-    int numRead = 0, numToWrite, index, status;
-    byte [] recv = new byte[3];
-    byte opcode = 0x45;
-    int offset = 0;
-   
-    // Send program-download message
+   * finalize. Closes tower if still open.
+   */
+  public void finalize ()
+  {
+    if (isOpen())
+    {
+      close();
+    }
+  }
 
+  /**
+   * Is tower open?
+   */
+  public boolean isOpen ()
+  {
+    return _tower != null;
+  }
+
+  /**
+   * Open the tower.
+   * 
+   * @param port serial port
+   * @param fastMode use fast mode transfer?
+   */
+  public void open (String port, boolean fastMode) throws ToolException
+  {
+    assert port != null : "Precondition: port != null";
+    assert !isOpen() : "Precondition: !isOpen()";
+
+    _tower = new Tower(port, fastMode);
+
+    try
+    {
+      _tower.openTower();
+    }
+    catch (TowerException e)
+    {
+      throw new ToolException("Unable to open tower: +" + e.getMessage(), e);
+    }
+
+    if (!_tower.isRCXAlive())
+    {
+      throw new ToolException("RCX not responding");
+    }
+
+    assert isOpen() : "Postcondition: isOpen()";
+  }
+
+  /**
+   * Close the tower.
+   */
+  public void close ()
+  {
+    assert isOpen() : "Precondition: isOpen()";
+
+    try
+    {
+      _tower.closeTower();
+    }
+    catch (TowerException e)
+    {
+      // ignore
+    }
+    finally
+    {
+      _tower = null;
+    }
+
+    assert !isOpen() : "Postcondition: !isOpen()";
+  }
+
+  /**
+   * Download a java program.
+   * 
+   * @param buffer program
+   * @param length length of program
+   */
+  public void downloadProgram (byte[] buffer, int length) throws ToolException
+  {
+    // TODO use verbose as parameter?
+    boolean verbose = true;
+
+    byte[] send = new byte[3];
+    byte[] recv = new byte[3];
+
+    // Send program-download message
     send[0] = 0x12;
     send[1] = (byte) (MAGIC >> 8);
     send[2] = (byte) (MAGIC & 0xFF);
 
-    // Try 3 times
-    
-    for(int i=0;i<3 && numRead <= 0;i++) {
-      tower.send(send, 3);
-      numRead = tower.receive(recv);
-    }
-
-    if (numRead != 3)
+    try
     {
-      System.err.println (numRead == -4 ? "No response from RCX. " : "Bad response from RCX. ");
-      System.err.println("Status = " + numRead + " : " + tower.strerror(-numRead));
-      System.err.println("Please make sure RCX has leJOS firmware " +
-              "and is in range. The firmware must be in program download mode. " +
-	      "Turn RCX off and on if necessary.\n");
-      System.exit (1);
-    }
-        
-    if (recv[1] != send[1] || recv[2] != send[2])
-    {
-      System.err.println("Unexpected response from RCX. The RCX either doesn't have valid leJOS firmware or " +
-              "it is not in program-download mode. (lejosfirmdl downloads firmware).");
-      System.exit (1);
-    }
-
-    // Transfer data  
-  
-    numToWrite = TOWRITEMAX;
-    for(index = 1; numToWrite == TOWRITEMAX; index++) {
-      numToWrite = (len - offset > TOWRITEMAX ? TOWRITEMAX : len - offset);
-      System.err.print("\r  " + (int) (((float) offset/(float) len)*100f) + "%\r");
-      if ((status = Download.transfer_data (opcode, len - offset <= TOWRITEMAX ? 0 : index, 
-                                   buffer, offset, numToWrite)) < 0)
+      int numRead = _tower.sendPacketReceivePacket(send, recv, 3);
+      if (numRead < 3 || recv[1] != send[1] || recv[2] != send[2])
       {
-          System.err.println("Unexpected response from RCX whilst downloading: " + status);
-          System.exit(1);
+        throw new ToolException("RCX communication: unexpected response."
+            + "\nThe RCX either doesn't have valid leJOS firmware "
+            + "or it is not in program-download mode.");
       }
-      opcode ^= 0x08;
-      offset += numToWrite;
-    };
-    
-    System.err.print("\r  100%\r");
+    }
+    catch (TowerException e)
+    {
+      throw new ToolException(e.getMessage()
+          + "\nPlease make sure RCX has leJOS firmware and is in range."
+          + "\nThe firmware must be in program download mode."
+          + "\nTurn RCX off and on if necessary.");
+    }
+
+    transferData(buffer, length, true, verbose);
   }
 
   /**
-   * Download the firmware 
+   * Install the firmware.
+   * 
+   * @param image firmware
+   * @param length length of firmware
+   * @param baseAddress base address of firmware
+   * @param verbose output progress?
    */
-  public static void downloadFirmware(byte [] image, int len, int start, boolean verbose)
+  public void installFirmware (byte[] image, int length, int baseAddress,
+      boolean verbose) throws ToolException
   {
-    short cksum = 0;
-    byte [] send = new byte[6];
-    byte [] recv = new byte[2];
-    int addr = 0, index, size, i;
-    byte opcode = 0x45;
-    int numToWrite, status;
+    deleteFirmware(verbose);
+    downloadFirmware(image, length, baseAddress, verbose);
+    unlockFirmware(verbose);
+  }
 
-    if (verbose) System.err.println("Downloading firmware");
-    if (verbose) System.err.println("Total image size = " + len + "(" + (len+1023)/1024 + "k)");
-    // System.err.println("start = " + start);
+  /**
+   * Download the firmware.
+   * 
+   * @param image firmware
+   * @param length length of firmware
+   * @param baseAddress base address of firmware
+   * @param verbose output progress?
+   */
+  public void downloadFirmware (byte[] image, int len, int baseAddress,
+      boolean verbose) throws ToolException
+  {
+    byte[] send = new byte[6];
+    byte[] recv = new byte[2];
 
-    /* Compute image checksum */
-    int cksumlen = (start + len < 0xcc00) ? len : 0xcc00 - start;
-    int r = 0;
+    if (verbose)
+    {
+      _progress.operation("Downloading firmware");
+      int kB = (len + 1023) / 1024;
+      _progress.log("Total image size = " + len + " (" + kB + "kB)");
+    }
 
-    for (i = 0; i < cksumlen; i++)
-	cksum += (image[i] < 0 ? image[i] + 256 : image[i]);
+    // Compute image checksum
+    // TODO what is this?
+    int checksumlength = (baseAddress + len < 0xcc00)
+        ? len
+        : 0xcc00 - baseAddress;
+    short checksum = 0;
+    for (int i = 0; i < checksumlength; i++)
+    {
+      checksum += (image[i] < 0 ? image[i] + 256 : image[i]);
+    }
 
-    // System.err.println("Checksum = " + cksum);
-
-    /* Start firmware download */
+    // Start firmware download
     send[0] = 0x75;
-    send[1] = (byte) ((start >> 0) & 0xff);
-    send[2] = (byte) ((start >> 8) & 0xff);
-    send[3] = (byte) ((cksum >> 0) & 0xff);
-    send[4] = (byte) ((cksum >> 8) & 0xff);
+    send[1] = (byte) ((baseAddress >> 0) & 0xff);
+    send[2] = (byte) ((baseAddress >> 8) & 0xff);
+    send[3] = (byte) ((checksum >> 0) & 0xff);
+    send[4] = (byte) ((checksum >> 8) & 0xff);
     send[5] = 0;
 
-    // try 3 times
-    
-    for(i=0;i<3 && r <=0;i++) {
-      tower.send(send,6);
-      r = tower.receive(recv);
-    }
-
-    if (r <= 0) {
-      System.err.println("Start firmware download failed");
-      System.exit(1);
-    }
-
-    // Transfer the data
-
-    // System.err.println("Length = " + len);
-    // System.err.println("TOWRITEMAX " + TOWRITEMAX);
- 
-    numToWrite = TOWRITEMAX;
-    for(index = 1; numToWrite == TOWRITEMAX; index++) {
-      numToWrite = (addr + TOWRITEMAX > len ? len - addr : TOWRITEMAX);
-      if (verbose) System.err.print("\r  " + (int) (((float) addr/(float) len)*100f) + "%\r");
-      String s = "Transfer = ";
-      if ((status = transfer_data (opcode, numToWrite < TOWRITEMAX ? index : index, 
-                                   image, addr, numToWrite)) < 0)
+    try
+    {
+      int numRead = _tower.sendPacketReceivePacket(send, recv, 3);
+      if (numRead == 0)
       {
-          System.err.println("Unexpected response from RCX whilst downloading: " + status);
-          System.exit(1);
+        throw new ToolException(
+            "RCX communication: Start firmware download failed");
       }
-      for(i=0;i<numToWrite;i++) s += " " + image[addr + i];
-      // System.err.println(s);
-      opcode ^= 0x08;
-      addr += numToWrite;
     }
-    if (verbose) System.err.println("Firmware downloaded");
+    catch (TowerException e)
+    {
+      throw new ToolException("Start firmware download failed: "
+          + e.getMessage());
+    }
+
+    transferData(image, len, false, verbose);
+
+    if (verbose)
+    {
+      _progress.operation("Firmware downloaded");
+    }
   }
 
   /**
-   * Delete the firmware
-   **/
-  public static void deleteFirmware(boolean verbose)
+   * Delete the firmware.
+   * 
+   * @param verbose output progress?
+   */
+  public void deleteFirmware (boolean verbose) throws ToolException
   {
-    byte [] send = new byte[6];
-    byte [] recv = new byte[1];
-    int r=0;
+    byte[] send = new byte[6];
+    byte[] recv = new byte[1];
 
-    if (verbose) System.err.println("Deleting firmware");
+    if (verbose)
+    {
+      _progress.operation("Deleting firmware");
+    }
 
-    /* Delete firmware */
+    // Delete firmware
     send[0] = 0x65;
     send[1] = 1;
     send[2] = 3;
@@ -237,65 +240,149 @@ public class Download {
     send[4] = 7;
     send[5] = 11;
 
-    // Needs at least 2 goes to delete firmware 
-
-    for(int i=0;i<3 && r <= 0;i++) {
-      tower.send(send,6);
-      r = tower.receive(recv);
+    try
+    {
+      int numRead = _tower.sendPacketReceivePacket(send, recv, 3);
+      if (numRead != 1)
+      {
+        throw new ToolException("Delete firmware failed");
+      }
+    }
+    catch (TowerException e)
+    {
+      throw new ToolException("Delete firmware failed: " + e.getMessage());
     }
 
-    if (r != 1) {
-      System.err.println("Delete firmware failed, response = " + r);
-      System.exit(1);
+    if (verbose)
+    {
+      _progress.operation("Firmware deleted");
     }
-    if (verbose) System.err.println("Firmware deleted");
   }
 
   /**
-   * Unlock the firmware
-   **/
-  public static void unlockFirmware(boolean verbose)
+   * Unlock the firmware.
+   * 
+   * @param verbose output progress?
+   */
+  public void unlockFirmware (boolean verbose) throws ToolException
   {
-    byte [] send = new byte[6];
-    byte [] recv = new byte[26];
-    int r = 0;
+    byte[] send = new byte[6];
+    byte[] recv = new byte[26];
 
-    if (verbose) System.err.println("Unlocking firmware");
+    if (verbose)
+    {
+      _progress.operation("Unlocking firmware");
+    }
 
-    /* Unlock firmware */
+    // Unlock firmware
     send[0] = (byte) 0xa5;
-    send[1] = 76;		// 'L'
-    send[2] = 69;		// 'E'
-    send[3] = 71;		// 'G'
-    send[4] = 79;		// 'O'
-    send[5] = (byte) 174;	// '®'
+    send[1] = 76; // 'L'
+    send[2] = 69; // 'E'
+    send[3] = 71; // 'G'
+    send[4] = 79; // 'O'
+    send[5] = (byte) 174; // '®'
 
-    /* Use longer timeout so ROM has time to checksum firmware */
-
-    // Try 10 times
-    
-    for(int i=0;i<10 && r <= 0;i++) {
-      tower.send(send,6);
-      r = tower.receive(recv);
+    // Use longer timeout so ROM has time to checksum firmware
+    try
+    {
+      int numRead = _tower.sendPacketReceivePacket(send, recv, 10);
+      if (numRead == 0)
+      {
+        throw new ToolException("Unlock firmware failed");
+      }
+    }
+    catch (TowerException e)
+    {
+      throw new ToolException("Unlock firmware failed: " + e.getMessage());
     }
 
-    if (r <= 0) {
-      System.err.println("Unlock firmware failed, response = " + r);
-      System.exit(1);
+    if (verbose)
+    {
+      _progress.operation("Firmware unlocked");
     }
-
-    if (verbose) System.err.println("Firmware unlocked");
   }
 
   /**
-   * Install the firmware
-   **/
-  public static void installFirmware(byte [] image, int length,
-	               int entry, boolean verbose)
+   * Transfer data.
+   * 
+   * @param opcode opcode
+   * @param data data array
+   * @param length number of bytes to transfer
+   * @param terminate0 is last block to transfer numebr 0?
+   * @param verbose output progress?
+   */
+  public void transferData (byte[] data, int length, boolean terminate0,
+      boolean verbose) throws ToolException
   {
-    deleteFirmware(verbose);
-    downloadFirmware(image, length, entry, verbose);
-    unlockFirmware(verbose);
+    byte opcode = 0x45;
+    int addr = 0;
+    for (int block = 1; addr < length; block++)
+    {
+      int numToWrite = Math.min(length - addr, TOWRITEMAX);
+
+      if (verbose)
+      {
+        _progress.progress(addr * 100 / length);
+      }
+
+      block = terminate0 && length - addr <= TOWRITEMAX ? 0 : block;
+      transferData(opcode, block, data, addr, numToWrite);
+
+      opcode ^= 0x08;
+      addr += numToWrite;
+    };
+
+    if (verbose)
+    {
+      _progress.progress(100);
+    }
+  }
+
+  //
+  // private interface
+  //
+
+  /**
+   * Transfer a single block of data.
+   * 
+   * @param opcode opcode
+   * @param index index of block to transfer
+   * @param data data array
+   * @param offset offset in data array
+   * @param length number of bytes to transfer
+   */
+  private void transferData (byte opcode, int index, byte[] data, int offset,
+      int length) throws ToolException
+  {
+    byte[] send = new byte[length + 6];
+    byte[] response = new byte[2];
+
+    send[0] = opcode;
+    send[1] = (byte) ((index >> 0) & 0xFF);
+    send[2] = (byte) ((index >> 8) & 0xFF);
+    send[3] = (byte) ((length >> 0) & 0xFF);
+    send[4] = (byte) ((length >> 8) & 0xFF);
+
+    // Don't include opcode in this checksum!
+    byte checkSum = 0;
+    for (int i = 0; i < length; i++)
+    {
+      checkSum += data[offset + i];
+      send[5 + i] = data[offset + i];
+    }
+    send[5 + length] = checkSum;
+
+    try
+    {
+      int numRead = _tower.sendPacketReceivePacket(send, response, 10);
+      if (numRead >= 2 && response[1] == 3)
+      {
+        throw new ToolException("Error while downloading: checksum error");
+      }
+    }
+    catch (TowerException e)
+    {
+      throw new ToolException("Error while downloading: " + e.getMessage());
+    }
   }
 }
-

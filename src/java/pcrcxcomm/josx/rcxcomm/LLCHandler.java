@@ -21,10 +21,18 @@ public class LLCHandler extends PacketHandler {
   private long sendTime;
 
   public LLCHandler() {
-    if (tower == null) tower = new Tower();
-    if (!open) tower.open();
-    usbFlag = tower.getUsbFlag();
-    open = true;
+    // TODO rework
+    try
+    {
+      if (tower == null) tower = new Tower();
+      if (!open) tower.openTower();
+      usbFlag = tower.isUSB()? 1 : 0;
+      open = true;
+    }
+    catch (TowerException e)
+    {
+      e.printStackTrace();
+    }
   }
 
   /**

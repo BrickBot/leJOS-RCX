@@ -1,133 +1,332 @@
 package josx.rcxcomm;
 
-/** Low-level interface to the Lego IR Tower
- * Used by RCXPort to send and receive messages to and from the RCX.
- * Can be used to send any packet or any sequence of bytes to the RCX.
- * The tower is opened with a call to open() or open(port) and
- * closed by a call to close().
- * <code>send</code> can be used to send a packet, and receive to receive one.
- * <code>write</code> can read a sequence of bytes, and read can read them.
+import java.io.File;
+import java.net.URL;
+
+/**
+ * Low-level interface to the Lego IR Tower Used by RCXPort to send and receive
+ * messages to and from the RCX. Can be used to send any packet or any sequence
+ * of bytes to the RCX. The tower is opened with a call to open() or open(port)
+ * and closed by a call to close(). <code>send</code> can be used to send a
+ * packet, and receive to receive one. <code>write</code> can read a sequence
+ * of bytes, and read can read them.
  */
-public class Tower {
+public class Tower
+{
+  //
+  // java implementation
+  //
 
-  /** Set fast mode
-   * @param fast - 0 = slow mode, 1 = fast mode
-   */
-  public native int setFast (int fast);
+  private String _tty;
+  private boolean _isOpen;
 
-  /** Open the tower
-   * @param port port to use, e.g. usb or COM1
+  /**
+   * Create the tower class.
    */
-  public native int open(String p);
+  public Tower()
+  {
+    this("", false);
+  }
 
-  /** Close the tower
-   *@return error number or zero for success
+  /**
+   * Create the tower class.
    */
-  public native int close();
+  public Tower(String tty, boolean fastMode)
+  {
+    assert tty != null : "Precondition: tty != null";
 
-  /** Write low-level bytes to the tower, e.g 0xff550010ef10ef for ping
-   * @param b bytes to send
-   * @param n number of bytes
-   * @return error number
-   */
-  public native int write(byte b[], int n);
+    _tty = tty;
+    _isOpen = false;
+    // TODO include this if native implementation compiles
+    // setFast(fastMode? 1 : 0);
+  }
 
-  /** send a packet to the RCX, e.g 0x10 for ping
-   * @param b packet to send
-   * @param n number of bytes
-   * @return error number
+  /**
+   * Open the tower.
    */
-  public native int send(byte b[], int n);
-  
-  /** Low-level read
-   * @param b buffer to receive bytes
+  public void openTower () throws TowerException
+  {
+    int status = open(_tty);
+    if (status != 0)
+    {
+      throw new TowerException(status);
+    }
+    _isOpen = true;
+  }
+
+  /**
+   * Close tower.
+   */
+  public void closeTower () throws TowerException
+  {
+    int status = close();
+    _isOpen = false;
+    if (status != 0)
+    {
+      throw new TowerException(status);
+    }
+  }
+
+  /**
+   * Get last status code.
+   * 
+   * @deprecated use exception handling instead of status codes
+   */
+  public int getError ()
+  {
+    return err;
+  }
+
+  /**
+   * Getter for USB Flag
+   * 
+   * @return USB Flag as an integer
+   */
+  public boolean isUSB ()
+  {
+    return usbFlag == 1;
+  }
+
+  /**
+   * Check if RCX is alive.
+   */
+  public boolean isRCXAlive ()
+  {
+    return isAlive() == 1;
+  }
+
+  /**
+   * Write low-level bytes to the tower, e.g 0xff550010ef10ef for ping.
+   * 
+   * @param data bytes to send
+   */
+  public void writeBytes (byte[] data) throws TowerException
+  {
+    assert data != null : "Precondition: data != null";
+
+    int status = write(data, data.length);
+    if (status < 0)
+    {
+      throw new TowerException(status);
+    }
+  }
+
+  /**
+   * Send a packet to the RCX, e.g 0x10 for ping.
+   * 
+   * @param data packet to send
+   */
+  public void sendPacket (byte[] data) throws TowerException
+  {
+    assert data != null : "Precondition: data != null";
+
+    int status = send(data, data.length);
+    if (status < 0)
+    {
+      throw new TowerException(status);
+    }
+  }
+
+  /**
+   * Low-level read.
+   * 
+   * @param data buffer to receive bytes
    * @return number of bytes read
    */
-  public native int read(byte b[]);
+  public int readBytes (byte[] data) throws TowerException
+  {
+    assert data != null : "Precondition: data != null";
 
-  /** Receive a packet
-   * @param b buffer to receive packet
+    int result = read(data);
+    if (result < 0)
+    {
+      throw new TowerException(result);
+    }
+
+    assert result >= 0 : "Postcondition: result >= 0";
+    return result;
+  }
+
+  /**
+   * Receive a packet.
+   * 
+   * @param data buffer to receive packet
    * @return number of bytes read
    */
-  public native int receive(byte b[]);
+  public int receivePacket (byte[] data) throws TowerException
+  {
+    int result = receive(data);
+    if (result < 0)
+    {
+      throw new TowerException(result);
+    }
 
-  /** dump hex to standard out
-   * @param prefix identifies the dump
-   * @param b bytes to dump
-   * @param n numberof bytes
-   */
-  public native void hexdump(String prefix, byte b[], int n);
-  
-  /** Check if RCX is alive
-   * @return 1 if alive, 0 if not
-   */
-  public native int isAlive();
+    assert result >= 0 : "Postcondition: result >= 0";
+    return result;
+  }
 
+  /**
+   * Send a packet and retrieve answer.
+   * 
+   * @param data bytes to send
+   * @param response buffer to receive packet
+   * @return number of bytes read
+   */
+  public int sendPacketReceivePacket (byte[] data, byte[] response, int retries)
+      throws TowerException
+  {
+    TowerException towerException = null;
+    int numRead = -1;
+    for (; retries > 0; retries--)
+    {
+      towerException = null;
+      try
+      {
+        sendPacket(data);
+        numRead = receivePacket(response);
+        break;
+      }
+      catch (TowerException e)
+      {
+        towerException = e;
+        // wait 100ms before trying again
+        try
+        {
+          Thread.sleep(100);
+        }
+        catch (InterruptedException e1)
+        {
+          // ignore
+        }
+      }
+    }
+
+    if (towerException != null)
+    {
+      throw towerException;
+    }
+
+    assert numRead >= 0 : "Postcondition: numRead >= 0";
+    return numRead;
+  }
+
+  //
+  // native code
+  //
+
+  /**
+   * load native lib.
+   */
+  static
+  {
+    try
+    {
+      // try to search in the directory in which the jar resides
+      String filename = System.mapLibraryName("jirtrcx");
+      URL url = Tower.class.getResource("");
+      String jarFilename = url.getFile();
+      // cut "file:" and jar part beginning with "!"
+      File jarFile = new File(jarFilename
+          .substring(5, jarFilename.indexOf('!')));
+      File file = new File(jarFile.getParentFile(), filename);
+      String path = file.getAbsolutePath();
+      // System.err.println("Loading native lib " + path);
+      System.load(path);
+    }
+    catch (Throwable e)
+    {
+      // System.err.println("Unable to load native lib jirtrcx: " +
+      // e.getMessage());
+
+      try
+      {
+        // try again the default way
+        // System.err.println("Loading native lib jirtrcx");
+        System.loadLibrary("jirtrcx");
+      }
+      catch (Throwable e1)
+      {
+        // System.err.println("Unable to load native lib jirtrcx: " +
+        // e1.getMessage());
+      }
+    }
+  }
+
+  // native fields
   private int err;
   private long fh;
   private int usbFlag;
 
-  /** Open the tower
-   * @return an error number or zero for success
+  /**
+   * Open the tower
+   * 
+   * @param port port to use, e.g. usb or COM1
    */
-  public int open() {
-    return open("");
-  }
+  protected final native int open (String p);
 
-  /** Converts an error number to a string
-   * Note you should negate the error number before passing it to this method
-   * as this method expects a positive value.
-   * param errno the negation of the returned error
-   * @return the message
+  /**
+   * Close the tower
+   * 
+   * @return error number or zero for success
    */
-  public String strerror(int errno) {
-    switch (errno) {
-    case 0: return "no error";
-    case 1: return "tower not responding";
-    case 2: return "bad ir link";
-    case 3: return "bad ir echo";
-    case 4: return "no response from rcx";
-    case 5: return "bad response from rcx";
-    case 6: return "write failure";
-    case 7: return "read failure";
-    case 8: return "open failure";
-    case 9: return "internal error";
-    case 10: return "already closed";
-    case 11: return "already open";
-    case 12: return "not open";
-    default: return "unknown error";
-    }
-  }
+  protected final native int close ();
 
-  /** Create the tower class
-   *
+  /**
+   * Set fast mode
+   * 
+   * @param fast - 0 = slow mode, 1 = fast mode
    */
-  public Tower() {
-    err = 0;
-  }
+  protected final native int setFast (int fast);
 
-  /** Get the last OS error
-   * @return the error number
+  /**
+   * Write low-level bytes to the tower, e.g 0xff550010ef10ef for ping.
+   * 
+   * @param b bytes to send
+   * @param n number of bytes
+   * @return error number
    */
-  public int getError() {
-    return err;
-  }
+  protected final native int write (byte b[], int n);
 
-  /** Getter for USB Flag
-   * @return USB Flag as an integer
+  /**
+   * Send a packet to the RCX, e.g 0x10 for ping.
+   * 
+   * @param b packet to send
+   * @param n number of bytes
+   * @return error number
    */
-  public int getUsbFlag() {
-    return usbFlag;
-  }
+  protected final native int send (byte b[], int n);
 
-  /** Setter for OS Error
-   *
+  /**
+   * Low-level read.
+   * 
+   * @param b buffer to receive bytes
+   * @return number of bytes read
    */
-  public void setError(int e) {
-    err = e;
-  }
+  protected final native int read (byte b[]);
 
-  static {
-    System.loadLibrary("jirtrcx");
-  }
+  /**
+   * Receive a packet.
+   * 
+   * @param b buffer to receive packet
+   * @return number of bytes read
+   */
+  protected final native int receive (byte b[]);
+
+  /**
+   * Dump hex to standard out.
+   * 
+   * TODO remove?
+   * 
+   * @param prefix identifies the dump
+   * @param b bytes to dump
+   * @param n numberof bytes
+   */
+  protected final native void hexdump (String prefix, byte b[], int n);
+
+  /**
+   * Check if RCX is alive
+   * 
+   * @return 1 if alive, 0 if not
+   */
+  protected final native int isAlive ();
 }
