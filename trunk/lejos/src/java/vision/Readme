@@ -124,19 +124,50 @@ public class Motion implements MotionListener {
 Prerequisites
 -------------
 
-Yoyu need the Java Media framework on your PC to run the lejos Vision System.
+You need the Java Media framework on your PC to run the lejos Vision System.
+
+Windows:
 
 This is available from http://java.sun.com/products/java-media/jmf/
 
 It is best that your camera is plugged in when you install JMF, as this will 
 ensure that the capture devices for it are put in the JMF registry.
 
+Linux:
+
+Use a suitable driver for the camera. If you are using the Lego Camera, a driver can be got from:
+
+http://qce-ga.sourceforge.net
+
+This is for the Quickcam which is similar to the Lego Camera. Note that you need to get the source 
+from CVS and checkout the qc-usb module.
+
+The JMF from Sun does not pick up the camera correctly and so you need to use the JMF from
+Blackdown.org. However, at the time of this writing, there was an issue with licensing and Blackdown
+had stopped the downloads but you can still get it from the mirror below:
+
+You can get this from:
+
+http://www.opennms.org/files/mirrors/blackdown-java/JMF/2.1.1/i386/fcs/
+
+You may have problems with the XLibRenderer plugin. If so, you can use the AWTRenderer
+instead.
+
+Building on Linux and Cygwin:
+
+Make sure that JMFHOME is defined and pointing at your JMF installation directory.
+
 
 Configuration
 -------------
 
 Ensure that JMF is on the CLASSPATH by following the JMF installation 
-instructions.
+instructions. 
+
+On Linux, make sure that the $JMFHOME/lib directory is added to LD_LIBRARY_PATH using
+the command:
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$JMFHOME/lib
 
 Run the JMStudio application to determine what video and sound capture 
 devices are available on your system.
@@ -148,7 +179,7 @@ If the camera was not on when JMF was installed try doing
 If this does not work, try calling jmfinit from the JMF bin directory.
 
 Edit the video.properties files in c:\vision\examples\motion etc. 
-here is currently a version in each example directory and you need to edit 
+There is currently a version in each example directory and you need to edit 
 each one to run the example. You need to set video-device-name and 
 sound-device-name to the exact text in the JMF registry. If Direct Sound 
 capture is available on your windows machine, use that, as Java Sound capture 
