@@ -80,6 +80,17 @@
 #include "rcx_comm.h"
 #include "srec.h"
 
+#ifdef __APPLE__
+#include <CoreFoundation/CoreFoundation.h>
+
+#include <IOKit/IOKitLib.h>
+#include <IOKit/IOCFPlugIn.h>
+#include <IOKit/usb/IOUSBLib.h>
+#include <IOKit/usb/USBSpec.h>
+
+#include "osx_usb.h"
+#endif /* __APPLE__ */
+
 /* Machine-dependent defines */
 
 #if defined(LINUX) || defined(linux)
@@ -88,6 +99,8 @@
 #define DEFAULTTTY   "com1"       /* Cygwin - COM1 */
 #elif defined (sun)
 #define DEFAULTTTY   "/dev/ttya"  /* Solaris - first serial port - untested */
+#elif defined (__APPLE__)
+#define DEFAULTTTY   "usb"	  /* Default to USB on MAC */
 #else
 #define DEFAULTTTY   "/dev/ttyd2" /* IRIX - second serial port */
 #endif
@@ -324,6 +337,69 @@ void download_firmware(FILEDESCR fd, unsigned char *image, int len, unsigned sho
     fputs("100%        \n",stderr);
 }
 
+#ifdef __APPLE__
+void osx_usb_download_firmware(IOUSBInterfaceInterface** intf, unsigned char *image, int len, unsigned short start,
+                       int use_comp, char *filename)
+{
+    unsigned char ecksum = 0;
+    unsigned short cksum = 0;
+    unsigned char send[BUFFERSIZE];
+    unsigned char recv[BUFFERSIZE];
+    int addr, index, size, i;
+
+    /* Compute image checksum */
+    int cksumlen = (start + len < 0xcc00) ? len : 0xcc00 - start;
+    assert(len > 0);
+    for (i = 0; i < cksumlen; i++)
+        cksum += image[i];
+
+    /* Start firmware download */
+    send[0] = 0x75;
+    send[1] = (start >> 0) & 0xff;
+    send[2] = (start >> 8) & 0xff;
+    send[3] = (cksum >> 0) & 0xff;
+    send[4] = (cksum >> 8) & 0xff;
+    send[5] = 0;
+
+    if (osx_usb_rcx_sendrecv(intf, send, 6, recv, 2, 200, RETRIES, use_comp) != 2) {
+        fprintf(stderr, "%s: start firmware download failed\n", progname);
+        exit(1);
+    }
+
+    /* Transfer data */
+    fprintf(stderr, "\rTransferring \"%s\" to RCX...\n", filename);
+    addr = 0;
+    index = 1;
+    for (addr = 0, index = 1; addr < len; addr += size, index++) {
+        fprintf(stderr,"\r%3d%%        \r",(100*addr)/len);
+        size = len - addr;
+        send[0] = 0x45;
+        if (index & 1)
+            send[0] |= 0x08;
+        if (size > TRANSFER_SIZE)
+            size = TRANSFER_SIZE;
+        else if (0)
+            /* Set index to zero to make sound after last transfer */
+            index = 0;
+        send[1] = (index >> 0) & 0xff;
+        send[2] = (index >> 8) & 0xff;
+        send[3] = (size >> 0) & 0xff;
+        send[4] = (size >> 8) & 0xff;
+        memcpy(&send[5], &image[addr], size);
+        for (i = 0, cksum = 0; i < size; i++)
+            cksum += send[5 + i];
+        send[size + 5] = cksum & 0xff;
+
+        if (osx_usb_rcx_sendrecv(intf, send, size + 6, recv, 2, 200, RETRIES,
+                         use_comp) != 2 || recv[1] != 0) {
+            fprintf(stderr, "%s: transfer data failed\n", progname);
+            exit(1);
+        }
+    }
+    fputs("100%        \n",stderr);
+}
+#endif
+
 void delete_firmware(FILEDESCR fd, int use_comp)
 {
     unsigned char send[BUFFERSIZE];
@@ -342,6 +418,27 @@ void delete_firmware(FILEDESCR fd, int use_comp)
 		exit(1);
     }
 }
+
+#ifdef __APPLE__
+void osx_usb_delete_firmware(IOUSBInterfaceInterface** intf, int use_comp)
+{
+    unsigned char send[BUFFERSIZE];
+    unsigned char recv[BUFFERSIZE];
+
+    /* Delete firmware */
+    send[0] = 0x65;
+    send[1] = 1;
+    send[2] = 3;
+    send[3] = 5;
+    send[4] = 7;
+    send[5] = 11;
+
+    if (osx_usb_rcx_sendrecv(intf, send, 6, recv, 1, 200, RETRIES, use_comp) != 1) {
+        fprintf(stderr, "%s: delete firmware failed\n", progname);
+        exit(1);
+    }
+}
+#endif
 
 void unlock_firmware(FILEDESCR fd, int use_comp)
 {
@@ -363,6 +460,28 @@ void unlock_firmware(FILEDESCR fd, int use_comp)
     }
 }
 
+#ifdef __APPLE__
+void osx_usb_unlock_firmware(IOUSBInterfaceInterface** intf, int use_comp)
+{
+    unsigned char send[BUFFERSIZE];
+    unsigned char recv[BUFFERSIZE];
+
+    /* Unlock firmware */
+    send[0] = 0xa5;
+    send[1] = 76;		// 'L'
+    send[2] = 69;		// 'E'
+    send[3] = 71;		// 'G'
+    send[4] = 79;		// 'O'
+    send[5] = 174;	// '®'
+
+    /* Use longer timeout so ROM has time to checksum firmware */
+    if (osx_usb_rcx_sendrecv(intf, send, 6, recv, 26, 400, RETRIES, use_comp) != 26) {
+        fprintf(stderr, "%s: unlock firmware failed\n", progname);
+        exit(1);
+    }
+}
+#endif
+
 void install_firmware(FILEDESCR fd, unsigned char *image, int length,
 	      int entry, int use_comp, char *filename)
 {
@@ -370,6 +489,16 @@ void install_firmware(FILEDESCR fd, unsigned char *image, int length,
 	download_firmware(fd, image, length, entry, use_comp, filename);
 	unlock_firmware(fd, use_comp);
 }
+
+#ifdef __APPLE__
+void osx_usb_install_firmware(IOUSBInterfaceInterface** intf, unsigned char *image, int length,
+                      int entry, int use_comp, char *filename)
+{
+    osx_usb_delete_firmware(intf, use_comp);
+    osx_usb_download_firmware(intf, image, length, entry, use_comp, filename);
+    osx_usb_unlock_firmware(intf, use_comp);
+}
+#endif
 
 int main (int argc, char **argv)
 {
@@ -381,6 +510,9 @@ int main (int argc, char **argv)
     int use_fast = 0;
     int no_download = 0;
     int usage = 0;
+#ifdef __APPLE__
+    IOUSBInterfaceInterface **intf = NULL;
+#endif
     FILEDESCR fd;
     int status;
     segment_t segments[2];
@@ -531,6 +663,13 @@ int main (int argc, char **argv)
     }
 #endif
 
+#ifdef __APPLE__
+    if ( strcmp( tty , "usb" ) == 0 ) {
+        usb_flag = 1;
+        if ( __comm_debug) fprintf(stderr, "USB IR Tower mode.\n");
+    }
+#endif
+    
     if (use_fast && usb_flag == 0 ) {
 	// usb do not support fast mode.
 	/* Try to wake up the tower in fast mode */
@@ -573,8 +712,17 @@ int main (int argc, char **argv)
     else {
 	/* Try to wake up the tower in slow mode */
 
+#ifdef __APPLE__
+        if ( usb_flag == 0 ) {
+#endif
 	fd = rcx_init(tty, 0);
-
+#ifdef __APPLE__
+        }
+        else
+        {
+            intf = osx_usb_rcx_init(0);
+        }
+#endif
 	if ( usb_flag == 0 ) {
 	    // usb do not need wakeup tower.
 	    if ((status = rcx_wakeup_tower(fd, WAKEUP_TIMEOUT)) < 0) {
@@ -582,7 +730,10 @@ int main (int argc, char **argv)
 	        exit(1);
 	    }
 	}
-	
+
+#ifdef __APPLE__
+        if (usb_flag == 0) {
+#endif
     	if (!rcx_is_alive(fd, 1)) {
     	    /* See if alive in fast mode */
     
@@ -600,10 +751,33 @@ int main (int argc, char **argv)
     	    exit(1);
     	}
 
+#ifdef __APPLE__
+        }
+        else
+        {
+            if (!osx_usb_rcx_is_alive(intf, 1))
+            {
+                osx_usb_rcx_close(intf);
+                fprintf(stderr, "%s: no response from rcx\n", progname);
+                exit(1);
+            }
+        }
+#endif            
 	/* Download image */
+#ifdef __APPLE__
+        if (usb_flag == 0) {
+#endif
 	install_firmware(fd, image, image_len, image_def.entry, 1, fileName);
 
 	rcx_close(fd);
+#ifdef __APPLE__
+        }
+        else
+        {
+            osx_usb_install_firmware(intf, image, image_len, image_def.entry, 1, fileName);
+            osx_usb_rcx_close(intf);
+        }
+#endif
     }
 
     return 0;

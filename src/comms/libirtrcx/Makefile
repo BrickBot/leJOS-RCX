@@ -27,6 +27,7 @@
 CC=$(shell ../../cctest.sh)
 
 CFLAGS = -O2
+FIRMDL_OBJ = firmdl.o srec.o rcx_comm.o util.o
 
 ifndef OSTYPE
 	OSTYPE=$(MSDOS)
@@ -38,6 +39,7 @@ endif
 ifneq (,$(findstring darwin,$(OSTYPE)))
 	OSX_USB=osx_usb
 	LIBS += -framework IOKit -framework CoreFoundation
+	FIRMDL_OBJ += osx_usb.o
 else
 	OSX_USB=
 endif
@@ -47,8 +49,8 @@ all: $(OSX_USB) fastdl.h ../../bin/lejosfirmdl$(EXT)
 mkimg$(EXT): mkimg.o srec.o
 	$(CC) $^ -o $@ $(CFLAGS)
 
-../../bin/lejosfirmdl$(EXT): firmdl.o srec.o rcx_comm.o util.o
-	$(CC) $^ -o $@ $(CFLAGS)
+../../bin/lejosfirmdl$(EXT): $(FIRMDL_OBJ)
+	$(CC) $^ -o $@ $(CFLAGS) $(LIBS)
 
 fastdl.h: mkimg$(EXT) fastdl.srec
 	./mkimg fastdl.srec > fastdl.h
