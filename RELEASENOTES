@@ -5,7 +5,7 @@ leJOS 1.0.1:
     elements added.
   --------------------------------------------------------------
   - Phil Berry has contributed some documentation (see
-    doc/phil_berry) and more meaningful trace output
+    docs/phil_berry) and more meaningful trace output
     for emu-lejosrun -v.
   - Hajime Murao reporded a bug in jtoolexec.c. The first
     argument was not initialized properly, which
