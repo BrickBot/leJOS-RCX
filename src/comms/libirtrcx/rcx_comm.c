@@ -20,6 +20,10 @@
  *  Kekoa Proudfoot. All Rights Reserved.
  *
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
+ *
+ *  09/23/2002 david <david@csse.uwa.edu.au> modified to support linux usb tower
+ *    - changed rcx_recv to expect explicit number of bytes rather than 4096
+ *
  */
 
 #include <sys/types.h>
@@ -32,6 +36,8 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <errno.h>
+
 
 #if defined(_WIN32) || defined(__CYGWIN32__)
   #include <windows.h>
@@ -84,12 +90,14 @@ void myperror(char *str) {
 
 static int nbread (FILEDESCR fd, void *buf, int maxlen, int timeout)
 {
+    
+
+#if defined(_WIN32) || defined(__CYGWIN32__)
     char *bufp = (char *)buf;
     int len = 0;
 
     while (len < maxlen) {
 
-#if defined(_WIN32) || defined(__CYGWIN32__)
 	if ( usb_flag == 1) {
 		DWORD count = 0;
 		struct timeval timebegin ,now;
@@ -141,36 +149,92 @@ static int nbread (FILEDESCR fd, void *buf, int maxlen, int timeout)
 	                break;
                 }
         }
-#else
-	int count;
-	fd_set fds;
-	struct timeval tv;
-
-	FD_ZERO(&fds);
-	FD_SET(fd, &fds);
-
-	tv.tv_sec = timeout / 1000;
-	tv.tv_usec = (timeout % 1000) * 1000;
-
-	if (select(fd+1, &fds, NULL, NULL, &tv) < 0) {
-	    perror("select");
-	    exit(1);
-	}
-
-	if (!FD_ISSET(fd, &fds))
-	    break;
-
-	if ((count = read(fd, &bufp[len], maxlen - len)) < 0) {
-	    perror("read");
-	    exit(1);
-	}
-
-        len += count;
-#endif
-
     }
 
     return len;
+#else
+
+    long len = 0;
+    
+    if (usb_flag == 1) {
+
+	    long timer = timeout;
+	    long rc;
+	    char *cptr;
+
+	    if (__comm_debug) printf("nbread: enter timeout %d, maxlen %d\n", timer, maxlen);
+
+	    if (timer == 0) {
+	            timer = 40;
+	    }
+
+	    cptr = (char *) buf;
+
+	    while ((timer > 0) && (len < maxlen)) {
+			
+	            do {
+		            rc = (long) read(fd, cptr+len, maxlen-len);
+			    if (rc == 0) {
+			            fprintf(stderr, "nbread: std exit, read %d\n", len);	
+				    return len;
+			    }
+		    } while ((rc == -1) && (errno == EINTR));
+		    
+		    if ((rc == -1) && (errno == EAGAIN)) {
+		            if (__comm_debug) printf("nbread: sleeping %d\n", timer);
+			    usleep(5);
+			    timer -= 1;
+		    } else if (rc == -1) {
+		            fprintf(stderr, "nbread: error exit !\n");
+			    exit(-1);
+		    } else {
+		            len += rc;
+		    }
+		
+		    if (len > maxlen) {
+		     	    fprintf(stderr, "nbread: XXL exit, read %d - thought %d\n", maxlen,len);
+			    return maxlen;
+		    }
+	    }
+
+    } else {
+
+	    char *bufp = (char *)buf;
+
+            int count;
+	    fd_set fds;
+	    struct timeval tv;
+	    
+	    while (len < maxlen) {
+	            FD_ZERO(&fds);
+		    FD_SET(fd, &fds);
+
+		    tv.tv_sec = timeout / 1000;
+		    tv.tv_usec = (timeout % 1000) * 1000;
+		    
+		    if (select(fd+1, &fds, NULL, NULL, &tv) < 0) {
+		            perror("select");
+			    exit(1);
+		    }
+		    
+		    if (!FD_ISSET(fd, &fds))
+		            break;
+
+		    if ((count = read(fd, &bufp[len], maxlen - len)) < 0) {
+		            perror("read");
+			    exit(1);
+		    }
+	    
+		    len += count;
+	    }
+    
+    } 
+
+    return len;
+
+#endif
+
+
 }
 
 /* discard all characters in the input queue of tty */
@@ -189,6 +253,45 @@ int mywrite(FILEDESCR fd, const void *buf, size_t len) {
     DWORD nBytesWritten=0;
     WriteFile(fd, buf, len, &nBytesWritten, NULL);
     return nBytesWritten;
+
+#elif defined(LINUX)
+
+    if (usb_flag == 1) {
+            long actual = 0;
+	    long rc;
+	    char * cptr;
+	    int retry = (len*3)/10 + 5;
+	    
+	    if (__comm_debug) printf("mywrite: enter len %d\n", len);
+	    
+	    if (len < 1) {
+	            return len;
+	    }
+
+	    cptr = (char *) buf;
+	    
+	    while (actual < len) {
+           
+	            rc = (long) write(fd, cptr+actual, len-actual);
+		    if (rc == -1) {
+		      if ((errno == EINTR) || (errno == EAGAIN))  {
+		              rc = 0;
+			      usleep(10);
+			      retry --;
+		      } else {
+			      return -1;
+		      }
+		    }
+		    actual += rc;
+		    if (retry < 1) {
+		              return actual;
+		    }
+	    }
+
+	    return len;
+    } else {
+            return write(fd, buf, len);
+    }
 #else
     return write(fd, buf, len);
 #endif
@@ -207,6 +310,7 @@ FILEDESCR rcx_init(char *tty, int is_fast)
 #endif
 
     if (__comm_debug) printf("mode = %s\n", is_fast ? "fast" : "slow");
+    if (__comm_debug && (usb_flag == 1)) printf("Using usb\n");
 
 #if defined(_WIN32) || defined(__CYGWIN32__)
     if (__comm_debug) printf("Running under cygwin\n");
@@ -245,34 +349,46 @@ FILEDESCR rcx_init(char *tty, int is_fast)
     }
 
 #else
+    if (usb_flag == 1) {
 
-    if ((fd = open(tty, O_RDWR)) < 0) {
-	perror(tty);
-	exit(1);
-    }
+	    if ((fd = open(tty, O_RDWR | O_NONBLOCK | O_SYNC)) < 0) { 
+                    perror(tty);
+		    exit(1);
+	    }
 
-    if (!isatty(fd)) {
-	close(fd);
-	fprintf(stderr, "%s: not a tty\n", tty);
-	exit(1);
-    }
 
-    memset(&ios, 0, sizeof(ios));
+	    if (is_fast) {
+	            fprintf(stderr, "FAST mode not alowed with USB LINUX\n");
+	    } 
+    } else {
+            if ((fd = open(tty, O_RDWR)) < 0) {
+	            perror(tty);
+		    exit(1);
+	    }
 
-    if (is_fast) {
-	ios.c_cflag = CREAD | CLOCAL | CS8;
-	cfsetispeed(&ios, B4800);
-	cfsetospeed(&ios, B4800);
-    }
-    else {
-	ios.c_cflag = CREAD | CLOCAL | CS8 | PARENB | PARODD;
-	cfsetispeed(&ios, B2400);
-	cfsetospeed(&ios, B2400);
-    }
+	    if (!isatty(fd)) {
+	            close(fd);
+		    fprintf(stderr, "%s: not a tty\n", tty);
+		    exit(1);
+	    }
 
-    if (tcsetattr(fd, TCSANOW, &ios) == -1) {
-	perror("tcsetattr");
-	exit(1);
+	    memset(&ios, 0, sizeof(ios));
+	    
+	    if (is_fast) {
+	      ios.c_cflag = CREAD | CLOCAL | CS8;
+	      cfsetispeed(&ios, B4800);
+	      cfsetospeed(&ios, B4800);
+	    }
+	    else {
+	      ios.c_cflag = CREAD | CLOCAL | CS8 | PARENB | PARODD;
+	      cfsetispeed(&ios, B2400);
+	      cfsetospeed(&ios, B2400);
+	    }
+	    
+	    if (tcsetattr(fd, TCSANOW, &ios) == -1) {
+	      perror("tcsetattr");
+	      exit(1);
+	    }
     }
 #endif
 
@@ -290,6 +406,12 @@ void rcx_close(FILEDESCR fd)
 
 int rcx_wakeup_tower (FILEDESCR fd, int timeout)
 {
+#if defined(LINUX)
+  if (usb_flag == 1) {
+          return RCX_OK;
+  } else {
+#endif
+  
     char msg[] = { 0x10, 0xfe, 0x10, 0xfe };
     char keepalive = 0xff;
     char buf[BUFFERSIZE];
@@ -327,6 +449,10 @@ int rcx_wakeup_tower (FILEDESCR fd, int timeout)
 	return RCX_NO_TOWER; /* tower not responding */
     else
 	return RCX_BAD_LINK; /* bad link */
+
+#if defined(LINUX)
+  }
+#endif
 }
 
 /* Hexdump routine */
@@ -430,14 +556,22 @@ int rcx_recv (FILEDESCR fd, void *buf, int maxlen, int timeout, int use_comp)
     int sum;
     int pos;
     int len;
+    int expected;
 
     /* Receive message */
 
-    msglen = nbread(fd, msg, BUFFERSIZE, timeout);
+    if (use_comp) {
+	    expected = maxlen * 2 + 3 + 2;
+    } else {
+	    expected = BUFFERSIZE;
+    }
 
+    msglen = nbread(fd, msg, expected, timeout); 
+ 
     if (__comm_debug) {
-	printf("recvlen = %d\n", msglen);
-	hexdump("R", msg, msglen);
+	    printf("maxlen = %d\n", maxlen);
+	    printf("recvlen = %d\n", msglen);
+	    hexdump("R", msg, msglen);
     }
 
     /* Check for message */
@@ -467,6 +601,11 @@ int rcx_recv (FILEDESCR fd, void *buf, int maxlen, int timeout, int use_comp)
 
 	if (msg[pos] != (sum & 0xff))
 	    return RCX_BAD_RESPONSE;
+
+	if (__comm_debug) {
+		printf("len = %d\n", len);
+		hexdump("R", bufp, len);
+	}
 
 	/* Success */
 	return len;
@@ -531,11 +670,11 @@ int rcx_sendrecv (FILEDESCR fd, void *send, int slen, void *recv, int rlen,
 
     while (retries--) {
 	if ((status = rcx_send(fd, send, slen, use_comp)) < 0) {
-	    if (__comm_debug) printf("status = %s\n", rcx_strerror(status));
+	    if (__comm_debug) printf("send status = %s\n", rcx_strerror(status));
 	    continue;
 	}
 	if ((status = rcx_recv(fd, recv, rlen, timeout, use_comp)) < 0) {
-	    if (__comm_debug) printf("status = %s\n", rcx_strerror(status));
+	    if (__comm_debug) printf("recv status = %s\n", rcx_strerror(status));
 	    continue;
 	}
 	break;
@@ -556,7 +695,7 @@ int rcx_is_alive (FILEDESCR fd, int use_comp)
     unsigned char send[1] = { 0x10 };
     unsigned char recv[1];
 
-    return (rcx_sendrecv(fd, send, 1, recv, 1, 50, 5, use_comp) == 1);
+    return (rcx_sendrecv(fd, send, 1, recv, 1, 10, 5, use_comp) == 1);
 }
 
 char *rcx_strerror (int error)
@@ -566,7 +705,7 @@ char *rcx_strerror (int error)
     case RCX_NO_TOWER: return "tower not responding";
     case RCX_BAD_LINK: return "bad ir link";
     case RCX_BAD_ECHO: return "bad ir echo";
-    case RCX_NO_RESPONSE: return "no response from rcx";
+    case RCX_NO_RESPONSE: return "no response from rcx...";
     case RCX_BAD_RESPONSE: return "bad response from rcx";
     default: return "unknown error";
     }

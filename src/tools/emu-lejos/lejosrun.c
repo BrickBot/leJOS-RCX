@@ -1,6 +1,9 @@
 /**
  * lejosrun.c
  * By Paul Andrews based heavily on firmdl.c
+ *
+ * 09-23-02 david <david@csse.uwa.edu.au> modified to support linux usb tower
+ *
  */
 
 #include <sys/types.h>
@@ -285,42 +288,43 @@ main(int argc, char **argv)
 	if ( __comm_debug ) fprintf(stderr, "USB IR Tower mode.\n");
 	tty="\\\\.\\legotower1";
     }
-#endif
+#else
 
     /* FIXME: Check for tty or usb here */
-#ifdef __APPLE__
+
     if ( strcmp( tty , "usb" ) == 0 ) {
         usb_flag = 1;
         if ( __comm_debug) fprintf(stderr, "USB IR Tower mode.\n");
+	/* Linux usb support */
+#ifdef LINUX 
+	tty = "/dev/lego0";
+#endif
     }
 #endif
-    /* Wake up the tower */
-#ifdef __APPLE__
-    if (usb_flag == 0)
-    {
-#endif
-        fd = rcx_init(tty, 0);
-#ifdef __APPLE__
-    }
-    else
-    {
-        intf = osx_usb_rcx_init(0);
-    }
-#endif
-    
-    if (usb_flag == 0)
-    {
-        // usb do not need wakeup tower.
-	if ((status = rcx_wakeup_tower(fd, WAKEUP_TIMEOUT)) < 0) {
-	    fprintf(stderr, "%s: %s\n", progname, rcx_strerror(status));
-	    exit(1);
-	}
-    }
 
+    /* Wake up the tower */
 #ifdef __APPLE__
     if (usb_flag == 0) {
 #endif
-        
+	    fd = rcx_init(tty, 0);
+#ifdef __APPLE__
+    }
+    else {
+            intf = osx_usb_rcx_init(0);
+    }
+#endif
+    
+    if (usb_flag == 0) {
+	    // usb do not need wakeup tower.
+	    if ((status = rcx_wakeup_tower(fd, WAKEUP_TIMEOUT)) < 0) {
+		    fprintf(stderr, "%s: %s\n", progname, rcx_strerror(status));
+		    exit(1);
+	    }
+    }
+
+#if defined(__APPLE__) 
+    if (usb_flag == 0) {
+#endif
 	if (!rcx_is_alive(fd, 1)) {
 	    /* See if alive in fast mode */
 
@@ -337,9 +341,11 @@ main(int argc, char **argv)
 	    fprintf(stderr, "%s: no response from rcx\n", progname);
 	    exit(1);
 	}
+
 #ifdef __APPLE__
-    }
+	}
     else
+
     {
         if (!osx_usb_rcx_is_alive(intf, 1))
         {
