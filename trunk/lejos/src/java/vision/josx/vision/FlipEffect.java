@@ -9,7 +9,7 @@ import java.awt.*;
  * @author Lawrie Griffiths
  */
 public class FlipEffect extends VisionEffect {
-  public boolean flip = true;
+  public boolean flip = false;
 
   /**
    * Create flip effect
