@@ -20,7 +20,7 @@ public class F7SensorReader {
         sensorValue = Sensor.readSensorValue(sensorID, 0);
         LCD.showNumber(sensorValue);
         out.writeShort(sensorValue);
-        out.flush()
+        out.flush();
       }
     } catch (IOException ioE) {
       LCD.showNumber(1111);
