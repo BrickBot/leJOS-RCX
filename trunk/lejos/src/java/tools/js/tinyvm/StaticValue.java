@@ -27,7 +27,6 @@ public class StaticValue extends WritableDataWithOffset
       try
       {
          // Static values must be dumped in Big Endian order
-         // TODO move to TinyVMType?
          switch (iType.type())
          {
             case TinyVMType.T_BOOLEAN_TYPE:
