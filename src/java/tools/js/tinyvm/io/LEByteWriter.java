@@ -20,20 +20,20 @@ public class LEByteWriter extends ByteWriter
 
    public void writeU1 (int aByte) throws IOException
    {
-      debug(1, aByte);
+      // debug(1, aByte);
       write(aByte);
    }
 
    public void writeU2 (int aShort) throws IOException
    {
-      debug(2, aShort);
+      // debug(2, aShort);
       write((aShort >>> 0) & 0xFF);
       write((aShort >>> 8) & 0xFF);
    }
 
    public void writeU4 (int aInt) throws IOException
    {
-      debug(4, aInt);
+      // debug(4, aInt);
       write((aInt >>> 0) & 0xFF);
       write((aInt >>> 8) & 0xFF);
       write((aInt >>> 16) & 0xFF);
@@ -42,7 +42,7 @@ public class LEByteWriter extends ByteWriter
 
    public void writeU8 (long aLong) throws IOException
    {
-      debug(8, aLong);
+      // debug(8, aLong);
       write((int) ((aLong >>> 32) & 0xFF));
       write((int) ((aLong >>> 40) & 0xFF));
       write((int) ((aLong >>> 48) & 0xFF));
