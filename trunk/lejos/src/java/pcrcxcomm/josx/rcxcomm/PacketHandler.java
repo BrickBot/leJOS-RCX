@@ -16,7 +16,7 @@ public abstract class PacketHandler {
   }
    
   /**
-   * set the source and destination for this connection.
+   * Set the source and destination for this connection.
    **/ 
   public void open(byte source, byte destination) {
   }
