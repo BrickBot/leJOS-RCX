@@ -112,7 +112,7 @@ public class RCXPort extends DataPort {
     open = false;
   }
 
-  void setListen(boolean b) {
+  public void setListen(boolean b) {
     listen = b;
   }
 }
