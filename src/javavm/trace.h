@@ -55,9 +55,14 @@ extern void assert (boolean aCond, int aCode);
 #define DEBUG_STARTUP  1
 #define DEBUG_THREADS  1
 #define DEBUG_MEMORY   1
-#define DEBUG_BYTECODE 1
+
 #define DEBUG_METHODS  1
+#define DEBUG_BYTECODE 1
 
 #endif
 
 #endif _TRACE_H
+
+
+
+

@@ -339,7 +339,7 @@ implements OpCodeConstants, OpCodeInfo, Constants
             Utilities.fatal ("Bug CU-1: Got " + pOpCode + " in " +
                              iFullName + ".");
 	  }
-          for (int ctr = 1; ctr <= pArgs; ctr++)
+          for (int ctr = 0; ctr < pArgs; ctr++)
             pOutCode[i+ctr] = aCode[i+ctr];
           i += pArgs;
           break;
