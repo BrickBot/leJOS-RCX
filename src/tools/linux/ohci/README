@@ -1,0 +1,8 @@
+This directory contains a patch for OHCI USB for the lego USB tower. If you build
+modules for your kernel, you can patch /usr/src/linux with this patch and then rebuild
+and reinstall the modules. If you don't, you can get the usb-ohci.c and usb-ohci.h
+files and move them into this directory to build them locally with the provided
+Makefile.
+
+If you haven't built the kernel before, it is probably worth just buying a PCI USB 
+card which supports UHCI - it is a whole lot easier. 
