@@ -30,6 +30,10 @@ Version 0.1.3:
   - Fixed checkcast bug. (It was not allowing casts of
     null).
 
+  - Footprint report:
+    Test13 creates 4238 objects.
+    Firmware download count: ~1020
+
 Version 0.1.2:
 --------------
 
@@ -118,6 +122,11 @@ Version 0.1.1:
 
   - Footprint: Test13 can create 4338 empty objects
     (17352 bytes of allocation space).
+
+
+
+
+
 
 
 
