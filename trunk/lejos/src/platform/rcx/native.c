@@ -23,22 +23,32 @@ extern void reset_rcx_serial();
  */
 void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 {
-  STACKWORD *paramBase0 = paramBase;
   STACKWORD *paramBase1 = paramBase+1;
   switch (signature)
   {
-    case start_4_5V:
-      init_thread ((Thread *) word2ptr(*paramBase0));
+    case wait_4_5V:
+      monitor_wait((Object*) word2ptr(paramBase[0]), 0);
       return;
-    case yield_4_5V:
-      switch_thread();
+    case wait_4J_5V:
+      monitor_wait((Object*) word2ptr(paramBase[0]), paramBase[2]);
+      return;
+    case notify_4_5V:
+      monitor_notify((Object*) word2ptr(paramBase[0]), false);
+      return;
+    case notifyAll_4_5V:
+      monitor_notify((Object*) word2ptr(paramBase[0]), true);
+      return;
+    case start_4_5V:
+      init_thread ((Thread *) word2ptr(paramBase[0]));
       return;
     case sleep_4J_5V:
       sleep_thread (*paramBase1);
+      // Drop through
+    case yield_4_5V:
       switch_thread();
       return;
     case getPriority_4_5I:
-      push_word (get_thread_priority ((Thread*)word2obj(*paramBase0)));
+      push_word (get_thread_priority ((Thread*)word2obj(paramBase[0])));
       return;
     case setPriority_4I_5V:
       {
@@ -46,35 +56,35 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
         if (p > MAX_PRIORITY || p < MIN_PRIORITY)
           throw_exception(illegalArgumentException);
         else
-          set_thread_priority ((Thread*)word2obj(*paramBase0), p);
+          set_thread_priority ((Thread*)word2obj(paramBase[0]), p);
       }
       return;
     case currentThread_4_5Ljava_3lang_3Thread_2:
       push_ref(ptr2ref(currentThread));
       return;
     case interrupt_4_5V:
-      interrupt_thread((Thread*)word2obj(*paramBase0));
+      interrupt_thread((Thread*)word2obj(paramBase[0]));
       return;
     case interrupted_4_5Z:
       push_word(currentThread->interrupted);
       return;
     case isInterrupted_4_5Z:
-      push_word(((Thread*)word2ptr(*paramBase0))->interrupted);
+      push_word(((Thread*)word2ptr(paramBase[0]))->interrupted);
       return;
     case setDaemon_4Z_5V:
-      ((Thread*)word2ptr(*paramBase0))->daemon = (JBYTE)*paramBase1;
+      ((Thread*)word2ptr(paramBase[0]))->daemon = (JBYTE)*paramBase1;
       return;
     case isDaemon_4_5Z:
-      push_word(((Thread*)word2ptr(*paramBase0))->daemon);
+      push_word(((Thread*)word2ptr(paramBase[0]))->daemon);
       return;
     case exit_4I_5V:
       schedule_request(REQUEST_EXIT);
       return;
     case join_4_5V:
-      join_thread((Thread*)word2obj(*paramBase0));
+      join_thread((Thread*)word2obj(paramBase[0]));
       return;
     case join_4J_5V:
-      join_thread((Thread*)word2obj(*paramBase0));
+      join_thread((Thread*)word2obj(paramBase[0]));
       return;
     case currentTimeMillis_4_5J:
       push_word (0);
@@ -89,7 +99,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 	Object *arr2;
 	byte    elemSize = 0;
 	
-	arr1 = word2obj (*paramBase0);
+	arr1 = word2obj (paramBase[0]);
 	arr2 = word2obj (paramBase[2]);
 	if (arr1 == JNULL || arr2 == JNULL)
 	{
@@ -110,38 +120,38 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 
 #endif
 
-    case callRom0_4S_5V:
-      __rcall0 (*paramBase0);
+    case callRom_4S_5V:
+      __rcall0 (paramBase[0]);
       return;      
-    case callRom1_4SS_5V:
-      __rcall1 (*paramBase0, *paramBase1);
+    case callRom_4SS_5V:
+      __rcall1 (paramBase[0], *paramBase1);
       return;      
-    case callRom2_4SSS_5V:
+    case callRom_4SSS_5V:
       #if 0
-      trace (-1, (TWOBYTES) *paramBase0, 6);
+      trace (-1, (TWOBYTES) paramBase[0], 6);
       trace (-1, (TWOBYTES) *paramBase1, 7);
       trace (-1, (TWOBYTES) paramBase[2] - 0xF010, 8);
       #endif
-      __rcall2 (*paramBase0, *paramBase1, paramBase[2]);
+      __rcall2 (paramBase[0], *paramBase1, paramBase[2]);
       return;      
-    case callRom3_4SSSS_5V:
-      __rcall3 (*paramBase0, *paramBase1, paramBase[2], paramBase[3]);
+    case callRom_4SSSS_5V:
+      __rcall3 (paramBase[0], *paramBase1, paramBase[2], paramBase[3]);
       return;
-    case callRom4_4SSSSS_5V:
-      __rcall4 (*paramBase0, *paramBase1, paramBase[2], paramBase[3], paramBase[4]);
+    case callRom_4SSSSS_5V:
+      __rcall4 (paramBase[0], *paramBase1, paramBase[2], paramBase[3], paramBase[4]);
       return;
     case readMemoryByte_4I_5B:
-      push_word ((STACKWORD) *((byte *) word2ptr(*paramBase0)));
+      push_word ((STACKWORD) *((byte *) word2ptr(paramBase[0])));
       return;
     case writeMemoryByte_4IB_5V:
-      *((byte *) word2ptr(*paramBase0)) = (byte) (*paramBase1 & 0xFF);
+      *((byte *) word2ptr(paramBase[0])) = (byte) (*paramBase1 & 0xFF);
       return;
     case setMemoryBit_4III_5V:
-      *((byte *)word2ptr(*paramBase0)) =
-        ( *((byte *)word2ptr(*paramBase0)) & (~(1<<*paramBase1)) ) | (((paramBase[2] != 0) ? 1 : 0) <<*paramBase1);
+      *((byte *)word2ptr(paramBase[0])) =
+        ( *((byte *)word2ptr(paramBase[0])) & (~(1<<*paramBase1)) ) | (((paramBase[2] != 0) ? 1 : 0) <<*paramBase1);
       return;      
     case getDataAddress_4Ljava_3lang_3Object_2_5I:
-      push_word (ptr2word (((byte *) word2ptr (*paramBase0)) + HEADER_SIZE));
+      push_word (ptr2word (((byte *) word2ptr (paramBase[0])) + HEADER_SIZE));
       return;
     case resetSerial_4_5V:
       reset_rcx_serial();
@@ -151,7 +161,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       {
 	short pId;
 	
-	pId = *paramBase0;
+	pId = paramBase[0];
 	if (pId >= 0 && pId < 3)
 	{
           sensor_t *sensor;
@@ -178,7 +188,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       {
 	short pId;
 	
-	pId = *paramBase0;
+	pId = paramBase[0];
 	if (pId >= 0 && pId < 3)
 	{
           sensor_t *sensor;

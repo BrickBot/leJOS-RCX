@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TEST_CLASSES="Test04 Test06 Test07 Test11 Test12 Test13 Test14 Test26 Test28 Test33 TestRuntime TestPriorities TestDaemon TestThreadState"
+TEST_CLASSES="Test04 Test06 Test07 Test11 Test12 Test13 Test14 Test26 Test28 Test33 TestRuntime TestPriorities TestDaemon TestThreadState TestMonitor"
 OUT_FILE=regression.log
 GOLD_FILE=regression.gold
 export CLASSPATH=.

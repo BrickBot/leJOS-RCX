@@ -30,10 +30,12 @@ public abstract class Thread
 
   private Thread _TVM_nextThread;
   private int _TVM_waitingOn;
+  private int _TVM_sleepUntil;
   private int _TVM_stackFrameArray;
   private int _TVM_stackArray;
   private int _TVM_isReferenceArray;
   private byte _TVM_stackFrameArraySize;
+  private byte _TVM_monitorCount;
   private byte _TVM_threadId; 
   private byte _TVM_state; 
   private byte _TVM_priority; 

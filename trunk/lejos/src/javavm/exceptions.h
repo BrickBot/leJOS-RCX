@@ -15,6 +15,7 @@ extern Object *arrayIndexOutOfBoundsException;
 extern Object *illegalArgumentException;
 extern Object *interruptedException;
 extern Object *illegalStateException;
+extern Object *illegalMonitorStateException;
 extern Object *error;
 
 extern void init_exceptions();

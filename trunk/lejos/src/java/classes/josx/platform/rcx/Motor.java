@@ -140,7 +140,7 @@ public class Motor
    * @deprecated I've decided to remove this method.
    *             If you really need it, check its implementation
    *             in classes/josx/platform/rcx/Motor.java. 
-   *             Note that native methods such as callRom3
+   *             Note that native methods such as callRom
    *             can be declared in any leJOS class.
    * @param aMotor The motor id: 'A', 'B' or 'C'.
    * @param aMode 1=forward, 2=backward, 3=stop, 4=float
@@ -148,7 +148,7 @@ public class Motor
    */
   public static void controlMotor (char aMotor, int aMode, int aPower)
   {
-    Native.callRom3 ((short) 0x1a4e, (short) (0x2000 + aMotor - 'A'), 
+    Native.callRom ((short) 0x1a4e, (short) (0x2000 + aMotor - 'A'), 
                     (short) aMode, (short) aPower);
   }
 }

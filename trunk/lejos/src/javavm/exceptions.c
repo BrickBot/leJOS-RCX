@@ -28,6 +28,7 @@ Object *arrayIndexOutOfBoundsException;
 Object *illegalArgumentException;
 Object *interruptedException;
 Object *illegalStateException;
+Object *illegalMonitorStateException;
 Object *error;
 
 // Temporary globals:
@@ -53,6 +54,7 @@ void init_exceptions()
   illegalArgumentException = new_object_for_class (JAVA_LANG_ILLEGALARGUMENTEXCEPTION);
   interruptedException = new_object_for_class (JAVA_LANG_INTERRUPTEDEXCEPTION);
   illegalStateException = new_object_for_class (JAVA_LANG_ILLEGALSTATEEXCEPTION);
+  illegalMonitorStateException = new_object_for_class (JAVA_LANG_ILLEGALMONITORSTATEEXCEPTION);
   error = new_object_for_class (JAVA_LANG_ERROR);
 }
 

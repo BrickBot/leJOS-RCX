@@ -98,6 +98,18 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 
   switch (signature)
   {
+    case wait_4_5V:
+      monitor_wait((Object*) word2ptr(paramBase[0]), 0);
+      return;
+    case wait_4J_5V:
+      monitor_wait((Object*) word2ptr(paramBase[0]), paramBase[2]);
+      return;
+    case notify_4_5V:
+      monitor_notify((Object*) word2ptr(paramBase[0]), false);
+      return;
+    case notifyAll_4_5V:
+      monitor_notify((Object*) word2ptr(paramBase[0]), true);
+      return;
     case start_4_5V:
       init_thread ((Thread *) word2ptr(paramBase[0]));
       return;
@@ -151,26 +163,26 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       push_word (0);
       push_word (get_sys_time());
       return;
-    case callRom0_4S_5V:
+    case callRom_4S_5V:
 	if(verbose == 0)
 		printf ("& ROM call 0: 0x%lX\n", paramBase[0]);
 	else
 		printf("> %s\n", get_meaning(paramBase));
 	return;      
-    case callRom1_4SS_5V:
+    case callRom_4SS_5V:
 	if(verbose == 0)
 		printf ("& ROM call 1: 0x%lX (%ld)\n", paramBase[0], paramBase[1]);
 	else
 		printf("> %s\n", get_meaning(paramBase));
 	return;      
-    case callRom2_4SSS_5V:
+    case callRom_4SSS_5V:
 	if(verbose == 0)
 		printf ("& ROM call 2: 0x%lX (%ld, %ld)\n", paramBase[0],
 				paramBase[1], paramBase[2]);
 	else
 		printf("> %s\n", get_meaning(paramBase));
 	return;      
-    case callRom3_4SSSS_5V:
+    case callRom_4SSSS_5V:
 	if(verbose == 0)
 		printf ("& ROM call 3: 0x%lX (%ld, %ld, %ld)\n",
 				paramBase[0], paramBase[1],
@@ -178,7 +190,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 	else
 		printf("> %s\n", get_meaning(paramBase));
 	return;      
-    case callRom4_4SSSSS_5V:
+    case callRom_4SSSSS_5V:
       printf ("& ROM call 4: 0x%lX (%ld, %ld, %ld, %ld)\n", paramBase[0],
                                                      paramBase[1],
                                                      paramBase[2],
