@@ -21,7 +21,6 @@ public abstract class DataPort extends java.lang.Object {
       monitor = this;
       rcxin = new RCXInputStream(this);
       rcxout = new RCXOutputStream(this);
-      rcxout.setBufferSize(4);
       listener = new Listener();
       listener.setDaemon(true);
       listener.start();
@@ -216,16 +215,9 @@ public abstract class DataPort extends java.lang.Object {
    /** Hidden inner class extending OutputStream. Only classes
     * in the josx.platform.rcx.comm package have access to this.
     */
-   class RCXOutputStream extends java.io.OutputStream {
-
-      /** The default buffer size of the RCXOutputStream.
-      */
-      public static final int DEFAULT_BUFFER_SIZE = 16;
+   class RCXOutputStream extends OutputStream {
 
       private DataPort dataPort;
-      private int bufferSize = DEFAULT_BUFFER_SIZE;
-      private byte[] buffer;
-      private int current = 0;
 
       /** Creates new RCXOutputStream
       * @param p The DataPort which should receive data from this OutputStream
@@ -233,41 +225,28 @@ public abstract class DataPort extends java.lang.Object {
       public RCXOutputStream(DataPort p) {
          super();
          this.dataPort = p;
-         buffer = new byte[bufferSize];
       }
 
       /** Write a byte to the OutputStream.
       * @param b The byte.
       * @throws IOException If the byte could not be writen to the stream
       */
-      public synchronized void write(int b) throws java.io.IOException {
-         if (current >= bufferSize)
-            flush();
-         buffer[current++] = (byte)b;
+      public synchronized void write(int b) throws IOException {
+         byte [] buffer = new byte[1];
+         buffer[0] = (byte) b;
+         dataPort.sendPacket(buffer, 1);
       }
 
       /** Flush the OutputStream
       * @throws IOException If the stream could not be flushed.
       */
       public void flush() throws IOException {
-         dataPort.sendPacket(buffer, current);
-         current = 0;
       }
 
       /** Close the stream.
       * @throws IOException If something goes wrong.
       */
       public void close() throws IOException {
-         flush();
-      }
-
-      /** Change the buffer size.
-      * @param n The new size.
-      */
-      protected void setBufferSize(int n) {
-         this.bufferSize = n;
-         if (n > DEFAULT_BUFFER_SIZE)
-            buffer = new byte[n];
       }
    }
 }
