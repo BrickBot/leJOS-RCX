@@ -86,10 +86,12 @@ typedef unsigned char byte;
 #define O_BINARY 0
 #endif
 
-#if defined(LINUX)
+#if defined(LINUX) || defined(linux)
 #define DEFAULTTTY   "/dev/ttyS0" /* Linux - COM1 */
-#elif defined(WINNT)
+#elif defined (_WIN32)
 #define DEFAULTTTY   "com1"       /* Cygwin - COM1 */
+#elif defined (sun)
+#define DEFAULTTTY   "/dev/ttya"  /* Solaris - first serial port - untested */
 #else
 #define DEFAULTTTY   "/dev/ttyd2" /* IRIX - second serial port */
 #endif
@@ -387,9 +389,11 @@ main(int argc, char **argv)
 
     /* Open the serial port */
 
-    if ((tty = getenv("RCXTTY")) == NULL) {
-      fprintf(stderr, "RCXTTY not defined. Should be something like /dev/ttyS1\n or COM1");
-      exit(1);
+    tty = getenv("RCXTTY");
+    if (tty == NULL)
+    {
+      printf ("RCXTTY not defined. Using: %s\n", DEFAULTTTY);
+      tty = DEFAULTTTY;
     }
 
     fd = rcx_init(tty);
