@@ -14,6 +14,8 @@ public class RCXPort extends DataPort {
   private irTower tower;
   int bytesRead;
   boolean open = false;
+  int usbFlag = 0;
+  int sendTime = 0;
 
   /** Creates new RCXPort
   * @param port. Specifies the port that the IR Tower is connected to.
@@ -41,9 +43,12 @@ public class RCXPort extends DataPort {
                             + tower.strerror(-r) + ", error: "
                             + tower.getError()));
     else open = true;
+    usbFlag = tower.getUsbFlag();
   }
 
   private byte[] buffer = new byte[9];
+  private static byte[] keepAlive= {0x00}; 
+  private static byte [] trash = new byte[1];
 
   protected boolean dataAvailable() {
     if (bytesRead == 9) return true;
@@ -55,6 +60,17 @@ public class RCXPort extends DataPort {
     // Read 9 bytes into the buffer
     bytesRead = tower.read(buffer);
 
+    // If its a serial tower send a keep alive byte every 5 seconds
+
+    if (usbFlag == 1 && bytesRead == 0) {
+      int currTime = (int)System.currentTimeMillis();
+      if ((currTime - sendTime) >= 5000) {
+        tower.write(keepAlive,1);
+        tower.read(trash); // discard
+        sendTime = currTime;
+      }
+    }
+
     return (bytesRead == 9);
   }
 
@@ -62,6 +78,8 @@ public class RCXPort extends DataPort {
 
   protected void sendByte(byte b) throws IOException {
     packet[1] = b;
+
+    sendTime = (int)System.currentTimeMillis();
 
     int actual = tower.send(packet,packet.length);
     // tower.hexdump("Send",packet,packet.length);
