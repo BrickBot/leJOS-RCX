@@ -207,9 +207,7 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
                + ":" + pName + " from class " + iCF.getClassName());
          }
          assert pOffset <= TinyVMConstants.MAX_FIELD_OFFSET: "Check: field offset in range";
-         ConstantNameAndType cnat2 = (ConstantNameAndType) iCF
-            .getConstantPool().getConstant(pFieldEntry.getNameAndTypeIndex());
-         int pFieldType = pFieldEntry.getTag();
+         int pFieldType = TinyVMConstants.tinyVMType(Utility.typeOfSignature(cnat.getSignature(iCF.getConstantPool())));
          assert pFieldType >= 0 && pFieldType <= 0xF: "Check: valid field type";
 
          return (pFieldType << TinyVMConstants.F_SIZE_SHIFT) | pOffset;
@@ -283,7 +281,7 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
 
    public byte[] processCode (byte[] aCode) throws TinyVMException
    {
-      if (aCode.length == 34)
+      if (aCode.length == 14)
       {
          System.out.println("break");
       }
