@@ -166,8 +166,8 @@ int nbread (FILEDESCR fd, void *buf, int maxlen, int timeout)
 
 		if (__comm_debug) printf("nbread: enter timeout %d, maxlen %d\n", timer, maxlen);
 
-		if (timer == 0) {
-			timer = 40;
+		if (timer < 100) {
+			timer = 100;
 		}
 
 		cptr = (char *) buf;
@@ -263,7 +263,7 @@ int mywrite(FILEDESCR fd, const void *buf, size_t len) {
 		long actual = 0;
 		long rc;
 		char * cptr;
-		int retry = (len*3)/10 + 5;
+		int retry = 250;
 	    
 		if (__comm_debug) printf("mywrite: enter len %d\n", len);
 	    
@@ -279,7 +279,7 @@ int mywrite(FILEDESCR fd, const void *buf, size_t len) {
 			if (rc == -1) {
 				if ((errno == EINTR) || (errno == EAGAIN))  {
 					rc = 0;
-					usleep(10);
+					usleep(50);
 					retry --;
 				} else {
 					return -1;
