@@ -2,6 +2,7 @@
   - MacOSX support
 
   Juergen Stuber has added:
+  - added memory regions + 3K extra memory
   - added file TODO
   - Persistent memory
   - writeShort method in Native

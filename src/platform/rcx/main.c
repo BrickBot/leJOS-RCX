@@ -20,7 +20,8 @@
 
 extern char _end;
 extern char _romdata1;
-extern char _extraMemory;
+extern char extra_memory_start;
+extern char extra_memory_end;
 extern volatile byte transmitting;
 
 /**
@@ -32,8 +33,11 @@ Thread *bootThread;
 #error Should not VERIFY in RCX
 #endif
 
-#define MEM_START      (&_end)
-#define MEM_END        (&_romdata1) // (char *)0xef00
+#define MEM_START       (&_end)
+#define MEM_END         (&_romdata1)
+
+#define EXTRA_MEM_START (&extra_memory_start)
+#define EXTRA_MEM_END   (&extra_memory_end)
 
 #define BUFSIZE        9
 #define TDATASIZE      100
@@ -344,8 +348,8 @@ LABEL_COMM_LOOP:
         }
         // Indicate that the RCX has a new program in it.
         hasProgram = HP_NOT_STARTED;
-        // Make sure memory allocation starts at an even address.
-        mmStart = (((TWOBYTES) nextByte) + 1) & 0xfffe;
+        // record start of free memory
+        mmStart = nextByte;
         // Initialize program number shown on LCD.
         set_program_number (0);
         // Wait for last response to be sent before we clobber
@@ -420,7 +424,11 @@ LABEL_PROGRAM_STARTUP:
   
   // Initialize memory for object allocation.
   // This can only be done after initialize_binary().
-  init_memory (mmStart, ((TWOBYTES) MEM_END - (TWOBYTES) mmStart) / 2);
+  memory_init ();
+  memory_add_region (EXTRA_MEM_START, EXTRA_MEM_END);
+  memory_add_region (mmStart, MEM_END);
+  /* NOTE: the second, main memory, region will become the first region
+           in the list, so allocation will start there */
 
   // Initialize special exceptions
   init_exceptions();
