@@ -21,9 +21,9 @@ release:
 	make all
 	cvs commit
 	cvs tag RELEASE_`cat VERSION`
-	rm -rf ${TEMP}/tinyvm_release
+	rm -rf ${TEMP}/tinyvm_*
 	cvs export -D tomorrow -d ${TEMP}/tinyvm_release tinyvm
-	cd ${TEMP} zip -r tinyvm_`cat VERSION`.zip tinyvm_release
+	cd ${TEMP}; zip -r tinyvm_`cat VERSION`.zip tinyvm_release
 	diff bin/tinyvm.srec ${TEMP}/tinyvm_release/bin/tinyvm.srec
 
 check:
