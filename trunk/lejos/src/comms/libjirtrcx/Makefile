@@ -35,8 +35,8 @@ ifneq (,$(findstring darwin,$(OSTYPE)))
   else
     # Linux/Solaris/FreeBSD/other unices.
     IRTOWER=$(LEJOS_HOME)/bin/libjirtrcx.so
-    CCOPT=-rdynamic -ldl -shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) -I$(IRTRCX_INCL) -I$(LEJOS_HOME)/src/tools/linux/legousbtower	
-
+    CCOPT=-rdynamic -ldl -shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) -I$(IRTRCX_INCL) -L$(LEJOS_HOME)/bin -lirtrcx
+    COMM_OBJ = $(IRTRCX_INCL)/rcx_comm_linux.o
   endif
 endif
 
