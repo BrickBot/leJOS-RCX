@@ -19,9 +19,11 @@ public final class Math {
 	                                        32768 };
 		
 	// Math constants
-	public static final double E = 2.718281828459045;
+	public static final double E  = 2.718281828459045;
 	public static final double PI = 3.141592653589793;
-	static final double NaN = 0.0f / 0.0f;
+	static final double ln10      = 2.30258509299405;
+	static final double ln2       = 0.69314718055995;
+	static final double NaN       = 0.0f / 0.0f;
 
 	// These constants are used for method trig()
 	private static final byte SIN = 0;
@@ -30,7 +32,9 @@ public final class Math {
 
 	// Accuracy constant: is used to specify how many digits of
 	// accuracy is desired for some methods.
-	private static final float ACCURACY = 0.0000001f;
+	private static final float ACCURACY = 0.0000005f;
+	private static final float LOWER_BOUND = 0.9999999f;
+	private static final float UPPER_BOUND = 1.0f;
 
 	// Used to generate random numbers.
 	private static java.util.Random RAND = new java.util.Random(System.currentTimeMillis());
@@ -110,46 +114,73 @@ public final class Math {
 	
 	/**
 	* Exponential function.  Returns E^x (where E is the base of natural logarithms).
-	* Thanks to David Edwards of England for conceiving the code.
+	* Thanks to David Edwards of England for conceiving the code and Martin E. Nielsen
+	* for modifying it to handle large arguments.
+        * = sum a^n/n!, i.e. 1 + x + x^2/2! + x^3/3!
+        * <P>
+        * Seems to work better for +ve numbers so force argument to be +ve.
 	*/	
-	public static double exp(double x)
+	public static double exp(double a)
 	{
-	    double sum = 1;
-	    double oldsum = 0;
-	    int i = 1;
-	    
-	    double powTemp = 1;
-	    double facTemp = 1;
-	
-	    while (sum < oldsum - ACCURACY || sum > oldsum + ACCURACY)
-	    {
-	        oldsum = sum;
-	        powTemp *= x;
-	        facTemp *= i;
-	        sum += powTemp / facTemp;
-	        i++;
-	    }
-	
-	    return sum;
+	    boolean neg = a < 0 ? true : false;
+	    if (a < 0)
+                a = -a;
+            int fac = 1;
+    	    double term = a;
+    	    double sum = 0;
+    	    double oldsum = 0;
+    	    double end;
+
+    	    do {
+    	        oldsum = sum;
+    	        sum += term;
+    
+    	        fac++;
+        
+    	        term *= a/fac;
+	        end = sum/oldsum;
+      	    } while (end < LOWER_BOUND || end > UPPER_BOUND);
+
+            sum += 1.0f;
+            
+	    return neg ? 1.0f/sum : sum;
 	}
 	
 	/**
 	* Natural log function.  Returns log(a) to base E
-	* Thanks to David Edwards of England for conceiving the code.
+	* Replaced wit an algorithm that does not use exponents and so
+	* works with large arguments.
+	* @see http://www.geocities.com/zabrodskyvlada/aat/a_contents.html
 	*/
-	public static double log(double a)
+	public static double log(double x)
 	{
-	    double best = a;
-	    double newx = a + (a / exp(a)) - 1;
-	    double oldx = a;
-	
-	    while (newx < oldx - ACCURACY || newx > oldx + ACCURACY)
-	    {
-	        oldx = newx;
-	        newx = oldx + (a / exp(oldx)) - 1;
-	    }
-	
-	    return newx;
+	        if (x < 1.0)
+	                return -log(1.0/x);
+	                
+	        double m=0.0;
+	        double p=1.0;
+	        while (p <= x) {
+	                m++;
+	                p=p*2;
+	        }
+	        
+	        m = m - 1;
+	        double z = x/(p/2);
+	        
+	        double zeta = (1.0 - z)/(1.0 + z);
+	        double n=zeta;
+	        double ln=zeta;
+	        double zetasup = zeta * zeta;
+	        
+	        for (int j=1; true; j++)
+	        {
+	                n = n * zetasup;
+	                double newln = ln + n / (2 * j + 1);
+	                double term = ln/newln;
+	                if (term >= LOWER_BOUND && term <= UPPER_BOUND)
+	                        return m * ln2 - 2 * ln;
+	                ln = newln;
+	        }
 	}
 
 	/**
