@@ -1,0 +1,2217 @@
+diff -rc gcc-3.1-old/gcc/config/h8300/crti.asm gcc-3.1/gcc/config/h8300/crti.asm
+*** gcc-3.1-old/gcc/config/h8300/crti.asm	Fri Aug 31 06:24:46 2001
+--- gcc-3.1/gcc/config/h8300/crti.asm	Sun May 19 11:05:38 2002
+***************
+*** 1,4 ****
+! /* Copyright (C) 2001 Free Software Foundation, Inc.
+  
+  This file is part of GNU CC.
+  
+--- 1,4 ----
+! /* Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+  
+  This file is part of GNU CC.
+  
+***************
+*** 50,53 ****
+  __init:
+          .section .fini
+          .global  __fini
+! __fini:  
+--- 50,53 ----
+  __init:
+          .section .fini
+          .global  __fini
+! __fini:
+diff -rc gcc-3.1-old/gcc/config/h8300/h8300-protos.h gcc-3.1/gcc/config/h8300/h8300-protos.h
+*** gcc-3.1-old/gcc/config/h8300/h8300-protos.h	Mon Feb 18 17:07:42 2002
+--- gcc-3.1/gcc/config/h8300/h8300-protos.h	Sun May 19 11:33:17 2002
+***************
+*** 1,5 ****
+! /* Definitions of target machine for GNU compiler. 
+!    Hitachi H8/300 version generating coff 
+     Copyright (C) 2000 Free SoftwareFoundation, Inc.
+     Contributed by Steve Chamberlain (sac@cygnus.com),
+     Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
+--- 1,5 ----
+! /* Definitions of target machine for GNU compiler.
+!    Hitachi H8/300 version generating coff
+     Copyright (C) 2000 Free SoftwareFoundation, Inc.
+     Contributed by Steve Chamberlain (sac@cygnus.com),
+     Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
+***************
+*** 26,32 ****
+  
+  /* Declarations for functions used in insn-output.c.  */
+  #ifdef RTX_CODE
+! extern const char *output_a_shift PARAMS ((rtx *));
+  extern const char *emit_a_rotate PARAMS ((enum rtx_code, rtx *));
+  extern const char *output_simode_bld PARAMS ((int, rtx[]));
+  extern void print_operand_address PARAMS ((FILE *, rtx));
+--- 26,33 ----
+  
+  /* Declarations for functions used in insn-output.c.  */
+  #ifdef RTX_CODE
+! extern const char *output_a_shift PARAMS ((rtx, rtx *));
+! extern unsigned int compute_a_shift_length PARAMS ((rtx, rtx *));
+  extern const char *emit_a_rotate PARAMS ((enum rtx_code, rtx *));
+  extern const char *output_simode_bld PARAMS ((int, rtx[]));
+  extern void print_operand_address PARAMS ((FILE *, rtx));
+***************
+*** 35,41 ****
+  extern void final_prescan_insn PARAMS ((rtx, rtx *, int));
+  extern int do_movsi PARAMS ((rtx[]));
+  extern void notice_update_cc PARAMS ((rtx, rtx));
+! extern const char *output_logical_op PARAMS ((enum machine_mode, int, rtx *));
+  extern int expand_a_shift PARAMS ((enum machine_mode, int, rtx[]));
+  extern int expand_a_rotate PARAMS ((enum rtx_code, rtx[]));
+  extern int fix_bit_operand PARAMS ((rtx *, int, enum rtx_code));
+--- 36,45 ----
+  extern void final_prescan_insn PARAMS ((rtx, rtx *, int));
+  extern int do_movsi PARAMS ((rtx[]));
+  extern void notice_update_cc PARAMS ((rtx, rtx));
+! extern const char *output_logical_op PARAMS ((enum machine_mode, rtx *));
+! extern unsigned int compute_logical_op_length PARAMS ((enum machine_mode,
+! 						       rtx *));
+! extern int compute_logical_op_cc PARAMS ((enum machine_mode, rtx *));
+  extern int expand_a_shift PARAMS ((enum machine_mode, int, rtx[]));
+  extern int expand_a_rotate PARAMS ((enum rtx_code, rtx[]));
+  extern int fix_bit_operand PARAMS ((rtx *, int, enum rtx_code));
+diff -rc gcc-3.1-old/gcc/config/h8300/h8300.c gcc-3.1/gcc/config/h8300/h8300.c
+*** gcc-3.1-old/gcc/config/h8300/h8300.c	Sat Feb 23 09:17:25 2002
+--- gcc-3.1/gcc/config/h8300/h8300.c	Sun May 19 11:45:53 2002
+***************
+*** 54,59 ****
+--- 54,60 ----
+  static void push PARAMS ((FILE *, int));
+  static void pop PARAMS ((FILE *, int));
+  static const char *cond_string PARAMS ((enum rtx_code));
++ static unsigned int h8300_asm_insn_count PARAMS ((const char *));
+  const struct attribute_spec h8300_attribute_table[];
+  static tree h8300_handle_fndecl_attribute PARAMS ((tree *, tree, tree, int, bool *));
+  static tree h8300_handle_eightbit_data_attribute PARAMS ((tree *, tree, tree, int, bool *));
+***************
+*** 270,276 ****
+    fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[rn]);
+  }
+  
+! /* This is what the stack looks like after the prolog of 
+     a function with a frame has been set up:
+  
+     <args>
+--- 271,277 ----
+    fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[rn]);
+  }
+  
+! /* This is what the stack looks like after the prolog of
+     a function with a frame has been set up:
+  
+     <args>
+***************
+*** 727,735 ****
+       rtx op;
+       enum machine_mode mode;
+  {
+!   /* We can except any general operand, expept that MEM operands must
+!      be limited to those that use addresses valid for the 'U' constraint.  */
+!   if (!general_operand (op, mode))
+      return 0;
+  
+    /* Accept any mem during RTL generation.  Otherwise, the code that does
+--- 728,744 ----
+       rtx op;
+       enum machine_mode mode;
+  {
+!   int save_volatile_ok = volatile_ok;
+!   int gen_op;
+! 
+!   /* We can except any general operand, including volatile one, expept
+!      that MEM operands must be limited to those that use addresses
+!      valid for the 'U' constraint.  */
+!   volatile_ok = 1;
+!   gen_op = general_operand (op, mode);
+!   volatile_ok = save_volatile_ok;
+! 
+!   if (!gen_op)
+      return 0;
+  
+    /* Accept any mem during RTL generation.  Otherwise, the code that does
+***************
+*** 1206,1228 ****
+  	case MEM:
+  	  {
+  	    rtx addr = XEXP (x, 0);
+  
+  	    fprintf (file, "@");
+  	    output_address (addr);
+  
+! 	    /* If this is an 'R' operand (reference into the 8-bit
+! 	       area), then specify a symbolic address as "foo:8",
+! 	       otherwise if operand is still in eight bit section, use
+! 	       "foo:16".  */
+! 	    if (GET_CODE (addr) == SYMBOL_REF
+! 		&& SYMBOL_REF_FLAG (addr))
+! 	      fprintf (file, (code == 'R' ? ":8" : ":16"));
+! 	    else if (GET_CODE (addr) == SYMBOL_REF
+! 		     && TINY_DATA_NAME_P (XSTR (addr, 0)))
+! 	      fprintf (file, ":16");
+! 	    else if ((code == 'R')
+! 		     && EIGHTBIT_CONSTANT_ADDRESS_P (addr))
+! 	      fprintf (file, ":8");
+  	  }
+  	  break;
+  
+--- 1215,1256 ----
+  	case MEM:
+  	  {
+  	    rtx addr = XEXP (x, 0);
++ 	    int eightbit_ok = ((GET_CODE (addr) == SYMBOL_REF
++ 				&& SYMBOL_REF_FLAG (addr))
++ 			       || EIGHTBIT_CONSTANT_ADDRESS_P (addr));
++ 	    int tiny_ok = ((GET_CODE (addr) == SYMBOL_REF
++ 			    && TINY_DATA_NAME_P (XSTR (addr, 0)))
++ 			   || TINY_CONSTANT_ADDRESS_P (addr));
+  
+  	    fprintf (file, "@");
+  	    output_address (addr);
+  
+! 	    /* We fall back from smaller addressing to larger
+! 	       addressing in various ways depending on CODE.  */
+! 	    switch (code)
+! 	      {
+! 	      case 'R':
+! 		/* Used for mov.b and bit operations.  */
+! 		if (eightbit_ok)
+! 		  {
+! 		    fprintf (file, ":8");
+! 		    break;
+! 		  }
+! 
+! 		/* Fall through.  We should not get here if we are
+! 		   processing bit operations on H8/300 or H8/300H
+! 		   because 'U' constraint does not allow bit
+! 		   operations on the tiny area on these machines.  */
+! 
+! 	      case 'T':
+! 	      case 'S':
+! 		/* Used for mov.w and mov.l.  */
+! 		if (tiny_ok)
+! 		  fprintf (file, ":16");
+! 		break;
+! 	      default:
+! 		break;
+! 	      }
+  	  }
+  	  break;
+  
+***************
+*** 1487,1497 ****
+  }
+  
+  const char *
+! output_logical_op (mode, code, operands)
+       enum machine_mode mode;
+-      int code;
+       rtx *operands;
+  {
+    /* Pretend that every byte is affected if both operands are registers.  */
+    unsigned HOST_WIDE_INT intval =
+      (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
+--- 1515,1526 ----
+  }
+  
+  const char *
+! output_logical_op (mode, operands)
+       enum machine_mode mode;
+       rtx *operands;
+  {
++   /* Figure out the logical op that we need to perform.  */
++   enum rtx_code code = GET_CODE (operands[3]);
+    /* Pretend that every byte is affected if both operands are registers.  */
+    unsigned HOST_WIDE_INT intval =
+      (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
+***************
+*** 1627,1632 ****
+--- 1656,1822 ----
+      }
+    return "";
+  }
++ 
++ unsigned int
++ compute_logical_op_length (mode, operands)
++      enum machine_mode mode;
++      rtx *operands;
++ {
++   /* Figure out the logical op that we need to perform.  */
++   enum rtx_code code = GET_CODE (operands[3]);
++   /* Pretend that every byte is affected if both operands are registers.  */
++   unsigned HOST_WIDE_INT intval =
++     (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
++ 			      ? INTVAL (operands[2]) : 0x55555555);
++   /* The determinant of the algorithm.  If we perform an AND, 0
++      affects a bit.  Otherwise, 1 affects a bit.  */
++   unsigned HOST_WIDE_INT det = (code != AND) ? intval : ~intval;
++   /* Insn length.  */
++   unsigned int length = 0;
++ 
++   switch (mode)
++     {
++     case HImode:
++       /* First, see if we can finish with one insn.  */
++       if ((TARGET_H8300H || TARGET_H8300S)
++ 	  && ((det & 0x00ff) != 0)
++ 	  && ((det & 0xff00) != 0))
++ 	{
++ 	  if (REG_P (operands[2]))
++ 	    length += 2;
++ 	  else
++ 	    length += 4;
++ 	}
++       else
++ 	{
++ 	  /* Take care of the lower byte.  */
++ 	  if ((det & 0x00ff) != 0)
++ 	    length += 2;
++ 
++ 	  /* Take care of the upper byte.  */
++ 	  if ((det & 0xff00) != 0)
++ 	    length += 2;
++ 	}
++       break;
++     case SImode:
++       /* First, see if we can finish with one insn.
++ 
++ 	 If code is either AND or XOR, we exclude two special cases,
++ 	 0xffffff00 and 0xffff00ff, because insns like sub.w or not.w
++ 	 can do a better job.  */
++       if ((TARGET_H8300H || TARGET_H8300S)
++ 	  && ((det & 0x0000ffff) != 0)
++ 	  && ((det & 0xffff0000) != 0)
++ 	  && (code == IOR || det != 0xffffff00)
++ 	  && (code == IOR || det != 0xffff00ff))
++ 	{
++ 	  if (REG_P (operands[2]))
++ 	    length += 4;
++ 	  else
++ 	    length += 6;
++ 	}
++       else
++ 	{
++ 	  /* Take care of the lower and upper words individually.  For
++ 	     each word, we try different methods in the order of
++ 
++ 	     1) the special insn (in case of AND or XOR),
++ 	     2) the word-wise insn, and
++ 	     3) The byte-wise insn.  */
++ 	  if ((det & 0x0000ffff) == 0x0000ffff
++ 	      && (TARGET_H8300 ? (code == AND) : (code != IOR)))
++ 	    {
++ 	      length += 2;
++ 	    }
++ 	  else if ((TARGET_H8300H || TARGET_H8300S)
++ 		   && ((det & 0x000000ff) != 0)
++ 		   && ((det & 0x0000ff00) != 0))
++ 	    {
++ 	      length += 4;
++ 	    }
++ 	  else
++ 	    {
++ 	      if ((det & 0x000000ff) != 0)
++ 		length += 2;
++ 
++ 	      if ((det & 0x0000ff00) != 0)
++ 		length += 2;
++ 	    }
++ 
++ 	  if ((det & 0xffff0000) == 0xffff0000
++ 	      && (TARGET_H8300 ? (code == AND) : (code != IOR)))
++ 	    {
++ 	      length += 2;
++ 	    }
++ 	  else if (TARGET_H8300H || TARGET_H8300S)
++ 	    {
++ 	      if ((det & 0xffff0000) != 0)
++ 		length += 4;
++ 	    }
++ 	  else
++ 	    {
++ 	      if ((det & 0x00ff0000) != 0)
++ 		length += 2;
++ 
++ 	      if ((det & 0xff000000) != 0)
++ 		length += 2;
++ 	    }
++ 	}
++       break;
++     default:
++       abort ();
++     }
++   return length;
++ }
++ 
++ int
++ compute_logical_op_cc (mode, operands)
++      enum machine_mode mode;
++      rtx *operands;
++ {
++   /* Figure out the logical op that we need to perform.  */
++   enum rtx_code code = GET_CODE (operands[3]);
++   /* Pretend that every byte is affected if both operands are registers.  */
++   unsigned HOST_WIDE_INT intval =
++     (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
++ 			      ? INTVAL (operands[2]) : 0x55555555);
++   /* The determinant of the algorithm.  If we perform an AND, 0
++      affects a bit.  Otherwise, 1 affects a bit.  */
++   unsigned HOST_WIDE_INT det = (code != AND) ? intval : ~intval;
++   /* Condition code.  */
++   enum attr_cc cc = CC_CLOBBER;
++ 
++   switch (mode)
++     {
++     case HImode:
++       /* First, see if we can finish with one insn.  */
++       if ((TARGET_H8300H || TARGET_H8300S)
++ 	  && ((det & 0x00ff) != 0)
++ 	  && ((det & 0xff00) != 0))
++ 	{
++ 	  cc = CC_SET_ZNV;
++ 	}
++       break;
++     case SImode:
++       /* First, see if we can finish with one insn.
++ 
++ 	 If code is either AND or XOR, we exclude two special cases,
++ 	 0xffffff00 and 0xffff00ff, because insns like sub.w or not.w
++ 	 can do a better job.  */
++       if ((TARGET_H8300H || TARGET_H8300S)
++ 	  && ((det & 0x0000ffff) != 0)
++ 	  && ((det & 0xffff0000) != 0)
++ 	  && (code == IOR || det != 0xffffff00)
++ 	  && (code == IOR || det != 0xffff00ff))
++ 	{
++ 	  cc = CC_SET_ZNV;
++ 	}
++       break;
++     default:
++       abort ();
++     }
++   return cc;
++ }
+  
+  /* Shifts.
+  
+***************
+*** 1661,1667 ****
+     Below, a trailing '*' after the shift count indicates the "best"
+     mode isn't implemented.  We only describe SHIFT_SPECIAL cases to
+     simplify the table.  For other cases, refer to shift_alg_[qhs]i.
+!    
+     H8/300 QImode shifts
+     7      - ASHIFTRT: shll, subx (propagate carry bit to all bits)
+  
+--- 1851,1857 ----
+     Below, a trailing '*' after the shift count indicates the "best"
+     mode isn't implemented.  We only describe SHIFT_SPECIAL cases to
+     simplify the table.  For other cases, refer to shift_alg_[qhs]i.
+! 
+     H8/300 QImode shifts
+     7      - ASHIFTRT: shll, subx (propagate carry bit to all bits)
+  
+***************
+*** 2128,2133 ****
+--- 2318,2324 ----
+  
+  static void get_shift_alg PARAMS ((enum shift_type,
+  				   enum shift_mode, unsigned int,
++ 				   int,
+  				   struct shift_info *));
+  
+  /* Given SHIFT_TYPE, SHIFT_MODE, and shift count COUNT, determine the
+***************
+*** 2144,2153 ****
+     1,2,3,4 will be inlined (1,2 for SI).  */
+  
+  static void
+! get_shift_alg (shift_type, shift_mode, count, info)
+       enum shift_type shift_type;
+       enum shift_mode shift_mode;
+       unsigned int count;
+       struct shift_info *info;
+  {
+    int cpu;
+--- 2335,2345 ----
+     1,2,3,4 will be inlined (1,2 for SI).  */
+  
+  static void
+! get_shift_alg (shift_type, shift_mode, count, into_smaller_mode, info)
+       enum shift_type shift_type;
+       enum shift_mode shift_mode;
+       unsigned int count;
++      int into_smaller_mode;
+       struct shift_info *info;
+  {
+    int cpu;
+***************
+*** 2378,2384 ****
+  		}
+  	      goto end;
+  	    case SHIFT_LSHIFTRT:
+! 	      info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0";
+  	      if (TARGET_H8300)
+  		{
+  		  info->shift1 = "shlr\t%x0\n\trotxr\t%w0";
+--- 2570,2579 ----
+  		}
+  	      goto end;
+  	    case SHIFT_LSHIFTRT:
+! 	      if (into_smaller_mode)
+! 		info->special = "mov.w\t%e0,%f0";
+! 	      else
+! 		info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0";
+  	      if (TARGET_H8300)
+  		{
+  		  info->shift1 = "shlr\t%x0\n\trotxr\t%w0";
+***************
+*** 2397,2403 ****
+  		}
+  	      else
+  		{
+! 		  info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0";
+  		  info->shift1  = "shar.l\t%S0";
+  		  info->shift2  = "shar.l\t#2,%S0";
+  		}
+--- 2592,2601 ----
+  		}
+  	      else
+  		{
+! 		  if (into_smaller_mode)
+! 		    info->special = "mov.w\t%e0,%f0";
+! 		  else
+! 		    info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0";
+  		  info->shift1  = "shar.l\t%S0";
+  		  info->shift2  = "shar.l\t#2,%S0";
+  		}
+***************
+*** 2407,2413 ****
+        else if (TARGET_H8300 && 24 <= count && count <= 28)
+  	{
+  	  info->remainder = count - 24;
+!  
+  	  switch (shift_type)
+  	    {
+  	    case SHIFT_ASHIFT:
+--- 2605,2611 ----
+        else if (TARGET_H8300 && 24 <= count && count <= 28)
+  	{
+  	  info->remainder = count - 24;
+! 
+  	  switch (shift_type)
+  	    {
+  	    case SHIFT_ASHIFT:
+***************
+*** 2421,2429 ****
+  	    case SHIFT_ASHIFTRT:
+  	      info->special = "mov.b\t%z0,%w0\n\tbld\t#7,%w0\n\tsubx\t%x0,%x0\n\tsubx\t%x0,%x0\n\tsubx\t%x0,%x0";
+  	      info->shift1  = "shar.b\t%w0";
+!  	      goto end;
+!  	    }
+!  	}
+        else if ((TARGET_H8300H && count == 24)
+  	       || (TARGET_H8300S && 24 <= count && count <= 25))
+  	{
+--- 2619,2627 ----
+  	    case SHIFT_ASHIFTRT:
+  	      info->special = "mov.b\t%z0,%w0\n\tbld\t#7,%w0\n\tsubx\t%x0,%x0\n\tsubx\t%x0,%x0\n\tsubx\t%x0,%x0";
+  	      info->shift1  = "shar.b\t%w0";
+! 	      goto end;
+! 	    }
+! 	}
+        else if ((TARGET_H8300H && count == 24)
+  	       || (TARGET_H8300S && 24 <= count && count <= 25))
+  	{
+***************
+*** 2437,2448 ****
+  	      info->shift2  = "shll.l\t#2,%S0";
+  	      goto end;
+  	    case SHIFT_LSHIFTRT:
+! 	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\textu.w\t%f0\n\textu.l\t%S0";
+  	      info->shift1  = "shlr.l\t%S0";
+  	      info->shift2  = "shlr.l\t#2,%S0";
+  	      goto end;
+  	    case SHIFT_ASHIFTRT:
+! 	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
+  	      info->shift1  = "shar.l\t%S0";
+  	      info->shift2  = "shar.l\t#2,%S0";
+  	      goto end;
+--- 2635,2653 ----
+  	      info->shift2  = "shll.l\t#2,%S0";
+  	      goto end;
+  	    case SHIFT_LSHIFTRT:
+! 	      if (into_smaller_mode)
+! 		info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\textu.w\t%f0";
+! 	      else
+! 		info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\textu.w\t%f0\n\textu.l\t%S0";
+! 
+  	      info->shift1  = "shlr.l\t%S0";
+  	      info->shift2  = "shlr.l\t#2,%S0";
+  	      goto end;
+  	    case SHIFT_ASHIFTRT:
+! 	      if (into_smaller_mode)
+! 		info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0";
+! 	      else
+! 		info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
+  	      info->shift1  = "shar.l\t%S0";
+  	      info->shift2  = "shar.l\t#2,%S0";
+  	      goto end;
+***************
+*** 2495,2501 ****
+  /* Emit the assembler code for doing shifts.  */
+  
+  const char *
+! output_a_shift (operands)
+       rtx *operands;
+  {
+    static int loopend_lab;
+--- 2700,2707 ----
+  /* Emit the assembler code for doing shifts.  */
+  
+  const char *
+! output_a_shift (insn, operands)
+!      rtx insn;
+       rtx *operands;
+  {
+    static int loopend_lab;
+***************
+*** 2545,2551 ****
+        fprintf (asm_out_file, "\tble	.Lle%d\n", loopend_lab);
+  
+        /* Get the assembler code to do one shift.  */
+!       get_shift_alg (shift_type, shift_mode, 1, &info);
+  
+        fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
+        output_asm_insn (info.shift1, operands);
+--- 2751,2757 ----
+        fprintf (asm_out_file, "\tble	.Lle%d\n", loopend_lab);
+  
+        /* Get the assembler code to do one shift.  */
+!       get_shift_alg (shift_type, shift_mode, 1, 0, &info);
+  
+        fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
+        output_asm_insn (info.shift1, operands);
+***************
+*** 2558,2563 ****
+--- 2764,2770 ----
+    else
+      {
+        int n = INTVAL (operands[2]);
++       int into_smaller_mode = 0;
+  
+        /* If the count is negative, make it 0.  */
+        if (n < 0)
+***************
+*** 2568,2574 ****
+        else if ((unsigned int) n > GET_MODE_BITSIZE (mode))
+  	n = GET_MODE_BITSIZE (mode);
+  
+!       get_shift_alg (shift_type, shift_mode, n, &info);
+  
+        switch (info.alg)
+  	{
+--- 2775,2797 ----
+        else if ((unsigned int) n > GET_MODE_BITSIZE (mode))
+  	n = GET_MODE_BITSIZE (mode);
+  
+!       /* Determine if the destination only uses the smaller mode after
+! 	 this shift insn.  We could do more advanced tests, but for
+! 	 now, we just check for 'use'.  */
+!       if (NEXT_INSN (insn) != NULL
+! 	  && GET_CODE (NEXT_INSN (insn)) == INSN
+! 	  && GET_CODE (PATTERN (NEXT_INSN (insn))) == USE)
+! 	{
+! 	  rtx usedrtx = XEXP (PATTERN (NEXT_INSN (insn)), 0);
+! 
+! 	  if (GET_CODE (usedrtx) == REG
+! 	      && REGNO (usedrtx) == REGNO (operands[0])
+! 	      && (GET_MODE_BITSIZE (GET_MODE (usedrtx))
+! 		  < GET_MODE_BITSIZE (GET_MODE (operands[0]))))
+! 	    into_smaller_mode = 1;
+! 	}
+! 
+!       get_shift_alg (shift_type, shift_mode, n, into_smaller_mode, &info);
+  
+        switch (info.alg)
+  	{
+***************
+*** 2682,2687 ****
+--- 2905,3064 ----
+  	}
+      }
+  }
++ 
++ static unsigned int
++ h8300_asm_insn_count (const char *template)
++ {
++   unsigned int count = 1;
++ 
++   for (; *template; template++)
++     if (*template == '\n')
++       count++;
++ 
++   return count;
++ }
++ 
++ unsigned int
++ compute_a_shift_length (insn, operands)
++      rtx insn ATTRIBUTE_UNUSED;
++      rtx *operands;
++ {
++   rtx shift = operands[3];
++   enum machine_mode mode = GET_MODE (shift);
++   enum rtx_code code = GET_CODE (shift);
++   enum shift_type shift_type;
++   enum shift_mode shift_mode;
++   struct shift_info info;
++   unsigned int wlength = 0;
++ 
++   switch (mode)
++     {
++     case QImode:
++       shift_mode = QIshift;
++       break;
++     case HImode:
++       shift_mode = HIshift;
++       break;
++     case SImode:
++       shift_mode = SIshift;
++       break;
++     default:
++       abort ();
++     }
++ 
++   switch (code)
++     {
++     case ASHIFTRT:
++       shift_type = SHIFT_ASHIFTRT;
++       break;
++     case LSHIFTRT:
++       shift_type = SHIFT_LSHIFTRT;
++       break;
++     case ASHIFT:
++       shift_type = SHIFT_ASHIFT;
++       break;
++     default:
++       abort ();
++     }
++ 
++   if (GET_CODE (operands[2]) != CONST_INT)
++     {
++       /* Get the assembler code to do one shift.  */
++       get_shift_alg (shift_type, shift_mode, 1, 0, &info);
++ 
++       return (4 + h8300_asm_insn_count (info.shift1)) * 2;
++     }
++   else
++     {
++       int n = INTVAL (operands[2]);
++ 
++       /* If the count is negative, make it 0.  */
++       if (n < 0)
++ 	n = 0;
++       /* If the count is too big, truncate it.
++          ANSI says shifts of GET_MODE_BITSIZE are undefined - we choose to
++ 	 do the intuitive thing.  */
++       else if ((unsigned int) n > GET_MODE_BITSIZE (mode))
++ 	n = GET_MODE_BITSIZE (mode);
++ 
++       get_shift_alg (shift_type, shift_mode, n, 0, &info);
++ 
++       switch (info.alg)
++ 	{
++ 	case SHIFT_SPECIAL:
++ 	  wlength += h8300_asm_insn_count (info.special);
++ 	  /* Fall through.  */
++ 
++ 	case SHIFT_INLINE:
++ 	  n = info.remainder;
++ 
++ 	  if (info.shift2 != NULL)
++ 	    {
++ 	      wlength += h8300_asm_insn_count (info.shift2) * (n / 2);
++ 	      n = n % 2;
++ 	    }
++ 
++ 	  wlength += h8300_asm_insn_count (info.shift1) * n;
++ 
++ 	  return 2 * wlength;
++ 
++ 	case SHIFT_ROT_AND:
++ 	  {
++ 	    int m = GET_MODE_BITSIZE (mode) - n;
++ 
++ 	    /* Not all possibilities of rotate are supported.  They shouldn't
++ 	       be generated, but let's watch for 'em.  */
++ 	    if (info.shift1 == 0)
++ 	      abort ();
++ 
++ 	    if (info.shift2 != NULL)
++ 	      {
++ 		wlength += h8300_asm_insn_count (info.shift2) * (m / 2);
++ 		m = m % 2;
++ 	      }
++ 
++ 	    wlength += h8300_asm_insn_count (info.shift1) * m;
++ 
++ 	    /* Now mask off the high bits.  */
++ 	    switch (mode)
++ 	      {
++ 	      case QImode:
++ 		wlength += 1;
++ 		break;
++ 	      case HImode:
++ 		wlength += 2;
++ 		break;
++ 	      case SImode:
++ 		if (TARGET_H8300)
++ 		  abort ();
++ 		wlength += 3;
++ 		break;
++ 	      default:
++ 		abort ();
++ 	      }
++ 	    return 2 * wlength;
++ 	  }
++ 
++ 	case SHIFT_LOOP:
++ 	  /* A loop to shift by a "large" constant value.
++ 	     If we have shift-by-2 insns, use them.  */
++ 	  if (info.shift2 != NULL)
++ 	    {
++ 	      wlength += 3 + h8300_asm_insn_count (info.shift2);
++ 	      if (n % 2)
++ 		wlength += h8300_asm_insn_count (info.shift1);
++ 	    }
++ 	  else
++ 	    {
++ 	      wlength += 3 + h8300_asm_insn_count (info.shift1);
++ 	    }
++ 	  return 2 * wlength;
++ 
++ 	default:
++ 	  abort ();
++ 	}
++     }
++ }
+  
+  /* A rotation by a non-constant will cause a loop to be generated, in
+     which a rotation by one bit is used.  A rotation by a constant,
+***************
+*** 3186,3219 ****
+        else
+  	addr = XEXP (SET_DEST (pat), 0);
+  
+!       /* On the H8/300, only one adjustment is necessary; if the
+! 	 address mode is register indirect, then this insn is two
+! 	 bytes shorter than indicated in the machine description.  */
+!       if (TARGET_H8300 && GET_CODE (addr) == REG)
+! 	return -2;
+! 
+!       /* On the H8/300H and H8/S, register indirect is 6 bytes shorter than
+! 	 indicated in the machine description.  */
+!       if ((TARGET_H8300H || TARGET_H8300S)
+!           && GET_CODE (addr) == REG)
+! 	return -6;
+! 
+!       /* On the H8/300H and H8/S, reg + d, for small displacements is
+! 	 4 bytes shorter than indicated in the machine description.  */
+!       if ((TARGET_H8300H || TARGET_H8300S)
+! 	  && GET_CODE (addr) == PLUS
+! 	  && GET_CODE (XEXP (addr, 0)) == REG
+! 	  && GET_CODE (XEXP (addr, 1)) == CONST_INT
+! 	  && INTVAL (XEXP (addr, 1)) > -32768
+! 	  && INTVAL (XEXP (addr, 1)) < 32767)
+! 	return -4;
+  
+!       /* On the H8/300H and H8/S, abs:16 is two bytes shorter than the
+! 	 more general abs:24.  */
+!       if ((TARGET_H8300H || TARGET_H8300S)
+! 	  && GET_CODE (addr) == SYMBOL_REF
+! 	  && TINY_DATA_NAME_P (XSTR (addr, 0)))
+! 	return -2;
+      }
+  
+    /* Loading some constants needs adjustment.  */
+--- 3563,3611 ----
+        else
+  	addr = XEXP (SET_DEST (pat), 0);
+  
+!       if (TARGET_H8300)
+! 	{
+! 	  /* On the H8/300, we subtract the difference between the
+!              actual length and the longest one, which is @(d:16,ERs).  */
+  
+! 	  /* @Rs is 2 bytes shorter than the longest.  */
+! 	  if (GET_CODE (addr) == REG)
+! 	    return -2;
+! 	}
+!       else
+! 	{
+! 	  /* On the H8/300H and H8/S, we subtract the difference
+!              between the actual length and the longest one, which is
+!              @(d:24,ERs).  */
+! 
+! 	  /* @ERs is 6 bytes shorter than the longest.  */
+! 	  if (GET_CODE (addr) == REG)
+! 	    return -6;
+! 
+! 	  /* @(d:16,ERs) is 6 bytes shorter than the longest.  */
+! 	  if (GET_CODE (addr) == PLUS
+! 	      && GET_CODE (XEXP (addr, 0)) == REG
+! 	      && GET_CODE (XEXP (addr, 1)) == CONST_INT
+! 	      && INTVAL (XEXP (addr, 1)) > -32768
+! 	      && INTVAL (XEXP (addr, 1)) < 32767)
+! 	    return -4;
+! 
+! 	  /* @aa:8 is 6 bytes shorter than the longest.  */
+! 	  if (GET_MODE (SET_SRC (pat)) == QImode
+! 	      && ((GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_FLAG (addr))
+! 		  || EIGHTBIT_CONSTANT_ADDRESS_P (addr)))
+! 	    return -6;
+! 
+! 	  /* @aa:16 is 4 bytes shorter than the longest.  */
+! 	  if ((GET_CODE (addr) == SYMBOL_REF
+! 	       && TINY_DATA_NAME_P (XSTR (addr, 0)))
+! 	      || TINY_CONSTANT_ADDRESS_P (addr))
+! 	    return -4;
+! 
+! 	  /* @aa:24 is 2 bytes shorter than the longest.  */
+! 	  if (GET_CODE (addr) == CONST_INT)
+! 	    return -2;
+! 	}
+      }
+  
+    /* Loading some constants needs adjustment.  */
+***************
+*** 3251,3300 ****
+  	}
+      }
+  
+-   /* Shifts need various adjustments.  */
+-   if (GET_CODE (pat) == PARALLEL
+-       && GET_CODE (XVECEXP (pat, 0, 0)) == SET
+-       && (GET_CODE (SET_SRC (XVECEXP (pat, 0, 0))) == ASHIFTRT
+- 	  || GET_CODE (SET_SRC (XVECEXP (pat, 0, 0))) == LSHIFTRT
+- 	  || GET_CODE (SET_SRC (XVECEXP (pat, 0, 0))) == ASHIFT))
+-     {
+-       rtx src = SET_SRC (XVECEXP (pat, 0, 0));
+-       enum machine_mode mode = GET_MODE (src);
+-       int shift;
+- 
+-       if (GET_CODE (XEXP (src, 1)) != CONST_INT)
+- 	return 0;
+- 
+-       shift = INTVAL (XEXP (src, 1));
+-       /* According to ANSI, negative shift is undefined.  It is
+-          considered to be zero in this case (see function
+-          output_a_shift above).  */
+-       if (shift < 0)
+- 	shift = 0;
+- 
+-       /* QImode shifts by small constants take one insn
+- 	 per shift.  So the adjustment is 20 (md length) -
+- 	 # shifts * 2.  */
+-       if (mode == QImode && shift <= 4)
+- 	return -(20 - shift * 2);
+- 
+-       /* Similarly for HImode and SImode shifts by small constants on
+- 	 the H8/300H and H8/S.  */
+-       if ((TARGET_H8300H || TARGET_H8300S)
+- 	  && (mode == HImode || mode == SImode) && shift <= 4)
+- 	return -(20 - shift * 2);
+- 
+-       /* HImode shifts by small constants for the H8/300.  */
+-       if (mode == HImode && shift <= 4)
+- 	return -(20 - (shift * (GET_CODE (src) == ASHIFT ? 2 : 4)));
+- 
+-       /* SImode shifts by small constants for the H8/300.  */
+-       if (mode == SImode && shift <= 2)
+- 	return -(20 - (shift * (GET_CODE (src) == ASHIFT ? 6 : 8)));
+- 
+-       /* XXX ??? Could check for more shift/rotate cases here.  */
+-     }
+- 
+    /* Rotations need various adjustments.  */
+    if (GET_CODE (pat) == SET
+        && (GET_CODE (SET_SRC (pat)) == ROTATE
+--- 3643,3648 ----
+diff -rc gcc-3.1-old/gcc/config/h8300/h8300.h gcc-3.1/gcc/config/h8300/h8300.h
+*** gcc-3.1-old/gcc/config/h8300/h8300.h	Tue Feb 19 02:36:55 2002
+--- gcc-3.1/gcc/config/h8300/h8300.h	Sun May 19 11:05:38 2002
+***************
+*** 1,5 ****
+! /* Definitions of target machine for GNU compiler. 
+!    Hitachi H8/300 version generating coff 
+     Copyright (C) 1992, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999,
+     2000, 2001, 2002 Free Software Foundation, Inc.
+     Contributed by Steve Chamberlain (sac@cygnus.com),
+--- 1,5 ----
+! /* Definitions of target machine for GNU compiler.
+!    Hitachi H8/300 version generating coff
+     Copyright (C) 1992, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999,
+     2000, 2001, 2002 Free Software Foundation, Inc.
+     Contributed by Steve Chamberlain (sac@cygnus.com),
+***************
+*** 171,177 ****
+  /* Define this if addresses of constant functions
+     shouldn't be put through pseudo regs where they can be cse'd.
+     Desirable on machines where ordinary constants are expensive
+!    but a CALL with constant address is cheap. 
+  
+     Calls through a register are cheaper than calls to named
+     functions; however, the register pressure this causes makes
+--- 171,177 ----
+  /* Define this if addresses of constant functions
+     shouldn't be put through pseudo regs where they can be cse'd.
+     Desirable on machines where ordinary constants are expensive
+!    but a CALL with constant address is cheap.
+  
+     Calls through a register are cheaper than calls to named
+     functions; however, the register pressure this causes makes
+***************
+*** 194,200 ****
+  #define BYTES_BIG_ENDIAN 1
+  
+  /* Define this if most significant word of a multiword number is lowest
+!    numbered.  
+     This is true on an H8/300 (actually we can make it up, but we choose to
+     be consistent).  */
+  #define WORDS_BIG_ENDIAN 1
+--- 194,200 ----
+  #define BYTES_BIG_ENDIAN 1
+  
+  /* Define this if most significant word of a multiword number is lowest
+!    numbered.
+     This is true on an H8/300 (actually we can make it up, but we choose to
+     be consistent).  */
+  #define WORDS_BIG_ENDIAN 1
+***************
+*** 263,269 ****
+     from 0 to just below FIRST_PSEUDO_REGISTER.
+  
+     All registers that the compiler knows about must be given numbers,
+!    even those that are not normally considered general registers.  
+  
+     Reg 9 does not correspond to any hardware register, but instead
+     appears in the RTL as an argument pointer prior to reload, and is
+--- 263,269 ----
+     from 0 to just below FIRST_PSEUDO_REGISTER.
+  
+     All registers that the compiler knows about must be given numbers,
+!    even those that are not normally considered general registers.
+  
+     Reg 9 does not correspond to any hardware register, but instead
+     appears in the RTL as an argument pointer prior to reload, and is
+***************
+*** 284,290 ****
+     The latter must include the registers where values are returned
+     and the register where structure-value addresses are passed.
+     Aside from that, you can include as many other registers as you
+!    like.  
+  
+     H8 destroys r0,r1,r2,r3.  */
+  
+--- 284,290 ----
+     The latter must include the registers where values are returned
+     and the register where structure-value addresses are passed.
+     Aside from that, you can include as many other registers as you
+!    like.
+  
+     H8 destroys r0,r1,r2,r3.  */
+  
+***************
+*** 304,310 ****
+     to hold something of mode MODE.
+  
+     This is ordinarily the length in words of a value of mode MODE
+!    but can be less for certain modes in special long registers. 
+  
+     We pretend the MAC register is 32bits -- we don't have any data
+     types on the H8 series to handle more than 32bits.  */
+--- 304,310 ----
+     to hold something of mode MODE.
+  
+     This is ordinarily the length in words of a value of mode MODE
+!    but can be less for certain modes in special long registers.
+  
+     We pretend the MAC register is 32bits -- we don't have any data
+     types on the H8 series to handle more than 32bits.  */
+***************
+*** 424,430 ****
+  #define INDEX_REG_CLASS NO_REGS
+  #define BASE_REG_CLASS  GENERAL_REGS
+  
+! /* Get reg_class from a letter such as appears in the machine description. 
+  
+     'a' is the MAC register.  */
+  
+--- 424,430 ----
+  #define INDEX_REG_CLASS NO_REGS
+  #define BASE_REG_CLASS  GENERAL_REGS
+  
+! /* Get reg_class from a letter such as appears in the machine description.
+  
+     'a' is the MAC register.  */
+  
+***************
+*** 463,470 ****
+     0)
+  
+  /* Similar, but for floating constants, and defining letters G and H.
+!    Here VALUE is the CONST_DOUBLE rtx itself. 
+!      
+    `G' is a floating-point zero.  */
+  
+  #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)	\
+--- 463,470 ----
+     0)
+  
+  /* Similar, but for floating constants, and defining letters G and H.
+!    Here VALUE is the CONST_DOUBLE rtx itself.
+! 
+    `G' is a floating-point zero.  */
+  
+  #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)	\
+***************
+*** 486,492 ****
+  #define CLASS_MAX_NREGS(CLASS, MODE)	\
+    ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+  
+! /* Any SI register-to-register move may need to be reloaded, 
+     so define REGISTER_MOVE_COST to be > 2 so that reload never
+     shortcuts.  */
+  
+--- 486,492 ----
+  #define CLASS_MAX_NREGS(CLASS, MODE)	\
+    ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+  
+! /* Any SI register-to-register move may need to be reloaded,
+     so define REGISTER_MOVE_COST to be > 2 so that reload never
+     shortcuts.  */
+  
+***************
+*** 586,593 ****
+  /* Define how to find the value returned by a function.
+     VALTYPE is the data type of the value (as a tree).
+     If the precise function being called is known, FUNC is its FUNCTION_DECL;
+!    otherwise, FUNC is 0. 
+!    
+     On the H8 the return value is in R0/R1.  */
+  
+  #define FUNCTION_VALUE(VALTYPE, FUNC) \
+--- 586,593 ----
+  /* Define how to find the value returned by a function.
+     VALTYPE is the data type of the value (as a tree).
+     If the precise function being called is known, FUNC is its FUNCTION_DECL;
+!    otherwise, FUNC is 0.
+! 
+     On the H8 the return value is in R0/R1.  */
+  
+  #define FUNCTION_VALUE(VALTYPE, FUNC) \
+***************
+*** 728,734 ****
+  #define EXIT_IGNORE_STACK 0
+  
+  /* Output assembler code for a block containing the constant parts
+!    of a trampoline, leaving space for the variable parts.  
+  
+     H8/300
+  	      vvvv context
+--- 728,734 ----
+  #define EXIT_IGNORE_STACK 0
+  
+  /* Output assembler code for a block containing the constant parts
+!    of a trampoline, leaving space for the variable parts.
+  
+     H8/300
+  	      vvvv context
+***************
+*** 860,865 ****
+--- 860,873 ----
+    (GET_CODE (X) == CONST_INT && TARGET_H8300H		\
+     && 0xffff00 <= INTVAL (X) && INTVAL (X) <= 0xffffff)
+  
++ /* Nonzero if X is a constant address suitable as an 16-bit absolute
++    on the H8/300H.  */
++ 
++ #define TINY_CONSTANT_ADDRESS_P(X)				\
++   (GET_CODE (X) == CONST_INT && TARGET_H8300H			\
++    && ((0xff8000 <= INTVAL (X) && INTVAL (X) <= 0xffffff)	\
++        || (0x000000 <= INTVAL (X) && INTVAL (X) <= 0x007fff)))
++ 
+  /* 'U' if valid for a bset destination;
+     i.e. a register, register indirect, or the eightbit memory region
+     (a SYMBOL_REF with an SYMBOL_REF_FLAG set).
+***************
+*** 892,912 ****
+  
+     The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS,
+     except for CONSTANT_ADDRESS_P which is actually
+!    machine-independent.  
+  
+     On the H8/300, a legitimate address has the form
+     REG, REG+CONSTANT_ADDRESS or CONSTANT_ADDRESS.  */
+  
+  /* Accept either REG or SUBREG where a register is valid.  */
+  
+! #define RTX_OK_FOR_BASE_P(X)					\
+!   ((REG_P (X) && REG_OK_FOR_BASE_P (X))				\
+!    || (GET_CODE (X) == SUBREG && REG_P (SUBREG_REG (X))		\
+         && REG_OK_FOR_BASE_P (SUBREG_REG (X))))
+  
+! #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) 	\
+    if (RTX_OK_FOR_BASE_P (X)) goto ADDR;			\
+!   if (CONSTANT_ADDRESS_P (X)) goto ADDR; 		\
+    if (GET_CODE (X) == PLUS				\
+        && CONSTANT_ADDRESS_P (XEXP (X, 1))		\
+        && RTX_OK_FOR_BASE_P (XEXP (X, 0))) goto ADDR;
+--- 900,920 ----
+  
+     The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS,
+     except for CONSTANT_ADDRESS_P which is actually
+!    machine-independent.
+  
+     On the H8/300, a legitimate address has the form
+     REG, REG+CONSTANT_ADDRESS or CONSTANT_ADDRESS.  */
+  
+  /* Accept either REG or SUBREG where a register is valid.  */
+  
+! #define RTX_OK_FOR_BASE_P(X)				\
+!   ((REG_P (X) && REG_OK_FOR_BASE_P (X))			\
+!    || (GET_CODE (X) == SUBREG && REG_P (SUBREG_REG (X))	\
+         && REG_OK_FOR_BASE_P (SUBREG_REG (X))))
+  
+! #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)		\
+    if (RTX_OK_FOR_BASE_P (X)) goto ADDR;			\
+!   if (CONSTANT_ADDRESS_P (X)) goto ADDR;		\
+    if (GET_CODE (X) == PLUS				\
+        && CONSTANT_ADDRESS_P (XEXP (X, 1))		\
+        && RTX_OK_FOR_BASE_P (XEXP (X, 0))) goto ADDR;
+***************
+*** 922,928 ****
+     GO_IF_LEGITIMATE_ADDRESS.
+  
+     It is always safe for this macro to do nothing.  It exists to recognize
+!    opportunities to optimize the output. 
+  
+     For the H8/300, don't do anything.  */
+  
+--- 930,936 ----
+     GO_IF_LEGITIMATE_ADDRESS.
+  
+     It is always safe for this macro to do nothing.  It exists to recognize
+!    opportunities to optimize the output.
+  
+     For the H8/300, don't do anything.  */
+  
+diff -rc gcc-3.1-old/gcc/config/h8300/h8300.md gcc-3.1/gcc/config/h8300/h8300.md
+*** gcc-3.1-old/gcc/config/h8300/h8300.md	Sat Feb 23 09:17:25 2002
+--- gcc-3.1/gcc/config/h8300/h8300.md	Sun May 19 11:06:44 2002
+***************
+*** 1033,1056 ****
+    ""
+    "")
+  
+- (define_insn ""
+-   [(set (match_operand:HI 0 "register_operand" "=r")
+- 	(and:HI (match_operand:HI 1 "register_operand" "%0")
+- 		(match_operand:HI 2 "nonmemory_operand" "rn")))]
+-   "TARGET_H8300"
+-   "* return output_logical_op (HImode, AND, operands);"
+-   [(set_attr "length" "4")
+-    (set_attr "cc" "clobber")])
+- 
+- (define_insn ""
+-   [(set (match_operand:HI 0 "register_operand" "=r,r")
+- 	(and:HI (match_operand:HI 1 "register_operand" "%0,0")
+- 		(match_operand:HI 2 "nonmemory_operand" "r,n")))]
+-   "TARGET_H8300H || TARGET_H8300S"
+-   "* return output_logical_op (HImode, AND, operands);"
+-   [(set_attr "length" "2,4")
+-    (set_attr "cc" "set_znv,clobber")])
+- 
+  (define_insn "*andorhi3"
+    [(set (match_operand:HI 0 "register_operand" "=r")
+  	(ior:HI (and:HI (match_operand:HI 2 "register_operand" "r")
+--- 1033,1038 ----
+***************
+*** 1077,1100 ****
+    ""
+    "")
+  
+- (define_insn ""
+-   [(set (match_operand:SI 0 "register_operand" "=r")
+- 	(and:SI (match_operand:SI 1 "register_operand" "%0")
+- 		(match_operand:SI 2 "nonmemory_operand" "rn")))]
+-   "TARGET_H8300"
+-   "* return output_logical_op (SImode, AND, operands);"
+-   [(set_attr "length" "8")
+-    (set_attr "cc" "clobber")])
+- 
+- (define_insn ""
+-   [(set (match_operand:SI 0 "register_operand" "=r,r")
+- 	(and:SI (match_operand:SI 1 "register_operand" "%0,0")
+- 		(match_operand:SI 2 "nonmemory_operand" "r,n")))]
+-   "TARGET_H8300H || TARGET_H8300S"
+-   "* return output_logical_op (SImode, AND, operands);"
+-   [(set_attr "length" "4,6")
+-    (set_attr "cc" "set_znv,clobber")])
+- 
+  ;; ----------------------------------------------------------------------
+  ;; OR INSTRUCTIONS
+  ;; ----------------------------------------------------------------------
+--- 1059,1064 ----
+***************
+*** 1141,1164 ****
+    ""
+    "")
+  
+- (define_insn ""
+-   [(set (match_operand:HI 0 "general_operand" "=r,r")
+- 	(ior:HI (match_operand:HI 1 "general_operand" "%0,0")
+- 		(match_operand:HI 2 "general_operand" "J,rn")))]
+-   "TARGET_H8300"
+-   "* return output_logical_op (HImode, IOR, operands);"
+-   [(set_attr "length" "2,4")
+-    (set_attr "cc" "clobber,clobber")])
+- 
+- (define_insn ""
+-   [(set (match_operand:HI 0 "general_operand" "=r,r,r")
+- 	(ior:HI (match_operand:HI 1 "general_operand" "%0,0,0")
+- 		(match_operand:HI 2 "general_operand" "J,r,n")))]
+-   "TARGET_H8300H || TARGET_H8300S"
+-   "* return output_logical_op (HImode, IOR, operands);"
+-   [(set_attr "length" "2,2,4")
+-    (set_attr "cc" "clobber,set_znv,clobber")])
+- 
+  (define_expand "iorsi3"
+    [(set (match_operand:SI 0 "register_operand" "")
+  	(ior:SI (match_operand:SI 1 "register_operand" "")
+--- 1105,1110 ----
+***************
+*** 1166,1189 ****
+    ""
+    "")
+  
+- (define_insn ""
+-   [(set (match_operand:SI 0 "register_operand" "=r,r")
+- 	(ior:SI (match_operand:SI 1 "register_operand" "%0,0")
+- 		(match_operand:SI 2 "nonmemory_operand" "J,rn")))]
+-   "TARGET_H8300"
+-   "* return output_logical_op (SImode, IOR, operands);"
+-   [(set_attr "length" "2,8")
+-    (set_attr "cc" "clobber,clobber")])
+- 
+- (define_insn ""
+-   [(set (match_operand:SI 0 "register_operand" "=r,r,r")
+- 	(ior:SI (match_operand:SI 1 "register_operand" "%0,0,0")
+- 		(match_operand:SI 2 "nonmemory_operand" "J,r,n")))]
+-   "TARGET_H8300H || TARGET_H8300S"
+-   "* return output_logical_op (SImode, IOR, operands);"
+-   [(set_attr "length" "2,4,6")
+-    (set_attr "cc" "clobber,set_znv,clobber")])
+- 
+  ;; ----------------------------------------------------------------------
+  ;; XOR INSTRUCTIONS
+  ;; ----------------------------------------------------------------------
+--- 1112,1117 ----
+***************
+*** 1230,1253 ****
+    ""
+    "")
+  
+- (define_insn ""
+-   [(set (match_operand:HI 0 "register_operand" "=r,r")
+- 	(xor:HI (match_operand:HI 1 "register_operand" "%0,0")
+- 		(match_operand:HI 2 "nonmemory_operand" "J,rn")))]
+-   "TARGET_H8300"
+-   "* return output_logical_op (HImode, XOR, operands);"
+-   [(set_attr "length" "2,4")
+-    (set_attr "cc" "clobber,clobber")])
+- 
+- (define_insn ""
+-   [(set (match_operand:HI 0 "register_operand" "=r,r,r")
+- 	(xor:HI (match_operand:HI 1 "register_operand" "%0,0,0")
+- 		(match_operand:HI 2 "nonmemory_operand" "J,r,n")))]
+-   "TARGET_H8300H || TARGET_H8300S"
+-   "* return output_logical_op (HImode, XOR, operands);"
+-   [(set_attr "length" "2,2,4")
+-    (set_attr "cc" "clobber,set_znv,clobber")])
+- 
+  (define_expand "xorsi3"
+    [(set (match_operand:SI 0 "register_operand" "")
+  	(xor:SI (match_operand:SI 1 "register_operand" "")
+--- 1158,1163 ----
+***************
+*** 1255,1277 ****
+    ""
+    "")
+  
+  (define_insn ""
+!   [(set (match_operand:SI 0 "register_operand" "=r,r")
+! 	(xor:SI (match_operand:SI 1 "register_operand" "%0,0")
+! 		(match_operand:SI 2 "nonmemory_operand" "J,rn")))]
+!   "TARGET_H8300"
+!   "* return output_logical_op (SImode, XOR, operands);"
+!   [(set_attr "length" "2,8")
+!    (set_attr "cc" "clobber,clobber")])
+  
+  (define_insn ""
+!   [(set (match_operand:SI 0 "register_operand" "=r,r,r")
+! 	(xor:SI (match_operand:SI 1 "register_operand" "%0,0,0")
+! 		(match_operand:SI 2 "nonmemory_operand" "J,r,n")))]
+!   "TARGET_H8300H || TARGET_H8300S"
+!   "* return output_logical_op (SImode, XOR, operands);"
+!   [(set_attr "length" "2,4,6")
+!    (set_attr "cc" "clobber,set_znv,clobber")])
+  
+  ;; ----------------------------------------------------------------------
+  ;; NEGATION INSTRUCTIONS
+--- 1165,1197 ----
+    ""
+    "")
+  
++ ;; ----------------------------------------------------------------------
++ ;; {AND,IOR,XOR}{HI3,SI3} PATTERNS
++ ;; ----------------------------------------------------------------------
++ 
+  (define_insn ""
+!   [(set (match_operand:HI 0 "register_operand" "=r")
+! 	(match_operator:HI 3 "bit_operator"
+! 	  [(match_operand:HI 1 "register_operand" "%0")
+! 	   (match_operand:HI 2 "nonmemory_operand" "rn")]))]
+!   ""
+!   "* return output_logical_op (HImode, operands);"
+!   [(set (attr "length")
+! 	(symbol_ref "compute_logical_op_length (HImode, operands)"))
+!    (set (attr "cc")
+! 	(symbol_ref "compute_logical_op_cc (HImode, operands)"))])
+  
+  (define_insn ""
+!   [(set (match_operand:SI 0 "register_operand" "=r")
+! 	(match_operator:SI 3 "bit_operator"
+! 	  [(match_operand:SI 1 "register_operand" "%0")
+! 	   (match_operand:SI 2 "nonmemory_operand" "rn")]))]
+!   ""
+!   "* return output_logical_op (SImode, operands);"
+!   [(set (attr "length")
+! 	(symbol_ref "compute_logical_op_length (SImode, operands)"))
+!    (set (attr "cc")
+! 	(symbol_ref "compute_logical_op_cc (SImode, operands)"))])
+  
+  ;; ----------------------------------------------------------------------
+  ;; NEGATION INSTRUCTIONS
+***************
+*** 1848,1855 ****
+  			  (match_operand:QI 2 "nonmemory_operand" "KM,rn")]))
+     (clobber (match_scratch:QI 4 "=X,&r"))]
+    ""
+!   "* return output_a_shift (operands);"
+!   [(set_attr "length" "20")
+     (set_attr "cc" "clobber")])
+  
+  ;; HI BIT SHIFTS
+--- 1768,1776 ----
+  			  (match_operand:QI 2 "nonmemory_operand" "KM,rn")]))
+     (clobber (match_scratch:QI 4 "=X,&r"))]
+    ""
+!   "* return output_a_shift (insn, operands);"
+!   [(set (attr "length")
+! 	(symbol_ref "compute_a_shift_length (insn, operands)"))
+     (set_attr "cc" "clobber")])
+  
+  ;; HI BIT SHIFTS
+***************
+*** 1882,1889 ****
+  			  (match_operand:QI 2 "nonmemory_operand" "KM,rn")]))
+     (clobber (match_scratch:QI 4 "=X,&r"))]
+    ""
+!   "* return output_a_shift (operands);"
+!   [(set_attr "length" "20")
+     (set_attr "cc" "clobber")])
+  
+  ;;  SI BIT SHIFTS
+--- 1803,1811 ----
+  			  (match_operand:QI 2 "nonmemory_operand" "KM,rn")]))
+     (clobber (match_scratch:QI 4 "=X,&r"))]
+    ""
+!   "* return output_a_shift (insn, operands);"
+!   [(set (attr "length")
+! 	(symbol_ref "compute_a_shift_length (insn, operands)"))
+     (set_attr "cc" "clobber")])
+  
+  ;;  SI BIT SHIFTS
+***************
+*** 1916,1923 ****
+  			  (match_operand:QI 2 "nonmemory_operand" "K,rn")]))
+     (clobber (match_scratch:QI 4 "=X,&r"))]
+    ""
+!   "* return output_a_shift (operands);"
+!   [(set_attr "length" "20")
+     (set_attr "cc" "clobber")])
+  
+  ;; ----------------------------------------------------------------------
+--- 1838,1846 ----
+  			  (match_operand:QI 2 "nonmemory_operand" "K,rn")]))
+     (clobber (match_scratch:QI 4 "=X,&r"))]
+    ""
+!   "* return output_a_shift (insn, operands);"
+!   [(set (attr "length")
+! 	(symbol_ref "compute_a_shift_length (insn, operands)"))
+     (set_attr "cc" "clobber")])
+  
+  ;; ----------------------------------------------------------------------
+diff -rc gcc-3.1-old/gcc/config/h8300/lib1funcs.asm gcc-3.1/gcc/config/h8300/lib1funcs.asm
+*** gcc-3.1-old/gcc/config/h8300/lib1funcs.asm	Thu Jan 10 16:30:32 2002
+--- gcc-3.1/gcc/config/h8300/lib1funcs.asm	Sun May 19 11:05:38 2002
+***************
+*** 1,7 ****
+  ;; libgcc routines for the Hitachi H8/300 CPU.
+  ;; Contributed by Steve Chamberlain <sac@cygnus.com>
+  
+! /* Copyright (C) 1994, 2000, 2001 Free Software Foundation, Inc.
+  
+  This file is free software; you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published by the
+--- 1,8 ----
+  ;; libgcc routines for the Hitachi H8/300 CPU.
+  ;; Contributed by Steve Chamberlain <sac@cygnus.com>
++ ;; Optimizations by Toshiyasu Morita <toshiyasu.morita@hsa.hitachi.com>
+  
+! /* Copyright (C) 1994, 2000, 2001, 2002 Free Software Foundation, Inc.
+  
+  This file is free software; you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published by the
+***************
+*** 108,131 ****
+  	.align 2
+  	.global ___cmpsi2
+  ___cmpsi2:
+! 	cmp.w	A2,A0
+! 	bne	.L2
+! 	cmp.w	A3,A1
+  	bne	.L2
+  	mov.w	#1,A0
+  	rts
+  .L2:
+! 	cmp.w	A0,A2
+! 	bgt	.L4
+! 	bne	.L3
+! 	cmp.w	A1,A3
+! 	bls	.L3
+! .L4:
+! 	sub.w	A0,A0
+! 	rts
+  .L3:
+  	mov.w	#2,A0
+  .L5:
+  	rts
+  	.end
+  #endif
+--- 109,129 ----
+  	.align 2
+  	.global ___cmpsi2
+  ___cmpsi2:
+! 	cmp.w	A0,A2
+  	bne	.L2
++ 	cmp.w	A1,A3
++ 	bne	.L4
+  	mov.w	#1,A0
+  	rts
+  .L2:
+! 	bgt	.L5
+  .L3:
+  	mov.w	#2,A0
++ 	rts
++ .L4:
++ 	bls	.L3
+  .L5:
++ 	sub.w	A0,A0
+  	rts
+  	.end
+  #endif
+***************
+*** 137,160 ****
+  	.align 2
+  	.global ___ucmpsi2
+  ___ucmpsi2:
+! 	cmp.w	A2,A0
+! 	bne	.L2
+! 	cmp.w	A3,A1
+  	bne	.L2
+  	mov.w	#1,A0
+  	rts
+  .L2:
+! 	cmp.w	A0,A2
+! 	bhi	.L4
+! 	bne	.L3
+! 	cmp.w	A1,A3
+! 	bls	.L3
+! .L4:
+! 	sub.w	A0,A0
+! 	rts
+  .L3:
+  	mov.w	#2,A0
+  .L5:
+  	rts
+  	.end
+  #endif
+--- 135,155 ----
+  	.align 2
+  	.global ___ucmpsi2
+  ___ucmpsi2:
+! 	cmp.w	A0,A2
+  	bne	.L2
++ 	cmp.w	A1,A3
++ 	bne	.L4
+  	mov.w	#1,A0
+  	rts
+  .L2:
+! 	bhi	.L5
+  .L3:
+  	mov.w	#2,A0
++ 	rts
++ .L4:
++ 	bls	.L3
+  .L5:
++ 	sub.w	A0,A0
+  	rts
+  	.end
+  #endif
+***************
+*** 167,173 ****
+  ;; "supporting routines".
+  
+  ; general purpose normalize routine
+! ; 
+  ; divisor in A0
+  ; dividend in A1
+  ; turns both into +ve numbers, and leaves what the answer sign
+--- 162,168 ----
+  ;; "supporting routines".
+  
+  ; general purpose normalize routine
+! ;
+  ; divisor in A0
+  ; dividend in A1
+  ; turns both into +ve numbers, and leaves what the answer sign
+***************
+*** 179,191 ****
+  divnorm:
+  	mov.b	#0x0,A2L
+  	or	A0H,A0H		; is divisor > 0
+! 	bge	_lab1			
+  	not	A0H		; no - then make it +ve
+  	not	A0L
+! 	adds	#1,A0			
+  	xor	#0x1,A2L	; and remember that in A2L
+  _lab1:	or	A1H,A1H	; look at dividend
+! 	bge	_lab2		
+  	not	A1H		; it is -ve, make it positive
+  	not	A1L
+  	adds	#1,A1
+--- 174,186 ----
+  divnorm:
+  	mov.b	#0x0,A2L
+  	or	A0H,A0H		; is divisor > 0
+! 	bge	_lab1
+  	not	A0H		; no - then make it +ve
+  	not	A0L
+! 	adds	#1,A0
+  	xor	#0x1,A2L	; and remember that in A2L
+  _lab1:	or	A1H,A1H	; look at dividend
+! 	bge	_lab2
+  	not	A1H		; it is -ve, make it positive
+  	not	A1L
+  	adds	#1,A1
+***************
+*** 196,208 ****
+  modnorm:
+  	mov.b	#0x0,A2L
+  	or	A0H,A0H		; is divisor > 0
+! 	bge	_lab7			
+  	not	A0H		; no - then make it +ve
+  	not	A0L
+! 	adds	#1,A0			
+  	xor	#0x1,A2L	; and remember that in A2L
+  _lab7:	or	A1H,A1H	; look at dividend
+! 	bge	_lab8		
+  	not	A1H		; it is -ve, make it positive
+  	not	A1L
+  	adds	#1,A1
+--- 191,203 ----
+  modnorm:
+  	mov.b	#0x0,A2L
+  	or	A0H,A0H		; is divisor > 0
+! 	bge	_lab7
+  	not	A0H		; no - then make it +ve
+  	not	A0L
+! 	adds	#1,A0
+  	xor	#0x1,A2L	; and remember that in A2L
+  _lab7:	or	A1H,A1H	; look at dividend
+! 	bge	_lab8
+  	not	A1H		; it is -ve, make it positive
+  	not	A1L
+  	adds	#1,A1
+***************
+*** 219,225 ****
+  	not	A0H	; yes, so make it so
+  	not	A0L
+  	adds	#1,A0
+! _lab4:	rts	
+  
+  ; A0=A0%A1 signed
+  
+--- 214,220 ----
+  	not	A0H	; yes, so make it so
+  	not	A0L
+  	adds	#1,A0
+! _lab4:	rts
+  
+  ; A0=A0%A1 signed
+  
+***************
+*** 256,268 ****
+  
+  	.global	___udivhi3
+  ___udivhi3:
+! 				; A0 A1 A2 A3 
+  				; Nn Dd       P
+! 	sub.w	A3,A3		; Nn Dd xP 00 
+! 	or	A1H,A1H		 
+  	bne	divlongway
+! 	or	A0H,A0H		
+! 	beq	_lab6		
+  
+  ; we know that D == 0 and N is != 0
+  	mov.b	A0H,A3L		; Nn Dd xP 0N
+--- 251,263 ----
+  
+  	.global	___udivhi3
+  ___udivhi3:
+! 				; A0 A1 A2 A3
+  				; Nn Dd       P
+! 	sub.w	A3,A3		; Nn Dd xP 00
+! 	or	A1H,A1H
+  	bne	divlongway
+! 	or	A0H,A0H
+! 	beq	_lab6
+  
+  ; we know that D == 0 and N is != 0
+  	mov.b	A0H,A3L		; Nn Dd xP 0N
+***************
+*** 274,280 ****
+  	mov.b	A3L,A0L		; Qq
+  	mov.b	A3H,A3L         ;           m
+  	mov.b	#0x0,A3H	; Qq       0m
+! 	rts	
+  
+  ; D != 0 - which means the denominator is
+  ;          loop around to get the result.
+--- 269,275 ----
+  	mov.b	A3L,A0L		; Qq
+  	mov.b	A3H,A3L         ;           m
+  	mov.b	#0x0,A3H	; Qq       0m
+! 	rts
+  
+  ; D != 0 - which means the denominator is
+  ;          loop around to get the result.
+***************
+*** 285,303 ****
+  	mov.b	#0x8,A2H	;       8
+  div8:	add.b	A0L,A0L		; n*=2
+  	rotxl	A3L		; Make remainder bigger
+! 	rotxl	A3H		
+  	sub.w	A1,A3		; Q-=N
+  	bhs	setbit		; set a bit ?
+  	add.w	A1,A3		;  no : too far , Q+=N
+  
+! 	dec	A2H		
+! 	bne	div8		; next bit	
+! 	rts	
+  
+  setbit:	inc	A0L		; do insert bit
+! 	dec	A2H		
+! 	bne	div8		; next bit	
+! 	rts	
+  
+  #endif /* __H8300__ */
+  #endif /* L_divhi3 */
+--- 280,298 ----
+  	mov.b	#0x8,A2H	;       8
+  div8:	add.b	A0L,A0L		; n*=2
+  	rotxl	A3L		; Make remainder bigger
+! 	rotxl	A3H
+  	sub.w	A1,A3		; Q-=N
+  	bhs	setbit		; set a bit ?
+  	add.w	A1,A3		;  no : too far , Q+=N
+  
+! 	dec	A2H
+! 	bne	div8		; next bit
+! 	rts
+  
+  setbit:	inc	A0L		; do insert bit
+! 	dec	A2H
+! 	bne	div8		; next bit
+! 	rts
+  
+  #endif /* __H8300__ */
+  #endif /* L_divhi3 */
+***************
+*** 306,312 ****
+  
+  ;; 4 byte integer divides for the H8/300.
+  ;;
+! ;; We have one routine which does all the work and lots of 
+  ;; little ones which prepare the args and massage the sign.
+  ;; We bunch all of this into one object file since there are several
+  ;; "supporting routines".
+--- 301,307 ----
+  
+  ;; 4 byte integer divides for the H8/300.
+  ;;
+! ;; We have one routine which does all the work and lots of
+  ;; little ones which prepare the args and massage the sign.
+  ;; We bunch all of this into one object file since there are several
+  ;; "supporting routines".
+***************
+*** 339,349 ****
+  postive:
+  	mov.b	A2H,A2H		; is the denominator -ve
+  	bge	postive2
+! 	not	A2L		
+  	not	A2H
+  	not	A3L
+  	not	A3H
+! 	add.b	#1,A3L	
+  	addx	#0,A3H
+  	addx	#0,A2L
+  	addx	#0,A2H
+--- 334,344 ----
+  postive:
+  	mov.b	A2H,A2H		; is the denominator -ve
+  	bge	postive2
+! 	not	A2L
+  	not	A2H
+  	not	A3L
+  	not	A3H
+! 	add.b	#1,A3L
+  	addx	#0,A3H
+  	addx	#0,A2L
+  	addx	#0,A2H
+***************
+*** 373,383 ****
+  mpostive:
+  	mov.b	A2H,A2H		; is the denominator -ve
+  	bge	mpostive2
+! 	not	A2L		
+  	not	A2H
+  	not	A3L
+  	not	A3H
+! 	add.b	#1,A3L	
+  	addx	#0,A3H
+  	addx	#0,A2L
+  	addx	#0,A2H
+--- 368,378 ----
+  mpostive:
+  	mov.b	A2H,A2H		; is the denominator -ve
+  	bge	mpostive2
+! 	not	A2L
+  	not	A2H
+  	not	A3L
+  	not	A3H
+! 	add.b	#1,A3L
+  	addx	#0,A3H
+  	addx	#0,A2L
+  	addx	#0,A2H
+***************
+*** 429,435 ****
+  ; denominator in A2/A3
+  	.global	___modsi3
+  ___modsi3:
+! 	PUSHP	S2P		
+  	PUSHP	S0P
+  	PUSHP	S1P
+  
+--- 424,430 ----
+  ; denominator in A2/A3
+  	.global	___modsi3
+  ___modsi3:
+! 	PUSHP	S2P
+  	PUSHP	S0P
+  	PUSHP	S1P
+  
+***************
+*** 466,472 ****
+  	mov.l	S0P,A0P
+  #endif
+  	bra	exitdiv
+! 	
+  	.global	___divsi3
+  ___divsi3:
+  	PUSHP	S2P
+--- 461,467 ----
+  	mov.l	S0P,A0P
+  #endif
+  	bra	exitdiv
+! 
+  	.global	___divsi3
+  ___divsi3:
+  	PUSHP	S2P
+***************
+*** 482,488 ****
+  
+  	or	S2L,S2L
+  	beq	reti
+! 	
+  	; should be -ve
+  #ifdef __H8300__
+  	not	A0H
+--- 477,483 ----
+  
+  	or	S2L,S2L
+  	beq	reti
+! 
+  	; should be -ve
+  #ifdef __H8300__
+  	not	A0H
+***************
+*** 500,506 ****
+  
+  reti:
+  	POPP	S2P
+! 	rts	
+  
+  	; takes A0/A1 numerator (A0P for 300H)
+  	; A2/A3 denominator (A1P for 300H)
+--- 495,501 ----
+  
+  reti:
+  	POPP	S2P
+! 	rts
+  
+  	; takes A0/A1 numerator (A0P for 300H)
+  	; A2/A3 denominator (A1P for 300H)
+***************
+*** 543,549 ****
+  
+          mov.b	S1H,S1L
+          mov.b	#0x0,S1H
+!         rts	
+  
+  ; have to do the divide by shift and test
+  DenHighZero:
+--- 538,544 ----
+  
+          mov.b	S1H,S1L
+          mov.b	#0x0,S1H
+!         rts
+  
+  ; have to do the divide by shift and test
+  DenHighZero:
+***************
+*** 567,573 ****
+          sub.w	A3,S1	; does it all fit
+          subx	A2L,S0L
+          subx	A2H,S0H
+!         bhs	setone	 
+  
+          add.w	A3,S1	; no, restore mistake
+          addx	A2L,S0L
+--- 562,568 ----
+          sub.w	A3,S1	; does it all fit
+          subx	A2L,S0L
+          subx	A2H,S0H
+!         bhs	setone
+  
+          add.w	A3,S1	; no, restore mistake
+          addx	A2L,S0L
+***************
+*** 575,587 ****
+  
+          dec	S2H
+          bne	nextbit
+!         rts	
+! 	
+  setone:
+  	inc	A1L
+          dec	S2H
+          bne	nextbit
+!         rts	
+  
+  #else /* __H8300H__ */
+  
+--- 570,582 ----
+  
+          dec	S2H
+          bne	nextbit
+!         rts
+! 
+  setone:
+  	inc	A1L
+          dec	S2H
+          bne	nextbit
+!         rts
+  
+  #else /* __H8300H__ */
+  
+***************
+*** 636,646 ****
+  ;; HImode multiply.
+  ; The H8/300 only has an 8*8->16 multiply.
+  ; The answer is the same as:
+! ; 
+  ; product = (srca.l * srcb.l) + ((srca.h * srcb.l) + (srcb.h * srca.l)) * 256
+  ; (we can ignore A1.h * A0.h cause that will all off the top)
+  ; A0 in
+! ; A1 in 
+  ; A0 answer
+  
+  #ifdef __H8300__
+--- 631,641 ----
+  ;; HImode multiply.
+  ; The H8/300 only has an 8*8->16 multiply.
+  ; The answer is the same as:
+! ;
+  ; product = (srca.l * srcb.l) + ((srca.h * srcb.l) + (srcb.h * srca.l)) * 256
+  ; (we can ignore A1.h * A0.h cause that will all off the top)
+  ; A0 in
+! ; A1 in
+  ; A0 answer
+  
+  #ifdef __H8300__
+***************
+*** 649,655 ****
+  	.global	___mulhi3
+  ___mulhi3:
+  	mov.b	A1L,A2L		; A2l gets srcb.l
+! 	mulxu	A0L,A2		; A2 gets first sub product 
+  
+  	mov.b	A0H,A3L		; prepare for
+  	mulxu	A1L,A3		; second sub product
+--- 644,650 ----
+  	.global	___mulhi3
+  ___mulhi3:
+  	mov.b	A1L,A2L		; A2l gets srcb.l
+! 	mulxu	A0L,A2		; A2 gets first sub product
+  
+  	mov.b	A0H,A3L		; prepare for
+  	mulxu	A1L,A3		; second sub product
+***************
+*** 657,663 ****
+  	add.b	A3L,A2H		; sum first two terms
+  
+  	mov.b	A1H,A3L		; third sub product
+! 	mulxu	A0L,A3		
+  
+  	add.b	A3L,A2H		; almost there
+  	mov.w	A2,A0		; that is
+--- 652,658 ----
+  	add.b	A3L,A2H		; sum first two terms
+  
+  	mov.b	A1H,A3L		; third sub product
+! 	mulxu	A0L,A3
+  
+  	add.b	A3L,A2H		; almost there
+  	mov.w	A2,A0		; that is
+***************
+*** 669,675 ****
+  #ifdef L_mulsi3
+  
+  ;; SImode multiply.
+! ;; 
+  ;; I think that shift and add may be sufficient for this.  Using the
+  ;; supplied 8x8->16 would need 10 ops of 14 cycles each + overhead.  This way
+  ;; the inner loop uses maybe 20 cycles + overhead, but terminates
+--- 664,670 ----
+  #ifdef L_mulsi3
+  
+  ;; SImode multiply.
+! ;;
+  ;; I think that shift and add may be sufficient for this.  Using the
+  ;; supplied 8x8->16 would need 10 ops of 14 cycles each + overhead.  This way
+  ;; the inner loop uses maybe 20 cycles + overhead, but terminates
+***************
+*** 678,684 ****
+  ;; A0/A1 src_a
+  ;; A2/A3 src_b
+  ;;
+! ;;  while (a) 
+  ;;    {
+  ;;      if (a & 1)
+  ;;        r += b;
+--- 673,679 ----
+  ;; A0/A1 src_a
+  ;; A2/A3 src_b
+  ;;
+! ;;  while (a)
+  ;;    {
+  ;;      if (a & 1)
+  ;;        r += b;
+***************
+*** 696,705 ****
+  	PUSHP	S0P
+  	PUSHP	S1P
+  	PUSHP	S2P
+! 	
+  	sub.w	S0,S0
+  	sub.w	S1,S1
+! 	
+  	; while (a)
+  _top:	mov.w	A0,A0
+  	bne	_more
+--- 691,700 ----
+  	PUSHP	S0P
+  	PUSHP	S1P
+  	PUSHP	S2P
+! 
+  	sub.w	S0,S0
+  	sub.w	S1,S1
+! 
+  	; while (a)
+  _top:	mov.w	A0,A0
+  	bne	_more
+***************
+*** 718,724 ****
+  	rotxr	A0L
+  	rotxr	A1H
+  	rotxr	A1L
+! 	
+  	; b <<= 1
+  	add.w	A3,A3
+  	addx	A2L,A2L
+--- 713,719 ----
+  	rotxr	A0L
+  	rotxr	A1H
+  	rotxr	A1L
+! 
+  	; b <<= 1
+  	add.w	A3,A3
+  	addx	A2L,A2L
+***************
+*** 726,732 ****
+  	bra 	_top
+  
+  _done:
+! 	mov.w	S0,A0	
+  	mov.w	S1,A1
+  	POPP	S2P
+  	POPP	S1P
+--- 721,727 ----
+  	bra 	_top
+  
+  _done:
+! 	mov.w	S0,A0
+  	mov.w	S1,A1
+  	POPP	S2P
+  	POPP	S1P
+***************
+*** 735,766 ****
+  
+  #else /* __H8300H__ */
+  
+  	.global	___mulsi3
+  ___mulsi3:
+! 	sub.l	A2P,A2P
+  
+! 	; while (a)
+! _top:	mov.l	A0P,A0P
+! 	beq	_done
+! 
+! 	; if (a & 1)
+! 	bld	#0,A0L
+! 	bcc	_nobit
+! 
+! 	; r += b
+! 	add.l	A1P,A2P
+! 
+! _nobit:
+! 	; a >>= 1
+! 	shlr.l	A0P
+! 
+! 	; b <<= 1
+! 	shll.l	A1P
+! 	bra	_top
+! 
+! _done:
+! 	mov.l	A2P,A0P
+! 	rts
+  
+  #endif
+  #endif /* L_mulsi3 */
+--- 730,771 ----
+  
+  #else /* __H8300H__ */
+  
++ ;
++ ; mulsi3 for H8/300H - based on Hitachi SH implementation
++ ;
++ ; by Toshiyasu Morita
++ ;
++ ; Old code:
++ ;
++ ; 16b * 16b = 372 states (worst case)
++ ; 32b * 32b = 724 states (worst case)
++ ;
++ ; New code:
++ ;
++ ; 16b * 16b =  48 states
++ ; 16b * 32b =  72 states
++ ; 32b * 32b =  92 states
++ ;
++ 
+  	.global	___mulsi3
+  ___mulsi3:
+! 	mov.w	r1,r2   ; ( 2 states) b * d
+! 	mulxu	r0,er2  ; (22 states)
+  
+! 	mov.w	e0,r3   ; ( 2 states) a * d
+! 	beq	L_skip1 ; ( 4 states)
+! 	mulxu	r1,er3  ; (22 states)
+! 	add.w	r3,e2   ; ( 2 states)
+! 
+! L_skip1:
+! 	mov.w	e1,r3   ; ( 2 states) c * b
+! 	beq	L_skip2 ; ( 4 states)
+! 	mulxu	r0,er3  ; (22 states)
+! 	add.w	r3,e2   ; ( 2 states)
+! 
+! L_skip2:
+! 	mov.l	er2,er0	; ( 2 states)
+! 	rts		; (10 states)
+  
+  #endif
+  #endif /* L_mulsi3 */
+diff -rc gcc-3.1-old/gcc/flow.c gcc-3.1/gcc/flow.c
+*** gcc-3.1-old/gcc/flow.c	Thu Apr 18 16:21:09 2002
+--- gcc-3.1/gcc/flow.c	Sun May 19 11:05:30 2002
+***************
+*** 3955,3963 ****
+    if (y != 0
+        && SET_DEST (x) != stack_pointer_rtx
+        && BLOCK_NUM (y) == BLOCK_NUM (insn)
+!       /* Don't do this if the reg dies, or gets set in y; a standard addressing
+! 	 mode would be better.  */
+!       && ! dead_or_set_p (y, SET_DEST (x))
+        && try_pre_increment (y, SET_DEST (x), amount))
+      {
+        /* We have found a suitable auto-increment and already changed
+--- 3955,3964 ----
+    if (y != 0
+        && SET_DEST (x) != stack_pointer_rtx
+        && BLOCK_NUM (y) == BLOCK_NUM (insn)
+!       /* We cannot use pre-increment if y clobbers the register REGNO.
+!          We can still consider a register that is not used after y,
+!          hoping pre-increment is faster than indexed addressing.  */
+!       && ! reg_set_p (SET_DEST (x), y)
+        && try_pre_increment (y, SET_DEST (x), amount))
+      {
+        /* We have found a suitable auto-increment and already changed
