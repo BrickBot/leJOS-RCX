@@ -257,7 +257,10 @@ implements OpCodeConstants, OpCodeInfo, Constants
       switch (pOpCode)
       {
         case OP_LDC:
-          pOutCode[i] = (byte) processConstantIndex ((int) aCode[i]);
+          // Bug reported by Jochen Hiller, fixed by Lawrie Griffiths
+          // convert aCode[i] not to an int, mask it to an unsigned byte instead
+          // pOutCode[i] = (byte) processConstantIndex ((int) aCode[i]);
+          pOutCode[i] = (byte) processConstantIndex (aCode[i] & 0xFF);
           i++;
           break;
         case OP_LDC2_W:
