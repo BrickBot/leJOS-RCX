@@ -11,11 +11,6 @@ import org.apache.bcel.classfile.ConstantPool;
 public class ConstantRecord implements WritableData
 {
    /**
-    * Constant.
-    */
-   Constant _constant;
-
-   /**
     * Deferenced value.
     */
    ConstantValue _constantValue;
