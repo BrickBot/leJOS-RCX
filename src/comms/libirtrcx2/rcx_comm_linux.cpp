@@ -187,7 +187,7 @@ void* __rcx_open(char *tty, bool fast)
 void __rcx_open_setDevice (Port* port, char* symbolicName, bool fast)
 {
 	if (__comm_debug) printf("mode = %s\n", fast ? "fast" : "slow");
-	if (__comm_debug) printf("symbolic device = %s\n", tty);
+	if (__comm_debug) printf("symbolic device = %s\n", symbolicName);
 
 	strncpy(port->symbolicName, symbolicName, 32);
    port->symbolicName[31] = 0;
@@ -214,8 +214,8 @@ void __rcx_open_setDevice (Port* port, char* symbolicName, bool fast)
       port->fast = fast; // 4x: no complements, doubled baud rate
 	}
 
-   if (__comm_debug) printf("device = %s\n", result->deviceName);
-	if (__comm_debug) printf("port type = %s\n", result->usb? "usb" : "serial");
+   if (__comm_debug) printf("device = %s\n", port->deviceName);
+	if (__comm_debug) printf("port type = %s\n", port->usb? "usb" : "serial");
 }
 
 bool __rcx_open_setSerialPortParameters (Port* port)
