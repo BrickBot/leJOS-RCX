@@ -1,22 +1,16 @@
 To run this example, edit Browser.java and change "page" to the web page 
 you want to display.
 
-Then add rcxrcxcomm.jar to the CLASSPATH and compile
-Browser.java, e.g. on Windows:
+Then compile and run Browser.java:
 
-set CLASSPATH=..\..\..\lib\rcxrcxcomm.jar;.
 lejosc Browser.java
+lejos Browser
 
-Next download it to the RCX:
-
-lejos -f Browser
-
-Change the CLASSPATH to remove rcxrcxcomm.jar and to include pcrcxcomm.jar 
-and run SocketProxy.
+Add pcrcxcomm.jar to the CLASSPATH and run josx.rcxcomm.SocketProxy 
 
 E.g. on Windows:
 
-set CLASSPATH=..\..\..lib\pcrcxcomm.jar;.
+set CLASSPATH=..\..\..\lib\pcrcxcomm.jar;.
 java josx.rcxcomm.SocketProxy
 
 Then, run the RCX program.
