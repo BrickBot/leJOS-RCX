@@ -1,0 +1,15 @@
+/*
+ * This is an NQC program that receives messages from other RCXs
+ * and displays them.
+ *
+ * @author Jürgen Stuber
+ */
+  
+task main()
+{
+	while (true) {
+		while (Message() == 0) {
+		}
+		SetUserDisplay(Message(),0);
+	}
+}

@@ -1,0 +1,38 @@
+int delay;
+
+sub setDelay()
+{
+	delay = 1;
+	while (Random(3) != 0) {
+		delay += 4;
+	}
+}
+
+task main()
+{
+	int count = 1;
+
+	while (true) {
+		setDelay();
+		int timeout = delay;
+		ClearTimer(0);
+		while (Message() == 0  && FastTimer(0) < timeout) {
+		}
+		if (Message() != 0) {
+			int message = Message();
+			ClearMessage();
+			if (((message - count) & 255) < 128) {
+				count = message + 1;
+				if (count > 255) {
+					count = 1;
+				}
+			}
+		}
+		setDelay();
+		Wait(delay);
+
+		SetUserDisplay(count & 255, 0);
+		SendMessage(count);
+	}
+}
+
