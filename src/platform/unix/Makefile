@@ -2,7 +2,10 @@
 VMSRC=../vmsrc
 LD=ld
 CC=gcc
-CFLAGS=-I../vmsrc -I. -O2 -Wall -Wno-unused
+
+## No -O2 option below because gcc 2.95.2 crashes!
+
+CFLAGS=-I../vmsrc -I. -Wall -Wno-unused
 
 DUMP_OBJ=dump.o load.o
 
