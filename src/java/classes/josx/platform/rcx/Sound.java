@@ -63,7 +63,11 @@ public class Sound
   }
 
   /**
-   * Plays a tone, given its frequency and duration.
+   * Plays a tone, given its frequency and duration. Frequency is audible from about 31 to 2100. The
+   * duration argument is in hundreds of a seconds (centiseconds, not milliseconds) and is truncated
+   * at 256, so the maximum duration of a tone is 2.56 seconds.
+   * @param aFrequency The frequency of the tone.
+   * @param aDuration The duration of the tone, in centiseconds. Value is truncated at 256 centiseconds.
    */
   public static void playTone (int aFrequency, int aDuration)
   {
