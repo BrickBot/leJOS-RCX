@@ -71,21 +71,21 @@ public interface Navigator{
    /**
    * Moves the RCX robot forward until stop() is called.
    *
-   * @see Navigator.stop().
+   * @see Navigator#stop().
    */
    public void forward();
 
    /**
    * Moves the RCX robot backward until stop() is called.
    *
-   * @see Navigator.stop().
+   * @see Navigator#stop().
    */
    public void backward();
 
    /**
    * Halts the RCX robot and calculates new x, y coordinates.
    *
-   * @see Navigator.forward().
+   * @see Navigator#forward().
    */
    public void stop();
 }
