@@ -34,7 +34,7 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo, Constants
   {
     throw new TinyVMException("Unsupported " + OPCODE_NAME[aOpCode] + " in "
         + iFullName + ".\n"
-        + "The following features/conditions are currently unsupported::\n"
+        + "The following features/conditions are currently unsupported:\n"
         + "- Switch statements.\n"
         + "- Integer increment constant too large. (If > 255, declare it).\n"
         + "- Arithmetic or logical operations on variables of type long.\n"
