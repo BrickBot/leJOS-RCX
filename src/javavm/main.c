@@ -43,7 +43,7 @@ Thread *bootThread;
 
 #define HC_NONE            0
 #define HC_SHUTDOWN_POWER  1
-#define HC_DELETE_FIRMWARE 2
+//#define HC_DELETE_FIRMWARE 2
 
 #define RS_NO_PROGRAM      0
 #define RS_STOPPED         1
@@ -153,12 +153,17 @@ void switch_thread_hook()
     wait_for_power_release();
     // Make interpreter exit
     gMustExit = true;
+
+#if 0
     // Check to see if this is a delete-firmware request
     read_buttons (BUTTONS_READ, &status);
     if ((status & 0x05) != 0)
       hookCommand = HC_DELETE_FIRMWARE;
     else
       hookCommand = HC_SHUTDOWN_POWER;
+#endif
+
+    hookCommand = HC_SHUTDOWN_POWER;
   }
 
 #if 0
@@ -214,6 +219,18 @@ int main (void)
       //if (runStatus != RS_NO_PROGRAM)
       //  set_run_status (RS_NO_PROGRAM);
       receive_data (buffer, BUFSIZE, &numread);
+      switch (buffer[0] & 0xF7)
+      {
+        case 0x65:
+          // Delete firmware
+          goto LABEL_EXIT;
+        case 0x45:
+          // Transfer data
+          break;
+        default:
+          // Other??
+          goto LABEL_DOWNLOAD;
+      }
       seqNumber = ((TWOBYTES) buffer[2] << 8) |  buffer[1]; 
       set_lcd_number (LCD_UNSIGNED, (short) i, 3002);
       set_lcd_number (LCD_PROGRAM, (short) 0, 0);
@@ -243,10 +260,13 @@ int main (void)
     else
     {
       switch_thread_hook();
-      if (hookCommand == HC_DELETE_FIRMWARE)
-        goto LABEL_EXIT;
+
+      //if (hookCommand == HC_DELETE_FIRMWARE)
+      //  goto LABEL_EXIT;
+
       if (hookCommand == HC_SHUTDOWN_POWER)
         goto LABEL_SHUTDOWN_POWER;
+
       //if (runStatus == RS_RUNNING)
       //  goto LABEL_PROGRAM_STARTUP;
     }
@@ -284,7 +304,7 @@ int main (void)
  LABEL_EXIT:
   shutdown_buttons();
   shutdown_timer();
-  shutdown_power();
+  //shutdown_power();
   return 0;
 }
 

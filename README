@@ -13,6 +13,7 @@ Firmware   : tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
 Compiling  : tvmc <class>.java
 Linking    : tvmld <class> -o <class>.tvm
 Running    : tvm <class>.tvm
+Or simply  : tvmld <class> -d
 
 Deleting TinyVM's firmware: 
   Hold Prgm & Run, and press On/Off,
@@ -37,38 +38,6 @@ limitations, lack of APIs, and other non-compliance
 issues. However, TinyVM supports most of the Java 
 *language*.
 
-Technical Information
----------------------
-
-The virtual machine (tinyvm.srec) contains all
-the code necessary to execute (post-processed)
-Java bytecodes. Source is compiled by a regular
-Java compiler. A javac wrapper, tvmc, is provided
-to take care of setup issues, like using 
-$TINYVM_HOME/lib/classes.jar instead of the
-JDK's classes.zip. TINYVMPATH is used instead
-of CLASSPATH. (You cannot, of course, include
-classes.zip or your favorite Java framework in
-TINYVMPATH. Any native methods there won't be
-understood by TinyVM. Any APIs you framework
-requires from Java probably won't be provided
-by TinyVM).
-
-To keep the VM's footprint as small as possible,
-no class-loading code was included in it. Instead,
-classes are linked together into a compact and
-resolved binary format, which is downloaded into
-the RCX for execution. (See vmsrc/language.h and
-jtools/js/tinyvm/Binary.java for details on the
-format).
-
-The RCX is controlled from your Java code through 
-native APIs. (See common/signatures.db and vmsrc/native.c).
-The native mechanism is very simple: TinyVM and
-the linker agree in advance about certain special
-method signatures, and classes. The mechanism is 
-clearly not JNI compliant, but it suffices.
-
 Requirements
 ------------
 
@@ -79,7 +48,7 @@ Requirements
 - If you're planning to change the source code and
   rebuild it, you should get Kekoa's librcx package,
   build it, and set LIBRCX_HOME to its installation 
-  directory.
+  directory. You'd also need gcc and binutils.
 
 Setup
 -----
@@ -135,14 +104,7 @@ Running an Example
 
      javac -classpath .:$TINYVM_HOME/lib/classes.jar *.java 
 
-  4. Link the program.
-
-     tvmld HelloRCX -o HelloRCX.tvm
-
-     This will create the HelloRCX.tvm file,
-     which can be downloaded into the RCX.
-
-  5. Download firmware, if necessary.
+  4. Download firmware, if necessary.
 
      tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
 
@@ -153,10 +115,16 @@ Running an Example
      TinyVM is in program-download mode at 
      this point.
 
-  6. Download the program.
+  5. Link & load the program.
 
-     tvm HelloRCX.tvm
- 
+     tvmld HelloRCX -d
+
+     This will create a temporary file in the current
+     directory, which will be downloaded to the RCX
+     using the tvm utility. (This can also be done
+     in two steps: tvmld HelloRCX -o HelloRCX.tvm;
+     tvm HelloRCX.tvm).
+
      If the RCX is in range, the LCD will show 
      the download count as  the number of bytes 
      divided by 100. (If nothing happens, make
@@ -192,20 +160,23 @@ below sensor 2. The meaning of the trace is as follows:
   XXXX = Method signature id.
   Y    = Exception class index % 10.
 
+When you link a program with tvmld -verbose, you will 
+get a list of class indices and method signatures.
+
 For example, at the time of this writing, 
 if you see a trace that looks like [0000 7],
 it probably means that a NullPointerException
 (class index = 7) was thrown in method main(String[])
 (method signature = 0), and it wasn't caught.
 
-When you link a program with tvmld -verbose, you will 
-get a list of class indices and (hopefully by the 
-time this is released) one for method signatures.
-
 Traces that are a bit more informative can be obtained
-with tvm-emul (see Emulation). If you have a portion of
-code that doesn't depend on TinyVM APIs, I suggest
-you try it with the JDK.
+with tvm-emul (see Emulation), which will also tell
+you about the thread index and bytecode offset. If you
+want to look at the bytecode, check out the tvmp 
+utility (which is simply a wrapper around javap).
+
+If you have a portion of code that doesn't depend on 
+TinyVM APIs, I suggest you try it with the JDK.
 
 IMPORTANT: You must press On/Off to continue after you 
 see an exception trace.
@@ -221,9 +192,10 @@ a good amount.
 Footprint is an area that can be improved considerably,
 both in native code and linked binaries. On the other
 hand, some firmware usability improvements that appear 
-to be required will increase the size of the VM. Hopefully
-there will be enough contributions in the area of footprint
-reduction to balance out part of the enhancements.
+to be required will increase the size of the firmware. 
+Hopefully there will be enough contributions in the 
+area of footprint reduction to balance out part of the 
+enhancements.
 
 Emulation
 ---------
@@ -249,21 +221,40 @@ mind are:
   - Switch statements are not supported.
   - Floating point operations are not supported.
   - Operations on variables of type long are not 
-    suported.
+    supported.
   - Maximum array length is 255.
   - String constants are not used by the VM to
     create String objects (i.e. don't use Strings).
   - The instanceof operation will always be true  
     for interfaces. In bytecode, CHECKCAST succeeds
     on all interface classes (which is a bit unsafe).
-  - All threads are non-deamon threads. 
+  - All threads are non-daemon threads. 
   - There are no objects of type java.lang.Class, 
     which means that the ".class" construct won't
-    work. Class.forName() throws ClassNotFoundException.
+    work. Class.forName() throws ClassNotFoundException
+    at all times.
   - Most JDK APIs are unavailable.
 
 Known Bugs
 ----------
+
+  - MONITOREXIT ignores null objects (it assumes
+    MONITORENTER has handled them). Furthermore, it 
+    doesn't check if the monitor is valid. Until this bug 
+    is fixed (actually, at all times) all monitors should 
+    be constants.
+
+  - Initializers (static or otherwise) are not
+    implicitly synchronized. This could lead to race
+    conditions. (As an example, consider the hack 
+    in classes/tinyvm/rcx/Sensor.java:addListener. If Native
+    were not forced to get initialized, the listener
+    thread may eventually try to use Native.MEMORY_MONITOR,
+    which could be null if some other thread is in
+    the middle of trying to initialize Native). All this 
+    means is that you have to be more careful with 
+    initializers and multi-threading than you normally 
+    would in a conventional JVM implementation.
 
   - Unknown native methods are not executed. Neither
     the linker nor the VM complain about them.
@@ -271,19 +262,23 @@ Known Bugs
 Documentation
 -------------
 
-The only TinyVM documentation currently available is this
-README file and the API documentation, which you should
-be able to obtain by running:
+A User Guide is now available at 
+  
+  http://www.crazyrobots.com/tinyvmsite
 
-  javadoc -sourcepath $TINYVM_HOME/classes \
-    java.lang tinyvm.rcx -d /tmp
+You should also be able to get the API documentation from
+that site, but you can always create your own copy by
+running
+
+  cd $TINYVM_HOME; make javadoc
 
 About the License
 -----------------
 
 I'm releasing under the Mozilla Public License (see LICENSE)
 for now, since librcx is under that same license, and TinyVM 
-is linked against -lrcx.
+is linked against -lrcx. TinyVM is copyright (c) 2000 Jose
+Solorzano.
 
 Questions/Problems
 ------------------

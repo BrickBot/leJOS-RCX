@@ -99,9 +99,8 @@ void switch_thread()
   StackFrame *stackFrame;
   boolean liveThreadExists;
 
-  #if DEBUG_THREADS
-  printf ("Switch thread: currentThread: %d (%d)\n", (int) currentThread,
-          (int) (currentThread != null));
+  #if DEBUG_THREADS || DEBUG_BYTECODE
+  printf ("\n$$$--- switch_thread: currentThread at %d\n", (int) currentThread);
   #endif
 
   #ifdef VERIFY
@@ -235,6 +234,11 @@ void enter_monitor (Object* obj)
   byte owner;
   byte tid;
 
+  if (obj == JNULL)
+  {
+    throw_exception (nullPointerException);
+    return;
+  }
   owner = get_thread_id (obj);
   tid = currentThread->threadId;
   if (owner != NO_OWNER && tid != owner)
@@ -253,6 +257,12 @@ void enter_monitor (Object* obj)
 void exit_monitor (Object* obj)
 {
   byte newMonitorCount;
+
+  if (obj == JNULL)
+  {
+    // Exiting due to a NPE on monitor_enter [FIX THIS]
+    return;
+  }
 
   #ifdef VERIFY
   assert (get_thread_id(obj) == currentThread->threadId, THREADS1);
