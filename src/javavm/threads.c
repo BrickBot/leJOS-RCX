@@ -188,8 +188,10 @@ void switch_thread()
   if (currentThread->state == STARTED)
   {
     // Put stack ptr at the beginning of the stack so we can push arguments
-    // to entry methods.
-    init_stack_ptr();
+    // to entry methods. This assumes set_top_word or set_top_ref will
+    // be called immediately below.
+
+    init_stack_ptr_and_push_void();
     currentThread->state = RUNNING;
     if (currentThread == bootThread)
     {

@@ -1,4 +1,5 @@
 
+#include "interpreter.h"
 #include "trace.h"
 #include "types.h"
 #include "constants.h"
@@ -9,6 +10,7 @@
 #include "memory.h"
 #include "language.h"
 #include "exceptions.h"
+#include "stack.h"
 
 #define F_OFFSET_MASK  0x0F
 

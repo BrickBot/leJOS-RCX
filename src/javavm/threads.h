@@ -20,11 +20,13 @@ typedef struct S_StackFrame
 {
   MethodRecord *methodRecord;
   Object *monitor;
+  // The following 2 fields are constant for a given stack frame.
   STACKWORD *localsBase;
-  STACKWORD *stackTop;
   boolean *isReferenceBase;
-  boolean *isReference;
+  // The following fields only need to be assined to on switch_thread.
   byte *pc;
+  STACKWORD *stackTop;
+  boolean *isReference;
 } StackFrame;
 
 extern void start_thread (Thread *thread);

@@ -54,7 +54,7 @@ case OP_L2D:
   just_set_top_word (jfloat2word ((JFLOAT) get_top_word()));
   goto LABEL_ENGINELOOP;
 case OP_F2L:
-  tempStackWord = get_top_word (0);
+  tempStackWord = get_top_word();
   just_set_top_word (0);
   push_word ((JINT) word2jfloat(tempStackWord));
   goto LABEL_ENGINELOOP;
