@@ -1,4 +1,4 @@
-JAVAC=javac
+JAVAC=javac -target 1.1
 
 rcx_classes:
 	${JAVAC} -classpath "../../lib/classes.jar" `find . -name '*.java'`
