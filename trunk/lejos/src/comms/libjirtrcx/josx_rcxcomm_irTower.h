@@ -9,51 +9,11 @@ extern "C" {
 #endif
 /*
  * Class:     josx_rcxcomm_irTower
- * Method:    open
- * Signature: (Ljava/lang/String;)I
- */
-JNIEXPORT jint JNICALL Java_josx_rcxcomm_irTower_open
-  (JNIEnv *, jobject, jstring);
-
-/*
- * Class:     josx_rcxcomm_irTower
  * Method:    close
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_josx_rcxcomm_irTower_close
   (JNIEnv *, jobject);
-
-/*
- * Class:     josx_rcxcomm_irTower
- * Method:    write
- * Signature: ([BI)I
- */
-JNIEXPORT jint JNICALL Java_josx_rcxcomm_irTower_write
-  (JNIEnv *, jobject, jbyteArray, jint);
-
-/*
- * Class:     josx_rcxcomm_irTower
- * Method:    send
- * Signature: ([BI)I
- */
-JNIEXPORT jint JNICALL Java_josx_rcxcomm_irTower_send
-  (JNIEnv *, jobject, jbyteArray, jint);
-
-/*
- * Class:     josx_rcxcomm_irTower
- * Method:    read
- * Signature: ([B)I
- */
-JNIEXPORT jint JNICALL Java_josx_rcxcomm_irTower_read
-  (JNIEnv *, jobject, jbyteArray);
-
-/*
- * Class:     josx_rcxcomm_irTower
- * Method:    receive
- * Signature: ([B)I
- */
-JNIEXPORT jint JNICALL Java_josx_rcxcomm_irTower_receive
-  (JNIEnv *, jobject, jbyteArray);
 
 /*
  * Class:     josx_rcxcomm_irTower
@@ -73,11 +33,43 @@ JNIEXPORT jint JNICALL Java_josx_rcxcomm_irTower_isAlive
 
 /*
  * Class:     josx_rcxcomm_irTower
- * Method:    errorMessage
- * Signature: (I)Ljava/lang/String;
+ * Method:    open
+ * Signature: (Ljava/lang/String;)I
  */
-JNIEXPORT jstring JNICALL Java_josx_rcxcomm_irTower_strerror
-  (JNIEnv *, jobject, jint);
+JNIEXPORT jint JNICALL Java_josx_rcxcomm_irTower_open
+  (JNIEnv *, jobject, jstring);
+
+/*
+ * Class:     josx_rcxcomm_irTower
+ * Method:    read
+ * Signature: ([B)I
+ */
+JNIEXPORT jint JNICALL Java_josx_rcxcomm_irTower_read
+  (JNIEnv *, jobject, jbyteArray);
+
+/*
+ * Class:     josx_rcxcomm_irTower
+ * Method:    receive
+ * Signature: ([B)I
+ */
+JNIEXPORT jint JNICALL Java_josx_rcxcomm_irTower_receive
+  (JNIEnv *, jobject, jbyteArray);
+
+/*
+ * Class:     josx_rcxcomm_irTower
+ * Method:    send
+ * Signature: ([BI)I
+ */
+JNIEXPORT jint JNICALL Java_josx_rcxcomm_irTower_send
+  (JNIEnv *, jobject, jbyteArray, jint);
+
+/*
+ * Class:     josx_rcxcomm_irTower
+ * Method:    write
+ * Signature: ([BI)I
+ */
+JNIEXPORT jint JNICALL Java_josx_rcxcomm_irTower_write
+  (JNIEnv *, jobject, jbyteArray, jint);
 
 #ifdef __cplusplus
 }
