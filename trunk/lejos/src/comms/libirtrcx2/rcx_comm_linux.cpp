@@ -43,12 +43,17 @@
 #include <errno.h>
 #include <string.h>
 
+#define USB_TOWER_NAME "/dev/usb/legousbtower0"
+
 #include "rcx_comm_linux.h"
 #include "rcx_comm.cpp"
 
 //
 // prototypes for some internal methods
 //
+
+// Set port parameters.
+void __rcx_open_setDevice(Port* port, char* symbolicName, bool fast);
 
 // Set serial port parameters.
 // Returns if success.
@@ -58,7 +63,7 @@ bool __rcx_open_setSerialPortParameters (Port* port);
 // implementation
 //
 
-void __rcx_perror(char * str) 
+void __rcx_perror(char* str) 
 {
  	if (__comm_debug) perror(str);
 }
@@ -132,11 +137,12 @@ void __rcx_flush(void* port)
 void* __rcx_open(char *tty, bool is_fast)
 {
 	if (__comm_debug) printf("mode = %s\n", is_fast ? "fast" : "slow");
-	if (__comm_debug) printf("tty= %s\n", tty);
+	if (__comm_debug) printf("tty = %s\n", tty);
 
 	bool success = true;
 
 	Port* result = (Port*) malloc(sizeof(Port));
+	__rcx_open_setDevice(result, tty, fast);
 	
 	result->fileHandle = open(tty, O_RDWR);
 	if (result->fileHandle < 0) 
@@ -158,13 +164,43 @@ void* __rcx_open(char *tty, bool is_fast)
 			close(result->fileHandle);
 		}
 		free(result);
-		result = NULL;
+		return NULL;
 	}
+	else
+	{
+		if (__comm_debug) printf("device = %s\n", result->deviceName);
+		if (__comm_debug) printf("port type = %s\n", result->usb? "usb" : "serial");
+	
+		return result;
+	}		
+}
 
-	if (__comm_debug) printf("device = %s\n", result->deviceName);
-	if (__comm_debug) printf("port type = %s\n", result->usb? "usb" : "serial");
-
-	return result;
+void __rcx_open_setDevice (Port* port, char* symbolicName, bool fast)
+{
+	strncpy(port->symbolicName, symbolicName, 32);
+   port->symbolicName[31] = 0;
+   
+   int length = strlen(symbolicName);
+	if (strncmp(symbolicName, "usb", 3) == 0 && length <= 4)
+	{
+		// usb mode (does _not_ support doubled baud rate)
+      strncpy(port->deviceName, USB_TOWER_NAME, 32);
+      if (length == 4)
+      {
+      	// multiple usb tower mode
+      	port->deviceName[strlen(USB_TOWER_NAME) - 1] = symbolicName[3];
+      }
+      port->usb = true;	
+      port->fast = fast; // 2x: no complements
+	}
+	else
+	{
+		// serial mode
+		strncpy(port->deviceName, symbolicName, 32);
+		port->deviceName[31] = 0;
+		port->usb = false;	
+      port->fast = fast; // 4x: no complements, doubled baud rate
+	}
 }
 
 bool __rcx_open_setSerialPortParameters (Port* port)
