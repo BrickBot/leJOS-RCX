@@ -5,7 +5,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 import js.tinyvm.util.HashVector;
 
 /**
@@ -51,7 +51,7 @@ public class Binary
     * @param writer
     * @throws TinyVMException
     */
-   public void dump (ByteWriter writer) throws TinyVMException
+   public void dump (IByteWriter writer) throws TinyVMException
    {
       iEntireBinary.dump(writer);
    }

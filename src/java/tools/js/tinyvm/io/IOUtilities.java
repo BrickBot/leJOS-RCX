@@ -4,10 +4,10 @@ import java.io.IOException;
 
 public class IOUtilities
 {
-   public static void writePadding (ByteWriter aOut, int aMinRecSize)
+   public static void writePadding (IByteWriter aOut, int aMinRecSize)
       throws IOException
    {
-      int pRegSize = aOut.size();
+      int pRegSize = aOut.offset();
       int pPad = adjustedSize(pRegSize, aMinRecSize) - pRegSize;
       aOut.write(new byte[pPad], 0, pPad);
    }

@@ -2,7 +2,7 @@ package js.tinyvm;
 
 import java.io.IOException;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 
 import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.Field;
@@ -28,7 +28,7 @@ public class StaticFieldRecord implements WritableData
       return 2;
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter aOut) throws TinyVMException
    {
       byte pType = TinyVMConstants.tinyVMType(iField.getType().getType());
       if (pType == Constants.T_ARRAY)

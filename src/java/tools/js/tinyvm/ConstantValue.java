@@ -1,11 +1,10 @@
 package js.tinyvm;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 
 import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.Constant;
@@ -121,14 +120,13 @@ public class ConstantValue extends WritableDataWithOffset
     * 
     * @param writer byte writer
     */
-   public void dump (ByteWriter writer) throws TinyVMException
+   public void dump (IByteWriter writer) throws TinyVMException
    {
       assert writer != null: "Precondition: writer != null";
 
       try
       {
          // Constant values must be dumped in Big Endian order.
-         DataOutputStream pDataOut = (DataOutputStream) writer;
          if (_value instanceof Double)
          {
             double doubleValue = ((Double) _value).doubleValue();
@@ -139,17 +137,17 @@ public class ConstantValue extends WritableDataWithOffset
                _logger.log(Level.WARNING, "Double " + doubleValue
                   + " truncated to " + floatValue + "f.");
             }
-            pDataOut.writeInt(0);
-            pDataOut.writeInt(Float.floatToIntBits(floatValue));
+            writer.writeInt(0);
+            writer.writeInt(Float.floatToIntBits(floatValue));
          }
          else if (_value instanceof Float)
          {
-            pDataOut.writeInt(Float.floatToIntBits(((Float) _value)
+            writer.writeInt(Float.floatToIntBits(((Float) _value)
                .floatValue()));
          }
          else if (_value instanceof Integer)
          {
-            pDataOut.writeInt(((Integer) _value).intValue());
+            writer.writeInt(((Integer) _value).intValue());
          }
          else if (_value instanceof Long)
          {
@@ -160,13 +158,13 @@ public class ConstantValue extends WritableDataWithOffset
                _logger.log(Level.WARNING, "Long " + longValue
                   + "L truncated to " + intValue + ".");
             }
-            pDataOut.writeInt(0);
-            pDataOut.writeInt(intValue);
+            writer.writeInt(0);
+            writer.writeInt(intValue);
          }
          else if (_value instanceof String)
          {
             byte[] bytes = ((String) _value).getBytes();
-            pDataOut.write(bytes, 0, bytes.length);
+            writer.write(bytes, 0, bytes.length);
          }
          else
          {

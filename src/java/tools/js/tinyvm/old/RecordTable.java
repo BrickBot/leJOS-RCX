@@ -5,7 +5,7 @@ import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 import js.tinyvm.io.IOUtilities;
 
 public abstract class RecordTable extends WritableDataWithOffset
@@ -33,7 +33,7 @@ public abstract class RecordTable extends WritableDataWithOffset
       iAlign = aAlign;
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter aOut) throws TinyVMException
    {
       try
       {
@@ -47,12 +47,12 @@ public abstract class RecordTable extends WritableDataWithOffset
             if (pDoVerify)
             {
                pLength = pData.getLength();
-               pPrevSize = aOut.size();
+               pPrevSize = aOut.offset();
             }
             pData.dump(aOut);
             if (pDoVerify)
             {
-               if (aOut.size() != pPrevSize + pLength)
+               if (aOut.offset() != pPrevSize + pLength)
                {
                   if (pData instanceof RecordTable)
                   {
@@ -60,7 +60,7 @@ public abstract class RecordTable extends WritableDataWithOffset
                         + ((RecordTable) pData).iAlign);
                   }
                   throw new TinyVMException("Bug RT-1: Written="
-                     + (aOut.size() - pPrevSize) + " Length=" + pLength
+                     + (aOut.offset() - pPrevSize) + " Length=" + pLength
                      + " Class=" + pData.getClass().getName());
                }
             }

@@ -2,7 +2,7 @@ package js.tinyvm;
 
 import java.io.IOException;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 import js.tinyvm.io.IOUtilities;
 
 import org.apache.bcel.classfile.Constant;
@@ -74,7 +74,7 @@ public class ConstantRecord implements WritableData
     * 
     * @param writer byte writer
     */
-   public void dump (ByteWriter writer) throws TinyVMException
+   public void dump (IByteWriter writer) throws TinyVMException
    {
       assert writer != null: "Precondition: writer != null";
 

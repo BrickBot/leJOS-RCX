@@ -1,10 +1,10 @@
 package js.tinyvm.old;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 
 public interface WritableData
 {
-   public void dump (ByteWriter aOut) throws TinyVMException;
+   public void dump (IByteWriter aOut) throws TinyVMException;
 
    /**
     * Returns the length of the record, in bytes.

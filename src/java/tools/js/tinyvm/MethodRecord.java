@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 import js.tinyvm.io.IOUtilities;
 import js.tinyvm.util.HashVector;
 
@@ -209,7 +209,7 @@ public class MethodRecord implements WritableData
          2);
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter aOut) throws TinyVMException
    {
       try
       {

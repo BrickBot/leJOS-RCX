@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 import js.tinyvm.old.classfile.JCPE_Double;
 import js.tinyvm.old.classfile.JCPE_Float;
 import js.tinyvm.old.classfile.JCPE_Integer;
@@ -53,7 +53,7 @@ public class ConstantValue extends WritableDataWithOffset
       }
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter aOut) throws TinyVMException
    {
       try
       {

@@ -10,7 +10,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 import js.tinyvm.io.IOUtilities;
 import js.tinyvm.old.classfile.JCPE_Class;
 import js.tinyvm.old.classfile.JCPE_Double;
@@ -74,7 +74,7 @@ public class ClassRecord implements WritableData, Constants
          2);
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter aOut) throws TinyVMException
    {
       try
       {

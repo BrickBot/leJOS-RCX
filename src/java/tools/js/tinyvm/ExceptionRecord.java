@@ -2,7 +2,7 @@ package js.tinyvm;
 
 import java.io.IOException;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 import js.tinyvm.io.IOUtilities;
 
 import org.apache.bcel.classfile.CodeException;
@@ -46,7 +46,7 @@ public class ExceptionRecord implements WritableData
          2);
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter aOut) throws TinyVMException
    {
       int pStart = iExcep.getStartPC();
       int pEnd = iExcep.getEndPC();

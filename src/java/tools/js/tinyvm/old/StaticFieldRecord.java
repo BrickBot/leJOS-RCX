@@ -2,7 +2,7 @@ package js.tinyvm.old;
 
 import java.io.IOException;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 import js.tinyvm.old.classfile.JClassName;
 import js.tinyvm.old.classfile.JField;
 
@@ -27,7 +27,7 @@ public class StaticFieldRecord implements WritableData, Constants
       return 2;
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter aOut) throws TinyVMException
    {
       int pType = JClassName
          .descriptorToType(iField.getDescriptor().toString());

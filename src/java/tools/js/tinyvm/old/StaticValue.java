@@ -3,7 +3,7 @@ package js.tinyvm.old;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 import js.tinyvm.old.classfile.JField;
 
 public class StaticValue extends WritableDataWithOffset implements Constants
@@ -21,7 +21,7 @@ public class StaticValue extends WritableDataWithOffset implements Constants
       return InstanceFieldRecord.getTypeSize(iType);
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter aOut) throws TinyVMException
    {
       try
       {

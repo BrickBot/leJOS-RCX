@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 import js.tinyvm.io.IOUtilities;
 
 /**
@@ -130,7 +130,7 @@ public class RecordTable extends WritableDataWithOffset
    /**
     * Dump all elements.
     */
-   public void dump (ByteWriter writer) throws TinyVMException
+   public void dump (IByteWriter writer) throws TinyVMException
    {
       assert writer != null: "Precondition: writer != null";
 
@@ -142,13 +142,13 @@ public class RecordTable extends WritableDataWithOffset
             WritableData pData = (WritableData) iter.next();
 
             int pLength = pData.getLength();
-            int pPrevSize = writer.size();
+            int pPrevSize = writer.offset();
 
             pData.dump(writer);
 
             if (pDoVerify)
             {
-               if (writer.size() != pPrevSize + pLength)
+               if (writer.offset() != pPrevSize + pLength)
                {
                   if (pData instanceof RecordTable)
                   {
@@ -156,7 +156,7 @@ public class RecordTable extends WritableDataWithOffset
                         + ((RecordTable) pData)._align);
                   }
                   throw new TinyVMException("Bug RT-1: Written="
-                     + (writer.size() - pPrevSize) + " Length=" + pLength
+                     + (writer.offset() - pPrevSize) + " Length=" + pLength
                      + " Class=" + pData.getClass().getName());
                }
             }
