@@ -91,6 +91,10 @@ int rcxReceiveSlow (void* port, void* buf, int maxlen, int timeout_ms);
 // sendLength: number of sent bytes
 bool rcxCheckEcho (void* port, char* send, int sendLength);
 
+// Reset port. (Clear input and output buffers)
+// port: port handle
+void rcxReset (void* port);
+
 //
 // getter functions
 //
@@ -133,16 +137,11 @@ int rcxWakeupTower (void* port, int timeout_ms)
 	int count = 0;
 	
 	// First, I send a KeepAlive Byte to settle IR Tower...
-	rcxFlush(port);
-	usleep(20000);
-	rcxPurge(port);
-
+	rcxReset(port);
 	rcxWrite(port, &keepalive, 1);
-	usleep(20000);
-	rcxPurge(port);
+	rcxReset(port);
 	
 	timerReset(&timer);
-	
 	do 
 	{
       // write message		
@@ -168,7 +167,7 @@ int rcxWakeupTower (void* port, int timeout_ms)
 			return RCX_OK;
 		}
 
-		rcxPurge(port);
+	   rcxReset(port);
 	} while (timerRead(&timer) < timeout_ms);
 	
 	return count == 0? RCX_NO_TOWER : RCX_BAD_LINK;	
@@ -484,6 +483,21 @@ int rcxSendReceive (void* port, void* send, int sendLength,
 	return status;
 }
 
+void rcxReset (void* port)
+{
+	char buf[BUFFERSIZE];
+	
+	// clear input and output buffers
+	rcxPurge(port);
+	// try to flush remaining bytes of output buffer
+	rcxFlush(port);
+	usleep(20000);
+	// clear input and output buffers
+	rcxPurge(port);
+	// try to read remaining bytes from input buffer
+	rcxRead(port, buf, BUFFERSIZE, 1);
+}
+
 void rcxPurge (void* port)
 {
 	__rcx_purge(port);
@@ -499,13 +513,10 @@ bool rcxIsAlive (void* port)
 	unsigned char send[1] = { 0x10 };
 	unsigned char recv[1];
 
-	rcxFlush(port);
-	usleep(20000);
-	rcxPurge(port);
-
+	rcxReset(port);
 	int read = rcxSendReceive(port, send, 1, recv, 1, 50, 5);
 
-	return read == 1? 1 : 0;
+	return read == 1;
 }
 
 void rcxPerror(char *str) 
