@@ -20,12 +20,15 @@
 
 static TWOBYTES gSensorValue = 0;
 
+extern int	verbose;	/* If non-zero, generates verbose output. */
+char *get_meaning(STACKWORD *);
+
 /**
  * NOTE: The technique is not the same as that used in TinyVM.
  */
 void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 {
-  ClassRecord *classRecord;
+	ClassRecord	*classRecord;
 
   switch (signature)
   {
@@ -44,24 +47,32 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       push_word (get_sys_time());
       return;
     case CALLROM0_V:
-      printf ("& ROM call 0: 0x%lX\n", paramBase[0]);
-      return;      
+	if(verbose == 0)
+		printf ("& ROM call 0: 0x%lX\n", paramBase[0]);
+	else
+		printf("> %s\n", get_meaning(paramBase));
+	return;      
     case CALLROM1_V:
-      printf ("& ROM call 1: 0x%lX (%ld)\n", paramBase[0], paramBase[1]);
-      return;      
+	if(verbose == 0)
+		printf ("& ROM call 1: 0x%lX (%ld)\n", paramBase[0], paramBase[1]);
+	else
+		printf("> %s\n", get_meaning(paramBase));
+	return;      
     case CALLROM2_V:
-      printf ("& ROM call 2: 0x%lX (%ld, %ld)\n", paramBase[0],
-                                                  paramBase[1],
-                                                  paramBase[2]
-             );
-      return;      
+	if(verbose == 0)
+		printf ("& ROM call 2: 0x%lX (%ld, %ld)\n", paramBase[0],
+				paramBase[1], paramBase[2]);
+	else
+		printf("> %s\n", get_meaning(paramBase));
+	return;      
     case CALLROM3_V:
-      printf ("& ROM call 3: 0x%lX (%ld, %ld, %ld)\n", paramBase[0],
-                                                     paramBase[1],
-                                                     paramBase[2],
-                                                     paramBase[3]
-             );
-      return;      
+	if(verbose == 0)
+		printf ("& ROM call 3: 0x%lX (%ld, %ld, %ld)\n",
+				paramBase[0], paramBase[1],
+				paramBase[2], paramBase[3]);
+	else
+		printf("> %s\n", get_meaning(paramBase));
+	return;      
     case CALLROM4_V:
       printf ("& ROM call 4: 0x%lX (%ld, %ld, %ld, %ld)\n", paramBase[0],
                                                      paramBase[1],
@@ -71,11 +82,19 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
              );
       return;      
     case READMEMORYBYTE_B:
-      printf ("& Attempt to read byte from 0x%lX\n", (paramBase[0] & 0xFFFF));
-      push_word (0);
-      return;
+	if(verbose == 0)
+		printf ("& Attempt to read byte from 0x%lX\n", (paramBase[0] & 0xFFFF));
+	else
+		printf ("> read byte from 0x%lX\n", (paramBase[0] & 0xFFFF));
+	push_word (0);
+	return;
     case WRITEMEMORYBYTE_V:
-      printf ("& Attempt to write byte [%lX] at 0x%lX (no effect)\n", paramBase[1] & 0xFF, paramBase[0] & 0xFFFF);
+	if(verbose == 0)
+		printf ("& Attempt to write byte [%lX] at 0x%lX (no effect)\n",
+			paramBase[1] & 0xFF, paramBase[0] & 0xFFFF);
+	else
+		printf ("> write byte [%lX] at 0x%lX (no effect)\n",
+			paramBase[1] & 0xFF, paramBase[0] & 0xFFFF);
       return;
     case SETMEMORYBIT_V:
       printf ("& Attempt to set memory bit [%ld] at 0x%lX (no effect)\n", paramBase[1] & 0xFF, paramBase[0] & 0xFFFF);

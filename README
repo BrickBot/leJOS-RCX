@@ -181,6 +181,17 @@ binary, e.g.
   emu-lejos -o MyProgram.bin MyProgram
   emu-lejosrun MyProgram.bin
 
+To get more informative traces, use the -v option:
+
+  emu-lejosrun -v MyProgram.bin
+  
+NOTE: The above is fine for Intel x86 architectures.
+Under Sparc and other systems with big endian 
+byte ordering, use lejos instead of emu-lejos, e.g.
+
+  lejos -o MyProgram.bin MyProgram
+  emu-lejosrun -v MyProgram.bin
+  
 In some cases it might be easier to debug
 programs with the emulated VM, and you'll also 
 get slightly more detailed exception information.

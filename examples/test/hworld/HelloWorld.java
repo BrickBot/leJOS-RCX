@@ -1,4 +1,4 @@
-import tinyvm.rcx.*;
+import josx.platform.rcx.*;
 
 /**
  * @author <a mailto="rvbijl39<at>calvin<dot>edu">Ryan VanderBijl</a>
@@ -16,21 +16,12 @@ import tinyvm.rcx.*;
 public class HelloWorld
 {
   public static void main (String[] aArg)
+  throws Exception
   {
      LCD.clear();
-     LCD.refresh();
-
-     char[] hello = {'h', 'e', 'l', 'l', 'o'};
-     char[] world = {'w', 'o', 'r', 'l', 'd'};
-
-     TextLCD.print(hello);
-     LCD.refresh();
-
-     Time.sleep(2000);
-
-     TextLCD.print(world);
-     LCD.refresh();
-
-     Time.sleep(2000);
+     TextLCD.print ("hello");
+     Thread.sleep(2000);
+     TextLCD.print ("world");
+     Thread.sleep(2000);
   }
 }

@@ -128,7 +128,7 @@ public class Serial
    */
   public static void setRangeLong()
   {
-    Native.callRom1 ((short) 0x3250, 0x1770);	  
+    Native.callRom1 ((short) 0x3250, (short) 0x1770);	  
   }
 
   /**
@@ -136,7 +136,7 @@ public class Serial
    */
   public static void setRangeShort()
   {
-    Native.callRom1 ((short) 0x3266, 0x1770);	  
+    Native.callRom1 ((short) 0x3266, (short) 0x1770);	  
   }
   
   /**

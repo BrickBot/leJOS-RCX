@@ -1,3 +1,15 @@
+leJOS 1.0.0beta4:
+-----------------
+
+  - Phil Berry has contributed some documentation (see
+    doc/phil_berry) and more meaningful trace output
+    for emu-lejosrun -v.
+  - Hajime Murao reporded a but in jtoolexec.c. The first
+    argument was not initialized properly, which
+    means that in some systems (e.g. W2K) you'd see a message 
+    saying that lejosc was unable to execute javac or something 
+    to that effect, with no apparent reason.
+
 leJOS 1.0.0beta3:
 -----------------
  
@@ -11,7 +23,11 @@ leJOS 1.0.0beta3:
   - Copied the entire util/firmdl directory from legOS 0.2.4
     into tools/firmdl, and made minor modifications to it.
     This should fix the infamous "Permission Denied" bug.
-  - 
+  - The emulation tool was crashing when string constants
+    were used, due to a byte ordering problem which is now
+    fixed.
+  - Considerable performance improvements for certain
+    Math functions.
   
 leJOS 1.0.0beta2:
 -----------------

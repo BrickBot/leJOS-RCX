@@ -95,6 +95,11 @@ int main (int argc, char *argv[])
     fprintf (stderr, "Unexpected: Can't find %s in PATH\n", argv[0]);
     exit (1);
   }
+
+  toolName = getenv (TOOL_ALT_VAR);
+  if (toolName == NULL)
+    toolName = TOOL_NAME;
+
   newargv[count++] = toolName;
   
   #ifdef JAVA2
@@ -109,9 +114,6 @@ int main (int argc, char *argv[])
     newargv[count++] = argv[i];	  
   }
   newargv[count++] = NULL;
-  toolName = getenv (TOOL_ALT_VAR);
-  if (toolName == NULL)
-    toolName = TOOL_NAME;
     
   #if TRACE
   printf ("toolName=%s\n", toolName);

@@ -106,6 +106,9 @@ case OP_ARRAYLENGTH:
     REFERENCE tempRef;
 
     tempRef = get_top_ref();
+    
+    //printf ("ARRAYLENGTH for %d\n", (int) tempRef); 
+    
     if (tempRef == JNULL)
       throw_exception (nullPointerException);
     else     

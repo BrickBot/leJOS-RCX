@@ -79,7 +79,7 @@ public class Motor
   {
     if (iMode == 1 || iMode == 2)
     {
-      iMode = 3 - iMode;
+      iMode = (short) (3 - iMode);
       controlMotor (iId, iMode, iPower);
     }
   }
@@ -105,7 +105,7 @@ public class Motor
    */
   public final boolean isFloating()
   {
-    return iMode = 4;	  
+    return iMode == 4;	  
   }
   
   /**
