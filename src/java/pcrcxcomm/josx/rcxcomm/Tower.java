@@ -208,8 +208,14 @@ public class Tower
          File jarFile = new File(jarFilename.substring(5, jarFilename
             .indexOf('!')));
 
-         String filename = System.mapLibraryName("jirtrcx");
+         String filename = System.mapLibraryName("irtrcx");
          String path = new File(jarFile.getParentFile(), filename)
+            .getAbsolutePath();
+         // System.err.println("Loading native lib " + path);
+         System.load(path);
+
+         filename = System.mapLibraryName("jirtrcx");
+         path = new File(jarFile.getParentFile(), filename)
             .getAbsolutePath();
          // System.err.println("Loading native lib " + path);
          System.load(path);
@@ -221,6 +227,8 @@ public class Tower
          try
          {
             // try again the default way
+            // System.err.println("Loading native lib irtrcx");
+            System.loadLibrary("irtrcx");
             // System.err.println("Loading native lib jirtrcx");
             System.loadLibrary("jirtrcx");
          }
