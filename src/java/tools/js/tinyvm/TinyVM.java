@@ -36,7 +36,11 @@ implements Constants
   public static void invokeTvm (String aFileName)
   {
     Assertion.test (TINYVM_HOME != null);
-    Assertion.test (TINYVM_LOADER != null);
+
+    // Allow download tool to be null 
+
+    if (TINYVM_LOADER == null) return;
+
     String pTvmExec = TINYVM_HOME + File.separator + "bin" +
                       File.separator + TINYVM_LOADER; 
     String[] pParams = new String[] { pTvmExec, aFileName };
@@ -196,15 +200,26 @@ implements Constants
     }
   }
 
-  public static void main (Vector aArgs, Vector aOptions)
+  public static void main (Vector aArgs, Vector aOptions, boolean gotBin)
   throws Exception
   {
-    if (aArgs.size() != 1)
+    // if no download program is supplied, the -o parameter is mandatory
+    // Make the usage statement reflect this
+
+    if (aArgs.size() != 1 || (TINYVM_LOADER == null && !gotBin))
     {
-      System.out.println (TOOL_NAME + " links and downloads a program.");
-      System.out.println ("Use: " + TOOL_NAME + " [options] class1[,class2,...] [arg1 arg2 ...]");
+      String firstLine = TOOL_NAME + " links";
+      if (TINYVM_LOADER != null) firstLine += " and downloads";
+      firstLine += " a program.";
+      System.out.println (firstLine);
+      String useLine = "Use: " + TOOL_NAME + " [options] class1[,class2,...]";
+      if (TINYVM_LOADER == null) useLine += " -o <path>";
+      System.out.println (useLine);
+      if (TINYVM_LOADER == null) 
+        System.out.println("Dumps binary into <path>");
       System.out.println ("Options:");
-      System.out.println ("  -o <path>         Dump binary into path (no download)");
+      if (TINYVM_LOADER != null) 
+        System.out.println ("  -o <path>         Dump binary into path (no download)");
       System.out.println ("  -verbose[=<n>]    Print class and signature information");
       System.out.println ("  -all              Include all methods");
       System.exit (1);
@@ -223,6 +238,8 @@ implements Constants
   {
     Vector pRealArgs = new Vector();
     Vector pOptions = new Vector();
+    boolean gotBin = false;
+
     for (int i = 0; i < arg.length; i++)
     {
       if (arg[i].startsWith ("-"))
@@ -242,6 +259,7 @@ implements Constants
         else if (arg[i].equals ("-o"))
 	{
           pOption.iArgument = arg[++i];
+          gotBin = true;
           Assertion.trace ("Got -o option: " + pOption.iArgument);
 	}
         pOptions.addElement (pOption);
@@ -249,6 +267,6 @@ implements Constants
       else
         pRealArgs.addElement (arg[i]);
     }
-    main (pRealArgs, pOptions);
+    main (pRealArgs, pOptions, gotBin);
   }
 }
