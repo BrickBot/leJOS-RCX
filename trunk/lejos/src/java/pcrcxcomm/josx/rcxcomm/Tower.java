@@ -223,7 +223,7 @@ public class Tower
     {
       // try to search in the directory in which the jar resides
       String filename = System.mapLibraryName("jirtrcx");
-      URL url = Tower.class.getResource("");
+      URL url = Tower.class.getResource("Tower.class");
       String jarFilename = url.getFile();
       // cut "file:" and jar part beginning with "!"
       File jarFile = new File(jarFilename
