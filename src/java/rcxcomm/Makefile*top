@@ -1,4 +1,4 @@
 default:
-	cd src; make
-	cd classes; make
-	cd rcxclasses; make
+	cd src; $(MAKE)
+	cd classes; $(MAKE)
+	cd rcxclasses; $(MAKE)
