@@ -29,6 +29,7 @@ import org.apache.bcel.classfile.ConstantString;
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
+import org.apache.bcel.util.ClassPath;
 
 /**
  * Abstraction for a class record (see vmsrc/language.h).
@@ -485,8 +486,12 @@ public class ClassRecord implements WritableData
       assert className.indexOf('.') == -1: "Precondition: className is in correct form: "
          + className;
 
-      InputStream pIn = aCP.getInputStream(className);
-      if (pIn == null)
+      InputStream pIn;
+      try
+      {
+         pIn = aCP.getInputStream(className);
+      }
+      catch (IOException e)
       {
          throw new TinyVMException("Class " + className.replace('/', '.')
             + " (file " + className + ".class) not found in CLASSPATH " + aCP);

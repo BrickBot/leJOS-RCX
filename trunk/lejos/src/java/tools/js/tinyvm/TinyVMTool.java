@@ -6,6 +6,8 @@ import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.bcel.util.ClassPath;
+
 import js.common.AbstractTool;
 import js.common.ToolProgressMonitor;
 import js.tinyvm.io.BEDataOutputStream;
