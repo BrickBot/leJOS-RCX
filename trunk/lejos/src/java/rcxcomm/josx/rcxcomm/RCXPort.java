@@ -18,6 +18,7 @@ public class RCXPort {
    protected RCXInputStream rcxin;
    protected RCXOutputStream rcxout;
    protected Object monitor;
+   protected IOException ioe;
 
    /**
     *  Parameterless constructor for the RCXPort.
@@ -39,6 +40,7 @@ public class RCXPort {
     */
    public void open() {
       monitor = this;
+      ioe = new IOException();
       rcxin = new RCXInputStream(this);
       rcxout = new RCXOutputStream(this);
       listener = new Listener();
@@ -91,7 +93,7 @@ public class RCXPort {
                return;
             }
          }
-         throw new IOException();
+         throw ioe;
       }
    }
 
@@ -174,6 +176,7 @@ public class RCXPort {
       private int current = 0, last = 0;
       private int time1, timeOut;
       private RCXPort dataPort;
+      IOException ioe;
 
       /** Creates new RCXInputStream
       * @param port The RCXPort which should deliver data for to this InputStream
@@ -182,6 +185,7 @@ public class RCXPort {
          super();
          dataPort = port;
          buffer = new byte[bufferSize];
+         ioe = new IOException();
       }
 
       /** Checks if there is any data avaliable on the InputStream
@@ -205,7 +209,7 @@ public class RCXPort {
          timeOut = dataPort.getTimeOut();
          while (available() == 0) {
             if (timeOut != 0 && ((int)System.currentTimeMillis()-time1 > timeOut)) {
-                  throw new IOException();
+                  throw ioe;
             }
             try {
                Thread.sleep(10);
