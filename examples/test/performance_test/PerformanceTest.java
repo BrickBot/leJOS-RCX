@@ -34,7 +34,7 @@ public class PerformanceTest
     Button.RUN.waitForPressAndRelease();
 
     LCD.showProgramNumber( 2);
-    LCD.showNumber( (int)(Runtime.getRuntime().freeMemory()));
+    LCD.showNumber( (int)(Runtime.getRuntime().freeMemory())-10000);
     Button.RUN.waitForPressAndRelease();
 
     Button.PRGM.addButtonListener( new ButtonListener() {
@@ -57,7 +57,7 @@ public class PerformanceTest
     Button.RUN.waitForPressAndRelease();
 
     LCD.showProgramNumber( 4);
-    LCD.showNumber( (int)(Runtime.getRuntime().freeMemory()));
+    LCD.showNumber( (int)(Runtime.getRuntime().freeMemory())-10000);
     Button.RUN.waitForPressAndRelease();
 
     Button.VIEW.addButtonListener( new ButtonListener() {
@@ -76,7 +76,7 @@ public class PerformanceTest
     Button.RUN.waitForPressAndRelease();
 
     LCD.showProgramNumber( 6);
-    LCD.showNumber( (int)(Runtime.getRuntime().freeMemory()));
+    LCD.showNumber( (int)(Runtime.getRuntime().freeMemory())-10000);
     Button.RUN.waitForPressAndRelease();
 
     Sensor.S1.addSensorListener( new SensorListener() {
@@ -93,7 +93,7 @@ public class PerformanceTest
     Button.RUN.waitForPressAndRelease();
 
     LCD.showProgramNumber( 8);
-    LCD.showNumber( (int)(Runtime.getRuntime().freeMemory()));
+    LCD.showNumber( (int)(Runtime.getRuntime().freeMemory())-10000);
     Button.RUN.waitForPressAndRelease();
 
   }
