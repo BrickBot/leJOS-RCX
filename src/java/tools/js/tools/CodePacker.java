@@ -70,7 +70,6 @@ class Packing implements Comparable
 		
 		offspring.mutate();
 
-		//System.out.println("After mating: This size=" + thisSize + ", other size=" + other.thisSize + ", offspring size=" + offspring.thisSize);
 		return offspring;
 	}
 
@@ -147,14 +146,11 @@ public class CodePacker
 			selection.add(i);
 		}
 		
-		//System.out.println("size=" + selection.getSize());
 		return selection;
 	}
 		
 	static Packing pack()
 	{
-		//System.out.println("List size=" + list.size() + ", maxSize=" + maxSize);
-		
 		// Create an array of indices into the passed list:
 		int indices[] = new int[list.size()];
 		for (int i=0; i<indices.length; i++)

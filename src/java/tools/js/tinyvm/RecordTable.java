@@ -1,66 +1,83 @@
 package js.tinyvm;
 
+import java.io.IOException;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import js.tinyvm.io.ByteWriter;
 import js.tinyvm.io.IOUtilities;
-import js.tinyvm.util.Assertion;
 
 public abstract class RecordTable extends WritableDataWithOffset
-implements Constants
+    implements
+      Constants
 {
   int iLength = -1;
   private boolean iAlign;
-  
-  public abstract Enumeration elements();
-  public abstract int size();
+
+  public abstract Enumeration elements ();
+
+  public abstract int size ();
+
   public abstract Object elementAt (int aIndex);
+
   public abstract void add (WritableData aElement);
-  
+
   public RecordTable()
   {
-    this (false);
-  }
-  
-  public RecordTable (boolean aAlign)
-  {
-    super();
-    iAlign = aAlign;	  
-  }
-  
-  public void dump (ByteWriter aOut)
-  throws Exception
-  {
-    boolean pDoVerify = VERIFY_LEVEL > 0;
-    Enumeration pEnum = elements();
-    while (pEnum.hasMoreElements())
-    {
-      int pLength = 0;
-      int pPrevSize = 0;
-      WritableData pData = (WritableData) pEnum.nextElement();
-      if (pDoVerify)
-      {
-        pLength = pData.getLength();
-        pPrevSize = aOut.size();
-      }
-      pData.dump (aOut);
-      if (pDoVerify)
-      {
-        if (aOut.size() != pPrevSize + pLength)
-	{
-	  if (pData instanceof RecordTable)
-	    System.err.println ("Aligned sequence: " + ((RecordTable) pData).iAlign);
-          Assertion.fatal ("Bug RT-1: Written=" + (aOut.size() - pPrevSize) + 
-                           " Length=" + pLength + " Class=" +
-                           pData.getClass().getName());
-	}
-      }
-    }
-    if (iAlign)
-      IOUtilities.writePadding (aOut, 2);
+    this(false);
   }
 
-  public int getLength()
+  public RecordTable(boolean aAlign)
+  {
+    super();
+    iAlign = aAlign;
+  }
+
+  public void dump (ByteWriter aOut) throws TinyVMException
+  {
+    try
+    {
+      boolean pDoVerify = VERIFY_LEVEL > 0;
+      Enumeration pEnum = elements();
+      while (pEnum.hasMoreElements())
+      {
+        int pLength = 0;
+        int pPrevSize = 0;
+        WritableData pData = (WritableData) pEnum.nextElement();
+        if (pDoVerify)
+        {
+          pLength = pData.getLength();
+          pPrevSize = aOut.size();
+        }
+        pData.dump(aOut);
+        if (pDoVerify)
+        {
+          if (aOut.size() != pPrevSize + pLength)
+          {
+            if (pData instanceof RecordTable)
+            {
+              _logger.log(Level.SEVERE, "Aligned sequence: "
+                  + ((RecordTable) pData).iAlign);
+            }
+            throw new TinyVMException("Bug RT-1: Written="
+                + (aOut.size() - pPrevSize) + " Length=" + pLength + " Class="
+                + pData.getClass().getName());
+          }
+        }
+      }
+      if (iAlign)
+      {
+        IOUtilities.writePadding(aOut, 2);
+      }
+    }
+    catch (IOException e)
+    {
+      throw new TinyVMException(e);
+    }
+  }
+
+  public int getLength () throws TinyVMException
   {
     if (iLength != -1)
       return iLength;
@@ -70,27 +87,29 @@ implements Constants
     {
       iLength += ((WritableData) pEnum.nextElement()).getLength();
     }
-    Assertion.trace ("RT.getLength: " + iLength);
+    _logger.log(Level.INFO, "RT.getLength: " + iLength);
     if (iAlign)
-      iLength = IOUtilities.adjustedSize (iLength, 2); 
+      iLength = IOUtilities.adjustedSize(iLength, 2);
     return iLength;
   }
 
-  public void initOffset (int aStart)
+  public void initOffset (int aStart) throws TinyVMException
   {
-    Assertion.trace ("RT.initOffset: " + aStart);
-    super.initOffset (aStart);
+    _logger.log(Level.INFO, "RT.initOffset: " + aStart);
+
+    super.initOffset(aStart);
     Enumeration pEnum = elements();
     while (pEnum.hasMoreElements())
     {
       WritableData pElem = (WritableData) pEnum.nextElement();
       if (pElem instanceof WritableDataWithOffset)
       {
-        ((WritableDataWithOffset) pElem).initOffset (aStart);
+        ((WritableDataWithOffset) pElem).initOffset(aStart);
       }
       aStart += pElem.getLength();
-    }    
+    }
   }
-}
 
+  private static final Logger _logger = Logger.getLogger("TinyVM");
+}
 

@@ -1,102 +1,110 @@
 package js.tinyvm;
 
+import java.io.IOException;
+
 import js.classfile.JField;
 import js.tinyvm.io.ByteWriter;
-import js.tinyvm.util.Assertion;
 
 public class InstanceFieldRecord implements WritableData, Constants
 {
   JField iField;
   int iType;
 
-  public InstanceFieldRecord (JField aEntry)
+  public InstanceFieldRecord(JField aEntry) throws TinyVMException
   {
     iField = aEntry;
-    iType = descriptorToType (iField.getDescriptor().toString());
+    iType = descriptorToType(iField.getDescriptor().toString());
   }
 
-  public String getName()
+  public String getName ()
   {
     return iField.getName();
   }
 
-  public static int descriptorToType (String aDesc)
+  public static int descriptorToType (String aDesc) throws TinyVMException
   {
-    switch (aDesc.charAt (0))
+    switch (aDesc.charAt(0))
     {
-      case 'B':
+      case 'B' :
         return T_BYTE;
-      case 'C':
+      case 'C' :
         return T_CHAR;
-      case 'D':
+      case 'D' :
         return T_DOUBLE;
-      case 'F':
+      case 'F' :
         return T_FLOAT;
-      case 'I':
+      case 'I' :
         return T_INT;
-      case 'J':
+      case 'J' :
         return T_LONG;
-      case 'S':
+      case 'S' :
         return T_SHORT;
-      case 'Z':
+      case 'Z' :
         return T_BOOLEAN;
-      case 'L':
-      case '[':
+      case 'L' :
+      case '[' :
         return T_REFERENCE;
-      default:
-        Assertion.fatal ("Bug IFR-2: " + aDesc);  
+      default : {
+        throw new TinyVMException("Bug IFR-2: " + aDesc);
+      }
     }
-    return 0;
   }
 
-  public int getLength()
+  public int getLength ()
   {
     return 1;
   }
 
-  public void dump (ByteWriter aOut) throws Exception
+  public void dump (ByteWriter aOut) throws TinyVMException
   {
-    aOut.writeU1 ((int) iType);
+    try
+    {
+      aOut.writeU1((int) iType);
+    }
+    catch (IOException e)
+    {
+      throw new TinyVMException(e);
+    }
   }
 
-  public static int getTypeSize (int aType)
+  public static int getTypeSize (int aType) throws TinyVMException
   {
     switch (aType)
     {
-      case T_BYTE:
-      case T_BOOLEAN:
+      case T_BYTE :
+      case T_BOOLEAN :
         return 1;
-      case T_SHORT:
-      case T_CHAR:
+      case T_SHORT :
+      case T_CHAR :
         return 2;
-      case T_INT:
-      case T_REFERENCE:
-      case T_FLOAT:
+      case T_INT :
+      case T_REFERENCE :
+      case T_FLOAT :
         return 4;
-      case T_LONG:
-      case T_DOUBLE:
+      case T_LONG :
+      case T_DOUBLE :
         return 8;
-      default:
-        Assertion.fatal ("Bug SV-1: " + aType);
+      default : {
+        throw new TinyVMException("Bug SV-1: " + aType);
+      }
     }
-    return 0;
   }
 
-  public int getFieldSize()
+  public int getFieldSize () throws TinyVMException
   {
-    return getTypeSize (iType);
+    return getTypeSize(iType);
   }
 
   public boolean equals (Object aOther)
   {
     if (!(aOther instanceof InstanceFieldRecord))
       return false;
-    return ((InstanceFieldRecord) aOther).iField.equals (iField);    
-  }  
+    return ((InstanceFieldRecord) aOther).iField.equals(iField);
+  }
 
-  public int hashCode()
+  public int hashCode ()
   {
     return iField.hashCode();
   }
 }
-  
+

@@ -1,5 +1,7 @@
 package js.tinyvm;
 
+import java.io.IOException;
+
 import js.classfile.JCPE_Double;
 import js.classfile.JCPE_Float;
 import js.classfile.JCPE_Integer;
@@ -8,7 +10,6 @@ import js.classfile.JCPE_String;
 import js.classfile.JConstantPoolEntry;
 import js.tinyvm.io.ByteWriter;
 import js.tinyvm.io.IOUtilities;
-import js.tinyvm.util.Assertion;
 
 public class ConstantRecord implements WritableData, Constants
 {
@@ -16,7 +17,7 @@ public class ConstantRecord implements WritableData, Constants
   ConstantValue iConstantValue;
   int iSize = -1;
 
-  public ConstantRecord (JConstantPoolEntry aEntry)
+  public ConstantRecord(JConstantPoolEntry aEntry) throws TinyVMException
   {
     iEntry = aEntry;
     if (aEntry instanceof JCPE_String)
@@ -24,17 +25,22 @@ public class ConstantRecord implements WritableData, Constants
       iSize = ((JCPE_String) aEntry).getSize();
       if (iSize > MAX_STRING_CONSTANT_LENGTH)
       {
-        Assertion.fatal ("String constant of length more than " +
-        MAX_STRING_CONSTANT_LENGTH + " not accepted: " +
-        aEntry);
+        throw new TinyVMException("String constant of length more than "
+            + MAX_STRING_CONSTANT_LENGTH + " not accepted: " + aEntry);
       }
-    }  
+    }
     else if (aEntry instanceof JCPE_Double || aEntry instanceof JCPE_Long)
+    {
       iSize = 8;
+    }
     else if (aEntry instanceof JCPE_Integer || aEntry instanceof JCPE_Float)
+    {
       iSize = 4;
+    }
     else
-      Assertion.test (false);
+    {
+      assert false : "Check: known entry type";
+    }
   }
 
   public static int getType (JConstantPoolEntry aEntry)
@@ -49,7 +55,7 @@ public class ConstantRecord implements WritableData, Constants
       return T_FLOAT;
     else
     {
-      Assertion.test (false);
+      assert false : "Check: known type";
       return -1;
     }
   }
@@ -59,44 +65,51 @@ public class ConstantRecord implements WritableData, Constants
     iConstantValue = aValue;
   }
 
-  public int getLength()
+  public int getLength ()
   {
-    return IOUtilities.adjustedSize (2 + // offset
-                                     1 + // type
-                                     1,  // size
-           2);
+    return IOUtilities.adjustedSize(2 + // offset
+        1 + // type
+        1, // size
+        2);
   }
 
-  public int getOffset()
+  public int getOffset () throws TinyVMException
   {
     return iConstantValue.getOffset();
   }
 
-  public int getConstantSize()
+  public int getConstantSize ()
   {
     return iSize;
   }
 
-  public void dump (ByteWriter aOut) throws Exception
+  public void dump (ByteWriter aOut) throws TinyVMException
   {
-    Assertion.test (iSize != -1);
-    Assertion.test (iConstantValue != null);
-    aOut.writeU2 (iConstantValue.getOffset());
-    aOut.writeU1 (getType (iEntry));
-    aOut.writeU1 (iSize);
-    IOUtilities.writePadding (aOut, 2);
+    assert iSize != -1 : "Check: iSize != -1";
+    assert iConstantValue != null : "Check: iConstantValue != null";
+
+    try
+    {
+      aOut.writeU2(iConstantValue.getOffset());
+      aOut.writeU1(getType(iEntry));
+      aOut.writeU1(iSize);
+      IOUtilities.writePadding(aOut, 2);
+    }
+    catch (IOException e)
+    {
+      throw new TinyVMException(e);
+    }
   }
 
   public boolean equals (Object aOther)
   {
     if (!(aOther instanceof ConstantRecord))
       return false;
-    return ((ConstantRecord) aOther).iEntry.equals (iEntry);    
-  }  
+    return ((ConstantRecord) aOther).iEntry.equals(iEntry);
+  }
 
-  public int hashCode()
+  public int hashCode ()
   {
     return iEntry.hashCode();
   }
 }
-  
