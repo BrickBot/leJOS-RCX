@@ -6,7 +6,7 @@ import java.io.InputStream;
 import js.common.AbstractTool;
 import js.common.ToolException;
 import js.common.ToolProgressMonitor;
-import js.tinyvm.Constants;
+import js.tinyvm.TinyVMConstants;
 
 /**
  * Simple Lejos program downloader.
@@ -91,9 +91,9 @@ public class LejosdlTool extends AbstractTool
          }
       }
 
-      // TODO reference to js.tinyvm.Constants should be avoided here...
-      if (buffer[0] != (byte) ((Constants.MAGIC_MASK >> 8) & 0xFF)
-         || buffer[1] != (byte) ((Constants.MAGIC_MASK >> 0) & 0xFF))
+      // TODO reference to TinyVMConstants should be avoided here...
+      if (buffer[0] != (byte) ((TinyVMConstants.MAGIC_MASK >> 8) & 0xFF)
+         || buffer[1] != (byte) ((TinyVMConstants.MAGIC_MASK >> 0) & 0xFF))
       {
          throw new LejosdlException("Magic number is not right."
             + "\nLinker used was for emulation only?");

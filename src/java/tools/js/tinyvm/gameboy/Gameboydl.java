@@ -8,7 +8,6 @@ import java.io.StringWriter;
 
 import js.common.CLIToolProgressMonitor;
 import js.common.ToolProgressMonitor;
-import js.tinyvm.Constants;
 import js.tinyvm.TinyVMException;
 import js.tools.FirmdlException;
 
@@ -22,7 +21,7 @@ import org.apache.commons.cli.ParseException;
 /**
  * Gameboy downloader.
  */
-public class Gameboydl implements Constants
+public class Gameboydl
 {
    private ToolProgressMonitor _progress = null;
 

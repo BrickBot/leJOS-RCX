@@ -49,26 +49,31 @@ public class ClassPath
    }
 
    /**
-    * @param aName Fully qualified class name with '/' characters.
+    * @param aName Fully qualified class name with '.' characters.
     * @return <code>null</code> iff not found.
     */
-   public InputStream getInputStream (String aName) throws TinyVMException
+   public InputStream getInputStream (String className) throws TinyVMException
    {
+      assert className != null: "Precondition: className != null";
+      assert className.indexOf('.') == -1: "Precondition: className is in correct form: "
+         + className;
+
+      // TODO refactor!
+      String fileName = className.replace('.', '/') + ".class";
       try
       {
-         String pRelName = aName + ".class";
          for (int i = 0; i < iEntries.length; i++)
          {
             if (iEntries[i] instanceof File)
             {
-               File pClassFile = new File((File) iEntries[i], pRelName);
+               File pClassFile = new File((File) iEntries[i], fileName);
                if (pClassFile.exists())
                   return new FileInputStream(pClassFile);
             }
             else if (iEntries[i] instanceof ZipFile)
             {
                ZipFile pZipFile = (ZipFile) iEntries[i];
-               ZipEntry pEntry = pZipFile.getEntry(pRelName);
+               ZipEntry pEntry = pZipFile.getEntry(fileName);
                if (pEntry != null)
                   return pZipFile.getInputStream(pEntry);
             }

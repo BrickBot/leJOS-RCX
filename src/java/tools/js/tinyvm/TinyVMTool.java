@@ -3,7 +3,6 @@ package js.tinyvm;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,37 +50,34 @@ public class TinyVMTool extends AbstractTool
     * Link classes.
     * 
     * @param classpath class path
-    * @param classes classes to link
+    * @param entryClassNames entry class names to link
     * @param all do not filter classes?
     * @return binary
     * @throws TinyVMException
     */
-   public Binary link (String classpath, String[] classes, boolean all)
+   public Binary link (String classpath, String[] entryClassNames, boolean all)
       throws TinyVMException
    {
       assert classpath != null: "Precondition: classpath != null";
-      assert classes != null: "Precondition: classes != null";
+      assert entryClassNames != null: "Precondition: entryClassNames != null";
 
-      if (classes.length >= 256)
+      if (entryClassNames.length >= 256)
       {
          throw new TinyVMException("Too many entry classes (max is 255!)");
       }
 
       ClassPath computedClasspath = new ClassPath(classpath);
-      // TODO refactor
-      Vector classVector = new Vector();
-      for (int i = 0; i < classes.length; i++)
+      for (int i = 0; i < entryClassNames.length; i++)
       {
-         classVector.addElement(classes[i].replace('.', '/').trim());
+         entryClassNames[i] = entryClassNames[i].replace('.', '/');
       }
-      Binary result = Binary.createFromClosureOf(classVector,
+      Binary result = Binary.createFromClosureOf(entryClassNames,
          computedClasspath, all);
-      for (int i = 0; i < classes.length; i++)
+      for (int i = 0; i < entryClassNames.length; i++)
       {
-         String clazz = classes[i].replace('.', '/').trim();
-         if (!result.hasMain(clazz))
+         if (!result.hasMain(entryClassNames[i]))
          {
-            throw new TinyVMException("Class " + clazz
+            throw new TinyVMException("Class " + entryClassNames[i]
                + " doesn't have a static void main(String[]) method");
          }
       }

@@ -2,16 +2,17 @@ package js.tinyvm;
 
 import java.io.IOException;
 
-import js.classfile.JClassName;
-import js.classfile.JField;
 import js.tinyvm.io.ByteWriter;
 
-public class StaticFieldRecord implements WritableData, Constants
+import org.apache.bcel.Constants;
+import org.apache.bcel.classfile.Field;
+
+public class StaticFieldRecord implements WritableData
 {
    ClassRecord iClassRecord;
-   JField iField;
+   Field iField;
 
-   public StaticFieldRecord (JField aEntry, ClassRecord aRec)
+   public StaticFieldRecord (Field aEntry, ClassRecord aRec)
    {
       iField = aEntry;
       iClassRecord = aRec;
@@ -29,9 +30,9 @@ public class StaticFieldRecord implements WritableData, Constants
 
    public void dump (ByteWriter aOut) throws TinyVMException
    {
-      int pType = JClassName
-         .descriptorToType(iField.getDescriptor().toString());
-      assert pType >= 0 && pType <= 0xF: "Check: valid type";
+      byte pType = TinyVMConstants.tinyVMType(iField.getType().getType());
+      if (pType == Constants.T_ARRAY)
+         assert pType >= 0 && pType <= 0xF: "Check: valid type";
       int pOffset = iClassRecord.getStaticFieldOffset(iField.getName());
       assert pOffset >= 0 && pOffset <= 0x0FFF: "Check offset in range";
 

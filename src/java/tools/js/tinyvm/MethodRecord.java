@@ -1,24 +1,23 @@
 package js.tinyvm;
 
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import js.classfile.JCPE_Utf8;
-import js.classfile.JClassFile;
-import js.classfile.JClassName;
-import js.classfile.JCodeAttribute;
-import js.classfile.JExcep;
-import js.classfile.JExcepTable;
-import js.classfile.JMethod;
 import js.tinyvm.io.ByteWriter;
 import js.tinyvm.io.IOUtilities;
 import js.tinyvm.util.HashVector;
 
-public class MethodRecord implements WritableData, Constants
+import org.apache.bcel.Constants;
+import org.apache.bcel.classfile.Code;
+import org.apache.bcel.classfile.CodeException;
+import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.classfile.Method;
+import org.apache.bcel.generic.Type;
+
+public class MethodRecord implements WritableData
 {
-   JMethod iMethod;
+   Method iMethod;
    ClassRecord iClassRecord;
    RecordTable iExceptionTable = null;
    CodeSequence iCodeSequence = null;
@@ -30,46 +29,46 @@ public class MethodRecord implements WritableData, Constants
    int iNumExceptionHandlers; // DONE
    int iFlags; // DONE
 
-   public MethodRecord (JMethod aEntry, Signature aSignature,
+   public MethodRecord (Method aEntry, Signature aSignature,
       ClassRecord aClassRec, Binary aBinary, RecordTable aExceptionTables,
       HashVector aSignatures) throws TinyVMException
    {
       iClassRecord = aClassRec;
       iMethod = aEntry;
-      JCodeAttribute pCodeAttrib = iMethod.getCode();
+      Code pCodeAttrib = iMethod.getCode();
       boolean pNoBody = iMethod.isAbstract() || iMethod.isNative();
       assert pCodeAttrib != null || pNoBody: "Check: body is present";
       assert pCodeAttrib == null || !pNoBody: "Check: no body is present";
       aSignatures.addElement(aSignature);
       iSignatureId = aSignatures.indexOf(aSignature);
-      if (iSignatureId >= MAX_SIGNATURES)
+      if (iSignatureId >= TinyVMConstants.MAX_SIGNATURES)
       {
          throw new TinyVMException(
-            "The total number of unique signatures exceeds " + MAX_SIGNATURES);
+            "The total number of unique signatures exceeds "
+               + TinyVMConstants.MAX_SIGNATURES);
       }
       iNumLocals = pCodeAttrib == null? 0 : pCodeAttrib.getMaxLocals();
-      if (iNumLocals > MAX_LOCALS)
+      if (iNumLocals > TinyVMConstants.MAX_LOCALS)
       {
          throw new TinyVMException("Method " + aClassRec.getName() + "."
             + iMethod.getName() + " has " + iNumLocals + " local words. Only "
-            + MAX_LOCALS + " are allowed.");
+            + TinyVMConstants.MAX_LOCALS + " are allowed.");
       }
       iNumOperands = pCodeAttrib == null? 0 : pCodeAttrib.getMaxStack();
-      if (iNumOperands > MAX_OPERANDS)
+      if (iNumOperands > TinyVMConstants.MAX_OPERANDS)
       {
          throw new TinyVMException("Method " + aClassRec.getName() + "."
             + iMethod.getName() + " has an operand stack "
             + " whose potential size is " + iNumOperands + ". " + "Only "
-            + MAX_OPERANDS + " are allowed.");
+            + TinyVMConstants.MAX_OPERANDS + " are allowed.");
       }
-      JCPE_Utf8 pDesc = iMethod.getDescriptor();
-      String[] pParams = JClassName.parseMethodParameters(pDesc);
-      iNumParameters = getNumParamWords(iMethod, pParams);
-      if (iNumParameters > MAX_PARAMETER_WORDS)
+      iNumParameters = getNumParamWords(iMethod);
+      if (iNumParameters > TinyVMConstants.MAX_PARAMETER_WORDS)
       {
          throw new TinyVMException("Method " + aClassRec.getName() + "."
             + iMethod.getName() + " has " + iNumParameters
-            + " parameter words. Only " + MAX_PARAMETER_WORDS + " are allowed.");
+            + " parameter words. Only " + TinyVMConstants.MAX_PARAMETER_WORDS
+            + " are allowed.");
       }
       if (iMethod.isNative() && !aBinary.isSpecialSignature(aSignature))
       {
@@ -81,14 +80,14 @@ public class MethodRecord implements WritableData, Constants
       if (pCodeAttrib != null)
       {
          iExceptionTable = new Sequence();
-         JExcepTable pExcepTable = pCodeAttrib.getExceptionTable();
-         iNumExceptionHandlers = pExcepTable.size();
-         if (iNumExceptionHandlers > MAX_EXCEPTION_HANDLERS)
+         CodeException[] pExcepTable = pCodeAttrib.getExceptionTable();
+         iNumExceptionHandlers = pExcepTable.length;
+         if (iNumExceptionHandlers > TinyVMConstants.MAX_EXCEPTION_HANDLERS)
          {
             throw new TinyVMException("Method " + aClassRec.getName() + "."
                + iMethod.getName() + " has " + iNumExceptionHandlers
-               + " exception handlers. Only " + MAX_EXCEPTION_HANDLERS
-               + " are allowed.");
+               + " exception handlers. Only "
+               + TinyVMConstants.MAX_EXCEPTION_HANDLERS + " are allowed.");
          }
          storeExceptionTable(pExcepTable, aBinary, aClassRec.iCF);
          aExceptionTables.add(iExceptionTable);
@@ -110,47 +109,49 @@ public class MethodRecord implements WritableData, Constants
    {
       iFlags = 0;
       if (iMethod.isNative())
-         iFlags |= M_NATIVE;
+         iFlags |= TinyVMConstants.M_NATIVE;
       if (iMethod.isSynchronized())
-         iFlags |= M_SYNCHRONIZED;
+         iFlags |= TinyVMConstants.M_SYNCHRONIZED;
       if (iMethod.isStatic())
-         iFlags |= M_STATIC;
+         iFlags |= TinyVMConstants.M_STATIC;
    }
 
-   public void copyCode (RecordTable aCodeSequences, JClassFile aClassFile,
+   public void copyCode (RecordTable aCodeSequences, JavaClass aClassFile,
       Binary aBinary)
    {
-      JCodeAttribute pCodeAttrib = iMethod.getCode();
+      Code pCodeAttrib = iMethod.getCode();
       if (pCodeAttrib != null)
       {
          iCodeSequence = new CodeSequence();
-         copyCode(pCodeAttrib.getInfo(), aClassFile, aBinary);
+         copyCode(pCodeAttrib.getCode(), aClassFile, aBinary);
          aCodeSequences.add(iCodeSequence);
       }
    }
 
    public void postProcessCode (RecordTable aCodeSequences,
-      JClassFile aClassFile, Binary aBinary) throws TinyVMException
+      JavaClass aClassFile, Binary aBinary) throws TinyVMException
    {
-      JCodeAttribute pCodeAttrib = iMethod.getCode();
+      Code pCodeAttrib = iMethod.getCode();
       if (pCodeAttrib != null)
       {
-         postProcessCode(pCodeAttrib.getInfo(), aClassFile, aBinary);
+         postProcessCode(pCodeAttrib.getCode(), aClassFile, aBinary);
       }
    }
 
    /**
     * @return Number of parameter words, including <code>this</code>.
     */
-   public static int getNumParamWords (JMethod aMethod, String[] aParamDesc)
+   public static int getNumParamWords (Method aMethod)
    {
+      Type[] types = aMethod.getArgumentTypes();
       int pWords = 0;
-      for (int i = 0; i < aParamDesc.length; i++)
+      for (int i = 0; i < types.length; i++)
       {
-         switch (aParamDesc[i].charAt(0))
+         assert types[i].getType() <= 0xF: "Check: known type";
+         switch (types[i].getType())
          {
-            case 'J':
-            case 'D':
+            case Constants.T_LONG:
+            case Constants.T_DOUBLE:
                pWords += 2;
                break;
             default:
@@ -160,13 +161,12 @@ public class MethodRecord implements WritableData, Constants
       return pWords + (aMethod.isStatic()? 0 : 1);
    }
 
-   public void storeExceptionTable (JExcepTable aExcepTable, Binary aBinary,
-      JClassFile aCF)
+   public void storeExceptionTable (CodeException[] aExcepTable,
+      Binary aBinary, JavaClass aCF)
    {
-      Enumeration pEnum = aExcepTable.elements();
-      while (pEnum.hasMoreElements())
+      for (int i = 0; i < aExcepTable.length; i++)
       {
-         JExcep pExcep = (JExcep) pEnum.nextElement();
+         CodeException pExcep = aExcepTable[i];
          try
          {
             iExceptionTable.add(new ExceptionRecord(pExcep, aBinary, aCF));
@@ -178,14 +178,14 @@ public class MethodRecord implements WritableData, Constants
       }
    }
 
-   public void copyCode (byte[] aCode, JClassFile aClassFile, Binary aBinary)
+   public void copyCode (byte[] aCode, JavaClass aClassFile, Binary aBinary)
    {
       if (aCode == null)
          return;
       iCodeSequence.setBytes(aCode);
    }
 
-   public void postProcessCode (byte[] aCode, JClassFile aClassFile,
+   public void postProcessCode (byte[] aCode, JavaClass aClassFile,
       Binary aBinary) throws TinyVMException
    {
       if (aCode == null)

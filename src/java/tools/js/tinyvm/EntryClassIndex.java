@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import js.tinyvm.io.ByteWriter;
 
-public class EntryClassIndex implements WritableData, Constants
+public class EntryClassIndex implements WritableData
 {
    String iClassName;
    Binary iBinary;

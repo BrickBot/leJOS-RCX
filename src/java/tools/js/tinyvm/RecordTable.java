@@ -9,7 +9,6 @@ import js.tinyvm.io.ByteWriter;
 import js.tinyvm.io.IOUtilities;
 
 public abstract class RecordTable extends WritableDataWithOffset
-   implements Constants
 {
    int iLength = -1;
    private boolean iAlign;
@@ -37,7 +36,7 @@ public abstract class RecordTable extends WritableDataWithOffset
    {
       try
       {
-         boolean pDoVerify = VERIFY_LEVEL > 0;
+         boolean pDoVerify = TinyVMConstants.VERIFY_LEVEL > 0;
          Enumeration pEnum = elements();
          while (pEnum.hasMoreElements())
          {
