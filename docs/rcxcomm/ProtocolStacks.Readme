@@ -1,0 +1,122 @@
+Writing protocol stacks
+-----------------------
+
+In lejos 2.0 support for writing your own comms protocol stacks has be added.
+
+The protocol stacks are based on the abstract josx.rcxcomm.PacketHandler
+interface. All packet handlers must implement, three methods:
+
+public boolean sendPacket(byte [] packet, int len);
+public int receivePacket(byte [] packet);
+public boolean isPacketAvailable();
+
+Protocol stacks are written in layers. The lowest layer deals with recognising, 
+the start and length of a packet and reading in complete packets. On the PC, it 
+will normally use the Tower class. On the RCX, it can use the LLC or Serial classes.
+It should skip bytes that are not start of packets, to resynchronize after errors.
+
+If the stack is going to support acknowledgement of the receipt of packets (acks) 
+then the lowest handler should also implement the methods:
+
+public int receiveAck(byte [] packet);
+public boolean isAckAvailable();
+
+A lowest level protocol handler for a reliable stack should support independent
+streams of data in both directions, so out of sync conditions can be recovered from.
+It should therefore read in and buffer an ack or a packet as soon as it detects one,
+and must be able to read in an ack when expecting a data packet and vice versa.
+
+On the PC, the method:
+
+public void close();
+
+should be supported to close the Tower.
+
+Also on the PC, the method:
+
+public setListen(boolean listen);
+
+should be supported and when listen is true, keep-alive messages should be sent to
+a serial tower at least every 3 seconds. Doing this in isPacketAvailable() and 
+isAckAvailable() will normally suffice.
+
+The next higher level layer should support integrity and optionally reliable delivery.
+Integrity will normally be done by checksums which should have been read in as part
+of the packet. Reliable delivery involves using the lower level handler to send
+and receive acks, and checking sequence numbers. If each packet is immediately
+acknowledged a one-bit sequence number should suffice. Integrity and reliable
+delivery could be separated into separate layers, but it is normally more efficient
+to do this in one layer.
+
+The constructor of a PacketHandler is passed the lower level packet handler. This is
+then available in the protected lowerHandler variable. The lowest level handler has no
+parameters.
+
+For example:
+
+PacketHandler packetHandler = 
+        (PacketHandler) new IntegrityPacketHandler(
+            (PacketHandler) new LowestPacketHandler());
+
+Extra levels of packet handlers can be added, for example an addressing layer.
+Addressing packet handlers implement point-to-point connections between two ports.
+They need to support:
+
+public void open(byte source, byte destination);
+
+An example of a three level stack is:
+
+PacketHandler packetHandler =
+      (PacketHandler) AddressingPacketHandler( 
+        (PacketHandler) new IntegrityPacketHandler(
+            (PacketHandler) new LowestPacketHandler()));
+
+Streams that implement java.io.InputStream and java.io.OutputStream can be
+implemented using protocol stacks by use of the abstract port interface, CXAbstractPort.
+
+To create an RCX Port class that uses aPacketHandler protocol stack, you extend
+RCXAbstractPort and call super() in the constructor and pass it the packet handler, 
+for example:
+
+public class MyRCXPort extends RCXAbstractPort {
+  public MyRCXPort() throws IOException {
+    super((PacketHandler) new IntegrityPacketHandler(
+            (PacketHandler) new LowestPacketHandler()));
+  }
+}
+
+If the port is to support addressing you need pass the constructor the source
+and destination ports and call the packet handlers open method, for example:
+
+public class MyRCXAddressingPort extends RCXAbstractPort {
+  public MyRCXAddressingPort(byte source, byte dest) throws IOException {
+    super((PacketHandler) new AddressingHandler(
+                           (PacketHandler) new IntegrityHandler(
+                             (PacketHandler) new LowestHandler(true)));
+    packetHandler.open(source, dest);
+  }
+}
+
+The constructor for LowestHandler is assumed here to have a parameter that tells
+it whether addressing is in use, as this might affect the format of the packet.
+             
+Four example RCX Ports are provided as part of the josx.rcxcomm package with
+lejos 2.0. They are: 
+
+RCXPort - supports reliable streams using LLC
+RCXF7Port - supports not so reliable streams using the F7 Lego firmware opcode
+RCXLNPPort - uses the LegOS Networking Protocol Integrity Layer
+RCXLNPAddrPort - supports point-to-point connections using the LNP Addressing 
+                 protocol layer 
+
+
+
+
+
+
+ 
+
+ 
+
+
+
