@@ -24,10 +24,14 @@ LEJOSUNIXDEFS=-DWRITE_ORDER=\"LE\" -DLOADER_TOOL=\"emu-lejosrun\"
 
 PROGRAMS=${TVM} ${TVMC} ${TVMP} ${TVMC1} ${TVMP1} ${RCXLOADER} ${UNIXLOADER}
 
-default: programs
+default: firmdl programs
+
+firmdl: FORCE
+	cd firmdl; make
+
+FORCE:
 
 programs: ${PROGRAMS}
-	cd firmdl; make
 
 %.o: %.c
 	${CC} ${CCOPT} -c $*.c
@@ -35,10 +39,10 @@ programs: ${PROGRAMS}
 ${TVMFIRMDL}: ${TVMFIRMDL_OBJ}
 	${CC} ${TVMFIRMDL_OBJ} -o ${TVMFIRMDL} ${LIBS}
 
-tvm.o: tvm.c ../vmsrc/magic.h
+lejosrun.o: lejosrun.c ../vmsrc/magic.h
 
-${TVM}: tvm.o
-	${CC} tvm.o -o ${TVM}
+${TVM}: lejosrun.o firmdl
+	${CC} lejosrun.o firmdl/rcx_comm.o -o ${TVM}
 
 ${TVMC}: jtoolexec.c util.o
 	${CC} ${TVMCDEFS} -c jtoolexec.c
