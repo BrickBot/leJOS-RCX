@@ -97,7 +97,7 @@ public class FirmdlTool extends AbstractTool
         }
         catch (ToolException e)
         {
-          throw new FirmdlException(e);
+          throw new FirmdlException(e.getMessage(), e);
         }
         finally
         {
