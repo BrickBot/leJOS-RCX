@@ -45,7 +45,7 @@ JNIEXPORT jint JNICALL Java_josx_rcxcomm_Tower_open
  * Signature: ([B)I
  */
 JNIEXPORT jint JNICALL Java_josx_rcxcomm_Tower_read
-  (JNIEnv *, jobject, jbyteArray);
+  (JNIEnv *, jobject, jbyteArray, jint);
 
 /*
  * Class:     josx_rcxcomm_Tower
@@ -53,7 +53,7 @@ JNIEXPORT jint JNICALL Java_josx_rcxcomm_Tower_read
  * Signature: ([B)I
  */
 JNIEXPORT jint JNICALL Java_josx_rcxcomm_Tower_receive
-  (JNIEnv *, jobject, jbyteArray);
+  (JNIEnv *, jobject, jbyteArray, jint);
 
 /*
  * Class:     josx_rcxcomm_Tower

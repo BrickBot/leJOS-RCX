@@ -11,7 +11,6 @@
 #include "rcx_comm.h"
 #include "Tower.h"
 
-#define TIME_OUT 100
 #define WAKEUP_TIME_OUT 4000
 
 #if !defined(_WIN32)
@@ -130,7 +129,7 @@ Java_josx_rcxcomm_Tower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 
 // read - Read Bytes from IR Tower
 JNIEXPORT jint JNICALL
-Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr)
+Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr, jint timeout)
 {
 #ifdef TRACE
     printf("Entering read\n");
@@ -148,7 +147,7 @@ Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr)
 
     int size = env->GetArrayLength(arr);
     jbyte* body = env->GetByteArrayElements(arr, 0);
-    int result = rcxRead(port, body, size, TIME_OUT);
+    int result = rcxRead(port, body, size, timeout);
     env->ReleaseByteArrayElements(arr, body, 1);
 
 	 setError(env, obj, result < 0);
@@ -192,7 +191,7 @@ Java_josx_rcxcomm_Tower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 
 // read - Read Bytes from IR Tower
 JNIEXPORT jint JNICALL
-Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
+Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr, jint timeout)
 {
 #ifdef TRACE
     printf("Entering receive\n");
@@ -211,7 +210,7 @@ Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
 
     int size = env->GetArrayLength(arr);
     jbyte* body = env->GetByteArrayElements(arr, NULL);
-    int actual = rcxReceive(port, body, size, TIME_OUT);
+    int actual = rcxReceive(port, body, size, timeout);
     env->ReleaseByteArrayElements(arr, body, 1);
 
     setError(env, obj, actual < 0);

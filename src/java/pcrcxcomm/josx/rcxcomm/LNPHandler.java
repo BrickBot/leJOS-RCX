@@ -95,7 +95,7 @@ public class LNPHandler extends PacketHandler
          // Read echo for Serial tower
          byte[] echo = new byte[len];
          if (usbFlag == 0)
-            tower.read(echo);
+            tower.read(echo, Tower.DEFAULT_READ_TIMEOUT);
 
          return r;
       }
@@ -131,7 +131,7 @@ public class LNPHandler extends PacketHandler
       while (true)
       {
          byte[] b = new byte[1];
-         int r = tower.read(b);
+         int r = tower.read(b, Tower.DEFAULT_READ_TIMEOUT);
          if (r <= 0)
          {
             // If its a serial tower and we are in listen mode,
@@ -145,7 +145,7 @@ public class LNPHandler extends PacketHandler
                   if (debug)
                      System.out.println("Sending keep-alive");
                   tower.write(keepAlive, 1);
-                  tower.read(trash); // discard
+                  tower.read(trash, Tower.DEFAULT_READ_TIMEOUT); // discard
                   sendTime = currTime;
                }
             }
@@ -156,7 +156,7 @@ public class LNPHandler extends PacketHandler
          if (op == (byte) 0xf0 || op == (byte) 0xf1)
          {
             // if (debug) System.out.println("Got packet");
-            r = tower.read(b);
+            r = tower.read(b, Tower.DEFAULT_READ_TIMEOUT);
 
             // if length byte is not available, discard the packet
             if (r <= 0)
@@ -167,7 +167,7 @@ public class LNPHandler extends PacketHandler
             int extra = (b[0] & 0xff) + 1;
             inPacket[1] = b[0];
             byte[] rest = new byte[extra];
-            r = tower.read(rest);
+            r = tower.read(rest, Tower.DEFAULT_READ_TIMEOUT);
             for (int i = 0; i < r; i++)
                inPacket[i + 2] = rest[i];
             inPacketLength = extra + 2;
