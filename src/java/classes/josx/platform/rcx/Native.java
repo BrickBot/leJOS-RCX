@@ -36,6 +36,12 @@ public class Native
     int b2 = Native.readMemoryByte (aAddr + 1) & 0xFF;
     return (b1 << 8) + b2;
   }
+
+  static void writeMemoryShort (int aAddr, short s)
+  {
+    Native.writeMemoryByte (aAddr, (byte)((s >> 8) & 0xff));
+    Native.writeMemoryByte (aAddr + 1, (byte)(s & 0xff));
+  }
 }
 
 
