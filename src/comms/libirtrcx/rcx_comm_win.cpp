@@ -48,15 +48,26 @@ typedef struct timeval timeval_t;
 // some internal methods
 //
 
-void __rcx_open_setDevice(Port* port, char* symbolicName, int fast);
-int __rcx_open_setSerialPortParameters (Port* port);
+// Set port parameters.
+void __rcx_open_setDevice(Port* port, char* symbolicName, bool fast);
+
+// Set serial port parameters.
+// Returns if success.
+bool __rcx_open_setSerialPortParameters (Port* port);
+
+// Read from USB port.
+int __rcx_read_usb (void* port, void* buf, int maxlen, int timeout_ms);
+
+// Read from serial port.
+int __rcx_read_serial (void* port, void *buf, int maxlen, int timeout_ms);
+
 void gettimeofday(struct timeval *tv, void *tzp);
 
 //
 // attributes
 //
 
-extern int __comm_debug;
+extern bool __comm_debug;
 
 //
 // interface
@@ -67,17 +78,14 @@ void __rcx_perror(char *str)
 	if (__comm_debug) fprintf(stderr, "Error %lu: %s\n", (unsigned long) GetLastError(), str);
 }
 
-// Timeout read routine
 int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 {
-	return ((Port*) port)->usb == 0? 
-	  __rcx_read_serial (port, buf, maxlen, timeout) :
-	  __rcx_read_usb (port, buf, maxlen, timeout);
+	return ((Port*) port)->usb? 
+	  __rcx_read_usb (port, buf, maxlen, timeout) :
+	  __rcx_read_serial (port, buf, maxlen, timeout);
 	  
 }
 
-// Read from USB port.
-// (Internal method)
 int __rcx_read_usb (void* port, void* buf, int maxlen, int timeout_ms)
 {
 	timeout_ms = 1000;
@@ -115,9 +123,7 @@ int __rcx_read_usb (void* port, void* buf, int maxlen, int timeout_ms)
 	return len;
 }
 
-// Read from serial port.
-// (Internal method)
-int __rcx_read_serial (void* port, void *buf, int maxlen, int timeout_ms)
+int __rcx_read_serial (void* port, void* buf, int maxlen, int timeout_ms)
 {
 	char* bufp = (char*) buf;
 	int len = 0;
@@ -166,27 +172,24 @@ int __rcx_write(void* port, void* buf, int len)
 	return written;
 }
 
-// discard all characters in the input queue of tty
 void __rcx_purge(void* port)
 {
 	PurgeComm(((Port*) port)->fileHandle, PURGE_RXABORT | PURGE_RXCLEAR);
 }
 
-// flush all characters in the output queue of tty
 void __rcx_flush(void* port)
 {
     FlushFileBuffers (((Port*) port)->fileHandle);
 }
 
-// RCX routines
-void* __rcx_open(char *tty, int fast)
+void* __rcx_open(char* tty, bool fast)
 {
 	if (__comm_debug) printf("tty = %s\n", tty);
-	if (__comm_debug) printf("mode = %s\n", fast == 0 ? "slow" : "fast");
+	if (__comm_debug) printf("mode = %s\n", fast ? "fast" : "slow");
 
-	int success = 1;
+	bool success = true;
 
-	Port* result = malloc(sizeof(Port));
+	Port* result = (Port*) malloc(sizeof(Port));
 	__rcx_open_setDevice(result, tty, fast);
 			
 	result->fileHandle = CreateFile(
@@ -194,7 +197,7 @@ void* __rcx_open(char *tty, int fast)
 	if (result->fileHandle == INVALID_HANDLE_VALUE) 
    {
 		if (__comm_debug) printf("Error %lu: Opening %s\n", (unsigned long) GetLastError(), result->deviceName);
-		success = 0;
+		success = false;
 	}
 	else if (result->usb == 0)
 	{
@@ -202,21 +205,19 @@ void* __rcx_open(char *tty, int fast)
 		success = __rcx_open_setSerialPortParameters(result);
 	}
 	
-	if (success == 0)
+	if (!success)
 	{
 		free(result);
 	}
 
 	if (__comm_debug) printf("device = %s\n", result->deviceName);
 	if (__comm_debug) printf("port type = %s\n", result->usb == 0 ? "serial" : "usb");
-	if (__comm_debug) printf("mode = %s\n", result->fast == 0 ? "slow" : "fast");
+	if (__comm_debug) printf("mode = %s\n", result->fast? "fast" : "slow");
 
 	return result;
 }
 
-// Set port parameters.
-// (Internal method)
-void __rcx_open_setDevice (Port* port, char* symbolicName, int fast)
+void __rcx_open_setDevice (Port* port, char* symbolicName, bool fast)
 {
 	strncpy(port->symbolicName, symbolicName, 32);
    port->symbolicName[31] = 0;
@@ -231,23 +232,20 @@ void __rcx_open_setDevice (Port* port, char* symbolicName, int fast)
       	// multiple usb tower mode
       	port->deviceName[strlen(USB_TOWER_NAME) - 1] = symbolicName[3];
       }
-      port->usb = 1;	
-      port->fast = 0;	
+      port->usb = true;	
+      port->fast = false;	
 	}
 	else
 	{
 		// serial mode
 		strncpy(port->deviceName, symbolicName, 32);
 		port->deviceName[31] = 0;
-		port->usb = 0;	
+		port->usb = false;	
       port->fast = fast;	
 	}
 }
 
-// Set serial port parameters.
-// Returns 1 if success.
-// (Internal method)
-int __rcx_open_setSerialPortParameters (Port* port)
+bool __rcx_open_setSerialPortParameters (Port* port)
 {
    DCB dcb;
 	FillMemory(&dcb, sizeof(dcb), 0);
@@ -272,10 +270,10 @@ int __rcx_open_setSerialPortParameters (Port* port)
 		// Error in SetCommState. Possibly a problem with the communications
 		// port handle or a problem with the DCB structure itself.
 		__rcx_perror("SetCommState");
-		return 0;
+		return false;
 	}
 	
-	return 1;
+	return true;
 }
 
 void __rcx_close(void* port)
