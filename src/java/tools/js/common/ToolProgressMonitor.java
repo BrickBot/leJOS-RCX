@@ -29,5 +29,5 @@ public interface ToolProgressMonitor
    /**
     * Is tool canceled?.
     */
-   public boolean isCanceled();
+   public boolean isCanceled ();
 }

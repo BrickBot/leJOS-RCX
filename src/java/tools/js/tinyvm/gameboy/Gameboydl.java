@@ -6,8 +6,8 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import js.common.ToolProgressMonitor;
 import js.common.CLIToolProgressMonitor;
+import js.common.ToolProgressMonitor;
 import js.tinyvm.Constants;
 import js.tinyvm.TinyVMException;
 import js.tools.FirmdlException;

@@ -8,37 +8,37 @@ import js.tinyvm.io.ByteWriter;
 
 public class CodeSequence extends WritableDataWithOffset
 {
-  private byte[] iBytes;
+   private byte[] iBytes;
 
-  public void setBytes (byte[] aBytes)
-  {
-    iBytes = aBytes;
-  }
+   public void setBytes (byte[] aBytes)
+   {
+      iBytes = aBytes;
+   }
 
-  public int getLength ()
-  {
-    if (iBytes == null)
-      return 0;
-    return iBytes.length;
-  }
-
-  public void dump (ByteWriter aOut) throws TinyVMException
-  {
-    try
-    {
+   public int getLength ()
+   {
       if (iBytes == null)
-      {
-        _logger.log(Level.WARNING, "Not writing code sequence");
-        return;
-      }
-      aOut.write(iBytes, 0, iBytes.length);
-    }
-    catch (IOException e)
-    {
-      throw new TinyVMException(e.getMessage(), e);
-    }
-  }
+         return 0;
+      return iBytes.length;
+   }
 
-  private static final Logger _logger = Logger.getLogger("TinyVM");
+   public void dump (ByteWriter aOut) throws TinyVMException
+   {
+      try
+      {
+         if (iBytes == null)
+         {
+            _logger.log(Level.WARNING, "Not writing code sequence");
+            return;
+         }
+         aOut.write(iBytes, 0, iBytes.length);
+      }
+      catch (IOException e)
+      {
+         throw new TinyVMException(e.getMessage(), e);
+      }
+   }
+
+   private static final Logger _logger = Logger.getLogger("TinyVM");
 }
 

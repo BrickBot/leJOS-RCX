@@ -1,18 +1,23 @@
 package josx.rcxcomm;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-/** RCXAbstractPort provides an interface similar to java.net.Socket
- * Adapted from original code created by the LEGO3 Team at DTU-IAU
- * RCXAbstractPort implements input and output stream handling and input
- * buffering. It uses a packet handler for sending and receivng packets.
- * This version is abstract because it has no packet handler defined.
- * Specific versions of RCXAbstractPort override the constructor and
- * set up the packet handler to use a specific protocol stack. 
+/**
+ * RCXAbstractPort provides an interface similar to java.net.Socket Adapted from
+ * original code created by the LEGO3 Team at DTU-IAU RCXAbstractPort implements
+ * input and output stream handling and input buffering. It uses a packet
+ * handler for sending and receivng packets. This version is abstract because it
+ * has no packet handler defined. Specific versions of RCXAbstractPort override
+ * the constructor and set up the packet handler to use a specific protocol
+ * stack.
+ * 
  * @author Brian Bagnall
  * @author Lawrie Griffiths
  */
-public abstract class RCXAbstractPort {
+public abstract class RCXAbstractPort
+{
 
    private boolean portOpen = true;
    private Listener listener;
@@ -23,11 +28,13 @@ public abstract class RCXAbstractPort {
    protected PacketHandler packetHandler;
 
    /**
-    * Constructor for the RCXAbstractPort.
-    * Opens the port, and sets the protocol packet handler.
+    * Constructor for the RCXAbstractPort. Opens the port, and sets the protocol
+    * packet handler.
+    * 
     * @param handler the packet handler
     */
-   public RCXAbstractPort(PacketHandler handler) throws IOException {
+   public RCXAbstractPort (PacketHandler handler) throws IOException
+   {
       packetHandler = handler;
       rcxin = new RCXInputStream(this);
       rcxout = new RCXOutputStream(packetHandler);
@@ -37,149 +44,200 @@ public abstract class RCXAbstractPort {
    }
 
    /**
-    * Constructor for a named port (eg com1 or usb).
-    * The port name is ignored on the RCX.
+    * Constructor for a named port (eg com1 or usb). The port name is ignored on
+    * the RCX.
+    * 
     * @param port the port name, eg com1 or usb
     * @param handler, the packet handler
     */
-   public RCXAbstractPort(String port, PacketHandler handler) throws IOException {
-     this(handler);
+   public RCXAbstractPort (String port, PacketHandler handler)
+      throws IOException
+   {
+      this(handler);
    }
 
    /**
     * Switch listening on and off on the PC, for a serial tower.
-    * @param listen true to listen, else false 
-    **/
-   public void setListen(boolean listen) {
-     packetHandler.setListen(listen);
+    * 
+    * @param listen true to listen, else false
+    */
+   public void setListen (boolean listen)
+   {
+      packetHandler.setListen(listen);
    }
 
-   /** Returns an input stream for this RCXPort.
+   /**
+    * Returns an input stream for this RCXPort.
+    * 
     * @return an input stream for reading bytes from this RCXPort.
     */
-   public InputStream getInputStream() {
+   public InputStream getInputStream ()
+   {
       packetHandler.setListen(true);
       return (InputStream) rcxin;
    }
 
-   /** Returns an output stream for this RCXPort.
+   /**
+    * Returns an output stream for this RCXPort.
+    * 
     * @return an output stream for writing bytes to this RCXPort.
     */
-   public OutputStream getOutputStream() {
+   public OutputStream getOutputStream ()
+   {
       return (OutputStream) rcxout;
    }
 
    /**
-    * Resets sequence numbers for this port 
+    * Resets sequence numbers for this port
     */
-   public void reset() {
-     packetHandler.reset();
+   public void reset ()
+   {
+      packetHandler.reset();
    }
 
-   /** Closes this RCXPort, stopping the Listener thread.
+   /**
+    * Closes this RCXPort, stopping the Listener thread.
     */
-   public void close() {
+   public void close ()
+   {
       portOpen = false;
       packetHandler.close();
    }
 
-   /** Getter for property timeOut.
+   /**
+    * Getter for property timeOut.
+    * 
     * @return Value of property timeOut.
     */
-   public int getTimeOut() {
+   public int getTimeOut ()
+   {
       return timeOut;
    }
 
-   /** Setter for property timeOut.
+   /**
+    * Setter for property timeOut.
+    * 
     * @param timeOut New value of property timeOut.
     */
-   public void setTimeOut(int timeOut) {
+   public void setTimeOut (int timeOut)
+   {
       this.timeOut = timeOut;
    }
 
-   private byte [] inPacket = new byte[2];
+   private byte[] inPacket = new byte[2];
 
-   /** Listener class runs a thread that reads and buffers bytes.
-    * Allows a maximum of two bytes in a packet
+   /**
+    * Listener class runs a thread that reads and buffers bytes. Allows a
+    * maximum of two bytes in a packet
     */
-   private class Listener extends Thread {
-      public void run() {
-         while (portOpen) {
-            if (packetHandler.isPacketAvailable()) {
-              int r = packetHandler.receivePacket(inPacket);
-              for(int i=0;i<r;i++) rcxin.add(inPacket[i]);
+   private class Listener extends Thread
+   {
+      public void run ()
+      {
+         while (portOpen)
+         {
+            if (packetHandler.isPacketAvailable())
+            {
+               int r = packetHandler.receivePacket(inPacket);
+               for (int i = 0; i < r; i++)
+                  rcxin.add(inPacket[i]);
             }
-            try {
+            try
+            {
                Thread.sleep(10);
-            } catch (InterruptedException iE) { }
+            }
+            catch (InterruptedException iE)
+            {}
          }
       }
    }
 
    /**
-    * Hidden inner class extending InputStream. 
+    * Hidden inner class extending InputStream.
     */
-   private class RCXInputStream extends InputStream {
+   private class RCXInputStream extends InputStream
+   {
 
-      /** The default buffer size for the InputStream
+      /**
+       * The default buffer size for the InputStream
        */
       public static final int bufferSize = 32;
       private byte[] buffer = new byte[bufferSize];
       private int current = 0, last = 0;
       private RCXAbstractPort dataPort;
 
-      /** Creates new RCXInputStream
-      * @param port The RCXAbstractPort which should deliver data for to this InputStream
-      */
-      public RCXInputStream(RCXAbstractPort port) {
+      /**
+       * Creates new RCXInputStream
+       * 
+       * @param port The RCXAbstractPort which should deliver data for to this
+       *           InputStream
+       */
+      public RCXInputStream (RCXAbstractPort port)
+      {
          dataPort = port;
       }
 
-      /** Checks if there is any data avaliable on the InputStream
-      * @throws IOException is never thrown
-      * @return The number of bytes avaliable on the InputStream
-      */
-      public int available() throws IOException {
+      /**
+       * Checks if there is any data avaliable on the InputStream
+       * 
+       * @throws IOException is never thrown
+       * @return The number of bytes avaliable on the InputStream
+       */
+      public int available () throws IOException
+      {
          if (last < current)
-            return bufferSize-(current-last);
+            return bufferSize - (current - last);
          else
-            return last-current;
+            return last - current;
       }
 
-      /** Read a single byte from the InputStream. Returns value as
-      * an int value between 0 and 255.
-      * @throws IOException is thrown when the read is timed out
-      * @return A data byte from the stream
-      */
-      public synchronized int read() throws IOException {
+      /**
+       * Read a single byte from the InputStream. Returns value as an int value
+       * between 0 and 255.
+       * 
+       * @throws IOException is thrown when the read is timed out
+       * @return A data byte from the stream
+       */
+      public synchronized int read () throws IOException
+      {
          long time1 = System.currentTimeMillis();
          long timeOut = dataPort.getTimeOut();
-         while (available() == 0) {
-            if (timeOut != 0 && (System.currentTimeMillis()-time1 > timeOut)) {
-                  throw new IOException("The read timed out");
+         while (available() == 0)
+         {
+            if (timeOut != 0 && (System.currentTimeMillis() - time1 > timeOut))
+            {
+               throw new IOException("The read timed out");
             }
-            try {
+            try
+            {
                Thread.sleep(10);
-            } catch (InterruptedException iE) { }
+            }
+            catch (InterruptedException iE)
+            {}
          }
 
-         synchronized (buffer) {
+         synchronized (buffer)
+         {
             int b = buffer[current++];
             if (current == bufferSize)
                current = 0;
 
-            if(b < 0) b = b + 256;
+            if (b < 0)
+               b = b + 256;
             return b;
          }
       }
 
-      /** Add a data byte to the stream
-      * This method should only be called by the RCXPort that
-      * created the RCXInputStream
-      * @param b The data byte
-      */
-      void add(byte b) {
-         synchronized (buffer) {
+      /**
+       * Add a data byte to the stream This method should only be called by the
+       * RCXPort that created the RCXInputStream
+       * 
+       * @param b The data byte
+       */
+      void add (byte b)
+      {
+         synchronized (buffer)
+         {
             buffer[last++] = b;
             if (last == bufferSize)
                last = 0;
@@ -187,29 +245,37 @@ public abstract class RCXAbstractPort {
       }
    }
 
-   /** Hidden inner class extending OutputStream. 
+   /**
+    * Hidden inner class extending OutputStream.
     */
-   private class RCXOutputStream extends OutputStream {
+   private class RCXOutputStream extends OutputStream
+   {
 
       private PacketHandler packetHandler;
 
-      /** Creates new RCXOutputStream
-      * @param handler the packet handler used to send data
-      */
-      public RCXOutputStream(PacketHandler handler) {
+      /**
+       * Creates new RCXOutputStream
+       * 
+       * @param handler the packet handler used to send data
+       */
+      public RCXOutputStream (PacketHandler handler)
+      {
          packetHandler = handler;
       }
 
-      private byte [] bytePacket = new byte[1];
+      private byte[] bytePacket = new byte[1];
 
-      /** Write a byte to the OutputStream.
-      * @param b The byte.
-      * @throws IOException if the byte could not be written to the stream
-      */
-      public synchronized void write(int b) throws IOException {
+      /**
+       * Write a byte to the OutputStream.
+       * 
+       * @param b The byte.
+       * @throws IOException if the byte could not be written to the stream
+       */
+      public synchronized void write (int b) throws IOException
+      {
          bytePacket[0] = (byte) b;
-         if (!packetHandler.sendPacket(bytePacket,1)) 
-           throw new IOException("Failed to Receive Reply");
+         if (!packetHandler.sendPacket(bytePacket, 1))
+            throw new IOException("Failed to Receive Reply");
       }
    }
 }

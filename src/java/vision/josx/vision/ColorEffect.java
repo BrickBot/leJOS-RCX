@@ -8,264 +8,300 @@ import javax.media.format.RGBFormat;
 import javax.media.format.VideoFormat;
 
 /*
- * Supports detecting colors and light level in regions
- * @author Lawrie Griffiths
+ * Supports detecting colors and light level in regions @author Lawrie Griffiths
  */
-public class ColorEffect extends VisionEffect {
-  private static final int INIT_PIXEL_THRESHOLD = 16;
-  private static final int LIGHT_THRESHOLD = 192;
-  public static final int MAX_PIXEL_THRESHOLD = 40;
-  public static final int MIN_PIXEL_THRESHOLD = 0;
-  public static final int PIXEL_THRESHOLD_INC = 4;
-  public static final float INIT_PROPORTION = 0.25f;
-  public static final float MAX_PROPORTION = 0.5f;
-  public static final float MIN_PROPORTION = 0.05f;
-  public static final float PROPORTION_INC = 0.05f;
-  
-  public int [] averageRed = new int[Region.MAX_REGIONS];
-  public int [] averageGreen = new int[Region.MAX_REGIONS];
-  public int [] averageBlue = new int[Region.MAX_REGIONS];
+public class ColorEffect extends VisionEffect
+{
+   private static final int INIT_PIXEL_THRESHOLD = 16;
+   private static final int LIGHT_THRESHOLD = 192;
+   public static final int MAX_PIXEL_THRESHOLD = 40;
+   public static final int MIN_PIXEL_THRESHOLD = 0;
+   public static final int PIXEL_THRESHOLD_INC = 4;
+   public static final float INIT_PROPORTION = 0.25f;
+   public static final float MAX_PROPORTION = 0.5f;
+   public static final float MIN_PROPORTION = 0.05f;
+   public static final float PROPORTION_INC = 0.05f;
 
-  public static int pixelThreshold = INIT_PIXEL_THRESHOLD;
-  public static float requiredProportion = INIT_PROPORTION;
+   public int[] averageRed = new int[Region.MAX_REGIONS];
+   public int[] averageGreen = new int[Region.MAX_REGIONS];
+   public int[] averageBlue = new int[Region.MAX_REGIONS];
 
-  /*
-   * Detect colors and light in regions
-   */
-  public ColorEffect() {
-    super();
-  }
+   public static int pixelThreshold = INIT_PIXEL_THRESHOLD;
+   public static float requiredProportion = INIT_PROPORTION;
 
-  /*
-   * Look for colors in regions, and if found, call the associated color listener.
-   * Also looks for overall light value and calls associated Light Listener.
-   * Copies into to output.
-   */
-  public int process(Buffer inBuffer, Buffer outBuffer) {
-    int outputDataLength = ((VideoFormat)outputFormat).getMaxDataLength();
-    validateByteArraySize(outBuffer, outputDataLength);
+   /*
+    * Detect colors and light in regions
+    */
+   public ColorEffect ()
+   {
+      super();
+   }
 
-    outBuffer.setLength(outputDataLength);
-    outBuffer.setFormat(outputFormat);
-    outBuffer.setFlags(inBuffer.getFlags());
+   /*
+    * Look for colors in regions, and if found, call the associated color
+    * listener. Also looks for overall light value and calls associated Light
+    * Listener. Copies into to output.
+    */
+   public int process (Buffer inBuffer, Buffer outBuffer)
+   {
+      int outputDataLength = ((VideoFormat) outputFormat).getMaxDataLength();
+      validateByteArraySize(outBuffer, outputDataLength);
 
-    byte [] inData = (byte[]) inBuffer.getData();
-    byte [] outData = (byte[]) outBuffer.getData();
+      outBuffer.setLength(outputDataLength);
+      outBuffer.setFormat(outputFormat);
+      outBuffer.setFlags(inBuffer.getFlags());
 
-    RGBFormat vfIn = (RGBFormat) inBuffer.getFormat();
-    Dimension sizeIn = vfIn.getSize();
+      byte[] inData = (byte[]) inBuffer.getData();
+      byte[] outData = (byte[]) outBuffer.getData();
 
-    int pixStrideIn = vfIn.getPixelStride();
-    int lineStrideIn = vfIn.getLineStride();
+      RGBFormat vfIn = (RGBFormat) inBuffer.getFormat();
+      Dimension sizeIn = vfIn.getSize();
 
-    if ( outData.length < sizeIn.width*sizeIn.height*3 ) {
-      System.out.println("the buffer is not full");
-      return BUFFER_PROCESSED_FAILED;
-    }
+      int pixStrideIn = vfIn.getPixelStride();
+      int lineStrideIn = vfIn.getLineStride();
 
-    System.arraycopy(inData,0,outData,0,inData.length);
-
-    // Find the regions
-
-    Region [] regions = Vision.getRegions();
- 
-    // Look for color listeners
-
-    // Examine each non-null region
-
-    int bestRegion = -1;
-    int bestListener = -1;
-    float bestProportion = -1;
-
-    for(int i=0;i<regions.length;i++) {
-      if (regions[i] != null) {
-
-        // Find the color listeners for this region
-
-        ColorListener [] cl = regions[i].getColorListeners();
-        int [] colors = regions[i].getColors();
-
-        // Continue if no listeners
-
-        if (cl.length == 0) continue;
-
-        // Get region size
-
-        int rx = regions[i].getX();
-        int ry = regions[i].getY();
-        int width = regions[i].getWidth();
-        int height = regions[i].getHeight();
-
-        // Look for the color associated with each listener
-
-        for(int j=0;j<cl.length;j++) {
-
-          // Separate R, G, B values
-   
-          int r = (colors[j] >> 16) & 0xFF;
-          int g = (colors[j] >> 8) & 0xFF;
-          int b = colors[j] & 0xFF;
-
-          // System.out.println("Region " + (i+1) + " looking for " + Integer.toHexString(colors[j]));
-         
-          int pixCount = 0, totalPixs = 0;
-          int aR = 0, aG = 0, aB = 0;
-
-          // Examine each pixel in the region
-
-          for(int ii=ry; ii<ry+height; ii++) {
-            for(int jj=rx; jj<rx+width; jj++) {
-              int pos = ii*lineStrideIn + jj*pixStrideIn;
-
-              int tr = inData[pos+2] & 0xFF;
-              int tg = inData[pos+1] & 0xFF;
-              int tb = inData[pos] & 0xFF;
-
-              // Keep running totals for average values for R, G, and B for the region
-
-              aR += tr;
-              aG += tg;
-              aB += tb;
-
-              totalPixs++;
-
-              // Count the pixel if it is within the threshold for R, G, and B values
-
-              if (Math.abs(tr - r) <= pixelThreshold &&
-                  Math.abs(tg - g) <= pixelThreshold &&
-                  Math.abs(tb - b) <= pixelThreshold) {
-                pixCount++;
-              }
-            }       
-          }
-          // System.out.println("Region " + (i+1) + " matched " + pixCount + " out of " + totalPixs);
-          
-          // Calculate the average R, G and B values for the region
-
-          averageRed[i] = aR/totalPixs;
-          averageGreen[i] = aG/totalPixs;
-          averageBlue[i] = aB/totalPixs;
-
-          if (Vision.captureColor) 
-            System.out.println("Color = " + aR/totalPixs + " , " + aG/totalPixs + " , " + aB/totalPixs);
-
-          // Find the best color match
-
-          float thisProportion = (float) pixCount / (float) totalPixs;
-
-          if (thisProportion > bestProportion && thisProportion > requiredProportion) {
-             bestProportion = thisProportion;
-             bestRegion = i;
-             bestListener = j;
-          }        
-        }
+      if (outData.length < sizeIn.width * sizeIn.height * 3)
+      {
+         System.out.println("the buffer is not full");
+         return BUFFER_PROCESSED_FAILED;
       }
-    }
 
-    // Call the best Color Listener
+      System.arraycopy(inData, 0, outData, 0, inData.length);
 
-    if (bestRegion >= 0) {
-      regions[bestRegion].getColorListeners()[bestListener].colorDetected(bestRegion+1, regions[bestRegion].getColors()[bestListener]);
-    }
+      // Find the regions
 
-    // Look for light listeners
+      Region[] regions = Vision.getRegions();
 
-    bestRegion = -1;
-    bestListener = -1;
-    bestProportion = -1;
+      // Look for color listeners
 
-    // Examine each non-null region
+      // Examine each non-null region
 
-    for(int i=0;i<regions.length;i++) {
-      if (regions[i] != null) {
+      int bestRegion = -1;
+      int bestListener = -1;
+      float bestProportion = -1;
 
-        // Get the light listeners
+      for (int i = 0; i < regions.length; i++)
+      {
+         if (regions[i] != null)
+         {
 
-        LightListener [] ll = regions[i].getLightListeners();
+            // Find the color listeners for this region
 
-        // If no light listeners, continue
+            ColorListener[] cl = regions[i].getColorListeners();
+            int[] colors = regions[i].getColors();
 
-        if (ll.length == 0) continue;
+            // Continue if no listeners
 
-        // Get the region dimensions
+            if (cl.length == 0)
+               continue;
 
-        int rx = regions[i].getX();
-        int ry = regions[i].getY();
-        int width = regions[i].getWidth();
-        int height = regions[i].getHeight();
+            // Get region size
 
-        // Examine each pixel
+            int rx = regions[i].getX();
+            int ry = regions[i].getY();
+            int width = regions[i].getWidth();
+            int height = regions[i].getHeight();
 
-        for(int j=0;j<ll.length;j++) {
-         
-          int pixCount = 0, totalPixs = 0;
+            // Look for the color associated with each listener
 
-          for(int ii=ry; ii<ry+height; ii++) {
-            for(int jj=rx; jj<rx+width; jj++) {
-              int pos = ii*lineStrideIn + jj*pixStrideIn;
+            for (int j = 0; j < cl.length; j++)
+            {
 
-              int tr = inData[pos+2] & 0xFF;
-              int tg = inData[pos+1] & 0xFF;
-              int tb = inData[pos] & 0xFF;
+               // Separate R, G, B values
 
-              totalPixs++;
+               int r = (colors[j] >> 16) & 0xFF;
+               int g = (colors[j] >> 8) & 0xFF;
+               int b = colors[j] & 0xFF;
 
-              // Count the pixel if each of R, G and B is above the threshold
+               // System.out.println("Region " + (i+1) + " looking for " +
+               // Integer.toHexString(colors[j]));
 
-              if (tr >= LIGHT_THRESHOLD &&
-                  tg >= LIGHT_THRESHOLD &&
-                  tr >= LIGHT_THRESHOLD) {
-                pixCount++;
-              }
-            }       
-          }
+               int pixCount = 0, totalPixs = 0;
+               int aR = 0, aG = 0, aB = 0;
 
-          // System.out.println("Matched " + pixCount + " out of " + totalPixs);
+               // Examine each pixel in the region
 
-          // Find the best Listener
+               for (int ii = ry; ii < ry + height; ii++)
+               {
+                  for (int jj = rx; jj < rx + width; jj++)
+                  {
+                     int pos = ii * lineStrideIn + jj * pixStrideIn;
 
-          float thisProportion = (float) pixCount / (float) totalPixs;
-          // if (thisProportion > requiredProportion) 
-          //   System.out.println("Region " + (i+1) + " proportion = " + thisProportion);
-          if (thisProportion > bestProportion && thisProportion > requiredProportion) {
-             bestProportion = thisProportion;
-             bestRegion = i;
-             bestListener = j;
-          }        
-        }
+                     int tr = inData[pos + 2] & 0xFF;
+                     int tg = inData[pos + 1] & 0xFF;
+                     int tb = inData[pos] & 0xFF;
+
+                     // Keep running totals for average values for R, G, and B
+                     // for the region
+
+                     aR += tr;
+                     aG += tg;
+                     aB += tb;
+
+                     totalPixs++;
+
+                     // Count the pixel if it is within the threshold for R, G,
+                     // and B values
+
+                     if (Math.abs(tr - r) <= pixelThreshold
+                        && Math.abs(tg - g) <= pixelThreshold
+                        && Math.abs(tb - b) <= pixelThreshold)
+                     {
+                        pixCount++;
+                     }
+                  }
+               }
+               // System.out.println("Region " + (i+1) + " matched " + pixCount
+               // + " out of " + totalPixs);
+
+               // Calculate the average R, G and B values for the region
+
+               averageRed[i] = aR / totalPixs;
+               averageGreen[i] = aG / totalPixs;
+               averageBlue[i] = aB / totalPixs;
+
+               if (Vision.captureColor)
+                  System.out.println("Color = " + aR / totalPixs + " , " + aG
+                     / totalPixs + " , " + aB / totalPixs);
+
+               // Find the best color match
+
+               float thisProportion = (float) pixCount / (float) totalPixs;
+
+               if (thisProportion > bestProportion
+                  && thisProportion > requiredProportion)
+               {
+                  bestProportion = thisProportion;
+                  bestRegion = i;
+                  bestListener = j;
+               }
+            }
+         }
       }
-    }
 
-    // Call all the light listeners for the best region
+      // Call the best Color Listener
 
-    if (bestRegion > 0) {
-      LightListener [] ll = regions[bestRegion].getLightListeners();
-      for(int i=0;i<ll.length;i++) ll[i].lightDetected(bestRegion+1);
-    }
+      if (bestRegion >= 0)
+      {
+         regions[bestRegion].getColorListeners()[bestListener].colorDetected(
+            bestRegion + 1, regions[bestRegion].getColors()[bestListener]);
+      }
 
-    return BUFFER_PROCESSED_OK;
-  }
+      // Look for light listeners
 
-  /*
-   * Get the name of the Effect
-   * @return "Color Effect"
-   */
-  public String getName() {
-    return "Color Effect";
-  }
+      bestRegion = -1;
+      bestListener = -1;
+      bestProportion = -1;
 
-  private Control[] controls;
+      // Examine each non-null region
 
-  /**
-   * Getter for array on one control for adjusing motion threshold and setting debug.
-   * @return an array of one ColorDetectionControl
-   */
-  public Object[] getControls() {
-    if (controls == null) {
-      controls = new Control[1];
-      controls[0] = new ColorDetectionControl(this);
-    }
-    return (Object[])controls;
-  }
+      for (int i = 0; i < regions.length; i++)
+      {
+         if (regions[i] != null)
+         {
+
+            // Get the light listeners
+
+            LightListener[] ll = regions[i].getLightListeners();
+
+            // If no light listeners, continue
+
+            if (ll.length == 0)
+               continue;
+
+            // Get the region dimensions
+
+            int rx = regions[i].getX();
+            int ry = regions[i].getY();
+            int width = regions[i].getWidth();
+            int height = regions[i].getHeight();
+
+            // Examine each pixel
+
+            for (int j = 0; j < ll.length; j++)
+            {
+
+               int pixCount = 0, totalPixs = 0;
+
+               for (int ii = ry; ii < ry + height; ii++)
+               {
+                  for (int jj = rx; jj < rx + width; jj++)
+                  {
+                     int pos = ii * lineStrideIn + jj * pixStrideIn;
+
+                     int tr = inData[pos + 2] & 0xFF;
+                     int tg = inData[pos + 1] & 0xFF;
+                     int tb = inData[pos] & 0xFF;
+
+                     totalPixs++;
+
+                     // Count the pixel if each of R, G and B is above the
+                     // threshold
+
+                     if (tr >= LIGHT_THRESHOLD && tg >= LIGHT_THRESHOLD
+                        && tr >= LIGHT_THRESHOLD)
+                     {
+                        pixCount++;
+                     }
+                  }
+               }
+
+               // System.out.println("Matched " + pixCount + " out of " +
+               // totalPixs);
+
+               // Find the best Listener
+
+               float thisProportion = (float) pixCount / (float) totalPixs;
+               // if (thisProportion > requiredProportion)
+               //   System.out.println("Region " + (i+1) + " proportion = " +
+               // thisProportion);
+               if (thisProportion > bestProportion
+                  && thisProportion > requiredProportion)
+               {
+                  bestProportion = thisProportion;
+                  bestRegion = i;
+                  bestListener = j;
+               }
+            }
+         }
+      }
+
+      // Call all the light listeners for the best region
+
+      if (bestRegion > 0)
+      {
+         LightListener[] ll = regions[bestRegion].getLightListeners();
+         for (int i = 0; i < ll.length; i++)
+            ll[i].lightDetected(bestRegion + 1);
+      }
+
+      return BUFFER_PROCESSED_OK;
+   }
+
+   /*
+    * Get the name of the Effect @return "Color Effect"
+    */
+   public String getName ()
+   {
+      return "Color Effect";
+   }
+
+   private Control[] controls;
+
+   /**
+    * Getter for array on one control for adjusing motion threshold and setting
+    * debug.
+    * 
+    * @return an array of one ColorDetectionControl
+    */
+   public Object[] getControls ()
+   {
+      if (controls == null)
+      {
+         controls = new Control[1];
+         controls[0] = new ColorDetectionControl(this);
+      }
+      return (Object[]) controls;
+   }
 
 }

@@ -7,28 +7,28 @@ import js.common.ToolException;
  */
 public class FirmdlException extends ToolException
 {
-  /**
-   * @param message
-   */
-  public FirmdlException(String message)
-  {
-    super(message);
-  }
+   /**
+    * @param message
+    */
+   public FirmdlException (String message)
+   {
+      super(message);
+   }
 
-  /**
-   * @param cause
-   */
-  public FirmdlException(Throwable cause)
-  {
-    super(cause);
-  }
+   /**
+    * @param cause
+    */
+   public FirmdlException (Throwable cause)
+   {
+      super(cause);
+   }
 
-  /**
-   * @param message
-   * @param cause
-   */
-  public FirmdlException(String message, Throwable cause)
-  {
-    super(message, cause);
-  }
+   /**
+    * @param message
+    * @param cause
+    */
+   public FirmdlException (String message, Throwable cause)
+   {
+      super(message, cause);
+   }
 }

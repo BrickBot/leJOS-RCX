@@ -2,19 +2,16 @@ package js.classfile;
 
 public class EPolyClassLoader extends ClassNotFoundException
 {
-  Exception iWrapped;
+   Exception iWrapped;
 
-  public EPolyClassLoader (Exception aE)
-  {
-    iWrapped = aE;
-  }
+   public EPolyClassLoader (Exception aE)
+   {
+      iWrapped = aE;
+   }
 
-  public String toString()
-  {
-    return iWrapped.toString();
-  }
+   public String toString ()
+   {
+      return iWrapped.toString();
+   }
 }
-      
-
-
 

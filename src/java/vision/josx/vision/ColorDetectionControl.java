@@ -13,94 +13,105 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Title: Lejos Vision System
- * Description: Color Detection Control
+ * Title: Lejos Vision System Description: Color Detection Control
+ * 
  * @author Lawrie Griffiths
  */
-public class ColorDetectionControl implements Control, ActionListener, ChangeListener  {
-  private Component component;
-  private JButton button;
-  private JSlider threshold;
-  private JSlider proportionThreshold;
-  private JLabel label;
-  private JLabel proportionLabel;
-  private ColorEffect effect;
-  private boolean debug;
-  private int thresholdValue;
+public class ColorDetectionControl
+   implements Control, ActionListener, ChangeListener
+{
+   private Component component;
+   private JButton button;
+   private JSlider threshold;
+   private JSlider proportionThreshold;
+   private JLabel label;
+   private JLabel proportionLabel;
+   private ColorEffect effect;
+   private boolean debug;
+   private int thresholdValue;
 
-  /**
-   * Create the Motion Detection Control
-   */  
-  public ColorDetectionControl(ColorEffect effect) {
-    this.effect = effect;
-  }
+   /**
+    * Create the Motion Detection Control
+    */
+   public ColorDetectionControl (ColorEffect effect)
+   {
+      this.effect = effect;
+   }
 
-  /**
-   * Return the visual component
-   * @return the component containing the GUI controls
-   **/
-  public Component getControlComponent () {
-    if (component == null) {
-      label = new JLabel("Set Pixel difference threshold:");
-      proportionLabel = new JLabel("Set Proportion threshold:");
-      
-      button = new JButton("Color Debug");
-      button.addActionListener(this);
+   /**
+    * Return the visual component
+    * 
+    * @return the component containing the GUI controls
+    */
+   public Component getControlComponent ()
+   {
+      if (component == null)
+      {
+         label = new JLabel("Set Pixel difference threshold:");
+         proportionLabel = new JLabel("Set Proportion threshold:");
 
-      button.setToolTipText("Click to turn debugging mode on/off");
+         button = new JButton("Color Debug");
+         button.addActionListener(this);
 
-      threshold = new JSlider(JSlider.HORIZONTAL,
-                               0,
-                               ColorEffect.MAX_PIXEL_THRESHOLD / 4,
-                               ColorEffect.pixelThreshold / 4);
+         button.setToolTipText("Click to turn debugging mode on/off");
 
-      threshold.setMajorTickSpacing(1);
-      threshold.setPaintLabels(true);
-      threshold.addChangeListener(this);
+         threshold = new JSlider(JSlider.HORIZONTAL, 0,
+            ColorEffect.MAX_PIXEL_THRESHOLD / 4, ColorEffect.pixelThreshold / 4);
 
-      proportionThreshold = new JSlider(JSlider.HORIZONTAL,
-                                        0,
-                                        (int) (ColorEffect.MAX_PROPORTION / ColorEffect.PROPORTION_INC),
-                                        (int) (ColorEffect.requiredProportion / ColorEffect.PROPORTION_INC));
+         threshold.setMajorTickSpacing(1);
+         threshold.setPaintLabels(true);
+         threshold.addChangeListener(this);
 
-      proportionThreshold.setMajorTickSpacing(1);
-      proportionThreshold.setPaintLabels(true);
-      proportionThreshold.addChangeListener(this);
+         proportionThreshold = new JSlider(JSlider.HORIZONTAL, 0,
+            (int) (ColorEffect.MAX_PROPORTION / ColorEffect.PROPORTION_INC),
+            (int) (ColorEffect.requiredProportion / ColorEffect.PROPORTION_INC));
 
-      Box componentPanel = Box.createVerticalBox();
-      componentPanel.add(label);
-      componentPanel.add(threshold);
-      componentPanel.add(proportionLabel);
-      componentPanel.add(proportionThreshold);
+         proportionThreshold.setMajorTickSpacing(1);
+         proportionThreshold.setPaintLabels(true);
+         proportionThreshold.addChangeListener(this);
 
-      componentPanel.invalidate();
-      component = componentPanel;
-    }
-    return component;
-  }
+         Box componentPanel = Box.createVerticalBox();
+         componentPanel.add(label);
+         componentPanel.add(threshold);
+         componentPanel.add(proportionLabel);
+         componentPanel.add(proportionThreshold);
 
-  /**
-   * Toggle debug
-   * @param e the action event (ignored)
-   **/
-  public void actionPerformed(ActionEvent e) {
-    Object o = e.getSource();
-    if (o == button) {
-      debug = !debug;
-    }
-  }
+         componentPanel.invalidate();
+         component = componentPanel;
+      }
+      return component;
+   }
 
-  /**
-   * Set the threshold value
-   * @param e the Changeevent (ignored)
-   **/
-  public void stateChanged(ChangeEvent e) {
-    Object o = e.getSource();
-    if (o == threshold) {
-      ColorEffect.pixelThreshold = threshold.getValue()*4;
-    }
-     if (o == proportionThreshold) {
-       ColorEffect.requiredProportion = proportionThreshold.getValue()* ColorEffect.PROPORTION_INC;
-    }
- }
+   /**
+    * Toggle debug
+    * 
+    * @param e the action event (ignored)
+    */
+   public void actionPerformed (ActionEvent e)
+   {
+      Object o = e.getSource();
+      if (o == button)
+      {
+         debug = !debug;
+      }
+   }
+
+   /**
+    * Set the threshold value
+    * 
+    * @param e the Changeevent (ignored)
+    */
+   public void stateChanged (ChangeEvent e)
+   {
+      Object o = e.getSource();
+      if (o == threshold)
+      {
+         ColorEffect.pixelThreshold = threshold.getValue() * 4;
+      }
+      if (o == proportionThreshold)
+      {
+         ColorEffect.requiredProportion = proportionThreshold.getValue()
+            * ColorEffect.PROPORTION_INC;
+      }
+   }
 }
