@@ -6,14 +6,14 @@ IRTRCX_INCL=$(LEJOS_HOME)/src/comms/libirtrcx
 
 # Default: Unix
 JIRTRCX=$(LEJOS_HOME)/bin/libjirtrcx.so
-CCOPT=-rdynamic -ldl -shared -fpic -I${JAVA_INCL} -I${JAVA_INCL}/$(OS) -I$(IRTRCX_INCL) -L$(LEJOS_HOME)/bin -lirtrcx
+CCOPT=-rdynamic -ldl -shared -fpic -I${JAVA_INCL} -I${JAVA_INCL}/$(OSTYPE) -I$(IRTRCX_INCL) -L$(LEJOS_HOME)/bin -lirtrcx
 
 # Windows with CygWin installed
 ifneq (,$(findstring cygwin,$(OSTYPE)))
   JIRTRCX=$(LEJOS_HOME)/bin/jirtrcx.dll
   CCOPT= -mno-cygwin -I${JAVA_INCL} -I${JAVA_INCL}/win32 -I$(IRTRCX_INCL) -Wl,--add-stdcall-alias -shared -L$(LEJOS_HOME)/bin -lirtrcx
 endif
-    
+
 # MacOS X
 ifneq (,$(findstring darwin,$(OSTYPE)))
   JIRTRCX=$(LEJOS_HOME)/bin/libjirtrcx.jnilib 
