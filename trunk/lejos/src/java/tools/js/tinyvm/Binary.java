@@ -73,6 +73,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
   public void processClasses (Vector aEntryClasses, ClassPath aClassPath)
   throws Exception
   {
+    Vector pInterfaceMethods = new Vector();
     // Add special classes first
     for (int i = 0; i < CLASSES.length; i++)
     {
@@ -80,6 +81,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
       ClassRecord pRec = ClassRecord.getClassRecord (pName, aClassPath, this);
       iClasses.put (pName, pRec);
       iClassTable.add (pRec);
+      // pRec.useAllMethods();
     }
     // Now add entry classes
     int pEntrySize = aEntryClasses.size();
@@ -89,6 +91,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
       ClassRecord pRec = ClassRecord.getClassRecord (pName, aClassPath, this);
       iClasses.put (pName, pRec);
       iClassTable.add (pRec);
+      pRec.useAllMethods();
       // Update table of indices to entry classes
       iEntryClassIndices.add (new EntryClassIndex (this, pName));
     }      
@@ -99,13 +102,14 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     {
       ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
       Assertion.verbose (1, "Class " + pIndex + ": " + pRec.iName);
-      pRec.storeReferredClasses (iClasses, iClassTable, aClassPath);
+      pRec.storeReferredClasses (iClasses, iClassTable, aClassPath, pInterfaceMethods);
     }
     // Initialize indices and flags
     int pSize = iClassTable.size();
     for (int pIndex = 0; pIndex < pSize; pIndex++)
     {
       ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
+      for (int i=0; i<pInterfaceMethods.size(); i++) pRec.addUsedMethod((String) pInterfaceMethods.get(i));
       pRec.iIndex = pIndex;
       pRec.initFlags();
       pRec.initParent();
@@ -141,14 +145,14 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
    * Calls storeMethods on all the classes of the closure
    * previously computed with processClasses.
    */
-  public void processMethods()
+  public void processMethods(boolean iAll)
   {
     int pSize = iClassTable.size();
     for (int pIndex = 0; pIndex < pSize; pIndex++)
     {
       ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
       pRec.storeMethods (iMethodTables, iExceptionTables,
-                         iSignatures);
+                         iSignatures, iAll);
     }        
   }
 
@@ -246,7 +250,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     Assertion.verbose (2, "Excep tables offset  : " + iExceptionTables.getOffset());
   }
 		       
-  public static Binary createFromClosureOf (Vector aEntryClasses, ClassPath aClassPath)
+  public static Binary createFromClosureOf (Vector aEntryClasses, ClassPath aClassPath, boolean aAll)
   throws Exception
   {
     Binary pBin = new Binary();
@@ -255,7 +259,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     // Store special signatures
     pBin.processSpecialSignatures();
     pBin.processConstants();
-    pBin.processMethods();
+    pBin.processMethods(aAll);
     pBin.processFields();
     // Copy code as is (first pass)
     pBin.processCode (false);

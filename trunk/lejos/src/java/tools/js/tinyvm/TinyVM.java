@@ -19,6 +19,7 @@ implements Constants
   static boolean iDoDownload = false;
   static boolean iDumpFile = false;
   static boolean iDumpGameboyRom = false;
+  static boolean iAll = false;
 
   private static class Option
   {
@@ -105,7 +106,7 @@ implements Constants
     if (aEntryClasses.size() >= 256)
       Assertion.fatal ("Too many entry classes (max is 255!)");
     ClassPath pCP = new ClassPath (iClassPath);
-    Binary pBin = Binary.createFromClosureOf (aEntryClasses, pCP);
+    Binary pBin = Binary.createFromClosureOf (aEntryClasses, pCP, iAll);
     int pNum = aEntryClasses.size();
     for (int i = 0; i < pNum; i++)
     {
@@ -171,6 +172,9 @@ implements Constants
       else if (pOpt.iOption.equals ("-gb"))
       {
         iDumpGameboyRom = true;
+      }
+      else if (pOpt.iOption.equals ("-all")) {
+        iAll = true;
       }
       else if (pOpt.iOption.equals ("-verbose"))
       {
