@@ -25,20 +25,6 @@ public class RCXPort {
     *  Opens the port.
     */
    public RCXPort() throws IOException {
-      open();
-   }
-
-   /**
-    *  The port name is ignored in the RCX version.
-    */
-   public RCXPort(String port) throws IOException {
-      open();
-   }   
-
-   /** Creates the input and output streams,
-    *  and creates and runs a Listener daemon thread.
-    */
-   public void open() {
       monitor = this;
       ioe = new IOException();
       rcxin = new RCXInputStream(this);
