@@ -52,4 +52,4 @@ firmdl: image
 	$(CC) -c -o $@ $(CFLAGS) "$<"
 
 clean:
-	rm -f *.o *.map *.lds ${FASTDLBINARY}
+	rm -f *.o *.map *.lds
