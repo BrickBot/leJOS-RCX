@@ -6,4 +6,4 @@
 extern sensor_t sensors[3];
 extern void poll_sensors( void);
 
-#endif _SENSORS_H
+#endif // _SENSORS_H

@@ -33,7 +33,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN32__)
   #include <windows.h>
 #endif
 
@@ -71,7 +71,7 @@ timer_read(timeval_t *timer)
 }
 
 void myperror(char *str) {
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN32__)
     fprintf(stderr, "Error %lu: %s\n", (unsigned long) GetLastError(), str);
 #else
     perror(str);
@@ -87,7 +87,7 @@ static int nbread (FILEDESCR fd, void *buf, int maxlen, int timeout)
 
     while (len < maxlen) {
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN32__)
 	DWORD count;
 	COMMTIMEOUTS CommTimeouts;
 
@@ -151,7 +151,7 @@ static int nbread (FILEDESCR fd, void *buf, int maxlen, int timeout)
 /* discard all characters in the input queue of tty */
 static void rx_flush(FILEDESCR fd)
 {
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN32__)
     PurgeComm(fd, PURGE_RXABORT | PURGE_RXCLEAR);
 #else
     char echo[BUFFERSIZE];
@@ -160,7 +160,7 @@ static void rx_flush(FILEDESCR fd)
 }
 
 int mywrite(FILEDESCR fd, const void *buf, size_t len) {
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN32__)
     DWORD nBytesWritten=0;
     WriteFile(fd, buf, len, &nBytesWritten, NULL);
     return nBytesWritten;
@@ -175,7 +175,7 @@ FILEDESCR rcx_init(char *tty, int is_fast)
 {
     FILEDESCR fd;
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN32__)
     DCB dcb;
 #else
     struct termios ios;
@@ -183,7 +183,7 @@ FILEDESCR rcx_init(char *tty, int is_fast)
 
     if (__comm_debug) printf("mode = %s\n", is_fast ? "fast" : "slow");
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN32__)
     if ((fd = CreateFile(tty, GENERIC_READ | GENERIC_WRITE,
                               0, NULL, OPEN_EXISTING,
                               0, NULL)) == INVALID_HANDLE_VALUE) {
@@ -253,7 +253,7 @@ FILEDESCR rcx_init(char *tty, int is_fast)
 
 void rcx_close(FILEDESCR fd)
 {
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN32__)
     CloseHandle(fd);
 #else
     close(fd);

@@ -26,28 +26,28 @@ void systime_init(void) {
  * name a few.) After its done, we increment our time counter, and 
  * then return. 
  */
-__asm__("
-.text
-.align 1
-.global _systime_handler
-_systime_handler:
-                ; r6 saved by ROM
-
-                ; call the ROM OCIA handler
-                jsr     _rom_ocia_handler 
-
-                ; increment system timer
-                mov.w @_sys_time+2,r6          ; LSW -> r6
-                add.b #0x1,r6l                 ; 16 bit: add 1
-                addx  #0x0,r6h
-                mov.w r6,@_sys_time+2
-                bcc sys_nohigh                 ; speedup for 65535 cases
-                  mov.w @_sys_time,r6          ; MSW -> r6
-                  add.b #0x1,r6l
-                  addx  #0x0,r6h
-                  mov.w r6,@_sys_time
-              sys_nohigh:
-                ;bclr    #3,@0x91:8        ; reset compare A IRQ flag
-                rts
-        ");
+__asm__(
+".text\n"
+".align 1\n"
+".global _systime_handler\n"
+"_systime_handler:\n"
+"                ; r6 saved by ROM\n"
+"\n"
+"                ; call the ROM OCIA handler\n"
+"                jsr     _rom_ocia_handler \n"
+"\n"
+"                ; increment system timer\n"
+"                mov.w @_sys_time+2,r6          ; LSW -> r6\n"
+"                add.b #0x1,r6l                 ; 16 bit: add 1\n"
+"                addx  #0x0,r6h\n"
+"                mov.w r6,@_sys_time+2\n"
+"                bcc sys_nohigh                 ; speedup for 65535 cases\n"
+"                  mov.w @_sys_time,r6          ; MSW -> r6\n"
+"                  add.b #0x1,r6l\n"
+"                  addx  #0x0,r6h\n"
+"                  mov.w r6,@_sys_time\n"
+"              sys_nohigh:\n"
+"                ;bclr    #3,@0x91:8        ; reset compare A IRQ flag\n"
+"                rts\n"
+);
 

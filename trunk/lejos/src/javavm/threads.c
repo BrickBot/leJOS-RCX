@@ -256,7 +256,7 @@ boolean switch_thread()
                 interruptMe = true;
               #ifdef SAFE
     	    currentThread->waitingOn = JNULL;
-              #endif SAFE
+              #endif // SAFE
             }
             break;
           case DEAD:
@@ -274,8 +274,8 @@ boolean switch_thread()
             currentThread->stackFrameArray = JNULL;
             currentThread->stackArray = JNULL;
             currentThread->isReferenceArray = JNULL;
-            #endif SAFE
-            #endif REMOVE_DEAD_THREADS
+            #endif // SAFE
+            #endif // REMOVE_DEAD_THREADS
           
             // Remove thread from queue.
             dequeue_thread(currentThread);

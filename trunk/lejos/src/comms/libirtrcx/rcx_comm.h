@@ -32,7 +32,7 @@
 #define RCX_NO_RESPONSE   -4
 #define RCX_BAD_RESPONSE  -5
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN32__)
   #define FILEDESCR	HANDLE
   #define BADFILE	NULL
 #else

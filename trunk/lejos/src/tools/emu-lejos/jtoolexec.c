@@ -23,7 +23,7 @@
 #error TOOL_ALT_VAR undefined
 #endif
 
-#ifdef WINNT
+#if defined(WINNT) || defined(__CYGWIN32__)
 #define PATH_SEPARATOR ";"
 #else
 #define PATH_SEPARATOR ":"
@@ -39,7 +39,7 @@ char *get_classpath (char *program)
   char *lejosjar;
   #ifdef __CYGWIN__
   char *auxstr;
-  #endif __CYGWIN__
+  #endif // __CYGWIN__
 
   dname = pdirname (program);
   if (dname == NULL)
@@ -55,7 +55,7 @@ char *get_classpath (char *program)
   printf ("converted=%s\n", lejosjar);
   #endif
   
-  #endif __CYGWIN__
+  #endif // __CYGWIN__
   
   cpath = lejosjar;   
   

@@ -10,7 +10,7 @@ UNIXLOADERNAME=emu-lejos
 RCXLOADER=../bin/${RCXLOADERNAME}
 UNIXLOADER=../bin/${UNIXLOADERNAME}
 CC=gcc
-CCOPT=-I../vmsrc -O2 -Wall -Wno-unused
+CCOPT=-I../vmsrc -Wall -Wno-unused -O2
 LIBS=
 TVMFIRMDL_OBJ=tvm_firmdl3.o util.o
 TVMCDEFS=-DTOOL_NAME=\"javac\" -DTOOL_ALT_VAR=\"JAVAC\" -DJAVA2

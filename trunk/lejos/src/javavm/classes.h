@@ -158,9 +158,9 @@ static inline TWOBYTES get_na_class_index (Object *obj)
 #define get_na_class_index(OBJ_) (((OBJ_)->flags & CLASS_MASK) >> CLASS_SHIFT)
 #define get_free_length(OBJ_)    (((OBJ_)->flags & FREE_BLOCK_SIZE_MASK) >> FREE_BLOCK_SIZE_SHIFT)
 
-#endif WIMPY_MATH
+#endif // WIMPY_MATH
 
-#endif _CLASSES_H
+#endif // _CLASSES_H
 
 
 

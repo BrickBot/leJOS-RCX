@@ -522,4 +522,4 @@ char *OPCODE_NAME[] = {
   "",
   ""
 };
-#endif _OPCODEINFO_H
+#endif // _OPCODEINFO_H

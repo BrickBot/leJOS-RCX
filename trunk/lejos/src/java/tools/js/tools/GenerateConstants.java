@@ -77,7 +77,7 @@ public class GenerateConstants
       pJavaOut.println ("}");
       pJavaOut.close();
 
-      pHeaderOut.println ("#endif _SPECIALCLASSES_H");
+      pHeaderOut.println ("#endif // _SPECIALCLASSES_H");
       pHeaderOut.close();
     }
   }
@@ -121,7 +121,7 @@ public class GenerateConstants
       pJavaOut.println ("}");
       pJavaOut.close();
 
-      pHeaderOut.println ("#endif _SPECIALSIGNATURES_H");
+      pHeaderOut.println ("#endif // _SPECIALSIGNATURES_H");
       pHeaderOut.close();
     }
   }

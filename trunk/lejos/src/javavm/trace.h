@@ -90,7 +90,7 @@ extern void assert (boolean aCond, int aCode);
 extern void debug (short s, short n1, short n2);
 #endif
 
-#endif _TRACE_H
+#endif // _TRACE_H
 
 
 

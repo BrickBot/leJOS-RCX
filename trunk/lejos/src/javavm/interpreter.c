@@ -246,9 +246,9 @@ void engine()
 
    #ifdef VERIFY
    assert (false, 1000 + *pc);
-   #endif VERIFY
+   #endif // VERIFY
 
-   #endif FP_ARITHMETIC
+   #endif // FP_ARITHMETIC
 }
 
 

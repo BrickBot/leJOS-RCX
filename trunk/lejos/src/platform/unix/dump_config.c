@@ -53,7 +53,10 @@ int main (int argc, char **argv)
   printf ("#define PLATFORM_HANDLES_SWITCH_THREAD 0\n");
   printf ("#define OPCODES_PER_TIME_SLICE 148\n");
   printf ("#define VERIFY\n");
+  printf ("static inline void poll_hardware()\n");
+  printf ("{\n");
+  printf ("}\n");
   printf ("\n");
-  printf ("#endif _PLATFORM_CONFIG_H\n");		
+  printf ("#endif // _PLATFORM_CONFIG_H\n");		
   return 0;
 }
