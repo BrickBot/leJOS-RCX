@@ -84,7 +84,8 @@ public class FirmdlTool extends AbstractTool
             Download d = new Download(new NullToolProgressMonitor());
             try
             {
-               Image fastImage = getImage("fastdl");
+               String fastdl = tty.toLowerCase().indexOf("usb") == -1? "fastdl4x" : "fastdl2x";
+               Image fastImage = getImage("fastdl2x");
                log(fastImage);
 
                d.open(tty, false);
