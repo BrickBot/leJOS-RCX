@@ -59,6 +59,8 @@ extern int rcx_is_debug();
 extern void rcx_set_debug(int debug);
 extern void rcx_set_usb(int usb);
 extern int rcx_is_usb();
+extern void rcx_set_fast(int fast);
+extern int rcx_is_fast();
 
 /* Get a file descriptor for the named tty, exits with message on error */
 extern FILEDESCR rcx_init (char *tty, int is_fast);
