@@ -47,7 +47,7 @@ typedef struct S_Object
 
 typedef struct S_Thread
 {
-  //--------------- Object fields first:
+  //--------------- Hidden object state first:
   TWOBYTES flags;
   TWOBYTES syncInfo;
 

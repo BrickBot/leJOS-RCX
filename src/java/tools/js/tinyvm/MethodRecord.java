@@ -52,7 +52,7 @@ public class MethodRecord implements WritableData, Constants
                        "Only " + MAX_OPERANDS + " are allowed.");
     }
     JCPE_Utf8 pDesc = iMethod.getDescriptor();
-    String[] pParams = JClassName.parseParameters (pDesc);
+    String[] pParams = JClassName.parseMethodParameters (pDesc);
     iNumParameters = getNumParamWords (iMethod, pParams);
     if (iNumParameters > MAX_PARAMETER_WORDS)
     {

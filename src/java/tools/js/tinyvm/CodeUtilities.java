@@ -88,6 +88,29 @@ implements OpCodeConstants, OpCodeInfo, Constants
     return pIdx;                           
   }
 
+  public int processMultiArray (int aPoolIndex)
+  {
+    IConstantPoolEntry pEntry = null; 
+    try {
+      pEntry = iCF.getConstantPool().getEntry (aPoolIndex);
+    } catch (Throwable t) {
+      t.printStackTrace();
+    }
+    if (!(pEntry instanceof JCPE_Class))
+    {
+      Utilities.fatal ("Classfile error: Instruction requiring " +
+                       "CONSTANT_Class entry got " +
+                       (pEntry == null ? "null" : 
+                       pEntry.getClass().getName()));
+    }
+    JCPE_Class pClassEntry = (JCPE_Class) pEntry;
+    int[] pTypeDim = JClassName.getTypeAndDimensions (pClassEntry.getName());
+    Utilities.assert (pTypeDim[0] <= 0xFF);
+    Utilities.assert (pTypeDim[1] <= 0xFF);
+    Utilities.assert (pTypeDim[1] > 0);
+    return pTypeDim[0] << 8 | pTypeDim[1];
+  }
+
   /**
    * @return The word that should be written as parameter
    *         of putstatic, getstatic, getfield, or putfield.
@@ -206,11 +229,13 @@ implements OpCodeConstants, OpCodeInfo, Constants
           pOutCode[i++] = (byte) OP_NOP;
           break;
         case OP_MULTIANEWARRAY:
-          int pIdx2 = processClassIndex ((aCode[i] & 0xFF) << 8 | 
+          int pIdx2 = processMultiArray ((aCode[i] & 0xFF) << 8 | 
                                         aCode[i+1]);
-          Utilities.assert (pIdx2 < MAX_CLASSES);
+          // Write element type
           pOutCode[i++] = (byte) (pIdx2 >> 8);
+          // Write total number of dimensions
           pOutCode[i++] = (byte) (pIdx2 | 0xFF);
+          // Skip requested dimensions for allocation
           i++;
           break;           
         case OP_NEW:

@@ -22,33 +22,34 @@ implements Constants
 
   public void dump (ByteWriter aOut) throws Exception
   {
+    DataOutputStream pDataOut = (DataOutputStream) aOut;
     switch (iType)
     {
       case T_BOOLEAN:
-        aOut.writeU1 (0);
+        pDataOut.writeBoolean (false);
         break;
       case T_BYTE:
-        aOut.writeU1 (0);
+        pDataOut.writeByte (0);
         break;
       case T_CHAR:
-        aOut.writeU2 (0);
+        pDataOut.writeChar (0);
         break;
       case T_SHORT:
-        aOut.writeU2 (0);
+        pDataOut.writeShort (0);
         break;
       case T_REFERENCE:
       case T_INT:
-        aOut.writeU4 (0);
+        pDataOut.writeInt (0);
         break;
       case T_FLOAT:
-        aOut.writeU4 (Float.floatToIntBits ((float) 0.0));
+        pDataOut.writeFloat ((float) 0.0);
         break;
       case T_LONG:
-        aOut.writeU8 (0L);
+        pDataOut.writeLong (0L);
         break;
       case T_DOUBLE:
-        aOut.writeU4 (0);
-        aOut.writeU4 (Float.floatToIntBits ((float) 0.0));
+        pDataOut.writeInt (0);
+        pDataOut.writeFloat ((float) 0.0);
         break;
       default:
         Utilities.assert (false);
