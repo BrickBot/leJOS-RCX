@@ -175,6 +175,9 @@ public class Firmdl {
       if (args[i].equals("--tty") && i < args.length - 1) {
         tty = args[++i];
         System.out.println("Setting tty = " + tty);
+      } else if(args[i].length() > 6 && args[i].substring(0,6).equals("--tty=")) {
+        tty = args[i].substring(6);
+        System.out.println("Setting tty = " + tty);
       } else if (args[i].equals("--help") || args[i].equals("-h")) {
         usage = true;
       } else if (args[i].equals("--nodl") || args[i].equals("-n")) {
