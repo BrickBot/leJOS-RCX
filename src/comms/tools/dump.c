@@ -31,7 +31,7 @@ main (int argc, char **argv)
 	int error;
 	line++;
 	if ((error = srec_decode(&srec, buf)) < 0) {
-	    if (error != S_INVALID_CKSUM) {
+	    if (error != SREC_INVALID_CKSUM) {
 		fatal("%s: %s on line %d\n",
 		      argv[1], srec_strerror(error), line);
 	    }
