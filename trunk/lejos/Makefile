@@ -100,6 +100,7 @@ clean:
 
 distclean: clean
 	rm -rf `find . -name 'CVS'`
+	rm -rf `find . -name '.#*'`
 	rm -rf `find . -name '*.tvm'`
 	rm -rf `find . -name '*.bin'`
 	rm -rf `find . -name '*.core'`
