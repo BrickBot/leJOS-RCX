@@ -32,7 +32,7 @@ public class Lejosdl
       Lejosdl lejosdl = new Lejosdl(new ToolProgressListenerImpl());
       lejosdl.start(args);
     }
-    catch (ToolException e)
+    catch (LejosdlException e)
     {
       System.err.println(e.getMessage());
       System.exit(1);
@@ -55,7 +55,7 @@ public class Lejosdl
    * @param args command line
    * @throws ToolException
    */
-  public void start (String[] args) throws ToolException
+  public void start (String[] args) throws LejosdlException
   {
     assert args != null : "Precondition: args != null";
 
@@ -83,7 +83,7 @@ public class Lejosdl
         }
         else if (args[i].equals("--help") || args[i].equals("-h"))
         {
-          throw new ToolException("Help:");
+          throw new LejosdlException("Help:");
         }
         else if (args[i].equals("--nodl") || args[i].equals("-n"))
         {
@@ -91,7 +91,7 @@ public class Lejosdl
         }
         else if (args[i].equals("--debug"))
         {
-          throw new ToolException("For debug output set RCXCOMM_DEBUG=Y");
+          throw new LejosdlException("For debug output set RCXCOMM_DEBUG=Y");
         }
         else if (args[i].equals("--fast") || args[i].equals("-f"))
         {
@@ -99,7 +99,7 @@ public class Lejosdl
         }
         else
         {
-          throw new ToolException("Unrecognized option " + args[i]);
+          throw new LejosdlException("Unrecognized option " + args[i]);
         }
       }
 
@@ -109,12 +109,12 @@ public class Lejosdl
       }
       else
       {
-        throw new ToolException("No file specified");
+        throw new LejosdlException("No file specified");
       }
     }
-    catch (ToolException e)
+    catch (LejosdlException e)
     {
-      throw new ToolException(e.getMessage()
+      throw new LejosdlException(e.getMessage()
           + "\n\nusage: lejosdl [options] filename"
           + "\n--tty=<tty>   assume tower connected to <tty>"
           + "\n--tty=usb     assume tower connected to usb"
@@ -137,7 +137,7 @@ public class Lejosdl
    * @throws ToolException
    */
   protected void start (String fileName, String tty, boolean download,
-      boolean fastMode) throws ToolException
+      boolean fastMode) throws LejosdlException
   {
     assert fileName != null : "Precondition: fileName != null";
     assert tty != null : "Precondition: tty != null";
@@ -150,7 +150,7 @@ public class Lejosdl
     }
     catch (FileNotFoundException e)
     {
-      throw new ToolException("Program " + fileName + " not found");
+      throw new LejosdlException("Program " + fileName + " not found");
     }
 
     start(stream, tty, download, fastMode);
@@ -161,7 +161,7 @@ public class Lejosdl
     }
     catch (IOException e)
     {
-      throw new ToolException(e);
+      throw new LejosdlException(e);
     }
   }
 
@@ -174,7 +174,7 @@ public class Lejosdl
    * @throws ToolException
    */
   public void start (InputStream program, String tty, boolean fastMode)
-      throws ToolException
+      throws LejosdlException
   {
     start(program, tty, true, fastMode);
   }
@@ -189,7 +189,7 @@ public class Lejosdl
    * @throws ToolException
    */
   public void start (InputStream program, String tty, boolean download,
-      boolean fastMode) throws ToolException
+      boolean fastMode) throws LejosdlException
   {
     assert program != null : "Precondition: program != null";
     assert tty != null : "Precondition: tty != null";
@@ -213,12 +213,12 @@ public class Lejosdl
         {
           index += read;
         }
-        throw new ToolException("Huge file: " + index + " bytes");
+        throw new LejosdlException("Huge file: " + index + " bytes");
       }
     }
     catch (IOException e)
     {
-      throw new ToolException("Unable to read program: " + e.getMessage(), e);
+      throw new LejosdlException("Unable to read program: " + e.getMessage(), e);
     }
     finally
     {
@@ -235,7 +235,7 @@ public class Lejosdl
     if (buffer[0] != (byte) ((MAGIC >> 8) & 0xFF)
         || buffer[1] != (byte) ((MAGIC >> 0) & 0xFF))
     {
-      throw new ToolException("Magic number is not right."
+      throw new LejosdlException("Magic number is not right."
           + "\nLinker used was for emulation only?");
     }
 
@@ -247,6 +247,10 @@ public class Lejosdl
         d.open(tty, fastMode);
         d.downloadProgram(buffer, index);
         d.close();
+      }
+      catch (ToolException e)
+      {
+        throw new LejosdlException(e);
       }
       finally
       {
