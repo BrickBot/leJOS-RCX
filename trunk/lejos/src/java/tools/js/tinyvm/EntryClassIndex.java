@@ -1,30 +1,37 @@
 package js.tinyvm;
 
-import js.tinyvm.io.ByteWriter;
-import js.tinyvm.util.Assertion;
+import java.io.IOException;
 
+import js.tinyvm.io.ByteWriter;
 
 public class EntryClassIndex implements WritableData, Constants
 {
   String iClassName;
   Binary iBinary;
-  
-  public EntryClassIndex (Binary aBinary, String aClassName)
+
+  public EntryClassIndex(Binary aBinary, String aClassName)
   {
     iBinary = aBinary;
     iClassName = aClassName;
   }
 
-  public int getLength()
+  public int getLength ()
   {
     return 1;
   }
 
-  public void dump (ByteWriter aOut) throws Exception
+  public void dump (ByteWriter aOut) throws TinyVMException
   {
-    int pIndex = iBinary.getClassIndex (iClassName);
-    Assertion.test (pIndex >= 0 && pIndex < 256);
-    aOut.writeU1 (pIndex);
+    try
+    {
+      int pIndex = iBinary.getClassIndex(iClassName);
+      assert pIndex >= 0 && pIndex < 256 : "Check: class index in range";
+      aOut.writeU1(pIndex);
+    }
+    catch (IOException e)
+    {
+      throw new TinyVMException(e);
+    }
   }
 }
-  
+

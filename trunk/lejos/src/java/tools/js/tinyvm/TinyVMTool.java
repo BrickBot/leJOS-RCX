@@ -1,8 +1,11 @@
 package js.tinyvm;
 
 import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import js.common.AbstractTool;
 import js.common.ToolProgressListener;
@@ -85,7 +88,7 @@ public class TinyVMTool extends AbstractTool
         }
       }
     }
-    catch (Exception e)
+    catch (TinyVMException e)
     {
       // TODO make other classes throw TinyVMExceptions too
       throw new TinyVMException(e);
@@ -117,10 +120,15 @@ public class TinyVMTool extends AbstractTool
       binary.dump(byteWriter);
       bufferedStream.close();
     }
-    catch (Exception e)
+    catch (IOException e)
     {
-      // TODO make other classes throw TinyVMExceptions too
       throw new TinyVMException(e);
     }
+  }
+  
+  private static final Logger _logger = Logger.getLogger("TinyVM");
+  static 
+  {
+    _logger.setLevel(Level.OFF);
   }
 }

@@ -1,8 +1,10 @@
 package js.tinyvm;
 
-import js.tinyvm.io.ByteWriter;
-import js.tinyvm.util.Assertion;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import js.tinyvm.io.ByteWriter;
 
 public class CodeSequence extends WritableDataWithOffset
 {
@@ -13,24 +15,30 @@ public class CodeSequence extends WritableDataWithOffset
     iBytes = aBytes;
   }
 
-  public int getLength()
+  public int getLength ()
   {
     if (iBytes == null)
       return 0;
-    return iBytes.length; 
+    return iBytes.length;
   }
 
-  public void dump (ByteWriter aOut) 
-  throws Exception
+  public void dump (ByteWriter aOut) throws TinyVMException
   {
-    if (iBytes == null)
+    try
     {
-      Assertion.trace ("Not writing code sequence");
-      return;
+      if (iBytes == null)
+      {
+        _logger.log(Level.WARNING, "Not writing code sequence");
+        return;
+      }
+      aOut.write(iBytes, 0, iBytes.length);
     }
-    aOut.write (iBytes, 0, iBytes.length);
+    catch (IOException e)
+    {
+      throw new TinyVMException(e);
+    }
   }
+
+  private static final Logger _logger = Logger.getLogger("TinyVM");
 }
-
-
 
