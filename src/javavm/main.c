@@ -331,8 +331,8 @@ int main (void)
   goto LABEL_POWERUP;
  LABEL_EXIT:
   //shutdown_buttons();
-  //shutdown_timer();
   //shutdown_power();
+  shutdown_timer();
   return 0;
 }
 
