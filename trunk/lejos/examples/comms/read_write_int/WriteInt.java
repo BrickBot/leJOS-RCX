@@ -1,5 +1,6 @@
 import java.io.*;
 import josx.rcxcomm.*;
+import josx.platform.rcx.*;
 
 /**
  * This program uses the josx.rcxcomm package to
@@ -26,16 +27,13 @@ public class WriteInt {
       DataOutputStream dos = new DataOutputStream(os);
 
       for(int i=0;i<5;i++) {
-        System.out.println("Sending " + i);
 
         dos.writeInt(i);
         dos.flush();
 
         int n = dis.readInt();
-
-        System.out.println("Received " + n);
-
       }
+      Thread.sleep(1000);
     }
     catch (Exception e) {
     }
