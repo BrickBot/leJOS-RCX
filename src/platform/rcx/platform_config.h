@@ -32,7 +32,7 @@ typedef unsigned long FOURBYTES;
 // Are we using the timer IRQ to switch threads? Not yet.
 
 #define PLATFORM_HANDLES_SWITCH_THREAD 0
-#define OPCODES_PER_TIME_SLICE         148
+#define TICKS_PER_TIME_SLICE          20
 
 // No extra assertion code
 
@@ -41,19 +41,5 @@ typedef unsigned long FOURBYTES;
 // sensors
 
 #define ANGLE_DOUBLE_CHECK 1
-
-// hardware polling
-
-extern char timerdata1[6];
-
-extern void poll_sensors();
-
-static inline void poll_hardware()
-{
-  if( (timerdata1[0] & 0x80) != 0){ /* first handler run flag set? */
-    poll_sensors();
-    timerdata1[0] &= ~0x80;
-  }
-}
 
 #endif // _PLATFORM_CONFIG_H

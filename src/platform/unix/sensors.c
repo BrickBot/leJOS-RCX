@@ -37,9 +37,6 @@ void poll_sensors( void)
       pSensor->value = (pSensor->value + 1) % 100;
     }
   }
-  
-  if (should_poll())
-    poll_inputs();
 }
 
 void read_buttons(int dummy, short *output)

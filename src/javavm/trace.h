@@ -41,12 +41,18 @@
 
 #define LANGUAGE0    50
 #define LANGUAGE1    51
-#define LANGUAGE2    50
-#define LANGUAGE3    51
+#define LANGUAGE2    52
+#define LANGUAGE3    53
 
-extern void assert (boolean aCond, int aCode);
+#define assert( cond, code)  assert_hook( cond, code);
 
-#endif // VERIFY
+extern void assert_hook (boolean aCond, int aCode);
+
+#else
+
+#define assert(x,y)  ;
+
+#endif /* VERIFY */
 
 #if 0
 

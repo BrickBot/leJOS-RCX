@@ -15,6 +15,7 @@
 #include "trace.h"
 #include "magic.h"
 #include "systime.h"
+#include "sensors.h"
 #include "poll.h"
 
 extern char _bss_start;
@@ -63,7 +64,7 @@ Thread *bootThread;
  
 #ifdef VERIFY
 
-void assert (boolean aCond, int aCode)
+void assert_hook (boolean aCond, int aCode)
 {
   // TBD
 }
@@ -119,6 +120,7 @@ void wait_for_power_release (unsigned short count)
   } while (debouncer <= count);
 }
 
+
 void trace (short s, short n1, short n2)
 {
   if (s != -1)
@@ -159,9 +161,14 @@ void wait_for_release (short code)
   } while (debouncer < 100);
 }
 
+void reset_rcx_serial()
+{
+  //init_serial (&timerdata1[4], &timerdata0, 1, 1);
+  init_serial (0, 0, 1, 1);
+}
+
 /**
- * This function is invoked by engine()
- * and the download loop.
+ * Called after thread switch
  */
 void switch_thread_hook()
 {
@@ -192,12 +199,6 @@ void switch_thread_hook()
   }
 }
 
-void reset_rcx_serial()
-{
-  //init_serial (&timerdata1[4], &timerdata0, 1, 1);
-  init_serial (0, 0, 1, 1);
-}
-
 int main (void)
 {
 // Main entry point for VM
@@ -217,7 +218,6 @@ LABEL_POWERUP:
   init_power();
   
   // Initialize timer handler.
-  sys_time = 0l;
   systime_init();
 
   // Not sure why this is done.  

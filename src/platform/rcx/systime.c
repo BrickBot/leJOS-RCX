@@ -1,3 +1,5 @@
+#include "interpreter.h"
+
 #include "systime.h"
 
 /**
@@ -5,17 +7,6 @@
  * time a new program is started.
  */
 volatile unsigned long sys_time;
-
-/**
- * systime_init() should be called after
- * every call to init_timer().
- */
-void systime_init(void) {
-    T_IER &= ~TIER_ENABLE_OCA; 
-    ocia_vector = &systime_handler;
-    T_IER |=  TIER_ENABLE_OCA;
-}
-
 
 /***
  * the systime_handler doesn't do too much. After all, its gotta
@@ -47,6 +38,11 @@ __asm__(
 "                  addx  #0x0,r6h\n"
 "                  mov.w r6,@_sys_time\n"
 "              sys_nohigh:\n"
+"\n"
+"                ; set tick request\n"
+"                mov.b #0x1,r6l\n"
+"                mov.b r6l,@_gMakeRequest\n"
+"\n"
 "                ;bclr    #3,@0x91:8        ; reset compare A IRQ flag\n"
 "                rts\n"
 );

@@ -19,7 +19,17 @@ extern                   void *rom_ocia_handler;
 
 
 // functions
-void systime_init   (void);
 void systime_handler(void);
+
+/**
+ * systime_init() should be called after
+ * every call to init_timer().
+ */
+static inline void systime_init(void) {
+    T_IER &= ~TIER_ENABLE_OCA; 
+    ocia_vector = &systime_handler;
+    T_IER |=  TIER_ENABLE_OCA;
+}
+
 
 #endif /* _SYS_TIME_ */

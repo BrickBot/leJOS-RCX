@@ -31,6 +31,9 @@ TWOBYTES gMemorySize = MEMORY_SIZE;
 struct timeval gStart;
 int	verbose = 0;	/* If 1, print descriptive strings. */
 
+int last_sys_time;              /* to generate ticks */
+int last_ad_time;               /* to generate sensor reads */
+
 void handle_uncaught_exception (Object *exception,
                                        const Thread *thread,
 				       const MethodRecord *methodRecord,

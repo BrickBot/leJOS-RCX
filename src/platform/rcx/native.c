@@ -45,7 +45,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       sleep_thread (*paramBase1);
       // Drop through
     case yield_4_5V:
-      switch_thread();
+      schedule_request( REQUEST_SWITCH_THREAD);
       return;
     case getPriority_4_5I:
       push_word (get_thread_priority ((Thread*)word2obj(paramBase[0])));
@@ -164,7 +164,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       set_poller(word2ptr(paramBase[0]));
       return;
     case setThrottle_4I_5V:
-      throttle = paramBase[0];
+      throttle = (byte)(paramBase[0]);
       return;
     case readSensorValue_4II_5I:
       // Parameters: int romId (0..2), int requestedValue (0..2).

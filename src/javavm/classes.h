@@ -3,10 +3,10 @@
  * Contains conterparts of special classes as C structs.
  */
  
-#include "types.h"
-
 #ifndef _CLASSES_H
 #define _CLASSES_H
+
+#include "types.h"
 
 #define CLASS_MASK      0x00FF
 #define CLASS_SHIFT     0
@@ -117,7 +117,7 @@ typedef struct S_Thread
 
 /**
  * Runtime class native structure. Doesn't actually contain
- * any instance data. Maybe it ought to?ere Like ALL of the leJOS
+ * any instance data. Maybe it ought to? Like ALL of the leJOS
  * specific runtime instance data?
  */
 typedef struct S_Runtime
