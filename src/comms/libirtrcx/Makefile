@@ -35,8 +35,14 @@ endif
 ifneq (,$(findstring $(OSTYPE),cygwin32 CYGWIN_NT-4.0 WindowsNT Windows_NT))
 	EXT=.exe
 endif
+ifneq (,$(findstring darwin,$(OSTYPE)))
+	OSX_USB=osx_usb
+	LIBS += -framework IOKit -framework CoreFoundation
+else
+	OSX_USB=
+endif
 
-all: fastdl.h ../../bin/lejosfirmdl$(EXT)
+all: $(OSX_USB) fastdl.h ../../bin/lejosfirmdl$(EXT)
 
 mkimg$(EXT): mkimg.o srec.o
 	$(CC) $^ -o $@ $(CFLAGS)
@@ -46,6 +52,7 @@ mkimg$(EXT): mkimg.o srec.o
 
 fastdl.h: mkimg$(EXT) fastdl.srec
 	./mkimg fastdl.srec > fastdl.h
-
+osx_usb: osx_usb.c
+	$(CC) -c $(CFLAGS) $^
 clean:
 	rm -f *.o *~ *.bak fastdl.h mkimg$(EXT) ../../bin/firmdl3$(EXT)
