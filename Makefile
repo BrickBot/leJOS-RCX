@@ -9,7 +9,7 @@ LIB_DIR=${TINYVM_HOME}/lib
 JAVAC=javac
 JAVADOC=javadoc
 JAVA=java
-TEMP=/tmp
+TEMP=/usr/tmp
 
 export CLASSPATH
 
