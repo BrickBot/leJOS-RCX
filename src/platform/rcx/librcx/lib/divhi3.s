@@ -1,7 +1,7 @@
 /*
- *  modhi3.c
+ *  divhi3.c
  *
- *  Wrapper for ROM modhi3 routine, a 16-bit signed modulo: r0 %= r1
+ *  Wrapper for ROM divhi3 routine, a 16-bit signed divide: r0 /= r1
  *
  *  The contents of this file are subject to the Mozilla Public License
  *  Version 1.0 (the "License"); you may not use this file except in
@@ -22,12 +22,11 @@
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
  */
 
-__asm__ ("
     .section .text
 
-    .global ___modhi3
+    .global ___divhi3
 
-___modhi3:
+___divhi3:
 
     push    r5
     push    r6
@@ -35,7 +34,7 @@ ___modhi3:
     mov.w   r0,r6
     mov.w   r1,r5
 
-    jsr     @@80
+    jsr     @@82
 
     mov.w   r6,r0
 
@@ -43,4 +42,3 @@ ___modhi3:
     pop     r5
 
     rts
-");

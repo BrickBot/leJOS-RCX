@@ -1,7 +1,7 @@
 /*
- *  ucmpsi2.c
+ *  cmpsi2.c
  *
- *  Implementation of ucmpsi2, a 32-bit unsigned compare: r0r1 <=> r2r3
+ *  Implementation of cmpsi2, a 32-bit signed compare: r0r1 <=> r2r3
  *  Returns -1, 0, or 1, which might not be correct.
  *
  *  The contents of this file are subject to the Mozilla Public License
@@ -23,18 +23,17 @@
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
  */
 
-__asm__ ("
     .section .text
 
-    .global ___ucmpsi2
+    .global ___cmpsi2
 
-___ucmpsi2:
+___cmpsi2:
 
     sub.w   r3,r1
     subx.b  r2l,r0l
     subx.b  r2h,r0h
 
-    blo     else_0
+    blt     else_0
 
         beq     else_1
 
@@ -62,4 +61,3 @@ ___ucmpsi2:
     endif_0:
 
     ; Not reached
-");

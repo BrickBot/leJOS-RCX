@@ -1,7 +1,7 @@
 /*
- *  mulsi3.c
+ *  udivhi3.c
  *
- *  Wrapper for ROM mulsi3 routine, a 32-bit multiply: r0r1 *= r2r3
+ *  Wrapper for ROM udivhi3 routine, a 16-bit unsigned divide: r0 /= r1
  *
  *  The contents of this file are subject to the Mozilla Public License
  *  Version 1.0 (the "License"); you may not use this file except in
@@ -22,30 +22,23 @@
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
  */
 
-__asm__ ("
     .section .text
 
-    .global ___mulsi3
+    .global ___udivhi3
 
-___mulsi3:
+___udivhi3:
 
-    push    r4
     push    r5
     push    r6
 
-    mov.w   r1,r6
-    mov.w   r0,r5
-    mov.w   r3,r4
-    mov.w   r2,r3
+    mov.w   r0,r6
+    mov.w   r1,r5
 
-    jsr     @@84
+    jsr     @@78
 
-    mov.w   r6,r1
-    mov.w   r5,r0
+    mov.w   r6,r0
 
     pop     r6
     pop     r5
-    pop     r4
 
     rts
-");

@@ -1,7 +1,7 @@
 /*
- *  rcall2.c
+ *  udivsi3.c
  *
- *  Implements a generic wrapper for ROM routines with two parameters.
+ *  Wrapper for ROM udivsi3 routine, a 32-bit unsigned divide: r0r1 /= r2r3
  *
  *  The contents of this file are subject to the Mozilla Public License
  *  Version 1.0 (the "License"); you may not use this file except in
@@ -22,25 +22,28 @@
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
  */
 
-__asm__ ("
     .section .text
 
-    .global ___rcall2
+    .global ___udivsi3
 
-___rcall2:
+___udivsi3:
 
+    push    r4
+    push    r5
     push    r6
 
-    push    r2
     mov.w   r1,r6
+    mov.w   r0,r5
+    mov.w   r3,r4
+    mov.w   r2,r3
 
-    jsr     @r0
+    jsr     @@86
 
-    adds    #2,r7
-
-    mov.w   r6,r0
+    mov.w   r6,r1
+    mov.w   r5,r0
 
     pop     r6
+    pop     r5
+    pop     r4
 
     rts
-");

@@ -1,7 +1,7 @@
 /*
- *  rcall4.c
+ *  rcall2.c
  *
- *  Implements a generic wrapper for ROM routines with four parameters.
+ *  Implements a generic wrapper for ROM routines with two parameters.
  *
  *  The contents of this file are subject to the Mozilla Public License
  *  Version 1.0 (the "License"); you may not use this file except in
@@ -22,30 +22,23 @@
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
  */
 
-__asm__ ("
     .section .text
 
-    .global ___rcall4
+    .global ___rcall2
 
-___rcall4:
+___rcall2:
 
     push    r6
 
-    mov.w   @(6,r7),r3
-    push    r3
-    mov.w   @(6,r7),r3
-    push    r3
     push    r2
     mov.w   r1,r6
 
     jsr     @r0
 
-    add.b   #6,r7l
-    addx.b  #0,r7h
+    adds    #2,r7
 
     mov.w   r6,r0
 
     pop     r6
 
     rts
-");

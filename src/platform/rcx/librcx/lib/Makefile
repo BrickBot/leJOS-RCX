@@ -20,12 +20,12 @@ ROOT = ..
 include $(ROOT)/make/shared.mk
 
 SOURCES = init.c memcpy.c memset.c malloc.c \
-          rcall0.c rcall1.c rcall2.c rcall3.c rcall4.c \
-          mulhi3.c divhi3.c modhi3.c udivhi3.c umodhi3.c \
-          mulsi3.c divsi3.c modsi3.c udivsi3.c umodsi3.c \
-          cmpsi2.c ucmpsi2.c
+          rcall0.s rcall1.s rcall2.s rcall3.s rcall4.s \
+          mulhi3.s divhi3.s modhi3.s udivhi3.s umodhi3.s \
+          mulsi3.s divsi3.s modsi3.s udivsi3.s umodsi3.s \
+          cmpsi2.s ucmpsi2.s
 
-OBJECTS = $(SOURCES:.c=.o)
+OBJECTS = $(SOURCES:.c=.o) $(SOURCES:.s=.o)
 
 INCS = -I.
 
