@@ -5,12 +5,17 @@ public class Music implements MotionListener  {
   static String dir;
     
   public static void main(String [] args) {
+    if (args.length < 1) {
+      System.out.println("Usage: java Music <instrument>");
+      System.exit(1);
+    }
     dir = args[0];
     (new Music()).run();
   }
 
   private void run() {
     Vision.setImageSize(320, 240);
+    Vision.flipHorizontal(true);
     for(int i=0;i<16;i++) {
       Vision.addRectRegion(i+1, i * 20, 0, 20, 160);
       Vision.addMotionListener(i+1, this);
