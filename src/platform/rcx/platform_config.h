@@ -1,8 +1,7 @@
 #ifndef _PLATFORM_CONFIG_H
 #define _PLATFORM_CONFIG_H
 
-#include <rom.h> // Requires librcx
-
+#include "sensors.h"
 #include "systime.h"
 
 // Basic types
@@ -40,19 +39,18 @@ typedef unsigned long FOURBYTES;
 
 #undef VERIFY
 
-// hardware polling (for sensors)
+// sensors
 
-extern sensor_t sensors[3];
+#define ANGLE_DOUBLE_CHECK 1
+
+// hardware polling
+
 extern char timerdata1[6];
 
 static inline void poll_hardware()
 {
-  int i;
-
   if( (timerdata1[0] & 0x80) != 0){ /* first handler run flag set? */
-    for( i=0; i<3; i++){
-      read_sensor( 0x1000 + i, &sensors[i]);	  
-    }
+    poll_sensors();
     timerdata1[0] &= ~0x80;
   }
 }
