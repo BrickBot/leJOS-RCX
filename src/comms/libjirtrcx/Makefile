@@ -43,7 +43,7 @@ ifneq (,$(findstring darwin,$(OSTYPE)))
   else
     # Linux/Solaris/FreeBSD/other unices.
     IRTOWER=../../bin/libirtower.so
-    CCOPT=-shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) -I$(COMM_INCL)
+    CCOPT=-shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) -I$(COMM_INCL) -I../../tools/linux/legousbtower	
 
   endif
 endif
