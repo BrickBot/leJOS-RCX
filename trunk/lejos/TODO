@@ -8,7 +8,6 @@ Wishlist:
 
 - see what happens in hardware reserved memory space
 - disable internal memory to gain 512 bytes
-- untangle Button, Sensor and Serial w.r.t. LISTENER_THREAD
 - introduce constants.db for common contants
 - let make fail with error if magic.h is older
   than common/classes.db or signatures.db or common/magic.db
