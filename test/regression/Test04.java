@@ -5,6 +5,7 @@ import tinyvm.rcx.ROM;
 
 public class Test04
 {
+  static Test04 iObj2;
   static int iStatic;
   byte iByteField;
   int iIntField;
@@ -15,14 +16,14 @@ public class Test04
   public static void main (String[] aArg)
   {
     Test04 pObj = new Test04();
-    Test04 pObj2 = new Test04();
+    iObj2 = new Test04();
     Test04.iStatic = 4490; 
     pObj.iByteField = 100; 
     pObj.iIntField = 100000; 
     pObj.iByteField2 = 80; 
     pObj.iShortField = 4000;
-    pObj2.iByteField = 125;
-    pObj2.iShortField = 4175;
+    iObj2.iByteField = 125;
+    iObj2.iShortField = 4175;
     int k = pObj.iStatic;   
     ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, (short) k,
                       (short) (ROM.LCD_POINT_DECIMAL_0 + 1));
@@ -31,8 +32,8 @@ public class Test04
                pObj.iByteField;   
     ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, (short) (lvar - 99999),
                       (short) (ROM.LCD_POINT_DECIMAL_0 + 1));
-    ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, (short) (pObj2.iByteField +
-                      pObj2.iShortField),
+    ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, (short) (iObj2.iByteField +
+                      iObj2.iShortField),
                       (short) (ROM.LCD_POINT_DECIMAL_0 + 1));
   }
 }
