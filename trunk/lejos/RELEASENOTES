@@ -1,0 +1,20 @@
+
+
+Version 0.1.1 (latest):
+
+  - Fixed PUTSTATIC bug. (Setting a static field
+    in uninitialized class could produce subsequent
+    erroneous behavior).
+
+  - Changed RCX API so that its style conforms
+    a bit more with other Java APIs. Namely, 
+    depracted routines in ROM, and split them up
+    into LCD and Sound, which have more convenient
+    APIs. Removed some ROM routines, which hopefully
+    haven't been used too much yet. Class Native
+    now contains native APIs. ROM contains certain
+    unclassified APIs.
+
+  - Added a few classes: LCD, Sound, MinLCD, MinSound,
+    Button. 
+
