@@ -1,7 +1,10 @@
 package josx.util;
 
 /**
- * An array recycler. 
+ * An array recycler for Object arrays. To use this utility, create
+ * a global instance of this class, and then invoke
+ * <code>allocate(int)</code> to create recyclable arrays.
+ * As usual, invoke <code>recycle(...)</code> to release the array. 
  * <p>
  * Note that the caller is expected to provide
  * thread safety for instances of this class.
