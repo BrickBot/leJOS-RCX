@@ -31,6 +31,14 @@
 #define RCX_BAD_ECHO      -3
 #define RCX_NO_RESPONSE   -4
 #define RCX_BAD_RESPONSE  -5
+#define RCX_WRITE_FAIL    -6
+#define RCX_READ_FAIL     -7
+#define RCX_OPEN_FAIL     -8
+#define RCX_INTERNAL_ERR  -9
+#define RCX_ALREADY_CLOSED -10
+#define RCX_ALREADY_OPEN -11
+#define RCX_NOT_OPEN     -12
+#define RCX_TIMED_OUT     -13
 
 #if defined(_WIN32) || defined(__CYGWIN32__)
   #define FILEDESCR	HANDLE
@@ -78,6 +86,15 @@ extern char *rcx_strerror(int error);
 /* Hexdump routine */
 extern void hexdump(char *prefix, void *buf, int len);
 
+extern int mywrite(FILEDESCR fd, const void *buf, size_t len);
+
+extern int nbread(FILEDESCR fd, void *buf, int maxlen, int timeout);
+
+#if defined(_WIN32)
+void gettimeofday(timeval *tv, void *tzp);
+
+#define usleep(x) Sleep(x/1000)
+#endif
 
 #endif /* RCX_COMM_H_INCLUDED */
 
