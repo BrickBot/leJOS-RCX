@@ -1,4 +1,4 @@
-echo off
+@echo off
 set CLASSPATH_SAVE=%CLASSPATH%
 if "%LEJOS_HOME%" == ""  goto homeless
 
