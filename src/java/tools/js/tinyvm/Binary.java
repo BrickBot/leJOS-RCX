@@ -301,8 +301,6 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
    * @param msg the message
    */
   public void appendSignature(String msg) {
-    // TODO system out only in verbose level
-    System.out.println (msg);
     this.signatureWriter.println(msg);
   }
 
