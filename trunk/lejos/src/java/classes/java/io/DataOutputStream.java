@@ -196,9 +196,9 @@ public class DataOutputStream extends OutputStream {
    * @see        java.io.FilterOutputStream#out
    * @see        java.lang.Float#floatToIntBits(float)
    */
-   //public final void writeFloat(float v) throws IOException {
-   //   writeInt(Float.floatToIntBits(v));
-   //}
+   public final void writeFloat(float v) throws IOException {
+      writeInt(Float.floatToIntBits(v));
+   }
 
    /**
    * Converts the double argument to a <code>long</code> using the 
