@@ -27,6 +27,8 @@ dir_and_zip:
 	tar cf - . | (cd ${TEMP}/${TINYVM_VERSION}; tar xfpB -)
 	cd ${TEMP}/${TINYVM_VERSION}; make distclean_src
 	cd ${TEMP}; tar cvf ${TINYVM_VERSION}.tar ${TINYVM_VERSION}; gzip ${TINYVM_VERSION}.tar
+	make javadoc
+	cd ..; tar cvf ${TEMP}/${TINYVM_VERSION}.doc.tar lejos/apidocs lejos/docs lejos/README lejos/RELEASENOTES lejos/CLICKME.html lejos/LICENSE lejos/ACKNOWLEDGMENTS; gzip ${TEMP}/${TINYVM_VERSION}.doc.tar
 	diff bin/lejos.srec ${TEMP}/${TINYVM_VERSION}/bin/lejos.srec
 
 release_win:
@@ -41,7 +43,11 @@ dir_and_zip_win:
 	cp -r . ${TEMP}/lejos
 	cd ${TEMP}/lejos; make distclean_win
 	cp /bin/cygwin1.dll ${TEMP}/lejos/bin
-	cd ${TEMP}; jar cvf ${TINYVM_VERSION}.zip lejos
+	rm -f ${TINYVM_VERSION}.zip
+	cd ${TEMP}; zip -r ${TINYVM_VERSION}.zip lejos
+	make javadoc
+	rm -f ${TEMP}/${TINYVM_VERSION}.doc.zip
+	cd ..; zip -r ${TEMP}/${TINYVM_VERSION}.doc.zip lejos/apidocs lejos/docs lejos/README lejos/RELEASENOTES lejos/CLICKME.html lejos/LICENSE lejos/ACKNOWLEDGEMENTS
 	diff bin/lejos.srec ${TEMP}/lejos/bin/lejos.srec
 
 check:

@@ -15,6 +15,7 @@
 #include "trace.h"
 #include "magic.h"
 #include "systime.h"
+#include "poll.h"
 
 extern char _bss_start;
 extern char _end;
@@ -216,7 +217,8 @@ LABEL_POWERUP:
   init_power();
   
   // Initialize timer handler.
-  sys_time = 0l;
+  next_poll_time = sys_time = 0l;
+  throttle = 1;
   systime_init();
 
   // Not sure why this is done.  
@@ -407,6 +409,8 @@ LABEL_COMM_LOOP:
 // Run the program.
 LABEL_PROGRAM_STARTUP:
 
+  throttle = 1;
+  
   // Reinitialize binary
   initialize_binary();
   
