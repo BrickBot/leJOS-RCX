@@ -21,11 +21,6 @@ public abstract class Thread
   
   private String name;
 
-  // Static state follows:
-
-  private static byte _TVM_threadIdCounter;
-  private static Error _TVM_outOfMemoryError;
-  
   public Thread()
   {
     this ("");
@@ -34,13 +29,6 @@ public abstract class Thread
   public Thread (String name)
   {
     this.name = name;
-    if (_TVM_threadIdCounter >= 63)
-    {
-      if (_TVM_outOfMemoryError == null)
-        _TVM_outOfMemoryError = new OutOfMemoryError();
-      throw _TVM_outOfMemoryError;
-    }
-    _TVM_threadId = ++_TVM_threadIdCounter;
   }
   
   public native void start();

@@ -308,6 +308,7 @@ void init_memory (void *ptr, TWOBYTES size)
   startPtr = ptr;
   freeOffset = NULL_OFFSET;
   currentThread = null;
+  gThreadCounter = 0;
   #if DEBUG_MEMORY
   printf ("Setting start of memory to %d\n", (int) startPtr);
   printf ("Going to reserve %d words\n", size);

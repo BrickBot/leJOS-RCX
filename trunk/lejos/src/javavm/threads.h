@@ -14,6 +14,7 @@
 
 extern Thread *currentThread;
 extern Thread *bootThread;
+extern byte gThreadCounter;
 
 typedef struct S_StackFrame
 {

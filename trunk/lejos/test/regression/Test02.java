@@ -46,6 +46,15 @@ public class Test02
     ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, (short) k, 
                       ROM.LCD_POINT_DECIMAL_0);
     ROM.refreshLcd();    
+    byte ab = (byte) 220;
+    k = (int) ab;
+    ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, (short) k, 
+                      ROM.LCD_POINT_DECIMAL_0);
+    ROM.refreshLcd();    
+    k = ab & 0xFF;
+    ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, (short) k, 
+                      ROM.LCD_POINT_DECIMAL_0);
+    ROM.refreshLcd();    
   }
 }
 

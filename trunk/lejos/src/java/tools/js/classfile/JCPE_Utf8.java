@@ -39,9 +39,13 @@ public class JCPE_Utf8 extends JConstantPoolEntry
   {
     // Assume tag already read
     iLength = JIO.readU2 (aIn);
+
     if (iBytes == null || iBytes.length < iLength)
       iBytes = new byte[iLength];
-    aIn.read (iBytes, 0, iLength);
+    int pRead = 0;
+    do {
+      pRead += aIn.read (iBytes, pRead, iLength - pRead);
+    } while (pRead < iLength);
 
     //System.out.println ("(" + iLength + ") |" +
     //          new String (iBytes, 0, iLength) + "|");

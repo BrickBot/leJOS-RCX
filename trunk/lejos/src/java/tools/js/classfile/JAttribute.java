@@ -110,7 +110,10 @@ public class JAttribute implements IDumpable
   {
     int pLength = JIO.readU4 (aIn);
     iInfo = new byte[pLength];    
-    aIn.read (iInfo, 0, pLength);
+    int pRead = 0;
+    do {
+      pRead += aIn.read (iInfo, pRead, pLength - pRead);
+    } while (pRead < pLength);
   }
 
   /**
