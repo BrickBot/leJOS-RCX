@@ -8,6 +8,7 @@ import java.awt.*;
  * Supports overlaying Region information over the video stream
  */
 public class RegionEffect extends VisionEffect {
+  public boolean show = true;
 
   public RegionEffect() {
     super();
@@ -37,6 +38,8 @@ public class RegionEffect extends VisionEffect {
     }
 
     System.arraycopy(inData,0,outData,0,inData.length);
+   
+    if (!show) return BUFFER_PROCESSED_OK;
         
     for(int i=0;i<regions.length;i++) {
       if (regions[i] != null) {
@@ -93,4 +96,19 @@ public class RegionEffect extends VisionEffect {
   public String getName() {
     return "Region Effect";
   }
+
+  private Control[] controls;
+
+  /**
+   * Getter for array on one control for adjusing motion threshold and setting debug.
+   * @return an array of one MotionDetectionControl
+   */
+  public Object[] getControls() {
+    if (controls == null) {
+      controls = new Control[1];
+      controls[0] = new RegionControl(this);
+    }
+    return (Object[])controls;
+  }
+
 }

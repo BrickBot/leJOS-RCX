@@ -2,6 +2,7 @@ package josx.vision;
 
 /**
  * Representation of a region in the camera's field of view
+ * @author Lawrie Griffiths
  */
 public class Region {
 
@@ -55,6 +56,7 @@ public class Region {
 
   /**
    * Get the width of the region
+   * @return the width of the region
    */
   public int getWidth() {
     return w;
@@ -62,6 +64,7 @@ public class Region {
 
   /**
    * Get the height of the region
+   * @return the height of the region
    */
   public int getHeight() {
     return h;
@@ -78,6 +81,7 @@ public class Region {
 
   /**
    * Add a motion listener
+   * @param ml the listener to add
    */
   public void addMotionListener(MotionListener ml) {
     motionListeners[numMotionListeners++] = ml;
@@ -85,6 +89,8 @@ public class Region {
 
   /**
    * Add a color listener
+   * @param cl the listener to add
+   * @param color the color to look for
    */
   public void addColorListener(ColorListener cl, int color) {
     colors[numColorListeners] = color;
@@ -93,6 +99,7 @@ public class Region {
 
   /**
    * Add a light listener
+   * @param ll the listener to add
    */
   public void addLightListener(LightListener ll) {
     lightListeners[numLightListeners++] = ll;
@@ -100,6 +107,7 @@ public class Region {
 
   /**
    * Return the array of motion listeners 
+   * @return the motion listener array
    */
   public MotionListener [] getMotionListeners() {
     MotionListener [] ml = new MotionListener[numMotionListeners];
@@ -109,6 +117,7 @@ public class Region {
 
   /**
    * Return the array of color listeners 
+   * @return the color listener array
    */
   public ColorListener [] getColorListeners() {
     ColorListener [] cl = new ColorListener[numColorListeners];
@@ -118,6 +127,7 @@ public class Region {
 
   /**
    * Return the array of colors corresponding to the color listeners 
+   * @return the array of colors
    */
   public int [] getColors() {
     return colors;
@@ -125,6 +135,7 @@ public class Region {
 
   /**
    * Return the array of light listeners 
+   * @return the light listener array
    */
   public LightListener [] getLightListeners() {
     LightListener [] ll = new LightListener[numLightListeners];

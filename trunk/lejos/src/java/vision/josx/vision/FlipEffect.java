@@ -6,13 +6,22 @@ import java.awt.*;
 
 /*
  * Flips image Horizontally
+ * @author Lawrie Griffiths
  */
 public class FlipEffect extends VisionEffect {
+  public boolean flip = true;
 
+  /**
+   * Create flip effect
+   **/
   public FlipEffect() {
     super();
   }
 
+
+  /**
+   * Flip the data in each line
+   **/
   public int process(Buffer inBuffer, Buffer outBuffer) {
     int outputDataLength = ((VideoFormat)outputFormat).getMaxDataLength();
     validateByteArraySize(outBuffer, outputDataLength);
@@ -38,11 +47,17 @@ public class FlipEffect extends VisionEffect {
     int lines = inData.length/ lineStrideIn;
     int pixsPerLine = lineStrideIn/pixStrideIn;
 
+    if (!flip) {
+      System.arraycopy(inData,0,outData,0,inData.length);
+      return BUFFER_PROCESSED_OK;
+    }
+
+    // Flip each line horizoontally
+
     byte [] buf = new byte[lineStrideIn];
     int pos = 0;
 
     for(int i=0;i<lines;i++) {
-      // System.arraycopy(inData, pos, buf, 0, lineStrideIn);
       for(int j=0;j<pixsPerLine;j++) {
         for(int k=0;k<3;k++)
           buf[lineStrideIn - (j*pixStrideIn) -3 + k] = inData[pos + (j*pixStrideIn) + k];
@@ -54,7 +69,25 @@ public class FlipEffect extends VisionEffect {
   }
 
   // methods for interface PlugIn
+
+  /**
+   * @return "Flip Effect"
+   **/
   public String getName() {
     return "Flip Effect";
   }
+  private Control[] controls;
+
+  /**
+   * Getter for array on one control for adjusing motion threshold and setting debug.
+   * @return an array of one ColorDetectionControl
+   */
+  public Object[] getControls() {
+    if (controls == null) {
+      controls = new Control[1];
+      controls[0] = new FlipControl(this);
+    }
+    return (Object[])controls;
+  }
+
 }
