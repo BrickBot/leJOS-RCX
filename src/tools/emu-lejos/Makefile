@@ -10,10 +10,18 @@ UNIXLOADERNAME=emu-lejos
 RCXLOADER=../bin/${RCXLOADERNAME}
 UNIXLOADER=../bin/${UNIXLOADERNAME}
 
+TVM_OBJ=lejosrun.o firmdl/rcx_comm.o
 CC=$(shell ../cctest.sh)
 
 CCOPT=-I../vmsrc -Wall -Wno-unused -O2
+
+
 LIBS=
+ifneq (,$(findstring darwin,$(OSTYPE)))
+	LIBS += -framework IOKit -framework CoreFoundation
+        TVM_OBJ += firmdl/osx_usb.o
+endif
+
 TVMFIRMDL_OBJ=tvm_firmdl3.o util.o
 TVMCDEFS=-DTOOL_NAME=\"javac\" -DTOOL_ALT_VAR=\"JAVAC\" -DJAVA2
 TVMPDEFS=-DTOOL_NAME=\"javap\" -DTOOL_ALT_VAR=\"JAVAP\" -DJAVA2
@@ -44,7 +52,7 @@ ${TVMFIRMDL}: ${TVMFIRMDL_OBJ}
 lejosrun.o: lejosrun.c ../vmsrc/magic.h
 
 ${TVM}: lejosrun.o firmdl
-	${CC} lejosrun.o firmdl/rcx_comm.o -o ${TVM}
+	${CC} ${TVM_OBJ} -o ${TVM} ${LIBS}
 
 ${TVMC}: jtoolexec.c util.o
 	${CC} ${TVMCDEFS} -c jtoolexec.c
