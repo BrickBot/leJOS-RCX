@@ -113,7 +113,7 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 
 int __rcx_write(void* port, void* buf, int len) 
 {
-	return write(((Port*) port)->fileHandle, buf, len);
+	return TEMP_FAILURE_RETRY (write(((Port*) port)->fileHandle, buf, len));
 }
 
 void __rcx_purge(void* port)
