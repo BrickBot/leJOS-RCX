@@ -29,7 +29,6 @@ import org.apache.bcel.classfile.ConstantString;
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
-import org.apache.bcel.util.ClassPath;
 
 /**
  * Abstraction for a class record (see vmsrc/language.h).
@@ -485,7 +484,7 @@ public class ClassRecord implements WritableData
       InputStream pIn;
       try
       {
-         pIn = aCP.getClassFile(className).getInputStream();
+         pIn = aCP.getInputStream(className);
          assert pIn != null: "Check: pIn != null";
       }
       catch (IOException e)
@@ -500,7 +499,6 @@ public class ClassRecord implements WritableData
          pCR.iBinary = aBinary;
          pCR.iName = className;
          InputStream pBufIn = new BufferedInputStream(pIn, 4096);
-         // TODO aName OK?
          pCR.iCF = new ClassParser(pBufIn, className).parse();
          pBufIn.close();
       }
