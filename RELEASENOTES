@@ -3,6 +3,10 @@ leJOS 1.0.0alpha4:
   
   - Added Brian Bagnall's java.lang.Math class.
   - Fixed bug in the way the linker was writing doubles.
+  - Optimized native method calling. About 30% performance
+    improvement.
+  - Found bugs in handling of stack by some native methods.
+    This might have been causing programs to misbehave.
 
 leJOS 1.0.0alpha3:
 ------------------

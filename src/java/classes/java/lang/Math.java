@@ -1,5 +1,10 @@
 package java.lang;
 
+/**
+ * Mathematical functions.
+ *
+ * @author <a href="bbagnall@escape.ca">Brian Bagnall</a>
+ */
 public final class Math {
 
    	final static double [] DIGIT = {45.0, 26.56505118, 14.03624347, 7.125016349, 3.576334375, 1.789910608, 0.89517371, 0.447614171, 0.2238105, 0.111905677, 0.055952892, 0.027976453, 0.013988227, 0.006994114, 0.003497057};
@@ -17,6 +22,9 @@ public final class Math {
 		return trig(a, COS);
 	}
 
+        /**
+	 * Power function.
+	 */
 	// will redo pow() properly later to handle doubles for b.
 	public static double pow(double a, int b) {
 		double c = 1.0;
@@ -35,10 +43,16 @@ public final class Math {
 		return c;
 	}
 
+        /**
+	 * Sine function.
+	 */
 	public static double sin(double a) {
 		return trig(a, SIN);
 	}
 
+	/**
+	 * Square root function.
+	 */
 	public static double sqrt(double a) {
 		double b = a;
 		double delta = a;
@@ -69,7 +83,10 @@ public final class Math {
 
 		return b;
 	}
-	
+
+        /**
+         * Tangent function.
+	 */
 	public static double tan(double a) {
 		return trig(a, TAN);
 	}
@@ -150,11 +167,17 @@ public final class Math {
 			return y/x;
 	}
 	
-	
+
+        /**
+         * Converts radians to degrees.
+	 */
 	public static double toDegrees(double angrad) {
 		return (angrad * 360)/(2 * PI);
 	}
 	
+	/**
+	 * Converts degrees to radians.
+	 */
 	public static double toRadians(double angdeg) {
 		return (2*PI*angdeg)/360;
 	}
