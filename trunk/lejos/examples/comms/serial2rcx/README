@@ -1,10 +1,9 @@
-This example was contributed by Reinhard Schiedermeier
-(schieder <at> informatik.fh).
+This example was contributed by Brian Bagnall
+(bbagnall <at> users.sourceforge.net)
 It allows two RCXs to communicate with each other. 
 
 % make
 
-links the two programs together into one binary and
-downloads it to one RCX. Load it onto both RCX, then
-use the Prgm button to select program 0 on the first
-and program 1 on the second RCX, then start them.
+Load each class onto 2 RCX bricks. Hit RUN on both 
+RCX bricks. Press RUN repeatedly to send a new byte 
+to the receiver.
