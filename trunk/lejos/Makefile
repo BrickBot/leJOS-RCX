@@ -13,7 +13,7 @@ TEMP=/usr/tmp
 
 export CLASSPATH
 
-default: check all_jtools all_ctools core_classes tinyvm_emul all_ctools
+default: check all_jtools all_ctools core_classes tinyvm_emul
 
 all: default tinyvm_bin
 
