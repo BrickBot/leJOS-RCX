@@ -15,6 +15,8 @@ public interface SpecialSignatureConstants {
     "callRom1(SS)V",
     "callRom2(SSS)V",
     "callRom3(SSSS)V",
+    "callRom4(SSSSS)V",
+    "resetRcx()V",
     "readMemoryByte(I)B",
     "writeMemoryByte(IB)V",
     "getDataAddress(Ljava/lang/Object;)I"

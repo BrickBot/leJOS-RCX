@@ -4,25 +4,24 @@ Summary
 
 TINYVM_HOME=<installation directory>
 RCXTTY=<serial device>
-PATH=$PATH:$TINYVM_HOME/bin
+PATH=$PATH:$TINYVM_HOME/bin:$JAVA_HOME/bin
 
 Use TINYVMPATH instead of CLASSPATH.
 
 Tools      : cd $TINYVM_HOME; make
-Firmware   : tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
+Firmware   : tvmfirmdl
 Compiling  : tvmc <class>.java
 Linking    : tvmld <class> -o <class>.tvm
 Running    : tvm <class>.tvm
 Or simply  : tvmld <class> -d
 
-Deleting TinyVM's firmware: 
-  Hold Prgm & Run, and press On/Off,
-  while in program-download mode.
-
 Exceptions: 
   [XXXX Y], XXXX = method signature; 
             Y    = exception class index % 10.
   Press On/Off to continue.
+
+A User's Guide is now available at 
+http://www.crazyrobots.com/tinyvmsite. 
 
 What is TinyVM?
 ---------------
@@ -31,12 +30,6 @@ TinyVM is a virtual machine that can execute
 post-processed Java class files inside the Lego
 RCX. It's yet another firmware replacement for
 the RCX.
-
-Legally speaking, TinyVM probably cannot be called 
-a Java Virtual Machine (JVM) because of certain 
-limitations, lack of APIs, and other non-compliance 
-issues. However, TinyVM supports most of the Java 
-*language*.
 
 Requirements
 ------------
@@ -70,23 +63,17 @@ Environment:
     CLASSPATH does for the JDK.
 
 Building the Tools:
-  If the setup is right, simply typing 'make'
-  while at $TINYVM_HOME, should build all the
-  tools necessary to start using TinyVM.
+  If you have set TINYVM_HOME correctly, and the JDK's
+  bin directory is in your PATH setting, you are ready
+  to install TinyVM. Simply go to $TINYVM_HOME and
+  type 'make'. At this point all of the tools necessary
+  to run TinyVM should be available under bin.
 
 Downloading the Firmware:
-  Simply run:
-  tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
+  Run the tvmfirmdl utility.
 
-Deleting the Firmware:
-  When the TinyVM firmware is ready to download 
-  linked binaries (i.e. when it's in program-download
-  mode [0000 0]), you can remove the firmware
-  by holding both the Prgm and Run buttons down
-  while you press the On-Off button. 
-
-Running an Example
-------------------
+Example
+-------
 
   1. Go to the example directory.
 
@@ -104,9 +91,11 @@ Running an Example
 
      javac -classpath .:$TINYVM_HOME/lib/classes.jar *.java 
 
+     Do NOT add classes.jar to your CLASSPATH setting.
+
   4. Download firmware, if necessary.
 
-     tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
+     tvmfirmdl
 
      This may take a couple of minutes. When the
      firmware is done getting downloaded, you
@@ -114,6 +103,11 @@ Running an Example
      look pretty much like this: [0000 0].
      TinyVM is in program-download mode at 
      this point.
+
+     (Note that tvmfirmdl is essentially the same
+     as Kekoa Proudfoot's firmdl program, except 
+     that tvmfirmdl has been tweaked to allow for
+     longer lines in the srec file).
 
   5. Link & load the program.
 
@@ -134,68 +128,34 @@ Running an Example
      IR tower light is off, power up the RCX,
      and try again).
 
-     TinyVM will execute the program, as soon as
+     TinyVM will execute the program as soon as
      the download has been completed. When 
      all non-daemon threads are finished, 
      the firmware will return to program-download 
      state. (Note that any pending queued tones 
      will not be heard).
 
-     You can kill the Java process by turning
-     off the RCX.
+     You can kill any Java program running in the
+     RCX by pressing On/Off.
     
      As you may have guessed, you can only 
      download programs when the firmware is in
      program-download state.
      
-
 Exceptions
 ----------
 
-TinyVM can show an exception "trace" in the RCX's LCD.
-It will look like this: [XXXX Y]. You'll also hear a
-low buzzing sound, and a wedge (^) will be shown right 
-below sensor 2. The meaning of the trace is as follows:
-
-  XXXX = Method signature id.
-  Y    = Exception class index % 10.
-
-When you link a program with tvmld -verbose, you will 
-get a list of class indices and method signatures.
-
-For example, at the time of this writing, 
-if you see a trace that looks like [0000 7],
-it probably means that a NullPointerException
-(class index = 7) was thrown in method main(String[])
-(method signature = 0), and it wasn't caught.
-
-Traces that are a bit more informative can be obtained
-with tvm-emul (see Emulation), which will also tell
-you about the thread index and bytecode offset. If you
-want to look at the bytecode, check out the tvmp 
-utility (which is simply a wrapper around javap).
-
-If you have a portion of code that doesn't depend on 
-TinyVM APIs, I suggest you try it with the JDK.
-
-IMPORTANT: You must press On/Off to continue after you 
-see an exception trace.
+(See User's Guide at http://www.crazyrobots.com/tinyvmsite).
 
 Footprint
 ---------
 
-Even though tinyvm.srec is about 24 Kb (03/04/00), it
+Even though tinyvm.srec is about 25 Kb (03/19/00), it
 occupies only about 10 Kb in RAM. There's about 18 Kb
 of space left for your programs and objects, which is
-a good amount.
-
-Footprint is an area that can be improved considerably,
-both in native code and linked binaries. On the other
-hand, some firmware usability improvements that appear 
-to be required will increase the size of the firmware. 
-Hopefully there will be enough contributions in the 
-area of footprint reduction to balance out part of the 
-enhancements.
+a very good amount. Run regression/Test13.java if you want
+to find out how many empty objects a program can create
+before running out of memory.
 
 Emulation
 ---------
@@ -240,7 +200,7 @@ Known Bugs
 
   - MONITOREXIT ignores null objects (it assumes
     MONITORENTER has handled them). Furthermore, it 
-    doesn't check if the monitor is valid. Until this bug 
+    doesn't check monitor validity. Until this bug 
     is fixed (actually, at all times) all monitors should 
     be constants.
 
@@ -262,7 +222,7 @@ Known Bugs
 Documentation
 -------------
 
-A User Guide is now available at 
+A User's Guide is now available at 
   
   http://www.crazyrobots.com/tinyvmsite
 
@@ -289,6 +249,7 @@ contribute to TinyVM in any way.
 
 Read the "Limitations" and "Known Bugs" sections above, 
 just in case.
+
 
 
 

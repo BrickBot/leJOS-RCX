@@ -15,12 +15,13 @@ export CLASSPATH
 
 default: check all_jtools all_ctools core_classes tinyvm_emul
 	@echo ------ TinyVM installed successfully.
-	@echo ------ The README file has information
-	@echo ------ about running a example program.
+	@echo ------ Please check the README file for
+	@echo ------ information about running a example.
 
 all: default tinyvm_bin
 
 release:
+	make clean
 	make all
 	cvs commit
 	cvs tag RELEASE_`cat VERSION`
@@ -29,12 +30,15 @@ release:
 
 dir_and_zip:
 	cvs export -D tomorrow -d ${TEMP}/${TINYVM_VERSION} tinyvm
+	cvs export -D tomorrow -d ${TEMP}/tinyvm_check tinyvm
+	rm -rf ${TEMP}/${TINYVM_VERSION}/regression/regression.gold
 	cd ${TEMP}; zip -r ${TINYVM_VERSION}.zip ${TINYVM_VERSION}
 	diff bin/tinyvm.srec ${TEMP}/${TINYVM_VERSION}/bin/tinyvm.srec
+	rm -rf ${TEMP}/${TINYVM_VERSION}
 
 check:
 	@if [ -f ${TINYVM_HOME} ]; then \
-	  echo "Error: Please define TINYVM_HOME."; \
+	  echo "Error: TINYVM_HOME undefined. Please check the README file"; \
 	  exit 1; \
 	fi;
 

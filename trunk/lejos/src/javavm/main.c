@@ -31,13 +31,11 @@ Thread *bootThread;
 
 #define MEM_START      (&_end)
 #define RAM_START_ADDR 0x8000
-#define RAM_SIZE       0x6EF8
-
-// Note: 0xEEF8-0xEF00 are used by Sensor class.
+#define RAM_SIZE       0x6F00
 
 #define MEM_END_ADDR   (RAM_START_ADDR + RAM_SIZE)
 #define MEM_END        ((char *) MEM_END_ADDR)
-#define BUFSIZE        6
+#define BUFSIZE        9
 #define TDATASIZE      100
 #define MAXNEXTBYTEPTR (MEM_END - TDATASIZE)
 
@@ -68,7 +66,7 @@ char *nextByte;
 char *mmStart;
 short status;
 TWOBYTES seqNumber;
-TWOBYTES i;
+TWOBYTES currentIndex;
 
 //char runStatus = RS_NO_PROGRAM;
 
@@ -189,28 +187,35 @@ void switch_thread_hook()
 
 }
 
+void reset_rcx()
+{
+  init_timer (&timerdata0, &timerdata1[0]);
+  init_power();
+  state0 = 0;
+  state1 = 0;
+  init_serial (&state0, &state1, 1, 1);
+}
+
 int main (void)
 {
  LABEL_POWERUP:
- LABEL_DOWNLOAD:
-  // These are necessary RCX initializations.
+  // The following call always needs to be the first one.
   init_timer (&timerdata0, &timerdata1[0]);
-  init_power();
+ LABEL_DOWNLOAD:
+  reset_rcx();
   init_sensors();
   // If power key pressed, wait until it's released.
   wait_for_power_release();
   play_system_sound (SOUND_QUEUED, 1);
   hookCommand = HC_NONE;
-  state0 = 0;
-  state1 = 0;
-  init_serial (&state0, &state1, 1, 1);
-  set_data_pointer (MEM_START);
   clear_display();
   set_lcd_number (LCD_UNSIGNED, (short) 0, 3002);
   set_lcd_number (LCD_PROGRAM, (short) 0, 0);
   //update_run_status();
   refresh_display();
-  i = 1;
+ LABEL_RESET:
+  set_data_pointer (MEM_START);
+  currentIndex = 1;
   while (1)
   {
     check_for_data (&valid, &nextByte);
@@ -218,24 +223,50 @@ int main (void)
     {
       //if (runStatus != RS_NO_PROGRAM)
       //  set_run_status (RS_NO_PROGRAM);
+      numread = 0;
       receive_data (buffer, BUFSIZE, &numread);
       switch (buffer[0] & 0xF7)
       {
+        case 0x10:
+          // Alive?
+          buffer[0] = ~buffer[0];
+          send_data (SERIAL_NO_POINTER, 0, buffer, 1);
+          goto LABEL_RESET;
+        case 0x15:
+          // Get Versions...
+          buffer[0] = ~buffer[0];
+          #if 0
+          buffer[1] = 0x00;
+          buffer[2] = 0x03;
+          buffer[3] = 0x00;
+          buffer[4] = 0x01;
+          buffer[5] = 0x00;
+          buffer[6] = 0x00;
+          buffer[7] = 0x00;
+          buffer[8] = 0x00;
+          #endif
+          send_data (SERIAL_NO_POINTER, 0, buffer, 9);
+          goto LABEL_RESET;
         case 0x65:
           // Delete firmware
+          buffer[0] = ~buffer[0];
+          send_data (SERIAL_NO_POINTER, 0,  buffer, 1);
           goto LABEL_EXIT;
         case 0x45:
           // Transfer data
           break;
         default:
           // Other??
+          #if 0
+          trace (4, (short) buffer[0], 9);
+          #endif
           goto LABEL_DOWNLOAD;
       }
       seqNumber = ((TWOBYTES) buffer[2] << 8) |  buffer[1]; 
-      set_lcd_number (LCD_UNSIGNED, (short) i, 3002);
+      set_lcd_number (LCD_UNSIGNED, (short) currentIndex, 3002);
       set_lcd_number (LCD_PROGRAM, (short) 0, 0);
       refresh_display();
-      if (i != 1 && seqNumber == 0)
+      if (currentIndex != 1 && seqNumber == 0)
       {
         install_binary (MEM_START);
         // Initialize heap location and size
@@ -247,15 +278,14 @@ int main (void)
         //runStatus = RS_STOPPED;
         goto LABEL_PROGRAM_STARTUP;
       }
-      if (nextByte >= MAXNEXTBYTEPTR || seqNumber != i)
+      if (nextByte >= MAXNEXTBYTEPTR || seqNumber != currentIndex)
       {
         #if DEBUG_RCX
-        debug (4, (TWOBYTES) nextByte / 10, seqNumber - i);
+        debug (4, (TWOBYTES) nextByte / 10, seqNumber - currentIndex);
         #endif
-        play_system_sound (SOUND_QUEUED, 4);
         goto LABEL_DOWNLOAD;
       }
-      i++;
+      currentIndex++;
     }
     else
     {
@@ -275,6 +305,7 @@ int main (void)
  LABEL_PROGRAM_STARTUP:
   // Gotta shutdown serial communications
   shutdown_serial();
+  // Initialize memory for object allocation
   init_memory (mmStart, ((TWOBYTES) MEM_END - (TWOBYTES) mmStart) / 2);
   // Initialize special exceptions
   init_exceptions();
@@ -302,8 +333,8 @@ int main (void)
   shutdown_power();
   goto LABEL_POWERUP;
  LABEL_EXIT:
-  shutdown_buttons();
-  shutdown_timer();
+  //shutdown_buttons();
+  //shutdown_timer();
   //shutdown_power();
   return 0;
 }
