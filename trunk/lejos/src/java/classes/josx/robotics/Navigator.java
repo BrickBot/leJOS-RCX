@@ -2,16 +2,10 @@ package josx.robotics;
 
 import josx.platform.rcx.*;
 
-// !! In stop() method, what the hell is 81.8f???
-
-// !! Should all methods call stop() first in case it was roaming?
-// OR methods account for RCX currently in moving mode
-// !! All methods that change x, y must be synchronized.
 /**
- * The Navigator class contains methods for performing basic navigational
+ * The Navigator interface contains methods for performing basic navigational
  * movements. Normally the Navigator class is instantiated as an object and
- * methods are called on that object. It can also be extended by your robot
- * code, but the constructor method will need to be overwritten if you do this. 
+ * methods are called on that object.
  *
  * Note: This class will only work for robots using two motors to steer differentially
  * that can rotate within its footprint (i.e. turn on one spot).

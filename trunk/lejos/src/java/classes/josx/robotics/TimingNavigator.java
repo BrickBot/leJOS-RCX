@@ -3,15 +3,11 @@ package josx.robotics;
 import josx.platform.rcx.*;
 import josx.util.*;
 
-// !! In stop() method, what the fuck is 81.8f???
 // !! Should all methods call stop() first in case it was roaming?
 // OR methods account for RCX currently in moving mode
 // !! All methods that change x, y must be synchronized.
 /**
- * The Navigator class contains methods for performing basic navigational
- * movements. Normally the Navigator class is instantiated as an object and
- * methods are called on that object. It can also be extended by your robot
- * code, but the constructor method will need to be overwritten if you do this. 
+ * The TimingNavigator class performs navigation by timing all movements of the robot.
  *
  * Note: This class will only work for robots using two motors to steer differentially
  * that can rotate within its footprint (i.e. turn on one spot).
@@ -40,7 +36,7 @@ public class TimingNavigator implements Navigator {
    private Motor right;
    
    /**
-   * Allocates a Navigator object and initializes if with the left and right wheels.
+   * Allocates a TimingNavigator object and initializes if with the left and right wheels.
    * The x and y values will each equal 0 (cm's) on initialization, and the starting
    * angle is 0 degrees, so if the first move is forward() the robot will run along
    * the x axis.
