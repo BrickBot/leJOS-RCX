@@ -37,6 +37,25 @@ Adding a Native Method
 ----------------------
 
 Modify common/signatures.db, rcx_impl/native.c and unix_impl/nativeemul.c.
+
+The format of common/signatures.db is as follows:
+
+    methodName(argumentTypes)resultType
+
+where types are encoded as
+
+    Lp/q/Class;      p.q.Class
+    V                void
+    Z                boolean
+    B                byte
+    S                short
+    I                int
+    J                long
+
+From this js.tools.GenerateConstants derives vmsrc/specialsignatures.h,
+look into it to see the mangled name for use in rcx_impl/native.c
+and unix_impl/nativeemul.c.
+
 Also, before the next release, make sure the magic number is changed
 in vmsrc/magic.h and jtools/js/tinyvm/Constants.java. This kind of
 thing must be announced in the tinyvm-develop mailing list.
