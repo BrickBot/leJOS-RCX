@@ -132,7 +132,6 @@ visiondoc:
 
 clean:
 	${ANT} clean
-	rm -f `find . -name '*.class'`
 	rm -f `find . -name 'core'`
 	rm -f `find . -name '*.o'`
 	rm -f `find . -name '*~'`
@@ -142,10 +141,9 @@ clean:
 	rm -f `find . -name '*.bak'`
 	rm -f `find . -name '*.stackdump'`
 	rm -f `find . -name '*.backtrace'`
-	-rm -rf ./apidocs ./pcapidocs ./visionapidocs
+	rm -rf ./apidocs ./pcapidocs ./visionapidocs
 
 distclean: clean
-	rm -rf `find . -name 'CVS'`
 	rm -f `find . -name '.#*'`
 	rm -f `find . -name '*.tvm'`
 	rm -f `find . -name '*.bin'`
@@ -160,7 +158,6 @@ distclean_src: distclean
 	rm -f $(PLAT_UNIX_SRC)/dump_config $(PLAT_UNIX_SRC)/platform_config.h
 	rm -f $(EMU_SRC)/mkimg
 	rm -f `find . -name '*.so' -o -name '*.dylib' -o -name '*.jnilib' -o -name '*.dll'`
-	rm -f bin/cygwin.dll
 	rm -f `find . -name '.DS_Store'`	# Mac OS X Finder droppings
 	rm -f `find . -name '*.exe'`
 	rm -f `find . -name '*.jar'`
