@@ -133,6 +133,10 @@ int rcxWakeupTower (void* port, int timeout_ms)
 	int count = 0;
 	
 	// First, I send a KeepAlive Byte to settle IR Tower...
+	rcxFlush(port);
+	usleep(20000);
+	rcxPurge(port);
+
 	rcxWrite(port, &keepalive, 1);
 	usleep(20000);
 	rcxPurge(port);
@@ -154,7 +158,7 @@ int rcxWakeupTower (void* port, int timeout_ms)
 		count += read;
 		if (__comm_debug) 
 		{
-			printf("recvlen = %d\n", read);
+			printf("read = %d\n", read);
 			hexdump("R", buf, read);
 		}
 
@@ -495,6 +499,10 @@ bool rcxIsAlive (void* port)
 {
 	unsigned char send[1] = { 0x10 };
 	unsigned char recv[1];
+
+	rcxFlush(port);
+	usleep(20000);
+	rcxPurge(port);
 
 	int read = rcxSendReceive(port, send, 1, recv, 1, 50, 5);
 
