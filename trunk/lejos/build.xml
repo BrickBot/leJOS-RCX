@@ -107,7 +107,7 @@
       </fileset>
     </copy>
     <javac srcdir="${javasrc}/vision" destdir="${build}/vision" fork="yes" optimize="on" debug="on" source="1.4">
-      <classpath location="${lib}/pcrcxcomm.jar"/>
+      <classpath path="${lib}/jmf.jar:${lib}/pcrcxcomm.jar" />
     </javac>
     <jar destfile="${lib}/vision.jar" basedir="${build}/vision" update="false"/>
   </target>
