@@ -42,10 +42,9 @@ check:
 	fi;
 
 check_release:
-	echo TINYVM_HOME=${TINYVM_HOME}
-	echo Location of tvmc=`which tvmc`
-	echo Location of tvmld=`which tvmld`
-	which tvmc;
+	@echo TINYVM_HOME=${TINYVM_HOME}
+	@echo Location of tvmc=`which tvmc`
+	@echo Location of tvmld=`which tvmld`
 	make
 	cd regression; ./run.sh
 
