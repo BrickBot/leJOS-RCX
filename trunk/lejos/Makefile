@@ -128,6 +128,7 @@ emulator:
 	@echo ""
 	@echo "====> Making Emulator emu-lejos"
 	@echo ""
+	chmod 775 $(LEJOS_HOME)/cctest.sh
 	cd $(EMU_SRC); $(MAKE) $(MFLAGS)
 
 irtrcx_libs:
