@@ -19,11 +19,12 @@ package josx.rcxcomm;
 public class LNP extends Thread {
   private static final int MAX_HANDLERS = 4;
   private static final int MAX_PORTS = 4;
-  private static LNPIntegrityHandler packetHandler;
-  private static LNP singleton;
-  private static byte [] outPacket = new byte[255];
-  private static byte [] inPacket = new byte[255];
-  private static byte [] buff = new byte[255]; 
+  private static LNPIntegrityHandler packetHandler
+    = new LNPIntegrityHandler(new LNPHandler(), (byte) 0xf0); // opcode is ignored
+  private static LNP singleton = new LNP();
+  private static byte [] outPacket = new byte[64];
+  private static byte [] inPacket = new byte[64];
+  private static byte [] buff = new byte[64]; 
   private static byte machineAddress;
   private static IntegrityHandler [] integrityHandler 
     = new IntegrityHandler[MAX_HANDLERS];
@@ -31,20 +32,12 @@ public class LNP extends Thread {
   private static AddressingHandler [][] addressingHandler 
     = new AddressingHandler[MAX_PORTS][MAX_HANDLERS];
   private static int [] numAddressingHandlers = new int[MAX_HANDLERS];
-  private LNPIntegrityHandler packetHandkler;
 
   private LNP() {
   }
 
   /**
-   * Create the Integrity Packet handler - the opcode is ignored
-   **/
-  static {
-    packetHandler = new LNPIntegrityHandler(new LNPHandler(), (byte) 0xf0);
-  }
-
-  /**
-   * Sends packet of up to 255 bytes to the destination address from the source
+   * Sends packet of up to 59 bytes to the destination address from the source
    * address. The source address is used for replying to the packet.
    * @param packet the packet to send
    * @param len the length of the packet
@@ -53,22 +46,26 @@ public class LNP extends Thread {
    * @return true for successful send, else false, e.g. for collision detection
    **/
   public static boolean addressingWrite(byte [] packet, int len, byte dest, byte source) {
-    packetHandler.setOp((byte) 0xf1);
-    outPacket[0] = dest;
-    outPacket[1] = source;
-    for(int i=0; i<len; i++) outPacket[i+2] = packet[i];
-    return packetHandler.sendPacket(outPacket, len+2);
+    synchronized(singleton) {
+      packetHandler.setOp((byte) 0xf1);
+      outPacket[0] = dest;
+      outPacket[1] = source;
+      for(int i=0; i<len; i++) outPacket[i+2] = packet[i];
+      return packetHandler.sendPacket(outPacket, len+2);
+    }
   }
 
   /**
-   * Broadcasts an integrity packet
+   * Broadcasts an integrity packet of up to 61 bytes
    * @param packet the packet to broadcast
    * @param len the length of the packet
    * @return true if sucessful, else false e.g. for collision detected
    **/
   public static boolean integrityWrite(byte [] packet, int len) {
-    packetHandler.setOp((byte) 0xf0);
-    return packetHandler.sendPacket(packet, len);
+    synchronized(singleton) {
+      packetHandler.setOp((byte) 0xf0);
+      return packetHandler.sendPacket(packet, len);
+    }
   }
 
   /**
@@ -76,7 +73,9 @@ public class LNP extends Thread {
    * @param handler the integrity handler
    **/
   public static void addIntegrityHandler(IntegrityHandler handler) {
-    integrityHandler[numIntegrityHandlers++] = handler;
+    synchronized(singleton) {
+      integrityHandler[numIntegrityHandlers++] = handler;
+    }
   }
 
   /**
@@ -85,7 +84,9 @@ public class LNP extends Thread {
    * @param handler the addressing handler
    **/
   public static void addAddressingHandler(AddressingHandler handler, byte port) {
-    addressingHandler[port][numAddressingHandlers[port]++] = handler;
+    synchronized(singleton) {
+      addressingHandler[port][numAddressingHandlers[port]++] = handler;
+    }
   }
 
   /**
@@ -94,9 +95,9 @@ public class LNP extends Thread {
    **/
   public static void startListening(byte addr) {
     machineAddress = addr;
-    singleton = new LNP();
     singleton.setDaemon(true);
     singleton.start();
+    packetHandler.setListen(true);
   }     
 
   /**
@@ -127,4 +128,4 @@ public class LNP extends Thread {
     }
   }
 }
-   
+
