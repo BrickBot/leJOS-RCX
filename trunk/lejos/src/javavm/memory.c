@@ -195,6 +195,7 @@ void free_array (Object *objectRef)
  * @param elemType Type of primitive element of multi-dimensional array.
  * @param totalDimensions Same as number of brackets in array class descriptor.
  * @param reqDimensions Number of requested dimensions for allocation.
+ * @param numElemPtr Pointer to first dimension. Next dimension at numElemPtr+1.
  */
 Object *new_multi_array (byte elemType, byte totalDimensions, 
                          byte reqDimensions, STACKWORD *numElemPtr)
@@ -227,7 +228,7 @@ Object *new_multi_array (byte elemType, byte totalDimensions,
   {
     ref_array(ref)[*numElemPtr] = ptr2word (
       new_multi_array (elemType, totalDimensions - 1, reqDimensions - 1,
-      numElemPtr - 1));
+      numElemPtr + 1));
   }
   return ref;
 }
