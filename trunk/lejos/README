@@ -64,7 +64,9 @@ Compatibility
 RCX 1.0/2.0 in RIS 1.0/1.5/2.0: yes
 
 Serial IR Tower in RIS 1.0/1.5: yes
-USB IR Tower in RIS 2.0: under Microsoft Windows, not under Linux
+
+USB IR Tower in RIS 2.0: yes (this is supported on Max OSX, 
+Linux and Windows)
 
 How do you pronounce leJOS?
 ---------------------------
