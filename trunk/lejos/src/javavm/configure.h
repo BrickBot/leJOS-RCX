@@ -2,16 +2,28 @@
 #ifndef _CONFIGURE_H
 #define _CONFIGURE_H
 
+#define FIXED_STACK_SIZE				0
+
+#if FIXED_STACK_SIZE
+
 /**
- * Maximum level of recursion.
+ * Initial level of recursion.
  */
-#define MAX_STACK_FRAMES                 10
+#define INITIAL_STACK_FRAMES             10
  
 /**
- * Maximum number of words in a thread's stack
- * (for both locals and operands).
+ * Initial number of words in a thread's stack
+ * (for both locals and operands). Needs to be an
+ * even number.
  */
-#define STACK_SIZE                       70
+#define INITIAL_STACK_SIZE               70
+
+#else
+
+#define INITIAL_STACK_FRAMES             4
+#define INITIAL_STACK_SIZE               10
+
+#endif
 
 /**
  * Should always be 1.

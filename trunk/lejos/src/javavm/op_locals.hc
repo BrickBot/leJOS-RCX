@@ -35,8 +35,10 @@ case OP_ALOAD_3:
   // Arguments: 0
   // Stack: +1
 
-  //printf ("### aload_x: %d\n", (int) get_local_word(*(pc-1)-OP_ILOAD_0));
-
+#if DEBUG_BYTECODE
+ printf ("### aload_x(thread=%d, frame=%d, ref=%d): %d\n", currentThread->threadId, currentThread->stackFrameArraySize-1, (int)localsBase, (int) get_local_ref(*(pc-1)-OP_ALOAD_0));
+#endif
+ 
   push_ref (get_local_ref(*(pc-1)-OP_ALOAD_0));
   goto LABEL_ENGINELOOP;
 case OP_LLOAD:

@@ -48,7 +48,7 @@ static inline void init_sp_pv (void)
  */
 static inline boolean is_stack_overflow (MethodRecord *methodRecord)
 {
-  return (stackTop + methodRecord->maxOperands) >= (stack_array() + STACK_SIZE);
+  return (stackTop + methodRecord->maxOperands) >= (stack_array() + get_array_length((Object *) word2ptr (currentThread->stackArray)));
 }
 
 extern void update_stack_frame (StackFrame *stackFrame);

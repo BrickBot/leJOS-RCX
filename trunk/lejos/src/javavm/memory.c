@@ -11,6 +11,7 @@
 #include "configure.h"
 #include "interpreter.h"
 #include "exceptions.h"
+#include "stdlib.h"
 
 #ifdef VERIFY
 static boolean memoryInitialized = false;
@@ -198,6 +199,9 @@ Object *new_primitive_array (const byte primitiveType, STACKWORD length)
   printf("New array of type %d, length %ld\n", primitiveType, length);
 #endif
   ref = memcheck_allocate (allocSize);
+#if DEBUG_MEMORY
+  printf("Array ptr=%d\n", (int)ref);
+#endif
   if (ref == null)
     return JNULL;
   set_array (ref, primitiveType, length);
@@ -219,6 +223,26 @@ void free_array (Object *objectRef)
 
   deallocate ((TWOBYTES *) objectRef, get_array_size (objectRef));
 }
+
+#if !FIXED_STACK_SIZE
+Object *reallocate_array(Object *obj, STACKWORD newlen)
+{
+	byte elemType = get_element_type(obj);
+ 	Object *newArray = new_primitive_array(elemType, newlen);
+  	
+  	// If can't allocate new array, give in!
+    if (newArray != JNULL)
+    {
+    	// Copy old array to new
+    	memcpy(((byte *) newArray + HEADER_SIZE), ((byte *) obj + HEADER_SIZE), get_array_length(obj) * typeSize[elemType]);
+    
+  		// Free old array
+  		free_array(obj);
+    }
+    
+    return newArray;
+}
+#endif
 
 /**
  * @param elemType Type of primitive element of multi-dimensional array.
@@ -451,8 +475,9 @@ TWOBYTES *allocate (TWOBYTES size)
 #endif
 
 #if SEGMENTED_HEAP
-  for (region = memory_regions; region != null; region = region->next) {
+  for (region = memory_regions; region != null; region = region->next)
 #endif
+  {
     TWOBYTES *ptr = &(region->contents);
     TWOBYTES *regionTop = region->end;
 
@@ -515,9 +540,7 @@ TWOBYTES *allocate (TWOBYTES size)
         }
       }
     }
-#if SEGMENTED_HEAP
   }
-#endif
   /* couldn't allocate block */
   return JNULL;
 }
@@ -534,7 +557,7 @@ void deallocate (TWOBYTES *p, TWOBYTES size)
   memory_free += size;
 
 #if DEBUG_MEMORY
-  printf("Deallocate %d - free %d\n", size, memory_free);
+  printf("Deallocate %d at %d - free %d\n", size, (int)p, memory_free);
 #endif
 
   ((Object*)p)->flags.all = size;

@@ -20,6 +20,7 @@
 #include "systime.h"
 #include "sensors.h"
 #include "poll.h"
+#include "stdlib.h"
 
 extern byte _extra_start;
 extern byte _extra_end;
@@ -213,35 +214,9 @@ void switch_thread_hook()
 int main (void)
 {
   byte lastopcode = 0;
-  byte *to = &_extra_start;
-  byte *from = MEM_START;
-  byte *end = &_extra_end;
-  
-#if DEBUG_SEGMENTS
-  byte chksum1 = 0;
-  byte chksum2 = 0;
-  int size = end - to;
-  int i = 0;
-  byte chksum3 = 0;
-#endif
-
   // Relocate segments
-  // memcpy(to, from, end-to);
-	while (to < end)
-	{
-#if DEBUG_SEGMENTS
-		chksum1 += *from;
-#endif
-		*to++ = *from++;
-	}
+  memcpy(&_extra_start, MEM_START, &_extra_end-&_extra_start);
 
-#if DEBUG_SEGMENTS
-	for (i=0; i<size; i++)
-	{
-		chksum2 += *(((byte*)&_extra_start) + i);
-	}
-#endif
-  
 // Main entry point for VM
 LABEL_FIRMWARE_ONE_TIME_INIT:
 #ifdef VERIFY
@@ -275,20 +250,6 @@ LABEL_POWERUP:
   // If power key pressed, wait until it's released.
   wait_for_power_release (600);
 
-#if DEBUG_SEGMENTS
-    chksum3 = 0;
-	for (i=0; i<size; i++)
-	{
-		chksum3 += *(((byte*)&_extra_start) + i);
-	}
-	
-	trace(3, size, 1);
-	trace(3, *((byte*)&_extra_start), 2);
-	trace(3, *(((byte*)&_extra_end)-1), 3);
-	trace(3, chksum1, 4);
-	trace(3, chksum2, 5);
-	trace(3, chksum3, 6);
-#endif
   
 // Entry point for program exit (HC_EXIT_PROGRAM)
 LABEL_NEW_PROGRAM:
