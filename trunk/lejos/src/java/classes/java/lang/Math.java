@@ -6,33 +6,17 @@ package java.lang;
  * @author <a href="mailto:bbagnall@escape.ca">Brian Bagnall</a>
  */
 public final class Math {
-
-	private static final float[] DIGIT = {45.0f, 26.56505118f, 14.03624347f, 
-		                              7.125016349f, 3.576334375f, 
-	                                      1.789910608f, 0.89517371f, 0.447614171f, 
-	                                      0.2238105f, 0.111905677f, 0.055952892f, 
-	                                      0.027976453f, 0.013988227f, 0.006994114f, 
-	                                      0.003497057f};
-	
-	private static final int[] POWEROF2 = { 1, 2, 4, 8, 16, 32, 64, 128,
-	                                        256, 512, 1024, 4096, 8192, 16348,
-	                                        32768 };
 		
 	// Math constants
 	public static final double E  = 2.718281828459045;
 	public static final double PI = 3.141592653589793;
+   public static final double NaN       = 0.0f / 0.0f;
+   
+   static final float PI2 = 1.570796326794897f;
 	static final double ln10      = 2.30258509299405;
 	static final double ln2       = 0.69314718055995;
-	static final double NaN       = 0.0f / 0.0f;
-
-	// These constants are used for method trig()
-	private static final byte SIN = 0;
-	private static final byte COS = 1;
-	private static final byte TAN = 2;
-
-	// Accuracy constant: is used to specify how many digits of
-	// accuracy is desired for some methods.
-	private static final float ACCURACY = 0.0000005f;
+	
+        // Used by log() and exp() methods
 	private static final float LOWER_BOUND = 0.9999999f;
 	private static final float UPPER_BOUND = 1.0f;
 
@@ -44,6 +28,14 @@ public final class Math {
 	//}
 	
 	private Math() {} // To make sure this class is not instantiated
+
+   // Private because it only works when -1 < x < 1 but it is used by atan2
+   private static double ArcTan(double x)  // Using a Chebyshev-Pade approximation
+   {
+     double x2=x*x;
+     return (0.7162721433f+0.2996857769f*x2)*x/(0.7163164576f+(0.5377299313f+0.3951620469e-1f*x2)*x2);
+   }
+
 
 	/**
 	* Returns the smallest (closest to negative infinity) double value that is not
@@ -65,7 +57,7 @@ public final class Math {
 	* Returns the closest int to the argument.
 	*/	
 	public static int round(float a) {	
-		return (int)Math.floor(a + 0.5f);
+		return (int)floor(a + 0.5f);
 	}
 	
 	/**
@@ -190,34 +182,10 @@ public final class Math {
 	public static double pow(double a, double b) {
 		return exp(b * log(a));
 	}
-
-// 	/**
-// 	* Power function.  This one is faster, but can only do powers of integer.
-// 	*/
-// 	public static double pow(double a, int b) {
-// 		float c = 1.0f;
-// 		
-// 		if(b==0)
-// 			return 1.0;
-// 		
-// 		if(b > 0) {
-// 			for(int i=0;i<b;i++) {
-// 				c = c * (float) a;
-// 			}
-// 		}
-// 		else if(b < 0) {
-// 			for(int i=0;i>b;i--) {
-// 				c = c / (float) a;
-// 			}	
-// 		}	
-// 		
-// 		return c;
-// 	}
-// 
 	
 	/**
 	* Returns the absolute value of a double value. If the argument is not negative, the argument is
-  * returned. If the argument is negative, the negation of the argument is returned.
+   * returned. If the argument is negative, the negation of the argument is returned.
 	*/
 	public static double abs(double a) {
 		return ((a<0)?-a:a);
@@ -225,207 +193,128 @@ public final class Math {
 
 	/**
 	* Returns the absolute value of an integer value. If the argument is not negative, the argument is
-  * returned. If the argument is negative, the negation of the argument is returned.
+   * returned. If the argument is negative, the negation of the argument is returned.
 	*/
 	public static int abs(int a) {
 		return ((a<0)?-a:a);
 	}
 	
-	/**
-	* Cosine function.
-	*/
-	public static double cos(double a) {
-		return trig(a, COS);
-	}
+  /**
+  * Sine function using a Chebyshev-Pade approximation. Thanks to Paulo Costa for donating the code.
+  */
+  public static double sin(double x)  // Using a Chebyshev-Pade approximation
+  {
+    int n=(int)(x/PI2)+1; // reduce to the 4th and 1st quadrants
+    if(n<1)n=n-1;
+    if ((n&2)==0) x=x-(n&0xFFFFFFFE)*PI2;  // if it from the 2nd or the 3rd quadrants
+    else        x=-(x-(n&0xFFFFFFFE)*PI2);
+
+    double x2=x*x;
+    return (0.9238318854f-0.9595498071e-1f*x2)*x/(0.9238400690f+(0.5797298195e-1f+0.2031791179e-2f*x2)*x2);
+  }
 
   /**
-	* Sine function.
-	*/
-	public static double sin(double a) {
-		return trig(a, SIN);
-	}
+  * Cosine function using a Chebyshev-Pade approximation. Thanks to Paulo Costa for donating the code.
+  */
+  public static double cos(double x)
+  {
+    int n=(int)(x/PI2)+1;
+    if(n<1)n=n-1;
+    x=x-(n&0xFFFFFFFE)*PI2;  // reduce to the 4th and 1st quadrants
 
-	/**
-	* Square root function.  Uses Newton-Raphson method.
-	*/
-	public static double sqrt(double a) {
-		// * I'm going to work on a better bestGuess to make it more efficient
-		double bestGuess = a;
-		double xnew = a;
-		
-		if(a<0)
-			return NaN;
-		
-		// * Might use a fixed number of loops instead of comparing
-		while((xnew*xnew) > (a + ACCURACY)||(xnew*xnew)<(a-ACCURACY))
-			xnew = (xnew+bestGuess/xnew)/2;
+    double x2=x*x;
 
-		return xnew;
-	}
+    float si=1f;
+    if ((n&2)!=0) si=-1f;  // if it from the 2nd or the 3rd quadrants
+    return si*(0.9457092528f+(-0.4305320537f+0.1914993010e-1f*x2)*x2)/(0.9457093212f+(0.4232119630e-1f+0.9106317690e-3f*x2)*x2);
+  }
+
+   /**
+  * Square root - thanks to Paulo Costa for donating the code.
+  */
+  public static double sqrt(double x)
+  {
+    double root = x, guess=0;
+
+    if(x<0) return NaN;
+
+    // the accuarcy test is percentual
+    for(int i=0; (i<16) && ((guess > x*(1+5e-7f)) || (guess < x*(1-5e-7f))); i++)
+    {
+      root = (root+x/root)*0.5f; // a multiplication is faster than a division
+      guess=root*root;   // cache the square to the test
+    }
+    return root;
+  }
 	
-	/**
-  * Tangent function.
-	*/
-	public static double tan(double a) {
-		return trig(a, TAN);
-	}
+   /**
+   * Tangent function.
+   */
+   public static double tan(double a) {
+      return sin(a)/cos(a);
+   }
+		
+  /**
+  * Arc tangent function. Thanks to Paulo Costa for donating the code.
+  */
+  public static double atan(double x)
+  {
+    return atan2(x,1);
+  }
+
+   /**
+  * Arc tangent function valid to the four quadrants
+  * y and x can have any value without sigificant precision loss
+  * atan2(0,0) returns 0. Thanks to Paulo Costa for donating the code.
+  */
+  public static double atan2(double y, double x)
+  {
+    float ax=(float)abs(x);
+    float ay=(float)abs(y);
+
+    if ((ax<1e-7) && (ay<1e-7)) return 0f;
+
+    if (ax>ay)
+    {
+      if (x<0)
+      {
+        if (y>=0) return ArcTan(y/x)+PI;
+        else return ArcTan(y/x)-PI;
+      }
+      else return ArcTan(y/x);
+    }
+    else
+    {
+      if (y<0) return ArcTan(-x/y)-PI/2;
+      else return ArcTan(-x/y)+PI/2;
+    }
+  }
+
+   /**
+   * Arc cosine function.
+   */
+   public static double acos(double a) {
+      return atan(sqrt(1-a*a)/a);
+   }
 	
-	private static double trig(double a, int returnType) {
-	 	
-   	// This method uses radians input, just like the official java.lang.Math
-   	a = (float) toDegrees (a);
-   	
-   	// ** When a=0, 90, 180, 270 should return even number probably
-   	
-   	// With positive numbers, subtracting 360 until angle is between 0-360
-		while(a >= 360) {
-			a = a - 360;
-		}
-		
-		// With negative numbers, add 360 until between 0-360
-   	while(a < 0) {
-   		a = a + 360;	
-   	}
-   	   	
-   	// Cos is negative in quadrants 2 and 3 (angle 90-270)
-   	int cosMult = 1;
-   	if((a<270)&&(a>90))
-   		cosMult = -1;  		
-   	
-   	// Sin is negative in quadrants 3 and 4 (angle 180-360)
-   	int sinMult = 1;
-   	if((a<360)&&(a>180))
-   		sinMult = -1;
-   	
-   	// Transform the starting angle to between 0-90
-   	// Since the cordic method is only accurate for angles 0-90, must do
-   	// this to handle angles 90-360
-   	if(a>=180)
-   		a = a - 180;
-   		
-   	if(a>90)
-   		a = 180 - a;
-   	
-   	// ** The core trig calculations to produce Cos & Sin **
-		int N = DIGIT.length - 1;
-		float x = 0.607252935f;  // Absolute best accuracy I could calculate with my trusty TI-32 calculator
-		float y = 0.0f;
-		
-		for(int i = 0;i <= N;i++) {
-			float dx = x / (float) POWEROF2[i];
-    	float dy = y / (float) POWEROF2[i];
-    	float da = DIGIT[i];
-    	
-    	if(a >= 0) {
-    		x = x - dy;
-    		a = a - da;
-    		y = y + dx;
-    	}
-    	else {
-    		x = x + dy;
-    		a = a + da;
-    		y = y - dx;
-    	}
-		}  // ** End of core trig calculations **
-		
-		// Now use multipliers (set at start of routine) to convert sin
-		// and cos to +/- (depends on the quadrant):
-		y = y * sinMult;
-		x = x * cosMult;
-		
-		if(returnType == SIN)
-			return y;
-		else if (returnType == COS)
-			return x;
-		else
-			return y/x;
-	}
-	
-	/**
-	 * Arc tangent function
-	 */
-	public static double atan(double a) {
-   	int N = DIGIT.length - 1;
-		double x = 1.0;
-		double y = a;
-		double t = 0;
-		
-		if(a==0)
-			return 0.0; // Otherwise returns tiny number
-		
-		for(int i = 0;i <= N;i++) {		
-			double dx = x / POWEROF2[i];
-    	double dy = y / POWEROF2[i];
-    	double da = DIGIT[i];
-    	
-    	if(y < 0) {
-    		x = x - dy;
-    		t = t - da;
-    		y = y + dx;
-    	}
-    	else {
-    		x = x + dy;
-    		t = t + da;
-    		y = y - dx;
-    	}
-		}
-		return toRadians(t);
-	}
-	/**
-	*Converts rectangular coordinates (b, a) to polar (r, theta). This method computes the phase
-  *theta by computing an arc tangent of a/b in the range of -pi to pi.
-	*/
-	public static double atan2(double y, double x) {
-		double result = 0.0;
-		if(x != 0.0)
-			result = atan(y/x);
-		else {
-			if(y>0)
-				return PI/2; // +,0
-			else
-				if(y<0)
-					return -PI/2; // -,0
-		}
-		
-		if(x<0) {
-			if(y==0)
-				return PI; // 0,-
-			else {
-				if(y>0)
-					return PI + result; // +,-
-				else
-					return -PI + result; // -,-
-			}
-		}
-		
-		return result; // +,+ or -,+ or 0,+
-	}
-	
-	/**
-  * Arc cosine function.
-	*/
-	public static double acos(double a) {
-		return atan(sqrt(1-a*a)/a);
-	}
-	
-	/**
-  * Arc sine function.
-	*/
-	public static double asin(double a) {
-		return atan(a/sqrt(1-a*a));
-	}
+   /**
+   * Arc sine function.
+   */
+   public static double asin(double a) {
+      return atan(a/sqrt(1-a*a));
+   }
 	
   /**
-  * Converts radians to degrees.
-	*/
-	public static double toDegrees(double angrad) {
-		return angrad * (360.0 / (2 * PI));
-	}
+   * Converts radians to degrees.
+   */
+   public static double toDegrees(double angrad) {
+      return angrad * (360.0 / (2 * PI));
+   }
 	
-	/**
-	 * Converts degrees to radians.
-	 */
-	public static double toRadians(double angdeg) {
-		return angdeg * ((2 * PI) / 360.0);
-	}
+   /**
+    * Converts degrees to radians.
+    */
+   public static double toRadians(double angdeg) {
+      return angdeg * ((2 * PI) / 360.0);
+   }
 }
