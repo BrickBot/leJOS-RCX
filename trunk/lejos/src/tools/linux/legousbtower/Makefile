@@ -9,7 +9,7 @@ MODULE_DIR = /lib/modules/$(KERNEL_VER)/kernel
 
 CFLAGS= -D__KERNEL__ -DMODULE -Wall -Wstrict-prototypes -O2 \
 -fomit-frame-pointer -fno-strict-aliasing -pipe -fno-strength-reduce \
--m486 -malign-loops=2 -malign-jumps=2 -malign-functions=2 \
+-falign-loops=2 -falign-jumps=2 -falign-functions=2 \
  -I$(LINUXSRC)/include -I$(LINUXSRC)/drivers/usb
 
 all:	legousbtower.o
