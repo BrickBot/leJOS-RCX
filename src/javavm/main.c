@@ -41,6 +41,14 @@ Thread *bootThread;
 #define TDATASIZE      100
 #define MAXNEXTBYTEPTR (MEM_END - TDATASIZE)
 
+#define HC_NONE            0
+#define HC_SHUTDOWN_POWER  1
+#define HC_DELETE_FIRMWARE 2
+
+#define RS_NO_PROGRAM      0
+#define RS_STOPPED         1
+#define RS_RUNNING         2
+
 #ifdef VERIFY
 
 void assert (boolean aCond, int aCode)
@@ -55,11 +63,14 @@ async_t timerdata0;
 char buffer[BUFSIZE];
 char numread;   
 char valid, state0, state1;
+char hookCommand;
 char *nextByte;
-boolean continueFlag;
+char *mmStart;
 short status;
 TWOBYTES seqNumber;
 TWOBYTES i;
+
+//char runStatus = RS_NO_PROGRAM;
 
 static inline void
 set_data_pointer (void *ptr)
@@ -76,17 +87,11 @@ void debug (short s, short n1, short n2)
 
 #endif
 
-void wait_for_view_press (void)
+void wait_for_power_release()
 {
-  short status;
   do {
-    status = 0;
-    read_buttons (BUTTONS_READ, &status);
-  } while ((status & 0x02) == 0);
-  do {
-    status = 0;
-    read_buttons (BUTTONS_READ, &status);
-  } while ((status & 0x02) != 0);
+    get_power_status (POWER_KEY, &status);
+  } while (status == 0);
 }
 
 void trace (short s, short n1, short n2)
@@ -97,35 +102,134 @@ void trace (short s, short n1, short n2)
   set_lcd_number (LCD_PROGRAM, n2, 0);
   set_lcd_segment (LCD_SENSOR_1_VIEW);
   refresh_display();
-  wait_for_view_press();
+  // Wait for power press
+  do {
+    get_power_status (POWER_KEY, &status);
+  } while (status != 0);
+  // Wait for power release
+  wait_for_power_release();
+}
+
+#if 0
+
+void update_run_status()
+{
+  if (runStatus == RS_RUNNING)
+  {
+    clear_lcd_segment (LCD_STANDING);
+    set_lcd_segment (LCD_WALKING);    
+  }
+  else if (runStatus == RS_STOPPED)
+  {
+    clear_lcd_segment (LCD_WALKING);
+    set_lcd_segment (LCD_STANDING);    
+  }
+  else if (runStatus == RS_NO_PROGRAM)
+  {
+    clear_lcd_segment (LCD_WALKING);
+    clear_lcd_segment (LCD_STANDING);        
+  }
+  refresh_display();
+}
+
+void set_run_status (char aRunStatus)
+{
+  runStatus = aRunStatus;
+  update_run_status();
+}
+
+#endif
+
+/**
+ * This function is invoked by switch_thread
+ * and the download loop.
+ */
+void switch_thread_hook()
+{
+  get_power_status (POWER_KEY, &status);
+  if (status == 0)
+  {
+    // Power button pressed - wait for release
+    wait_for_power_release();
+    // Make interpreter exit
+    gMustExit = true;
+    // Check to see if this is a delete-firmware request
+    read_buttons (BUTTONS_READ, &status);
+    if ((status & 0x05) != 0)
+      hookCommand = HC_DELETE_FIRMWARE;
+    else
+      hookCommand = HC_SHUTDOWN_POWER;
+  }
+
+#if 0
+
+  else
+  {
+    read_buttons (BUTTONS_READ, &status);
+    if ((status & 0x01) != 0)
+    {
+      // Run button pressed.
+      if (runStatus == RS_RUNNING)
+      {
+        gMustExit = 1;
+      }
+      else if (runStatus == RS_STOPPED)
+      {
+        runStatus = RS_RUNNING;
+      }
+    }
+  }
+
+#endif
+
 }
 
 int main (void)
 {
+ LABEL_POWERUP:
+  // These are necessary RCX initializations.
   init_timer (&timerdata0, &timerdata1[0]);
   init_power();
   init_sensors();
+  // If power key pressed, wait until it's released.
+  wait_for_power_release();
  LABEL_DOWNLOAD:
+  hookCommand = HC_NONE;
+  state0 = 0;
+  state1 = 0;
   init_serial (&state0, &state1, 1, 1);
   play_system_sound (SOUND_QUEUED, 1);
   set_data_pointer (MEM_START);
   clear_display();
   set_lcd_number (LCD_UNSIGNED, (short) 0, 3002);
   set_lcd_number (LCD_PROGRAM, (short) 0, 0);
+  //update_run_status();
   refresh_display();
-  continueFlag = true;
   i = 1;
-  do {
+  while (1)
+  {
     check_for_data (&valid, &nextByte);
     if (valid)
     {
+      //if (runStatus != RS_NO_PROGRAM)
+      //  set_run_status (RS_NO_PROGRAM);
       receive_data (buffer, BUFSIZE, &numread);
       seqNumber = ((TWOBYTES) buffer[2] << 8) |  buffer[1]; 
       set_lcd_number (LCD_UNSIGNED, (short) i, 3002);
       set_lcd_number (LCD_PROGRAM, (short) 0, 0);
       refresh_display();
       if (i != 1 && seqNumber == 0)
-        break;
+      {
+        install_binary (MEM_START);
+        // Initialize heap location and size
+        #if DEBUG_RCX
+        debug (-1, ((TWOBYTES) nextByte) / 10, 1);
+        #endif
+        // Make sure memory allocation starts at an even address.
+        mmStart = (((TWOBYTES) nextByte) & 0x0001) ? nextByte + 1 : nextByte;
+        //runStatus = RS_STOPPED;
+        goto LABEL_PROGRAM_STARTUP;
+      }
       if (nextByte >= MAXNEXTBYTEPTR || seqNumber != i)
       {
         #if DEBUG_RCX
@@ -138,48 +242,19 @@ int main (void)
     }
     else
     {
-      status = 0;
-      read_buttons (BUTTONS_READ, &status);
-      // Check if pgm & run are pressed
-      if (status == 0x05)
-      {
-        get_power_status (POWER_KEY, &status);
-        if (status == 0)
-	{
-          // power button pressed - wait
-          for (;;)
-	  {
-            get_power_status (POWER_KEY, &status);
-            if (status != 0)
-              goto LABEL_EXIT;              
-	  }
-	}
-      }
+      switch_thread_hook();
+      if (hookCommand == HC_DELETE_FIRMWARE)
+        goto LABEL_EXIT;
+      if (hookCommand == HC_SHUTDOWN_POWER)
+        goto LABEL_SHUTDOWN_POWER;
+      //if (runStatus == RS_RUNNING)
+      //  goto LABEL_PROGRAM_STARTUP;
     }
-  } while (1);
+  }
 
-  // Initialize binary image location
-  #if 0
-  debug (-1, ((TWOBYTES) MEM_START) / 10, 0);
-  debug (-1, ((TWOBYTES) (&_text_end)) / 10, 6);
-  debug (-1, ((TWOBYTES) (&_data_end)) / 10, 7);
-  debug (-1, ((TWOBYTES) (&_text_begin)) / 10, 8);
-  debug (-1, ((TWOBYTES) (&_data_begin)) / 10, 9);
-  debug (-1, ((TWOBYTES) (&_bss_start)) / 10, 0);
-  #endif
-  install_binary (MEM_START);
-  // Initialize heap location and size
-  #if DEBUG_RCX
-  debug (-1, ((TWOBYTES) nextByte) / 10, 1);
-  #endif
-  // Make sure memory allocation starts at an even address.
-  if (((TWOBYTES) nextByte) & 0x0001)
-    nextByte++;
-  init_memory (nextByte, ((TWOBYTES) MEM_END - (TWOBYTES) nextByte) / 2);
+ LABEL_PROGRAM_STARTUP:
+  init_memory (mmStart, ((TWOBYTES) MEM_END - (TWOBYTES) mmStart) / 2);
   // Initialize special exceptions
-  #if 0
-  debug (-1, ((TWOBYTES) MEM_END - (TWOBYTES) nextByte) / 2, 2);
-  #endif
   init_exceptions();
   // Create the boot thread (bootThread is a special global)
   bootThread = (Thread *) new_object_for_class (JAVA_LANG_THREAD);
@@ -193,9 +268,17 @@ int main (void)
   debug (-1, (short) get_master_record()->magicNumber, 4);
   #endif
   engine();
-  // Engine returns when all threads are done
-  if (continueFlag)
-    goto LABEL_DOWNLOAD;
+  //runStatus = RS_STOPPED;
+  // Engine returns when all threads are done or
+  // when power has been shut down.
+  if (hookCommand == HC_SHUTDOWN_POWER)
+    goto LABEL_SHUTDOWN_POWER;        
+  goto LABEL_DOWNLOAD;
+ LABEL_SHUTDOWN_POWER:
+  shutdown_sensors();
+  shutdown_buttons();
+  shutdown_power();
+  goto LABEL_POWERUP;
  LABEL_EXIT:
   shutdown_buttons();
   shutdown_timer();

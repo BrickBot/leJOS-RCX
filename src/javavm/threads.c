@@ -108,6 +108,8 @@ void switch_thread()
   assert (currentThread != null, THREADS0);
   #endif
   
+  switch_thread_hook();
+
   anchorThread = currentThread;
   liveThreadExists = false;
   // Save context information

@@ -2,32 +2,38 @@ import tinyvm.rcx.*;
 
 /**
  * DESCRIPTION
- *
  *   Program that makes PATHFINDER learn to rotate
- *   using only a light sensor as input.
+ *   by simply using a light sensor to scan normally
+ *   diverse surroundings.
  *
- * REQUIREMENTS
+ * CAUTION
+ *   The wheels of your robot may fall off after
+ *   several rotations.
+ *
+ * REQUIREMENS
  *   - A simple robot that can rotate, with a 
  *     configuration equivalent to the "PATHFINDER"
  *     (RIS Constructopedia, page 6). You may want
- *     to try different wheel sizes to check that
- *     the program really works.
+ *     to try different wheel sizes and surfaces 
+ *     to check that the program really works.
  *   - A light sensor connected to sensor input 2.
- *     The light sensor should be pointing horizontally.
- *   - You may need to change the SAMPLINGS and LENGTH
+ *     The light sensor should be pointing in a direction
+ *     parallel to the floor.
+ *   - You may need to change the SAMPLINGS and MOTOR_POWER
  *     constants below. I tried my experiments on
  *     carpet. For smooth surfaces, I suspect you'd
- *     have to set SAMPLINGS to 1, and LENGTH to 
- *     something like 100. And you may have to
- *     set MOTOR_POWER to 1. The idea is that the
- *     robot should perform test rotations between
- *     2 * 360 and 4 * 360 degrees. Anything outside
- *     of that range could produce erroneous results.
+ *     have to set SAMPLINGS to 1, and MOTOR_POWER to 1. 
+ *     The idea is that the robot should perform test 
+ *     rotations between 2 * 360 and 4 * 360 degrees. Anything 
+ *     outside of that range could produce erroneous results.
  *     In other words, the second and fourth
  *     flashing numbers you see should be between
  *     2000 and 4000.
  *
  * HOW TO RUN
+ *   - You should read $TINYVM_HOME/README if you
+ *     still haven't.
+ *   - Set TINYVMPATH     : export TINYVMPATH=.
  *   - Compile the program: tvmc Rotator.java
  *   - Link the class     : tvmld Rotator -o Rotator.tvm
  *   - Download TinyVM firmware if necessary.
@@ -35,13 +41,15 @@ import tinyvm.rcx.*;
  *     else. Make the sorroundings somewhat varied. I use
  *     a flashlight, but it looks like this isn't really
  *     necessary. Don't move too much.
- *   - Run linked binary  : tvm Rotator.tvm
+ *   - Run linked binary  : tvm Rotator.tvm.
+ *     The download time is about 30 seconds.
  * 
  * WHAT IT DOES
  *   - Performs one rotation of more than 720 degrees.
  *     The robot starts to scan its sorroundings with
  *     the light sensor (hopefully) only after the
- *     motors have achieved constant speed.
+ *     motors have achieved constant speed. Does
+ *     some analysis for a few seconds.
  *   - Performs another rotation, but in 5 steps.
  *     Scans basically all the way through.
  *   - Analyzes the data obtained in the two trial runs,
@@ -51,18 +59,21 @@ import tinyvm.rcx.*;
  *     turn 180 degrees, and move in the opposite
  *     direction. It repeats this 4 times.
  *     The error for a 180 degrees rotation is
- *     probably about 5% to 10%.
+ *     probably about 5% to 10%, on carpet.
+ *
+ * NOTES
+ *   Send me email at jhsolorz@yahoo.com if you find
+ *   ways to make the rotation analysis more precise.
  */
 public class Rotator
 {
   // You'll probably need to change these
-  // two constants. Note that LENGTH is
+  // constants. Note that LENGTH is
   // the length of an array, and TinyVM does
   // not accept arrays longer than 255 elements.
 
   private static final int SAMPLINGS = 3;
   private static final int LENGTH = 200;
-
   private static final int MATCHLEN = 10;
   private static final int MOTOR_POWER = 3;
   static int[] iSamples = new int[LENGTH];
@@ -108,7 +119,7 @@ public class Rotator
   }
 
   /**
-   * Returns average difference in of sample comparison.
+   * Returns average difference of sample comparison * 100.
    */
   public static int scoreMatch (int start1, int start2, int aLength)
   {
@@ -145,7 +156,7 @@ public class Rotator
   static void beepAndDelay()
   {
     Sound.playTone (1000, 10);
-    for (int k = 0; k < 20000; k++) { }
+    for (int k = 0; k < 10000; k++) { }
     LCD.showNumber (8888);
     LCD.showProgramNumber (8);
   }
@@ -208,7 +219,7 @@ public class Rotator
     pD2 = (pD2 + 2) / 5;
     int pDelaySpace = pVel * 40 - pD2;
     beepAndDelay();
-    flashNumbers (pDelaySpace / 5, 5);
+    flashNumbers (pDelaySpace / 10, 5);
 
     beepAndDelay();
 
