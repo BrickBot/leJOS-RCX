@@ -225,6 +225,7 @@ implements Constants
         pOption.iOption = arg[i];
         if (arg[i].startsWith ("-verbose="))
 	{
+		  pOption.iOption = "-verbose";
           pOption.iArgument = arg[i].substring ("-verbose=".length());
 	}
         else if (arg[i].equals ("-classpath"))
