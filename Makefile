@@ -28,7 +28,12 @@ dir_and_zip:
 	cd ${TEMP}/${TINYVM_VERSION}; make distclean_src
 	cd ${TEMP}; tar cvf ${TINYVM_VERSION}.tar ${TINYVM_VERSION}; gzip ${TINYVM_VERSION}.tar
 	make javadoc
-	cd ..; tar cvf ${TEMP}/${TINYVM_VERSION}.doc.tar lejos/apidocs lejos/docs lejos/README lejos/RELEASENOTES lejos/CLICKME.html lejos/LICENSE lejos/ACKNOWLEDGMENTS; gzip ${TEMP}/${TINYVM_VERSION}.doc.tar
+	rm -rf ${TEMP}/${TINYVM_VERSION}.doc
+	mkdir ${TEMP}/${TINYVM_VERSION}.doc
+	tar cf - apidocs docs README RELEASENOTES CLICKME.html LICENSE ACKNOWLEDGMENTS Makefile | (cd ${TEMP}/${TINYVM_VERSION}.doc; tar xfpB -)
+	cd ${TEMP}/${TINYVM_VERSION}.doc; make distclean_src
+	rm -f ${TEMP}/${TINYVM_VERSION}.doc/Makefile
+	cd ${TEMP}; tar cvf ${TINYVM_VERSION}.doc.tar ${TINYVM_VERSION}.doc; gzip ${TINYVM_VERSION}.doc.tar
 	diff bin/lejos.srec ${TEMP}/${TINYVM_VERSION}/bin/lejos.srec
 
 release_win:
@@ -115,8 +120,8 @@ distclean: clean
 
 distclean_src: distclean
 	cd bin ; rm -f lejos lejosc lejosc1 lejosfirmdl lejosp lejosp1 lejosrun emu-dump emu-lejos emu-lejosrun
-	cd unix_impl ; rm dump_config
-	cd tools/firmdl ; rm mkimg
+	cd unix_impl ; rm -f dump_config
+	cd tools/firmdl ; rm -f mkimg
 	rm -f bin/cygwin.dll
 	rm -rf `find . -name '*.exe'`
 	rm -rf `find . -name '*.jar'`
