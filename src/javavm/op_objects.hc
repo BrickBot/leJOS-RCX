@@ -9,7 +9,7 @@ case OP_NEW:
   gStackWord = obj2word (new_object_checked (pc[1], pc - 1));
   if (gMustExit)
     return;
-  if (!gStackWord)
+  if (gStackWord)
   {
     *(++stackTop) = gStackWord;
     pc += 2;

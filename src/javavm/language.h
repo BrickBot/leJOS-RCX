@@ -124,6 +124,7 @@ extern void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStat
 #define get_constant_base()         ((ConstantRecord *) (get_binary_base() + get_master_record()->constantTableOffset))
 
 #define get_constant_record(IDX_)   (get_constant_base() + (IDX_))
+
 #define get_constant_ptr(CR_)       (get_binary_base() + (CR_)->offset)
 
 #define class_size(CLASSIDX_)       (get_class_record(CLASSIDX_)->classSize)
