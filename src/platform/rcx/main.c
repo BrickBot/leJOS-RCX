@@ -352,10 +352,10 @@ LABEL_COMM_LOOP:
           goto LABEL_START_TRANSFER;
         case 0xd2:
           // Remote command
+          if ((buffer[1] & 0x02) != 0 /* P1 pressed? */
+              && hasProgram != HP_NO_PROGRAM)
           {
-            if ((buffer[1] & 0x02) != 0) { /* P1 pressed? */
-              goto LABEL_PROGRAM_STARTUP;
-            }
+                goto LABEL_PROGRAM_STARTUP;
           }
           // drop through
         default:
