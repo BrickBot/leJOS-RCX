@@ -1,2 +1,11 @@
-java js.tools.Lejosdl $1 $2 $3 $4 $5
+if [ $OSTYPE == "cygwin" ]; then
+  SEPARATOR=";"
+else
+  SEPARATOR=":"
+fi
 
+if [ -z "$LEJOS_HOME" ]; then 
+  echo LEJOS_HOME is not defined
+else
+  java -classpath "$LEJOS_HOME/lib/jtools.jar$SEPARATOR$LEJOS_HOME/lib/pcrcxcomm.jar" js.tools.Lejosdl $*
+fi

@@ -1,0 +1,12 @@
+if [ $OSTYPE == "cygwin" ]; then
+  SEPARATOR=";"
+else
+  SEPARATOR=":"
+fi
+
+if [ -z "$LEJOS_HOME" ]; then 
+  echo LEJOS_HOME is not defined
+else 
+  export CLASSPATH="$LEJOS_HOME/lib/jtools.jar$SEPARATOR$CLASSPATH"
+  java -Dtinyvm.home="$LEJOS_HOME" -Dtinyvm.write.order=BE -Dtinyvm.loader=lejosrun js.tinyvm.TinyVM -classpath "$LEJOS_HOME/lib/classes.jar$SEPARATOR$LEJOS_HOME/lib/rcxrcxcomm.jar$SEPARATOR$CLASSPATH" $*
+fi
