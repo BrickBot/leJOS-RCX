@@ -7,10 +7,10 @@ public class Random
 {
   private int iPrevSeed, iSeed;
   
-  public Random (int seed)
+  public Random (long seed)
   {
     iPrevSeed = 1;
-    iSeed = seed;
+    iSeed = (int) seed;
   }
   
   /**
