@@ -136,13 +136,13 @@ public class GenerateConstants
       fatal ("Error: " + iTinyVMHome + " does not exist.");
     if (!pHome.isDirectory())
       fatal ("Error: " + iTinyVMHome + " is not a directory.");
-    File pCommon = new File (pHome, "common");
+    File pCommon = new File (pHome, "javavm");
     File pClasses = new File (pCommon, "classes.db");
     File pSignatures = new File (pCommon, "signatures.db");
-    File pVmSrc = new File (pHome, "vmsrc");
+    File pVmSrc = new File (pHome, "javavm");
     File pClassIndexH = new File (pVmSrc, "specialclasses.h");
     File pSignaturesH = new File (pVmSrc, "specialsignatures.h");
-    File pTools = new File (pHome, "jtools");
+    File pTools = new File (pHome, "java/tools");
     File pToolsJs = new File (pTools, "js");
     File pToolsJsTinyVM = new File (pToolsJs, "tinyvm");
     File pJavaClass = new File (pToolsJsTinyVM, CLASSES + ".java");

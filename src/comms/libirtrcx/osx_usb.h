@@ -23,6 +23,7 @@
  *  OS X specific code taken in parts from Dave Baum's OS X implementation of NCQ.
  *
  */
+
 #ifndef osx_usb_h
 #define osx_usb_h
 
@@ -45,10 +46,12 @@
 #include "rcx_comm.h"
 #endif
 
-/* #ifndef OSX_DEBUG
-#define OSX_DEBUG 1
+/*#ifndef OSX_DEBUG
+ #define OSX_DEBUG 1
 #endif */
-
+#if defined (__cplusplus)
+extern "C" {
+#endif
 static io_iterator_t		gRawAddedIter;
 
 /* Get a InterfaceInterface for the usb tower.
@@ -68,6 +71,13 @@ int osx_usb_rcx_recv (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int
 
 int osx_usb_rcx_send(IOUSBInterfaceInterface **intf, void *buf, int len, int use_comp);
 
+int osx_usb_nbread (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int timeout);
+
+int osx_usb_write(IOUSBInterfaceInterface **intf, void *msg, int msglen);
+
+#if defined(__cplusplus)
+}
+#endif
 #endif /* OSX_USB_H */
 
 

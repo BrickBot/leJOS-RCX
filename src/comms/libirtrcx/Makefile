@@ -1,5 +1,5 @@
-# Makefile for firmdl3
-
+# Makefile for librcxcomm : library for communicating with the RCX
+# via serial and usb IR towers.
 # The contents of this file are subject to the Mozilla Public License
 # Version 1.0 (the "License"); you may not use this file except in
 # compliance with the License. You may obtain a copy of the License at
@@ -10,61 +10,57 @@
 # License for the specific language governing rights and limitations
 # under the License.
 #
-# The Original Code is Firmdl code, released October 3, 1998.
-#
-# The Initial Developer of the Original Code is Kekoa Proudfoot.
+# Based on work by Kekoa Proudfoot.
 # Portions created by Kekoa Proudfoot are Copyright (C) 1998, 1999
 # Kekoa Proudfoot. All Rights Reserved.
 
 #
 # 2000.03.12 - Paolo Masetti <paolo.masetti@itlug.org>
-#
 #	- Conditional make based on $OSTYPE variable for Windows NT (cygnwin32)
 #
 
 #include ../Makefile.common
 
-CC=$(shell ../../cctest.sh)
-
-OS=$(shell echo $$OSTYPE)
+CC=$(shell $(LEJOS_HOME)/cctest.sh)
 
 CFLAGS = -O2 
-
-FIRMDL_OBJ = firmdl.o srec.o rcx_comm.o util.o
 
 ifndef OSTYPE
 	OSTYPE=$(MSDOS)
 endif
 
 ifneq (,$findstring $(OSTYPE), linux LINUX linux-gnu)
-   CFLAGS=-O2 -I../linux/legousbtower	
+        CFLAGS=-O2 -I../../tools/linux/legousbtower -shared -fpic	
+	RCXCOMM_OS_C=rcx_comm_linux.c
+	RCXCOMM_OS_H=rcx_comm_linux.h
+	RCXCOMM_OS_OBJ=rcx_comm_linux.o
+	LIBIRTRCX=$(LEJOS_HOME)/bin/libirtrcx.so
 endif
 
-ifneq (,$(findstring $(OSTYPE),cygwin32 CYGWIN_NT-4.0 WindowsNT Windows_NT))
+ifneq (,$(findstring $(OSTYPE),cygwin32 cygwin_nt-5.0 CYGWIN_NT-4.0 WindowsNT Windows_NT))
 	EXT=.exe
+	LIBIRTRCX=$(LEJOS_HOME)/bin/irtrcx.dll
+        CFLAGS=-mno-cygwin -Wl,--add-stdcall-alias -shared -D__CYGWIN32__
+	RCXCOMM_OS_C=rcx_comm_win.c
+	RCXCOMM_OS_H=rcx_comm_win.h
+	RCXCOMM_OS_OBJ=rcx_comm_win.o
 endif
 ifneq (,$(findstring darwin,$(OSTYPE)))
-	OSX_USB=osx_usb
+	RCXCOMM_OS_C=osx_usb.c
+	RCXCOMM_OS_H=osx_usb.h
+	RCXCOMM_OS=osx_usb
 	LIBS += -framework IOKit -framework CoreFoundation
-	FIRMDL_OBJ += osx_usb.o
         CFLAGS += -g
 else
 	OSX_USB=
 endif
 
-all: $(OSX_USB) fastdl.h ../../bin/lejosfirmdl$(EXT)
+all: *.o 
 
-mkimg$(EXT): mkimg.o srec.o
-	$(CC) $^ -o $@ $(CFLAGS)
+.SUFFIXES: .c .o
 
-../../bin/lejosfirmdl$(EXT): $(FIRMDL_OBJ)
-	$(CC) $^ -o $@ $(CFLAGS) $(LIBS)
-
-fastdl.h: mkimg$(EXT) fastdl.srec
-	./mkimg fastdl.srec > fastdl.h
-
-osx_usb: osx_usb.c
-	$(CC) -c $(CFLAGS) $^
+*.o:
+	$(CC) $(RCXCOMM_OS_C) rcx_comm.c $(CFLAGS) -o $(LIBIRTRCX)
 
 clean:
-	rm -f *.o *~ *.bak fastdl.h mkimg$(EXT) ../../bin/firmdl3$(EXT)
+	rm -f *.o *~ *.bak *.a

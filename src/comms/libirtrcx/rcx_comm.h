@@ -40,6 +40,8 @@
 #define RCX_NOT_OPEN     -12
 #define RCX_TIMED_OUT     -13
 
+#define RCX_NOT_IMPL -256
+
 #if defined(_WIN32) || defined(__CYGWIN32__)
   #define FILEDESCR	HANDLE
   #define BADFILE	NULL
@@ -52,6 +54,11 @@
   #endif
 #endif
 
+// getter functions for the globals
+extern int rcx_is_debug();
+extern void rcx_set_debug(int debug);
+extern void rcx_set_usb(int usb);
+extern int rcx_is_usb();
 
 /* Get a file descriptor for the named tty, exits with message on error */
 extern FILEDESCR rcx_init (char *tty, int is_fast);
@@ -80,19 +87,16 @@ extern int rcx_sendrecv (FILEDESCR fd, void *send, int slen, void *recv, int rle
 /* Set use_comp=1 to send complements, use_comp=0 to suppress them */
 extern int rcx_is_alive (FILEDESCR fd, int use_comp);
 
+extern int rcx_read (FILEDESCR fd, void *buf, int maxlen, int timeout);
+
+extern int rcx_write(FILEDESCR fd, const void *buf, size_t len);
+
 /* Convert an error code to a string */
 extern char *rcx_strerror(int error);
 
 /* Hexdump routine */
 extern void hexdump(char *prefix, void *buf, int len);
 
-extern int mywrite(FILEDESCR fd, const void *buf, size_t len);
-
-extern int nbread(FILEDESCR fd, void *buf, int maxlen, int timeout);
-
-#if defined(_WIN32)
-#define usleep(x) Sleep(x/1000)
-#endif
 
 #endif /* RCX_COMM_H_INCLUDED */
 

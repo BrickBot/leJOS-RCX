@@ -1,22 +1,22 @@
 
 SHELL=/bin/sh
-CLASSPATH=jtools
+CLASSPATH=src/java/tools
 
 # OSTYPE is not set by default on Mac OS X
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-  #export OSTYPE
 endif
 
-#JAVAC=jikes -bootclasspath c:/jdk1.3/jre/lib/rt.jar
 JAVAC=javac -target 1.1
 JAVADOC=javadoc
 JAVA=java
 TEMP=/usr/tmp
 
-MFLAGS = OSTYPE=$(OSTYPE)
+LEJOS_HOME=$(shell pwd)
 
-PC_JAVADOC_SOURCE="rcxcomm/classes"
+MFLAGS = OSTYPE=$(OSTYPE) LEJOS_HOME=$(LEJOS_HOME)
+
+PC_JAVADOC_SOURCE="src/java/rcxcomm/classes"
 
 ifneq (,$(findstring cygwin,$(OSTYPE)))
   PATH_SEP=;
@@ -24,12 +24,27 @@ else
   PATH_SEP=:
 endif
 
-JAVADOC_SOURCE="classes${PATH_SEP}rcxcomm/rcxclasses"
+
+JAVADOC_SOURCE="src/java/classes${PATH_SEP}src/java/rcxcomm/rcxclasses"
+REGRESSION_SRC="test/regression"
+JTOOLS_SRC="src/java/tools"
+CORE_CLASSES_SRC="src/java/classes"
+VISION_SRC="src/java/vision"
+RCXCOMM_SRC="src/java/rcxcomm"
+PCRCXCOMM_SRC="src/java/pcrcxcomm"
+JVM_SRC="src/javavm"
+EMU_SRC="src/tools/emu-lejos"
+PLAT_RCX_SRC="src/platform/rcx"
+PLAT_UNIX_SRC="src/platform/unix"
+PLAT_GBOY_SRC="src/platform/gameboy"
+IRTRCX_LIB_SRC=src/comms/libirtrcx
+JIRTRCX_LIB_SRC=src/comms/libjirtrcx
 
 export CLASSPATH
 export JAVA
 
-default: check all_ctools core_classes rcx_comm all_jtools tinyvm_emul
+default: emulator irtrcx_libs core_classes rcx_comm all_jtools tinyvm_emul
+	@echo ""
 	@echo "====> Installation of leJOS done!"
 
 all: default lejos_bin
@@ -80,64 +95,82 @@ dir_and_zip_win:
 	cd ..; zip -r ${TEMP}/${TINYVM_VERSION}.doc.zip lejos/apidocs lejos/pcapidocs lejos/visionapidocs lejos/docs lejos/README lejos/RELEASENOTES lejos/CLICKME.html lejos/LICENSE lejos/ACKNOWLEDGMENTS
 	diff bin/lejos.srec ${TEMP}/lejos/bin/lejos.srec
 
-check:
-	@if [ "${TINYVM_HOME}" != "" ]; then \
-	  echo "Note: The TINYVM_HOME variable is no longer needed"; \
-	  exit 1; \
-	fi;
 
 check_release:
 	@echo TINYVM_HOME=${TINYVM_HOME}
 	@echo Location of lejosc=`which lejosc`
 	@echo Location of lejos=`which lejos`
 	$(MAKE) $(MFLAGS) 
-	cd regression; ./run.sh
+	cd $(REGRESSION_SRC); ./run.sh
 
 all_jtools: java_tools generated_files java_loader
-	cd jtools; jar cf ../lib/jtools.jar `find . -name '*.class'`
+	cd $(JTOOLS_SRC); jar cf $(LEJOS_HOME)/lib/jtools.jar `find . -name '*.class'`
 
 java_tools:
+	@echo ""
 	@echo "====> Making java tools"
-	${JAVAC} -classpath "jtools${PATH_SEP}./lib/pcrcxcomm.jar" jtools/js/tools/*.java
+	@echo ""
+	${JAVAC} -classpath "$(LEJOS_HOME)/src/java/tools${PATH_SEP}$(LEJOS_HOME)/lib/pcrcxcomm.jar" $(JTOOLS_SRC)/js/tools/*.java
 
-generated_files: common/classes.db common/signatures.db
-	${JAVA} -classpath $(CLASSPATH) -Dtinyvm.home="." js.tools.GenerateConstants
+generated_files:
+	@echo ""
+	@echo "====> Generating constants"
+	@echo "" 
+	${JAVA} -classpath $(CLASSPATH) -Dtinyvm.home="$(LEJOS_HOME)/src" js.tools.GenerateConstants
 
 java_loader:
+	@echo ""
 	@echo "====> Making loader/linker (lejos)"
-	${JAVAC} jtools/js/tinyvm/*.java
+	@echo ""
+	${JAVAC} $(JTOOLS_SRC)/js/tinyvm/*.java
 
-all_ctools:
-	cd tools; $(MAKE) $(MFLAGS)
+emulator:
+	@echo ""
+	@echo "====> Making Emulator emu-lejos"
+	@echo ""
+	cd $(EMU_SRC); $(MAKE) $(MFLAGS)
+
+irtrcx_libs:
+	@echo ""
+	@echo "====> Making IR RCX communication libraries"
+	@echo ""
+	cd $(IRTRCX_LIB_SRC); $(MAKE) $(MFLAGS)
+	cd $(JIRTRCX_LIB_SRC); $(MAKE) $(MFLAGS)
 
 lejos_bin:
 	@echo "====> Making leJOS RCX binary (lejos.srec)"
-	cd rcx_impl; $(MAKE) $(MFLAGS)
+	cd $(PLAT_RCX_SRC); $(MAKE) $(MFLAGS)
 
 tinyvm_emul:
+	@echo ""
 	@echo "====> Making leJOS Unix binaries (lejos, for emulation)"
-	cd unix_impl; $(MAKE) $(MFLAGS)
+	@echo ""
+	cd $(PLAT_UNIX_SRC); $(MAKE) $(MFLAGS)
 
 core_classes:
-	${JAVAC} -classpath classes `find classes -name '*.java'`
-	cd classes; jar cf ../lib/classes.jar `find . -name '*.class'`
+	@echo ""
+	@echo "====> Making core classes"
+	@echo ""
+	${JAVAC} -classpath  $(CORE_CLASSES_SRC) `find $(CORE_CLASSES_SRC) -name '*.java'`
+	cd $(CORE_CLASSES_SRC); jar cf $(LEJOS_HOME)/lib/classes.jar `find . -name '*.class'`
 
 rcx_comm:
-	cd rcxcomm; $(MAKE) $(MFLAGS)
+	@echo ""
+	@echo "====> Making rcxcomm"
+	@echo ""
+	cd $(RCXCOMM_SRC); $(MAKE) $(MFLAGS)
+	cd $(PCRCXCOMM_SRC); $(MAKE) $(MFLAGS)
 
 visionapi:
-	cd vision; $(MAKE) $(MFLAGS)
+	cd $(VISION_SRC); $(MAKE) $(MFLAGS)
 
 javadoc:
-	if [ ! -d apidocs ]; then mkdir apidocs; fi
 	${JAVADOC} -protected -windowtitle "leJOS API documentation" -author -d apidocs -sourcepath $(JAVADOC_SOURCE) java.io java.lang java.util josx.platform.rcx josx.util josx.robotics josx.rcxcomm java.net javax.servlet.http
 
 pcjavadoc:
-	if [ ! -d pcapidocs ]; then mkdir pcapidocs; fi
 	${JAVADOC} -protected -windowtitle "leJOS PC API documentation" -author -d pcapidocs -sourcepath $(PC_JAVADOC_SOURCE) josx.rcxcomm
 
 visiondoc:
-	if [ ! -d visionapidocs ]; then mkdir visionapidocs; fi
 	javadoc -protected -windowtitle "leJOS Vision API documentation" -author -d visionapidocs -classpath "$(JMFHOME)/lib/jmf.jar${PATH_SEP}./lib/pcrcxcomm.jar" -sourcepath vision josx.vision
 
 clean:
@@ -151,7 +184,7 @@ clean:
 	rm -f `find . -name '*.bak'`
 	rm -f `find . -name '*.stackdump'`
 	rm -f `find . -name '*.backtrace'`
-	-rm -rf apidocs pcapidocs visionapidocs
+	-rm -rf apidocs/. pcapidocs/. visionapidocs/.
 
 distclean: clean
 	rm -rf `find . -name 'CVS'`
@@ -164,9 +197,9 @@ distclean: clean
 	rm -f `find . -name '*.log'`
 
 distclean_src: distclean
-	rm -f bin/lejos bin/lejosc bin/lejosc1 bin/lejosfirmdl bin/lejosp bin/lejosp1 bin/lejosrun bin/emu-dump bin/emu-lejos bin/emu-lejosrun
-	rm -f unix_impl/dump_config
-	rm -f tools/firmdl/mkimg
+	rm -f bin/lejos bin/emu-dump bin/emu-lejos bin/emu-lejosrun
+	rm -f $(PLAT_UNIX_SRC)/dump_config
+	rm -f $(EMU_SRC)/mkimg
 	rm -f bin/cygwin.dll
 	rm -f `find . -name '*.exe'`
 	rm -f `find . -name '*.jar'`

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "util.h"
+#include <string.h>
 
 #ifdef __CYGWIN__
 #include <sys/cygwin.h>
