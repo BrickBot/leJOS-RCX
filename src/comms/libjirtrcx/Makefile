@@ -5,8 +5,10 @@ IRTRCX_H=$(LEJOS_HOME)/src/comms/libirtrcx/rcx_comm.h
 IRTRCX_INCL=$(LEJOS_HOME)/src/comms/libirtrcx
 
 # Default: Unix
-JIRTRCX=$(LEJOS_HOME)/bin/libjirtrcx.so
-CCOPT=-rdynamic -ldl -shared -fpic -I${JAVA_INCL} -I${JAVA_INCL}/$(OSTYPE) -I$(IRTRCX_INCL) -L$(LEJOS_HOME)/bin -lirtrcx
+JIRTRCX = $(LEJOS_HOME)/bin/libjirtrcx.so
+CCOPT = -Wall -rdynamic -ldl -shared -fpic \
+	-I${JAVA_INCL} -I${JAVA_INCL}/$(OSTYPE) -I$(IRTRCX_INCL) \
+	-L$(LEJOS_HOME)/bin -lirtrcx
 
 # Windows with CygWin installed
 ifneq (,$(findstring cygwin,$(OSTYPE)))
@@ -26,12 +28,11 @@ endif
 .EXPORT_ALL_VARIABLES :
 
 default: all
-all: ${JIRTRCX}
-	@echo Built $(JIRTRCX)
 
-# Use CXX to get correct linkage (need C++ libraries)
-${JIRTRCX}: Tower.cpp
-	$(CXX) $(CCOPT) -DTRACE -o $@ *.cpp
+all: ${JIRTRCX}
+
+${JIRTRCX}: tower.c
+	$(CC) $(CCOPT) -DTRACE -o $@ *.c
 
 clean:
 	rm -rf *.o

@@ -42,10 +42,8 @@
 #include <errno.h>
 
 #include "rcx_comm.h"
+#include "rcx_comm_os.h"
 #include "rcx_comm_linux.h"
-
-#include <asm/ioctl.h>
-#include "legousbtower.h"
 
 
 /* Defines */
@@ -56,7 +54,6 @@
 
 static int __comm_debug = 0;
 
-static int usb_flag = 0;
 
 void __rcx_perror(char * str) 
 {
@@ -65,7 +62,7 @@ void __rcx_perror(char * str)
 
 /* Timeout read routine */
 
-int __rcx_read (FILEDESCR fd, void *buf, int maxlen, int timeout)
+int __rcx_read(port_t *port, void *buf, int maxlen, int timeout)
 {
 	long len = 0;
     
@@ -78,24 +75,27 @@ int __rcx_read (FILEDESCR fd, void *buf, int maxlen, int timeout)
 
 	while (len < maxlen) {
 		FD_ZERO(&fds);
-		FD_SET(fd, &fds);
+		FD_SET(port->fd, &fds);
 
 		tv.tv_sec = timeout / 1000;
 		tv.tv_usec = (timeout % 1000) * 1000;
 
-		if (select(fd+1, &fds, NULL, NULL, &tv) < 0) {
+		if (select(port->fd+1, &fds, NULL, NULL, &tv) < 0) {
 			perror("select");
 			return RCX_READ_FAIL;
 		}
-		if (!FD_ISSET(fd, &fds)) {
+		if (!FD_ISSET(port->fd, &fds)) {
 			if (len > 0 || retry == 0) {
 				break;
 			} else {
 				retry--;
 			}
 		}	
-		if ((count = read(fd, &bufp[len], maxlen - len)) < 0) {
-			perror("read");
+		count = read(port->fd, &bufp[len], maxlen - len);
+		if (count < 0) {
+			if (errno != ETIMEDOUT) {
+				perror("read");
+			}
 			return RCX_READ_FAIL;
 		}
 		len += count;
@@ -104,51 +104,73 @@ int __rcx_read (FILEDESCR fd, void *buf, int maxlen, int timeout)
 }
 
 /* discard all characters in the input queue of tty */
-void __rcx_flush(FILEDESCR fd)
+void __rcx_purge(port_t *port)
 {
 	char echo[BUFFERSIZE];
-	__rcx_read(fd, echo, BUFFERSIZE, 200);
+	__rcx_read(port, echo, BUFFERSIZE, 200);
 }
 
-int __rcx_write(FILEDESCR fd, const void *buf, size_t len) 
+/* discard all characters in the input queue of tty */
+void __rcx_flush(port_t *port)
 {
+}
 
-	return write(fd, buf, len);
-
+int __rcx_write(port_t *port, unsigned char *buf, size_t len) 
+{
+	int l = 0;
+	while (l < len) {
+		int result = write(port->fd, buf+l, len-l);
+		if (result < 0) {
+			perror("write");
+			exit(1);
+		}
+		l += result;
+	}
+	return l;
 }
 
 /* RCX routines */
 
-FILEDESCR __rcx_init(char *tty, int is_fast)
+port_t *__rcx_open(char *tty, int is_fast)
 {
-	FILEDESCR fd;
-
 	struct termios ios;
+	port_t *port = NULL;
 
 	if (__comm_debug) printf("mode = %s\n", is_fast ? "fast" : "slow");
 	if (__comm_debug) printf("tty= %s\n", tty);
 
+	port = malloc(sizeof(port_t));
+	if (!port) {
+		perror("malloc");
+		exit(1);
+	}
+	port->tty = malloc(strlen(tty)+1);
+	if (!port->tty) {
+		perror("malloc");
+		exit(1);
+	}
+	strcpy(port->tty, tty);
 
-	if ((fd = open(tty, O_RDWR)) < 0) { 
+	port->fast = is_fast;
+	if ((port->fd = open(tty, O_RDWR)) < 0) { 
 		perror(tty);
 		exit(1);
 	}
 
 	/* Assume USB for all non-tty devices */
-	usb_flag = !isatty(fd);
-	if (__comm_debug) printf("usb_flag = %d\n", usb_flag);
+	port->usb = !isatty(port->fd);
+	if (__comm_debug) printf("port->usb = %d\n", port->usb);
 
-	if (usb_flag) {
-		if (is_fast) {
+	if (port->usb) {
+		if (port->fast) {
 			fprintf(stderr, "FAST mode not allowed with USB LINUX\n");
-			return RCX_OPEN_FAIL;
+			exit(1);
 		} 
 	} else {
-
-		if (!isatty(fd)) {
-			close(fd);
+		if (!isatty(port->fd)) {
+			close(port->fd);
 			fprintf(stderr, "%s: not a tty\n", tty);
-			return BADFILE;
+			exit(1);
 		}
 
 		memset(&ios, 0, sizeof(ios));
@@ -164,16 +186,15 @@ FILEDESCR __rcx_init(char *tty, int is_fast)
 			cfsetospeed(&ios, B2400);
 		}
 	    
-		if (tcsetattr(fd, TCSANOW, &ios) == -1) {
+		if (tcsetattr(port->fd, TCSANOW, &ios) == -1) {
 			perror("tcsetattr");
-			return BADFILE;
+			exit(1);
 		}
 	}
-
-	return fd;
+	return port;
 }
 
-void __rcx_close(FILEDESCR fd)
+void __rcx_close(port_t *port)
 {
-	close(fd);
+	close(port->fd);
 }

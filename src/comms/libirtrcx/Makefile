@@ -21,21 +21,20 @@
 #	- reworked, adapted to refactorings
 #
 
-CC=$(shell $(LEJOS_HOME)/cctest.sh)
+CC = $(shell $(LEJOS_HOME)/cctest.sh)
 
 COPT = -O2
 # For debugging:
 # COPT = -O0
 
 # Default: Unix
-RCXCOMM=rcx_comm_linux.cpp
-CFLAGS=-I$(LEJOS_HOME)/src/tools/linux/legousbtower -shared -fpic
-LFLAGS=-shared -lstdc++
-IRTRCX=$(LEJOS_HOME)/bin/libirtrcx.so
+EXTRA_OS_SRCS =
+CFLAGS = -Wall -shared -fpic
+LFLAGS = -shared
+IRTRCX = $(LEJOS_HOME)/bin/libirtrcx.so
 
 # Windows with CygWin installed
 ifneq (,$(findstring cygwin,$(OSTYPE)))
-	RCXCOMM=rcx_comm_win.cpp
 	CFLAGS=-mno-cygwin -D__CYGWIN32__
 	LFLAGS=-mno-cygwin -Wl,--add-stdcall-alias -shared
 	IRTRCX=$(LEJOS_HOME)/bin/irtrcx.dll
@@ -43,13 +42,13 @@ endif
 
 # MacOS X
 ifneq (,$(findstring darwin,$(OSTYPE)))
-	RCXCOMM=rcx_comm_osx.cpp osx_usb.cpp
+	EXTRA_OS_SRCS = osx_usb.cpp
 	CFLAGS=-g
 	LFLAGS=-dynamiclib -framework IOKit -framework CoreFoundation
 	IRTRCX=$(LEJOS_HOME)/bin/libirtrcx.dylib
 endif
 
-SRCS = $(RCXCOMM)
+SRCS = rcx_comm.c rcx_comm_$(OSTYPE).c $(EXTRA_OS_SRCS)
 OBJS = $(addsuffix .o, $(basename $(SRCS)))
 
 default: all
@@ -58,9 +57,9 @@ all: $(IRTRCX)
 $(IRTRCX): $(OBJS)
 	$(CC) -o $(IRTRCX) $(OBJS) $(LFLAGS)
 
-$(OBJS): $(SRCS)
+$(OBJS): $(SRCS) rcx_comm.h rcx_comm_os.h rcx_comm_$(OSTYPE).h
 
-%.o: %.cpp
+%.o: %.c
 	$(CC) -c -o $@ $(COPT) $(CFLAGS) "$<"
 
 .SUFFIXES: .cpp .o
