@@ -16,7 +16,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 {
   ClassRecord *classRecord;
 
-  switch (id)
+  switch (signature)
   {
     //    case _TVM_MAIN_METHOD_V:
     //  classRecord = get_class_record (ENTRY_CLASS);
@@ -24,7 +24,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
     //                    retAddr);
     //  return;
     case START_V:
-      init_thread ((Thread *) paramBase[0]);
+      init_thread ((Thread *) word2ptr(paramBase[0]));
       return;
   }  
 } 

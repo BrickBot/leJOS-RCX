@@ -30,8 +30,10 @@ extern StackFrame *current_stackframe();
 extern void enter_monitor (Object* obj);
 extern void exit_monitor (Object* obj);
 
-#define stackframe_array()   ((StackFrame *) ((byte *) currentThread->stackFrameArray + HEADER_SIZE))
-#define stack_array()        ((STACKWORD *) ((byte *) currentThread->stackArray + HEADER_SIZE))
+#define stackframe_array_ptr() (word2ptr(currentThread->stackFrameArray))
+#define stack_array_ptr()      (word2ptr(currentThread->stackArray))
+#define stackframe_array()     ((StackFrame *) ((byte *) stackframe_array_ptr() + HEADER_SIZE))
+#define stack_array()          ((STACKWORD *) ((byte *) stack_array_ptr() + HEADER_SIZE))
 
 #endif
 

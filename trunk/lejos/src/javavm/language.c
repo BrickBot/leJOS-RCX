@@ -71,7 +71,7 @@ void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStatic,
     }
     fieldSize = (hiByte >> F_SIZE_SHIFT) + 1;
     offset = ((TWOBYTES) (hiByte & F_OFFSET_MASK) << 8) | loByte;
-    fieldBase = ((byte *) (stackTop[0])) + offset;
+    fieldBase = ((byte *) word2ptr (stackTop[0])) + offset;
     // Pop object reference
     stackTop--;
   }
@@ -87,9 +87,9 @@ void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStatic,
   while (true)
   {
     if (doPut)
-      copy_word (fieldBase, fieldSize, *stackTop++);
+      save_word (fieldBase, fieldSize, *stackTop++);
     else
-      *(++stackTop) = make_word (fieldBase, fieldSize);
+      make_word (fieldBase, fieldSize, ++stackTop);
     if (numWordsMinus1-- == 0)
       break;
     fieldBase += fieldSize;

@@ -86,6 +86,7 @@ void engine()
 
   switch (*pc++)
   {
+
     #include "op_stack.hc"
     #include "op_locals.hc"
     #include "op_arrays.hc"
@@ -97,6 +98,7 @@ void engine()
     #include "op_methods.hc"
     #include "op_other.hc"
     #include "op_skip.hc"
+
   }
 
   //-----------------------------------------------
