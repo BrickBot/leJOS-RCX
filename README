@@ -4,15 +4,8 @@ Summary
 
 Type 'make' to install.
 
-PATH=$PATH:$TINYVM_HOME/bin:$JAVA_HOME/bin
+PATH=$PATH:$LEJOS_HOME/bin:$JAVA_HOME/bin
 RCXTTY=<serial device>
-
-Tools      : cd $TINYVM_HOME; make
-Firmware   : tvmfirmdl
-Compiling  : tvmc <class>.java
-Linking    : tvmld <class> -o <class>.tvm
-Running    : tvm <class>.tvm
-Or simply  : tvmld <class> -d
 
 Exceptions: 
   [XXXX Y], XXXX = method signature; 
@@ -20,36 +13,49 @@ Exceptions:
   Use tvmld -verbose to get class & signature
   indices. Press On/Off to continue.
 
-A User's Guide is now available at 
-http://www.crazyrobots.com/tinyvmsite. 
+What is leJOS?
+--------------
 
-What is TinyVM?
----------------
+leJOS is yet another replacement firmware for the Lego
+Mindstorms RCX. It was forked out of the TinyVM project
+(http://sourceforge.net/projects/tinyvm). leJOS contains
+a VM for Java bytecodes, and additional software to load
+and run Java programs. These are some of the features
+offered by leJOS:
 
-TinyVM is a virtual machine that can execute 
-linked Java code inside the Lego Mindstorms RCX. 
-It supports several of the most useful features of 
-the Java language, such as:
+- Object oriented language (Java).
+- Arrays.
+- Recursion.
+- Synchronization.
+- Exceptions.
+- Preemtive threads of execution.
+- Well-documented API.
 
-  - Multi-threading.
-  - Synchronization.
-  - Exceptions.
-  - Inner, local and anonymous classes.
+The above are also provided by TinyVM. But in addition
+to these, leJOS also offers:
 
-It also has a wide range of APIs for controlling
-the RCX. 
+- Better loader in firmware: you can run a program as
+  many times as you want without downloading it every
+  time.
+- More APIs.
+- Floating point operations.
+- String constants.
+- Comparison and casting of longs (but not arithmetic).
+- Marks references in the stack (which makes it feasible
+  to implement garbage collection).
+
+TinyVM is still around simply as a low-footprint alternative
+to leJOS. The RAM difference between the two is about
+??? Kb.
 
 Requirements
 ------------
 
 - JDK1.1.X or JDK1.2.X, available from http://java.sun.com.
   (The JDK is used during installation, and to run some tools
-  provided with TinyVM, e.g. the linker).
+  provided with leJOS, e.g. the linker).
 
-- If you're planning to change the source code and
-  rebuild it, you should get Kekoa's librcx package,
-  build it, and set LIBRCX_HOME to its installation 
-  directory. You'd also need gcc and binutils.
+- leJOS is known to work on Linux, CygWin and Solaris.
 
 Setup
 -----
@@ -57,13 +63,13 @@ Setup
 Environment:
   - Your PATH is assumed to point to the 
     JDK's bin directory.
-  - You should also add $TINYVM_HOME/bin to
+  - You should also add $leJOS_HOME/bin to
     your PATH.
   - RCXTTY must be defined to point to the
     IR device file. For example, in my system
-    it's /dev/ttyS1. In Windows (assuming TinyVM
+    it's /dev/ttyS1. In Windows (assuming leJOS
     has been ported) it would be COM1, COM2, etc.
-  - The TINYVMPATH can be used in addition to
+  - The leJOSPATH can be used in addition to
     CLASSPATH to allow the linker to locate
     your class files.
 
@@ -71,7 +77,7 @@ Environment:
 Building the Tools:
   Simply go to installation directory and
   type 'make'. At this point all of the tools necessary
-  to run TinyVM should be available under bin.
+  to run leJOS should be available under bin.
 
 Downloading the Firmware:
   Run the tvmfirmdl utility. When the firmware
@@ -84,7 +90,7 @@ Example
 
   1. Go to the example directory.
 
-     cd $TINYVM_HOME/examples/hello
+     cd $leJOS_HOME/examples/hello
 
   2. Set the CLASSPATH variable.
  
@@ -96,7 +102,7 @@ Example
 
      Note that this is equivalent to
 
-     javac -classpath .:$TINYVM_HOME/lib/classes.jar *.java 
+     javac -classpath .:$leJOS_HOME/lib/classes.jar *.java 
 
   4. Download firmware, if necessary.
 
@@ -109,7 +115,7 @@ Example
 
                     [0312 0]
 
-     TinyVM is in program-download mode at 
+     leJOS is in program-download mode at 
      this point.
 
      (Note that tvmfirmdl is essentially the same
@@ -130,13 +136,13 @@ Example
      If the RCX is in range, the LCD will show 
      the download count as  the number of bytes 
      divided by 100. (If nothing happens, make
-     sure the RCX is in range. Is the TinyVM
+     sure the RCX is in range. Is the leJOS
      firmware there? If the RCX begins to beep,
      kill tvm, turn off the RCX, wait until the
      IR tower light is off, power up the RCX,
      and try again).
 
-     TinyVM will execute the program as soon as
+     leJOS will execute the program as soon as
      the download has been completed. When 
      all non-daemon threads are finished, 
      the firmware will return to program-download 
@@ -144,7 +150,7 @@ Example
      will not be heard).
 
      You can kill any Java program running under
-     TinyVM by pressing On/Off.
+     leJOS by pressing On/Off.
     
      As you may have guessed, you can only 
      download programs when the firmware is in
@@ -153,7 +159,7 @@ Example
 Footprint
 ---------
 
-Even though tinyvm.srec is about 25 Kb (03/19/00), it
+Even though leJOS.srec is about 25 Kb (03/19/00), it
 occupies only about 10 Kb in RAM. There's about 18 Kb
 of space left for your programs and objects, which is
 a very good amount. Run regression/Test13.java if you want
@@ -213,7 +219,7 @@ Known Bugs
   - Initializers (static or otherwise) are not
     implicitly synchronized. This could lead to race
     conditions. (As an example, consider the hack 
-    in classes/tinyvm/rcx/Sensor.java:addListener. If Native
+    in classes/leJOS/rcx/Sensor.java:addListener. If Native
     were not forced to get initialized, the listener
     thread may eventually try to use Native.MEMORY_MONITOR,
     which could be null if some other thread is in
@@ -230,32 +236,25 @@ Documentation
 
 A User's Guide is now available at 
   
-  http://www.crazyrobots.com/tinyvmsite
+  http://www.crazyrobots.com/leJOSsite
 
 You should also be able to get the API documentation from
 that site, but you can always create your own copy by
 running
 
-  cd $TINYVM_HOME; make javadoc
+  cd $leJOS_HOME; make javadoc
 
 About the License
 -----------------
 
 I'm releasing under the Mozilla Public License (see LICENSE)
-for now, since librcx is under that same license, and TinyVM 
-is linked against -lrcx. TinyVM is copyright (c) 2000 Jose
-Solorzano.
+for now, since librcx is under that same license, and leJOS 
+is linked against -lrcx. 
 
 Questions/Problems
 ------------------
 
-You can contact Jose at jhsolorz@yahoo.com if you 
-have any questions, problems, or if you'd like to
-contribute to TinyVM in any way.
-
-Read the "Limitations" and "Known Bugs" sections above, 
-just in case.
-
+Please direct feedback to jhsolorz@yahoo.com.
 
 
 

@@ -9,6 +9,7 @@ extern byte typeSize[];
 
 extern void init_memory (void *ptr, TWOBYTES size);
 extern void free_array (Object *objectRef);
+extern void deallocate (TWOBYTES *ptr, TWOBYTES size);
 extern Object *new_object_checked (byte classIndex, byte *btAddr);
 extern Object *new_object_for_class (byte classIndex);
 extern Object *new_primitive_array (byte primitiveType, STACKWORD length);
@@ -36,6 +37,7 @@ TWOBYTES get_array_size (byte length, byte elemSize);
 #define ref_array(OBJ_)     ((REFERENCE *) array_start(OBJ_))
 #define jint_array(OBJ_)    ((JINT *) array_start(OBJ_))
 #define jshort_array(OBJ_)  ((JSHORT *) array_start(OBJ_))
+#define jchar_array(OBJ_)   ((JCHAR *) array_start(OBJ_))
 #define jlong_array(OBJ_)   ((JLONG *) array_start(OBJ_))
 #define jfloat_array(OBJ_)  ((JFLOAT *) array_start(OBJ_))
 

@@ -10,11 +10,9 @@ TEMP=/usr/tmp
 export CLASSPATH
 
 default: check all_jtools all_ctools core_classes tinyvm_emul
-	@echo ------ TinyVM installed successfully.
-	@echo ------ Please check the README file for
-	@echo ------ information about running an example.
+	@echo "====> Installation of leJOS done!"
 
-all: default tinyvm_bin
+all: default lejos_bin
 
 release:
 	cvs commit
@@ -24,15 +22,14 @@ release:
 release_no_tag:
 	make clean
 	make all
-	rm -rf ${TEMP}/tinyvm_*
-	export TINYVM_VERSION=tinyvm_`cat VERSION`; make dir_and_zip
+	rm -rf ${TEMP}/lejos_*
+	export TINYVM_VERSION=lejos_`cat VERSION`; make dir_and_zip
 
 dir_and_zip:
-	cvs export -D tomorrow -d ${TEMP}/${TINYVM_VERSION} tinyvm
-	cvs export -D tomorrow -d ${TEMP}/tinyvm_check tinyvm
-	rm -rf ${TEMP}/${TINYVM_VERSION}/regression/regression.gold
-	cd ${TEMP}; zip -r ${TINYVM_VERSION}.zip ${TINYVM_VERSION}
-	diff bin/tinyvm.srec ${TEMP}/${TINYVM_VERSION}/bin/tinyvm.srec
+	cp -r * ${TEMP}/${TINYVM_VERSION}
+	rm -rf `find ${TEM{}/${TINYVM_VERSION} -name 'CVS'`
+	cp -r * ${TEMP}/tinyvm_check
+	cd ${TEMP}; jar cvf ${TINYVM_VERSION}.zip ${TINYVM_VERSION}
 	rm -rf ${TEMP}/${TINYVM_VERSION}
 
 check:
@@ -52,26 +49,26 @@ all_jtools: java_tools generated_files java_loader
 	cd jtools; jar cf ../lib/jtools.jar `find . -name '*.class' -printf "%h/%f " `
 
 java_tools:
-	@echo Making tools
+	@echo "====> Making tools"
 	${JAVAC} jtools/js/tools/*.java
 
 generated_files: common/classes.db common/signatures.db
 	${JAVA} -Dtinyvm.home="." js.tools.GenerateConstants
 
 java_loader:
-	@echo Making loader
+	@echo "====> Making loader/linker (tvmld)"
 	${JAVAC} jtools/js/tinyvm/*.java
 
 all_ctools:
 	cd tools; make
 
-tinyvm_bin:
-	@echo Making TinyVM binary
-	cd vmsrc; make
+lejos_bin:
+	@echo "====> Making leJOS RCX binary (lejos.srec)"
+	cd rcx_impl; make
 
 tinyvm_emul:
-	@echo Making TinyVM binary for emulation
-	cd vmtest; make
+	@echo "====> Making leJOS Unix binaries (lejos, for emulation)"
+	cd unix_impl; make
 
 core_classes:
 	${JAVAC} -classpath classes `find classes -name '*.java'`

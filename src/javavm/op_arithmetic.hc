@@ -21,14 +21,14 @@ case OP_IMUL:
   goto LABEL_ENGINELOOP;
 case OP_IDIV:
 case OP_IREM:
-  gInt = word2jint(pop_word());
-  if (gInt == 0)
+  tempInt = word2jint(pop_word());
+  if (tempInt == 0)
   {
     throw_exception (arithmeticException);
     goto LABEL_ENGINELOOP;
   }
-  just_set_top_word ((*(pc-1) == OP_IDIV) ? word2jint(get_top_word()) / gInt :
-                                            word2jint(get_top_word()) % gInt);
+  just_set_top_word ((*(pc-1) == OP_IDIV) ? word2jint(get_top_word()) / tempInt :
+                                            word2jint(get_top_word()) % tempInt);
   goto LABEL_ENGINELOOP;
 case OP_INEG:
   just_set_top_word (-word2jint(get_top_word()));

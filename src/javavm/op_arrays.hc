@@ -20,7 +20,7 @@ case OP_AALOAD:
   // Stack size: -2 + 1
   // Arguments: 0
   if (!array_load_helper())
-    goto LABEL_ENGINE_LOOP;
+    goto LABEL_ENGINELOOP;
   // tempBytePtr and tempInt set by call above
   set_top_ref (word_array(tempBytePtr)[tempInt]);
   goto LABEL_ENGINELOOP;
@@ -29,18 +29,18 @@ case OP_FALOAD:
   // Stack size: -2 + 1
   // Arguments: 0
   if (!array_load_helper())
-    goto LABEL_ENGINE_LOOP;
+    goto LABEL_ENGINELOOP;
   set_top_word (word_array(tempBytePtr)[tempInt]);
   goto LABEL_ENGINELOOP;
 case OP_CALOAD:
 case OP_SALOAD:
   if (!array_load_helper())
-    goto LABEL_ENGINE_LOOP;
+    goto LABEL_ENGINELOOP;
   set_top_word (jshort_array(tempBytePtr)[tempInt]);
   goto LABEL_ENGINELOOP;
 case OP_BALOAD:
   if (!array_load_helper())
-    goto LABEL_ENGINE_LOOP;
+    goto LABEL_ENGINELOOP;
   set_top_word (jbyte_array(tempBytePtr)[tempInt]);
   goto LABEL_ENGINELOOP;
 case OP_LALOAD:
@@ -48,7 +48,7 @@ case OP_DALOAD:
   // Stack size: -2 + 2
   // Arguments: 0
   if (!array_load_helper())
-    goto LABEL_ENGINE_LOOP;
+    goto LABEL_ENGINELOOP;
   tempInt *= 2;
   set_top_word (word_array(tempBytePtr)[tempInt++]);
   push_word (word_array(tempBytePtr)[tempInt]);
@@ -57,7 +57,7 @@ case OP_AASTORE:
   // Stack size: -3
   tempStackWord = pop_ref();
   if (!array_store_helper())
-    goto LABEL_ENGINE_LOOP;
+    goto LABEL_ENGINELOOP;
   ref_array(tempBytePtr)[tempInt] = tempStackWord;
   goto LABEL_ENGINELOOP;
 case OP_IASTORE:
@@ -65,7 +65,7 @@ case OP_FASTORE:
   // Stack size: -3
   tempStackWord = pop_word();
   if (!array_store_helper())
-    goto LABEL_ENGINE_LOOP;
+    goto LABEL_ENGINELOOP;
   jint_array(tempBytePtr)[tempInt] = tempStackWord;
   goto LABEL_ENGINELOOP;
 case OP_CASTORE:
@@ -73,14 +73,14 @@ case OP_SASTORE:
   // Stack size: -3
   tempStackWord = pop_word();
   if (!array_store_helper())
-    goto LABEL_ENGINE_LOOP;
+    goto LABEL_ENGINELOOP;
   jshort_array(tempBytePtr)[tempInt] = tempStackWord;
   goto LABEL_ENGINELOOP;
 case OP_BASTORE:
   // Stack size: -3
   tempStackWord = pop_word();
   if (!array_store_helper())
-    goto LABEL_ENGINE_LOOP;
+    goto LABEL_ENGINELOOP;
   jbyte_array(tempBytePtr)[tempInt] = tempStackWord;
   goto LABEL_ENGINELOOP;
 case OP_DASTORE:
@@ -92,7 +92,7 @@ case OP_LASTORE:
     tempStackWord2 = pop_word();
     tempStackWord = pop_word();
     if (!array_store_helper())
-      goto LABEL_ENGINE_LOOP;
+      goto LABEL_ENGINELOOP;
     tempInt *= 2;
     jint_array(tempBytePtr)[tempInt++] = tempStackWord;
     jint_array(tempBytePtr)[tempInt] = tempStackWord2;
@@ -101,16 +101,20 @@ case OP_LASTORE:
 case OP_ARRAYLENGTH:
   // Stack size: -1 + 1
   // Arguments: 0
-  tempRef = get_top_ref();
-  if (tempRef == JNULL)
-    throw_exception (nullPointerException);
-  else     
-    set_top_word (get_array_length (word2obj (tempRef)));
+  {
+    REFERENCE tempRef;
+
+    tempRef = get_top_ref();
+    if (tempRef == JNULL)
+      throw_exception (nullPointerException);
+    else     
+      set_top_word (get_array_length (word2obj (tempRef)));
+  }
   goto LABEL_ENGINELOOP;
 
 
 // Notes:
-// * OP_ANEWARRAY is changed to OP_NEWARRAY of data type 0, plus a NOOP.
+// * OP_ANEWARRAY is changed to OP_NEWARRAY of data type 0, plus a NOP.
 
 /*end*/
 
