@@ -45,11 +45,14 @@ void throw_exception_checked (Object *exception)
 void throw_exception (Object *exception)
 {
   TWOBYTES currentOffset;
-  MethodRecord *methodRecord;
+  MethodRecord *methodRecord = null;
   StackFrame *stackFrame;
   ExceptionRecord *exceptionRecord;
   byte numExceptionHandlers;
-  byte i;
+  MethodRecord *exceptionMr = null;
+  #ifdef EMULATE
+  byte *exceptionPc = pc;
+  #endif
 
   #ifdef VERIFY
   assert (exception != null, EXCEPTIONS0);
@@ -57,13 +60,30 @@ void throw_exception (Object *exception)
 
  LABEL_PROPAGATE:
   if (currentThread->state == DEAD)
+  {
+    #ifdef EMULATE
+    printf ("*** UNCAUGHT EXCEPTION: \n");
+    printf ("--  Exception class   : %d\n", (int) get_class_index (exception));
+    printf ("--  Thread            : %d\n", (int) currentThread->threadId);
+    printf ("--  Method signature  : %d\n", (int) exceptionMr->signatureId);
+    printf ("--  Root method sig.  : %d\n", (int) methodRecord->signatureId);
+    printf ("--  Bytecode offset   : %d\n", (int) exceptionPc - 
+            (int) get_code_ptr(exceptionMr));
+    #else
+    
+    // TBD: 
+
+    #endif EMULATE
     return;
+  }
   stackFrame = current_stackframe();
   methodRecord = stackFrame->methodRecord;
+  if (exceptionMr == null)
+    exceptionMr = methodRecord;
   exceptionRecord = (ExceptionRecord *) (get_binary_base() + methodRecord->exceptionTable);
   currentOffset = (TWOBYTES) (pc - (get_binary_base() + methodRecord->codeOffset));
   numExceptionHandlers = methodRecord->numExceptionHandlers;
-  for (i = 0; i < numExceptionHandlers; i++)
+  while (numExceptionHandlers--)
   {
     if (currentOffset >= exceptionRecord->start && currentOffset <= exceptionRecord->end)
     {

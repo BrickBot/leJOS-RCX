@@ -142,6 +142,9 @@ void switch_thread()
   {
     if (nextThread == anchorThread && !liveThreadExists)
     {
+      #if DEBUG_THREADS
+      printf ("switch_thread: all threads are dead: %d\n", (int) nextThread);
+      #endif
       gMustExit = true;
       return;
     }
@@ -179,6 +182,12 @@ void switch_thread()
       dispatch_virtual ((Object *) currentThread, RUN_V, null);
     }
   }
+
+  #if DEBUG_THREADS
+  printf ("switch_thread: considered thread %d: %d\n", (int) currentThread,
+          (int) (currentThread->state == RUNNING));
+  #endif
+
   if (currentThread->state != RUNNING)
     goto LABEL_TASKLOOP;
   stackFrame = current_stackframe();

@@ -53,11 +53,11 @@ extern void assert (boolean aCond, int aCode);
 #if 0
 
 #define DEBUG_STARTUP  1
-#define DEBUG_THREADS  1
 #define DEBUG_MEMORY   1
-
+#define DEBUG_THREADS  1
 #define DEBUG_METHODS  1
 #define DEBUG_BYTECODE 1
+
 
 #endif
 

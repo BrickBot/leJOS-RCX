@@ -12,8 +12,7 @@ case OP_IFEQ:
 case OP_IFNULL:
   // Arguments: 2
   // Stack: -1
-  if (*stackTop-- == 0)
-    do_goto();  
+  do_goto (*stackTop-- == 0);
   goto LABEL_ENGINELOOP;
 case OP_IF_ICMPNE:
 case OP_IF_ACMPNE:
@@ -21,38 +20,32 @@ case OP_IF_ACMPNE:
   // Fall through!
 case OP_IFNE:
 case OP_IFNONNULL:
-  if (*stackTop-- != 0)
-    do_goto();
+  do_goto (*stackTop-- != 0);
   goto LABEL_ENGINELOOP;
 case OP_IF_ICMPLT:
   do_isub();
   // Fall through!
 case OP_IFLT:
-  if (word2jint(*stackTop--) < 0)
-    do_goto();
+  do_goto (word2jint(*stackTop--) < 0);
   goto LABEL_ENGINELOOP;
 case OP_IF_ICMPLE:
   do_isub();
   // Fall through!
 case OP_IFLE:
-  if (word2jint(*stackTop--) <= 0)
-    do_goto();
+  do_goto (word2jint(*stackTop--) <= 0);
   goto LABEL_ENGINELOOP;
 case OP_IF_ICMPGE:
   do_isub();
   // Fall through!
 case OP_IFGE:
-  if (word2jint(*stackTop--) >= 0)
-    do_goto();
+  do_goto (word2jint(*stackTop--) >= 0);
   goto LABEL_ENGINELOOP;
 case OP_IF_ICMPGT:
   do_isub();
   // Fall through!
 case OP_IFGT:
-  if (word2jint(*stackTop--) > 0)
-    do_goto();
+  do_goto (word2jint(*stackTop--) > 0);
   goto LABEL_ENGINELOOP;
-
 
 case OP_FCMPL:
 case OP_FCMPG:
@@ -75,7 +68,7 @@ case OP_JSR:
 case OP_GOTO:
   // Arguments: 2
   // Stack: +0
-  do_goto();
+  do_goto (true);
   // No pc increment!
   goto LABEL_ENGINELOOP;
 case OP_RET:

@@ -210,9 +210,12 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   printf ("-- code offset  = %d\n", methodRecord->codeOffset);
   printf ("-- flags        = %d\n", methodRecord->mflags);
   printf ("-- num params   = %d\n", methodRecord->numParameters);
+  printf ("-- localsBase   = %d\n", (int) localsBase);
+  printf ("-- stackTop     = %d\n", (int) stackTop);
   #endif
 
-  paramBase = stackTop - methodRecord->numParameters + 1;
+  stackTop -= methodRecord->numParameters;
+  paramBase = stackTop + 1;
  
   newStackFrameIndex = currentThread->stackFrameArraySize;
   if (newStackFrameIndex >= MAX_STACK_FRAMES)
@@ -244,7 +247,7 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   // Initialize rest of new stack frame
   stackFrame->methodRecord = methodRecord;
   // TBD: assigning to stackFrame->pc may not be necessary
-  stackFrame->pc = get_binary_base() + methodRecord->codeOffset;
+  stackFrame->pc = get_code_ptr(methodRecord);
   stackFrame->stackTop = stackFrame->localsBase + methodRecord->numLocals - 1;
   stackFrame->monitor = null;
   // Initialize auxiliary globals
@@ -272,20 +275,30 @@ void do_return (byte numWords)
   StackFrame *stackFrame;
   STACKWORD *sourcePtr;
 
-  #ifdef DEBUG_METHODS
-  printf ("do_return: %d\n", numWords);
-  #endif
-
   // Place source ptr below data to be copied up the stack
   sourcePtr = stackTop - numWords;
   stackFrame = current_stackframe();
+
+  #ifdef DEBUG_METHODS
+  printf ("do_return: method: %d  #  num. words: %d\n", 
+          stackFrame->methodRecord->signatureId, numWords);
+  #endif
+
   #ifdef VERIFY
   assert (stackFrame != null, LANGUAGE3);
   #endif
   if (stackFrame->monitor != null)
     exit_monitor (stackFrame->monitor);
+
+  #if DEBUG_THREADS
+  printf ("do_return: stack frame array size: %d\n", currentThread->stackFrameArraySize);
+  #endif
+
   if (currentThread->stackFrameArraySize == 1)
   {
+    #if DEBUG_METHODS
+    printf ("do_return: thread is done: %d\n", (int) currentThread);
+    #endif
     currentThread->state = DEAD;
     switch_thread();
     return;
@@ -295,6 +308,13 @@ void do_return (byte numWords)
   pc = stackFrame->pc;
   stackTop = stackFrame->stackTop;
   localsBase = stackFrame->localsBase;
+
+  #if DEBUG_METHODS
+  printf ("do_return: stack reset to:\n");
+  printf ("-- localsBase   = %d\n", (int) localsBase);
+  printf ("-- stackTop     = %d\n", (int) stackTop);
+  #endif
+
   while (numWords--)
   {
     *(++stackTop) = *(++sourcePtr);
