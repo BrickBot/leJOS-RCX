@@ -4,13 +4,9 @@ import josx.rcxcomm.*;
 /**
  * This program uses the josx.rcxcomm package to
  * communicate over the Lego IR link with a
- * corresponding program, ReadInt. It sends
- * int values and receives replies of double the
- * value, 5 times. It works on either the
- * PC or the  RCX, and so demonsrates either
- * the PC or the RCX initiating communication.
- * It demonstrates the use of DataInputStream
- * and DataOutputStream.
+ * corresponding program, SensorReader. 
+ * It sends the Sensor ID, and reads back the sensor value 
+ * as a short.
  */
 public class ReadSensor {
 
