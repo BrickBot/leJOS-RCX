@@ -39,7 +39,8 @@ check_release:
 	echo TINYVM_HOME=${TINYVM_HOME}
 	echo Location of tvmc=`which tvmc`
 	echo Location of tvmld=`which tvmld`
-	which tvmc; make; cd regression; ./run/sh
+	which tvmc; make; 
+	cd regression; ./run.sh
 
 all_jtools: java_tools generated_files java_loader
 	cd ${JTOOLS}; jar cf ${LIB_DIR}/jtools.jar `find . -name '*.class' -printf "%h/%f " `
