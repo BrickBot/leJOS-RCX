@@ -12,7 +12,9 @@
 #include <windows.h>
 #endif
 
+extern "C" {
 #include "rcx_comm.h"
+}
 
 #ifdef __APPLE__
 #include <CoreFoundation/CoreFoundation.h>
@@ -47,7 +49,7 @@
 #if defined(__APPLE__)
     #define TIME_OUT 100
 #else
-    #define TIME_OUT 500
+    #define TIME_OUT 100
 #endif
 #define WAKEUP_TIME_OUT 4000
 
@@ -59,7 +61,9 @@ int GetLastError() {
 }
 #endif
 
+extern "C" {
 extern int __comm_debug;
+}
 
 int usb_flag;
 
@@ -411,6 +415,7 @@ Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr)
 #endif
 
     if (actual < 0) err = GetLastError();
+
 
     // Set err in the Java class
 

@@ -2,6 +2,7 @@ CC=$(shell ../../cctest.sh)
 
 JDK=$(shell dirname $(shell dirname $(shell which java)))
 
+
 OS=${OSTYPE}
 ifeq ($(OSTYPE),linux-gnu)
 OS=linux
@@ -9,12 +10,16 @@ endif
 
 OSX_USB=
 
+COMM_OSX_C=../../tools/firmdl/osx_usb.c
+COMM_OBJ=../../tools/firmdl/rcx_comm.o
+COMM_C=../../tools/firmdl/rcx_comm.c
+COMM_H=../../tools/firmdl/rcx_comm.h
+COMM_INCL=../../tools/firmdl
+
 ifneq (,$(findstring cygwin,$(OSTYPE)))
-  # Windows with CygWin installed
-IRTOWER=../../bin/irtower.dll
-  CCOPT=-mno-cygwin -I${JDK}/include -I${JDK}/include/win32 -Wl,--add-stdcall-alias -shared
-  # May not be necessary if make/gnumake sets CXX up correctly
-  # CXX=${CC}
+    # Windows with CygWin installed
+    IRTOWER=../../bin/irtower.dll
+    CCOPT=-mno-cygwin -I$(COMM_INCL) -I${JDK}/include -I${JDK}/include/win32 -Wl,--add-stdcall-alias -shared
 else
 ifneq (,$(findstring darwin,$(OSTYPE)))
     # Mac OS X
@@ -27,25 +32,25 @@ ifneq (,$(findstring darwin,$(OSTYPE)))
       JNILIB_TYPE = -dynamiclib
     endif
     # Mac OS X compiles PIC by default
-    CCOPT = -g -O ${JNILIB_TYPE} -framework IOKit -framework CoreFoundation -I/System/Library/Frameworks/JavaVM.framework/Headers
-IRTOWER=../../bin/libirtower.jnilib 
-    # CXX set by default on Mac OS X.
+    CCOPT = -g -O ${JNILIB_TYPE} -I$(COMM_INCL) -framework IOKit -framework CoreFoundation -I/System/Library/Frameworks/JavaVM.framework/Headers
+    IRTOWER=../../bin/libirtower.jnilib 
+
     OSX_USB=osx_usb.o
   else
     # Linux/Solaris/FreeBSD/other unices.
     IRTOWER=../../bin/libirtower.so
-    CCOPT=-shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) 
-    # CXX=${CC}
+    CCOPT=-shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) -I$(COMM_INCL)
+
   endif
 endif
 
 .EXPORT_ALL_VARIABLES :
 
 # Use CXX to get correct linkage (need C++ libraries)
-${IRTOWER}: irtower.cpp rcx_comm.cpp rcx_comm.h josx_rcxcomm_Tower.h $(OSX_USB)
-	$(CXX) $(CCOPT) $(OSX_USB) -o $@ *.cpp
-osx_usb.o: osx_usb.c
-	$(CC) -c -framework IOKit -framework CoreFoundation -I/System/Library/Frameworks/JavaVM.framework/Headers osx_usb.c
+${IRTOWER}: irtower.cpp $(COMM_C) $(COMM_H) josx_rcxcomm_Tower.h $(OSX_USB)
+	$(CXX) $(CCOPT) $(OSX_USB) $(COMM_OBJ) -o $@ *.cpp
+osx_usb.o: $(COMM_OSX_C)
+	$(CC) -c -framework IOKit -framework CoreFoundation -I/System/Library/Frameworks/JavaVM.framework/Headers $(COMM_OSX_C)
 clean:
 	rm -rf *.o *~ core
 	rm -f ${IRTOWER}
