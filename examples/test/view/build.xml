@@ -1,0 +1,73 @@
+<project name="View" default="dist" basedir=".">
+    <description>
+        View example build file
+    </description>
+
+  <!-- set global properties for this build -->
+  <property name="lejos_home" location="../../.." />
+  <property name="src" location="."/>
+  <property name="build" location="build"/>
+  <property name="program" value="View"/>
+  <property name="binary" value="build/${program}.bin" />
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="compile" depends="init"
+        description="compile the source " >
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac target="1.1" srcdir="${src}" destdir="${build}">
+      <bootclasspath>
+        <pathelement location="${lejos_home}/lib/classes.jar"/>
+        <pathelement location="${lejos_home}/lib/rcxrcxcomm.jar"/>
+       </bootclasspath>
+    </javac>
+  </target>
+
+  <target name="link" depends="compile"
+        description="link the binary " >
+    <!-- Link the binary and create a signature file -->
+    <java classname="js.tinyvm.TinyVM">
+      <sysproperty key="tinyvm.linker" value="lejoslink"/> 
+      <sysproperty key="tinyvm.home" value="${lejos_home}"/> 
+      <sysproperty key="tinyvm.write.order" value="BE"/> 
+      <sysproperty key="java.library.path" value="${lejos_home}/bin"/>
+      <arg value="-classpath"/>
+      <arg path="${lejos_home}/lib/classes.jar;${lejos_home}/lib/rcxrcxcomm.jar;build" /> 
+      <arg value="-verbose"/>
+      <arg value="${program}"/>
+      <arg value="-o"/>
+      <arg value="${binary}"/>
+      <classpath>
+        <pathelement location="${lejos_home}/lib/jtools.jar"/>
+      </classpath>
+    </java>
+  </target>
+
+  <target name="download" depends="link"
+        description="download the binary" >
+    <java classname="js.tools.Lejosdl">
+      <sysproperty key="java.library.path" value="${lejos_home}/bin"/>
+      <arg value="${binary}"/>
+      <classpath>
+        <pathelement location="${lejos_home}/lib/jtools.jar"/>
+        <pathelement location="${lejos_home}/lib/pcrcxcomm.jar"/>
+      </classpath>
+    </java>
+  </target>
+
+  <target name="firmdl"
+        description="download the firmware" >
+    <java fork="yes" classname="js.tools.Firmdl">
+      <sysproperty key="java.library.path" value="${lejos_home}/bin"/>
+      <classpath>
+        <pathelement location="${lejos_home}/lib/jtools.jar"/>
+        <pathelement location="${lejos_home}/lib/pcrcxcomm.jar"/>
+      </classpath>
+    </java>
+  </target>
+</project>
