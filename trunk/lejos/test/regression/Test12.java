@@ -54,14 +54,11 @@ public class Test12
       pObj3.syncMethod2();
     }
     for (int i = 0; i < 1000; i++) {}
-    ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, pObj1.iCounter, ROM.LCD_POINT_DECIMAL_0);
-    ROM.refreshLcd();
+    LCD.showNumber (pObj1.iCounter);
     for (int i = 0; i < 50000; i++) {}
-    ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, pObj2.iCounter, ROM.LCD_POINT_DECIMAL_0);
-    ROM.refreshLcd();
+    LCD.showNumber (pObj2.iCounter);
     for (int i = 0; i < 50000; i++) {}
-    ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, pObj3.iCounter, ROM.LCD_POINT_DECIMAL_0);
-    ROM.refreshLcd();
+    LCD.showNumber (pObj3.iCounter);
     for (int i = 0; i < 50000; i++) {}    
   }
 }

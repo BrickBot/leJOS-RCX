@@ -20,25 +20,25 @@ public class Test06
     try {
       (new int[1])[1] = 0;
     } catch (ArrayIndexOutOfBoundsException e) {
-      ROM.playTone (3000, 100);
+      Sound.playTone (3000, 100);
     }
     try {
       int[] x = null;
       x[0] = 0;
     } catch (Throwable t) {
-      ROM.playTone (2000, 100);
+      Sound.playTone (2000, 100);
     }
     try {
       myMethod();
     } catch (Exception e) {
-      ROM.playTone (1000, 100);
+      Sound.playTone (1000, 100);
     }
     for (int i = 0; i < 100000; i++) {}
     try {
       int[] x = null;
       x[0] = 0;
     } catch (ArrayIndexOutOfBoundsException e) {
-      ROM.playTone (3000, 200);
+      Sound.playTone (3000, 200);
     } finally {
       Motor.controlMotor ('A', 1, 1);
       for (int i = 0; i < 10000; i++) {}

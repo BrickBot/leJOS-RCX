@@ -207,6 +207,8 @@ implements OpCodeConstants, OpCodeInfo, Constants
     JCPE_NameAndType pNT = pMethodEntry.getNameAndType();
     Signature pSig = new Signature (pNT.getName(), pNT.getDescriptor());
     MethodRecord pMethod = pClassRecord.getMethodRecord (pSig);
+    if (pMethod == null)
+      Utilities.fatal ("Method " + pSig + " not found  in " + pClass);
     if (aSpecial)
     {
       int pClassIndex = iBinary.getClassIndex (pClassRecord);
