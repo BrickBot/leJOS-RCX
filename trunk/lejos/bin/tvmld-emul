@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ "${TINYVM_HOME}" = "" ]; 
+then
+  echo Error: TINYVM_HOME undefined.
+  exit 1
+fi
+
+export TINYVMOPTIONS=-Dtinyvm.write.order=LE ${TINYVMOPTIONS}
+
+${TINYVM_HOME}/bin/aux-tvmld $@
