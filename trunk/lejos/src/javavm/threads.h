@@ -22,14 +22,6 @@ typedef struct S_StackFrame
   byte *pc;
 } StackFrame;
 
-inline StackFrame *current_stack_frame()   
-{
-  return ((StackFrame *) currentThread->currentStackFrame);
-}
-
-inline MethodRecord *current_method()
-{
-  return current_stack_frame()->methodRecord;
-}
+#define current_stack_frame() ((StackFrame *) currentThread->currentStackFrame)
 
 #endif

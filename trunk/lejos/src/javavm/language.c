@@ -171,6 +171,10 @@ void dispatch_special (byte classIndex, byte methodIndex)
   }
 }
 
+/**
+ * @return false iff the current thread is done
+ *         and there are no more threads.
+ */
 void do_return (byte numWords)
 {
   StackFrame *stackFrame;
@@ -197,6 +201,7 @@ void do_return (byte numWords)
   {
     *(++stackTop) = *(++sourcePtr);
   }  
+  return;
 }
 
 /**

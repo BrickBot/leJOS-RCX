@@ -40,7 +40,6 @@ byte typeSize[] = {
   0, // 2
   0, // 3
   1, // 4 == T_BOOLEAN
-
   2, // 5 == T_CHAR
   4, // 6 == T_FLOAT
   8, // 7 == T_DOUBLE

@@ -8,6 +8,8 @@ case OP_INVOKEVIRTUAL:
   // Note: pc is updated by dispatch method
   dispatch_virtual (mk_pobject (*(stackTop - (pc[0] >> 4))), 
     (TWOBYTES) pc[1] | (TWOBYTES) (pc[0] & 0x0F), pc + 2);
+  if (gMustExit)
+    return;
   goto LABEL_ENGINELOOP;
 case OP_INVOKESPECIAL:
 case OP_INVOKESTATIC:
@@ -15,6 +17,8 @@ case OP_INVOKESTATIC:
   // Arguments: 2
   // Note: pc is updated by dispatch method
   dispatch_special (pc[0], pc[1], pc + 2);
+  if (gMustExit)
+    return;
   goto LABEL_ENGINELOOP;
 case OP_IRETURN:
 case OP_LRETURN:
@@ -24,11 +28,15 @@ case OP_ARETURN:
   // Stack: 1 or 2 words copied up
   // Arguments: 0
   do_return ((*(pc-1) - OP_IRETURN) % 2 + 1);
+  if (gMustExit)
+    return;
   goto LABEL_ENGINELOOP;
 case OP_RETURN:
   // Stack: unchanged
   // Arguments: 0
   do_return (0);
+  if (gMustExit)
+    return;
   goto LABEL_ENGINELOOP;
 
 // Notes:

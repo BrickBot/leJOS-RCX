@@ -1,9 +1,13 @@
 
-#include "classes.h"
 #include "types.h"
+#include "trace.h"
 #include "constants.h"
+#include "specialsignatures.h"
+#include "threads.h"
+#include "classes.h"
 #include "language.h"
 #include "configure.h"
+#include "interpreter.h"
 
 #define NO_OWNER 0
 
@@ -21,7 +25,7 @@ static Thread* currentThread;
 void init_thread (Thread *thread)
 {
   thread->stackFrameArray = new_primitive_array (T_STACKFRAME, MAX_STACK_FRAMES);
-  thread->stackArray = new_primitive_array (T_INTEGER, STACK_SIZE);
+  thread->stackArray = new_primitive_array (T_INT, STACK_SIZE);
   thread->currentStackFrame = null;
   thread->state = STARTED;
   if (currentThread == null)
@@ -35,40 +39,50 @@ void init_thread (Thread *thread)
 
 /**
  * Switches to next thread.
- * Notes:
+ * @return false iff there are no live threads
+ *         to switch to.
  */
 void switch_thread()
 {
   // TBD: loops forever when all threads are dead.
 
+  Thread *anchorThread;
   Thread *nextThread;
   StackFrame *stackFrame;
+  boolean liveThreadExists;
 
   #ifdef VERIFY
   assert (currentThread != null, THREADS0);
   #endif
-
+  
+  anchorThread = currentThread;
+  liveThreadExists = false;
   // Save context information
   stackFrame = get_stack_frame();
   stackFrame->pc = pc;
   stackFrame->stackTop = stackTop;
   // Loop until a RUNNING frame is found
  LABEL_TASKLOOP:
-  nextThread = currentThread->nextThread;
+  nextThread = (Thread *) currentThread->nextThread;
   if (nextThread->state == WAITING)
   {
     if (get_thread_id((Object *) (nextThread->waitingOn)) == NO_OWNER)
     {
       nextThread->state = RUNNING;
       #ifdef SAFE
-      nextThread->waitingOn = null;
+      nextThread->waitingOn = (REFERENCE) null;
       #endif
     }
   }
 
-  #if REMOVE_DEAD_THREADS
   if (nextThread->state == DEAD)
   {
+    if (nextThread == anchorThread && !liveThreadExists)
+    {
+      gMustExit = true;
+      return;
+    }
+    #if REMOVE_DEAD_THREADS
     free_array (nextThread->stackFrameArray);
     free_array (nextThread->stackArray);
 
@@ -79,8 +93,12 @@ void switch_thread()
 
     nextThread = nextThread->nextThread;
     currentThread->nextThread = nextThread;
+    #endif REMOVE_DEAD_THREADS
   }
-  #endif REMOVE_DEAD_THREADS
+  else
+  {
+    liveThreadExists = true;
+  }  
 
   currentThread = nextThread;
   if (currentThread->state == STARTED)
@@ -97,7 +115,7 @@ void switch_thread()
 }
 
 /**
- * thread enters obj's monitor.
+ * currentThread enters obj's monitor.
  * Note that this operation is atomic as far as the program is concerned.
  */
 void enter_monitor (Object* obj)
