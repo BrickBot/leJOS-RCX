@@ -52,12 +52,12 @@ public class Button
   /**
    * Loops until the button is released.
    */
-  public final void waitForPressAndRelease()
+  public final void waitForPressAndRelease() throws InterruptedException
   {
     while (!isPressed())
-      Thread.yield();
+      	Thread.sleep(50);
     while (isPressed())
-      Thread.yield();
+    	Thread.sleep(50);
   }
 
   /**
