@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include "types.h"
 #include "constants.h"
 #include "classes.h"
@@ -25,7 +26,7 @@
 Thread   *bootThread;
 TWOBYTES *gMemory;
 TWOBYTES gMemorySize = MEMORY_SIZE;
-
+struct timeval gStart;
 
 void handle_uncaught_exception (Object *exception,
                                        const Thread *thread,
@@ -45,6 +46,18 @@ void handle_uncaught_exception (Object *exception,
 void switch_thread_hook()
 {
   // NOP
+}
+
+FOURBYTES get_sys_time_impl()
+{
+  struct timeval now;
+  FOURBYTES sysTime;
+  
+  if (gettimeofday(&now, NULL)) 
+    perror("systime_init: gettimeofday");
+  sysTime = (now.tv_sec  - gStart.tv_sec ) * 1000;
+  sysTime += (now.tv_usec - gStart.tv_usec) / 1000;
+  return sysTime;	
 }
 
 void run(void)
@@ -99,6 +112,8 @@ int main (int argc, char *argv[])
   printf ("Reading binary %s\n", argv[1]);
   #endif
   readBinary (argv[1]);
+  if (gettimeofday(&gStart, NULL)) 
+    perror("main: gettimeofday");
   run();
   return 0;
 } 

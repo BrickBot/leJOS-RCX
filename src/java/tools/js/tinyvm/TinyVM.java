@@ -43,9 +43,13 @@ implements Constants
       pipeStream (p.getErrorStream(), System.err);
       int pStatus;
       if ((pStatus = p.waitFor()) != 0)
-      { 
+      {
         System.err.println (TINYVM_LOADER + ": returned status " + pStatus + ".");
       }
+      // Hack: Small wait to get all the output flushed.
+      Thread.sleep (100);
+      System.out.flush();
+      System.err.flush();      
     } catch (InterruptedException e) {
       Utilities.fatal ("Execution of " + pTvmExec + " was interrupted.");
     } catch (IOException e) {

@@ -2,14 +2,16 @@
 #include "classes.h"
 #include "language.h"
 #include "constants.h"
+#include "trace.h"
 
 #ifndef _THREADS_H
 #define _THREADS_H
 
-#define DEAD    0 /* Must be zero; see java.lang.Thread#isAlive */
-#define RUNNING 1
-#define WAITING 2
-#define STARTED 3
+#define DEAD          0 /* Must be zero; see java.lang.Thread#isAlive */
+#define STARTED       1
+#define RUNNING       2
+#define MON_WAITING   3
+#define SLEEPING      4
 
 #define SF_SIZE (sizeof(StackFrame))
 
@@ -50,6 +52,20 @@ static inline void init_threads()
   currentThread = JNULL;	
 }
 
+/**
+ * Sets thread state to SLEEPING.
+ * Thread should be switched immediately after calling this method.
+ */
+static inline void sleep_thread (const FOURBYTES time)
+{
+  #ifdef VERIFY
+  assert (currentThread != JNULL, THREADS3);
+  assert (currentThread->state != MON_WAITING, THREADS4);
+  #endif
+
+  currentThread->state = SLEEPING;
+  currentThread->waitingOn = get_sys_time() + time; 	
+}
 
 #endif
 

@@ -11,6 +11,7 @@
 #include "configure.h"
 #include "interpreter.h"
 #include "exceptions.h"
+#include "systime.h"
 
 #include <rom.h>
 
@@ -31,6 +32,46 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       switch_thread();
       // Go back and continue
       return;
+    case SLEEP_V:
+      sleep_thread (paramBase[1]);
+      do_return (0);
+      switch_thread();
+      return;
+    case CURRENTTIMEMILLIS_J:
+      *(++stackTop) = 0;
+      *(++stackTop) = sys_time;
+      do_return (2);
+      return;
+
+#if 0
+
+      case ARRAYCOPY_V:
+      {
+	Object *arr1;
+	Object *arr2;
+	byte    elemSize = 0;
+	
+	arr1 = word2obj (paramBase[0]);
+	arr2 = word2obj (paramBase[2]);
+	if (arr1 == JNULL || arr2 == JNULL)
+	{
+	  throw_exception (nullPointerException);
+	  return;
+	}
+        if (!is_array (arr1) || !is_array (arr2) ||
+	    (elemSize = get_element_size (arr1)) != get_element_size (arr2))
+	{
+	  throw_exception (classCastException);
+	  return;
+	}
+	
+	  
+	###
+      }
+      break;
+
+#endif
+
     case CALLROM0_V:
       __rcall0 (paramBase[0]);
       break;      
@@ -77,7 +118,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       *(++stackTop) = ptr2word (((byte *) word2ptr (paramBase[0])) + HEADER_SIZE);
       do_return (1);
       return;
-    case RESETRCX_V:
+    case RESETSERIAL_V:
       reset_rcx_serial();
       break;
     default:

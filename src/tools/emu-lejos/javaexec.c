@@ -141,6 +141,9 @@ int main (int argc, char *argv[])
   char *tinyvmHome;
   char *directory;
   char **newargv;
+  #ifdef __CYGWIN__
+  char *auxstr;
+  #endif __CYGWIN__
   
   directory = pdirname (argv[0]);
   if (directory == NULL)
@@ -149,6 +152,18 @@ int main (int argc, char *argv[])
     exit (1);
   }
   tinyvmHome = append (directory, "/..");   
+
+  #ifdef __CYGWIN__
+  auxstr = (char *) malloc (MAX_PATH);
+  cygwin_conv_to_win32_path (tinyvmHome, auxstr);
+  tinyvmHome = auxstr;
+
+  #if TRACE
+  printf ("converted=%s\n", tinyvmHome);
+  #endif
+  
+  #endif __CYGWIN__
+
   newargv = (char **) malloc (sizeof (char *) * (argc + 20));
   count = 0;
   toolsPath = append (tinyvmHome, TOOLS_JAR);

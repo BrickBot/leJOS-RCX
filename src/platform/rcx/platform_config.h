@@ -1,10 +1,16 @@
 #ifndef _PLATFORM_CONFIG_H
 #define _PLATFORM_CONFIG_H
 
+#include "systime.h"
+
 // Converting words to pointers
 
 #define ptr2word(PTR_)  ((STACKWORD) (TWOBYTES) (PTR_))
 #define word2ptr(WRD_)  ((void *) (TWOBYTES) (WRD_))
+
+// Macro to get 4-byte system time, used in sleep.
+
+#define get_sys_time()  (sys_time)
 
 // Byte order: Most significant byte goes first in the RCX
 
