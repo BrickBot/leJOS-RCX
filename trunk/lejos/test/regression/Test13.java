@@ -2,7 +2,7 @@
 // Memory overflow test
 
 import josx.platform.rcx.*;
-import josx.util.Test;
+import josx.util.Assertion;
 
 public class Test13
 { 

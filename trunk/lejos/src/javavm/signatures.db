@@ -76,6 +76,6 @@ setSensorValue(III)V
 setPoller()V
 setThrottle(I)V
 
-# java.util.Test
-assert(Ljava/lang/String;Z)V
-assertEQ(Ljava/lang/String;II)V
+# josx.util.Assertion
+test(Ljava/lang/String;Z)V
+testEQ(Ljava/lang/String;II)V

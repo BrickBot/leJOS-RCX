@@ -1,4 +1,4 @@
-import josx.util.Test;
+import josx.util.Assertion;
 
 public class TestThreadState {
 	static class TestThread extends Thread {
@@ -6,27 +6,27 @@ public class TestThreadState {
 			try {
 				sleep(5000);
 			} catch (InterruptedException e) {
-				Test.assert("Sleep interrupted", true);
+				Assertion.test("Sleep interrupted", true);
 			}
 		}
 	}
 	public static void main(String[] args) {
 		try {
 			Thread t = new TestThread();
-			Test.assert("Alive1", !t.isAlive());
+			Assertion.test("Alive1", !t.isAlive());
 			t.start();
 			Thread.yield();
-			Test.assert("Not alive", t.isAlive());
+			Assertion.test("Not alive", t.isAlive());
 			t.interrupt();
 			Thread.currentThread().sleep(500);
-			Test.assert("Alive2", !t.isAlive());
+			Assertion.test("Alive2", !t.isAlive());
 			boolean ex = false;
 			try {
 				t.start();
 			} catch (IllegalStateException ise) {
 				ex = true;
 			}
-			Test.assert("No exception", ex);
+			Assertion.test("No exception", ex);
 			ex = false;
 			try  {
 				// Run out of memory whilst creating threads:
@@ -38,7 +38,7 @@ public class TestThreadState {
 			} catch (OutOfMemoryError oome) {
 				ex = true;
 			}
-			Test.assert("No OutOfMemoryError", ex);
+			Assertion.test("No OutOfMemoryError", ex);
 		} catch (Throwable e) {
 			System.exit(1);
 		}
