@@ -1,6 +1,8 @@
 /**
  * Jose's changes:
  * -- _end is ALIGN(2) now.
+ *
+ * 2001-08-09 juergen: added extra0 with angle_state for rotation sensor
  */
 
 /*
@@ -41,6 +43,7 @@ MEMORY
 {
     rom (r) : o = 0x0000, l = 0x8000
     mem     : o = 0x8000, l = 0x6f00
+    extra0  : o = 0xef10, l = 0x0040
     extra1  : o = 0xef50, l = 0x00b0
     extra2  : o = 0xf010, l = 0x0d70
     romdata : o = 0xfd80, l = 0x0040     /* for interupt vectors */
@@ -71,6 +74,10 @@ SECTIONS
         *(COMMON)
         __end = ALIGN(2) ;
     } > mem
+
+    .extra0 : {
+        _angle_state = 0x22 ; 
+    } > extra0
 
     .extra : {
         __extraMemory = . ; 
