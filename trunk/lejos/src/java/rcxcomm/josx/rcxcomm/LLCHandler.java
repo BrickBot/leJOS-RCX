@@ -50,8 +50,8 @@ public class LLCHandler extends PacketHandler {
   }
 
   /**
-   * Search for the next paket or ack and read it into the relevent buffer
-   * an set the flag to say we've got it. 
+   * Search for the next packet or ack and read it into the relevent buffer
+   * and set the relevant flag to say we've got it. 
    **/
   private void getOp() {
     for(;;) {
