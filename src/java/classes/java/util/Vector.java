@@ -1,5 +1,8 @@
 package java.util;
 
+/**
+ * A dynamic array.
+ */
 public class Vector
 {
   private Object[] iElements;

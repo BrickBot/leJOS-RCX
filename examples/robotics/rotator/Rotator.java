@@ -4,7 +4,7 @@ import tinyvm.rcx.*;
  * DESCRIPTION
  *   Program that makes PATHFINDER learn to rotate
  *   by simply using a light sensor to scan normally
- *   diverse surroundings.
+ *   diverse surroundings. 
  *
  * CAUTION
  *   The wheels of your robot may fall off after
@@ -31,17 +31,17 @@ import tinyvm.rcx.*;
  *     2000 and 4000.
  *
  * HOW TO RUN
- *   - You should read $TINYVM_HOME/README if you
+ *   - You should read $LEJOS_HOME/README if you
  *     still haven't.
- *   - Set TINYVMPATH     : export TINYVMPATH=.
- *   - Compile the program: tvmc Rotator.java
- *   - Link the class     : tvmld Rotator -o Rotator.tvm
- *   - Download TinyVM firmware if necessary.
+ *   - Set CLASSPATH to . (dot).
+ *   - Compile the program: lejosc Rotator.java
+ *   - Link the class     : lejos Rotator -o Rotator.tvm
+ *   - Download leJOS firmware if necessary.
  *   - Make sure the robot is about 3 feet away from anything
  *     else. Make the sorroundings somewhat varied. I use
  *     a flashlight, but it looks like this isn't really
  *     necessary. Don't move too much.
- *   - Run linked binary  : tvm Rotator.tvm.
+ *   - Run linked binary  : lejosrun Rotator.tvm.
  *     The download time is about 30 seconds.
  * 
  * WHAT IT DOES
@@ -60,10 +60,6 @@ import tinyvm.rcx.*;
  *     direction. It repeats this 4 times.
  *     The error for a 180 degrees rotation is
  *     probably about 5% to 10%, on carpet.
- *
- * NOTES
- *   Send me email at jhsolorz@yahoo.com if you find
- *   ways to make the rotation analysis more precise.
  */
 public class Rotator
 {

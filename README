@@ -2,11 +2,12 @@
 Summary
 -------
 
--- You must have JDK1.1 or JDK1.2.
+-- You should have JDK1.1 or JDK1.2.
 -- Your PATH must contain the JDK's bin directory.
 -- Type 'make' to finish installation of leJOS.
 -- Add leJOS's bin directory to your PATH.
 -- Set RCXTTY to your serial device (e.g. com1).
+-- Download firmware using lejosfirmdl.
 -- Compile using lejosc instead of javac.
 -- Run programs in the RCX using lejos.
 -- Run programs in the host using lejos-emul.
@@ -18,8 +19,13 @@ Summary
 What is leJOS?
 --------------
 
-leJOS is yet another replacement firmware for the Lego
-Mindstorms RCX. It was forked out of the TinyVM project
+leJOS is a tiny (~ 16 Kb) Java-based operating system
+that has been ported to the following platforms:
+
+  - Lego Mindstorms RCX, i.e. Hitachi H8300
+  - Unix (for emulation of RCX programs only)
+
+leJOS was forked out of the TinyVM project
 (http://sourceforge.net/projects/tinyvm). leJOS contains
 a VM for Java bytecodes, and additional software to load
 and run Java programs. These are some of the features
@@ -37,27 +43,26 @@ The above are also provided by TinyVM. But in addition
 to these, leJOS also offers:
 
 - More APIs.
-- Floating point operations.
+- Floating point operations (doubles work like floats).
 - String constants.
-- Comparison and casting of longs (but not arithmetic).
+- Comparison and casting of 8-byte longs (but not arithmetic).
 - Marks references in the stack (which makes it feasible
   to implement garbage collection).
 
 TinyVM is still around simply as a low-footprint alternative
-to leJOS. The RAM difference between the two is about
-5 Kb in the RCX.
+to leJOS. TinyVM is about 5 Kb smaller in the RCX.
 
 How do you pronounce leJOS?
 ---------------------------
 
-I pronounce it like the Spanish word "lejos" (far).
+I pronounce it like the Spanish word "lejos" (which means far).
 
 Requirements
 ------------
 
 - JDK1.1.X or JDK1.2.X, available from http://java.sun.com.
-  (The JDK is used during installation, and to run some tools
-  provided with leJOS, e.g. the linker).
+  (The JDK is used during installation, for compilation,
+  and to run some tools provided with leJOS, e.g. the linker).
 
 - leJOS is known to work on Linux, CygWin and Solaris.
 
@@ -175,8 +180,8 @@ Questions/Problems
 ------------------
 
 Please direct feedback to jhsolorz@yahoo.com. You can also
-subscribe to the tinyvm-discussion mailing list. Follow
-the relevant links at http://sourceforge.net/projects/tinyvm.
+subscribe to the tinyvm-discussion mailing list. Look for
+the "Mailing Lists" section at http://sourceforge.net/projects/tinyvm.
 
 
 
