@@ -399,6 +399,8 @@ main(int argc, char **argv)
     unsigned short cksum = 0;
     int addr, index, size, i;
     char *tty;
+    char *fileName;
+    char *tinyvmHome;
     int fd;
     int length = 0;
     int strip = STRIP_ZEROS;
@@ -406,13 +408,30 @@ main(int argc, char **argv)
 
     progname = argv[0];
 
-    if (argc != 2) {
-	fprintf(stderr, "usage: %s filename\n", argv[0]);
+    if ((tinyvmHome = getenv("TINYVM_HOME")) == NULL) {
+	fprintf(stderr, "Your TINYVM_HOME variable is undefined.\n");
 	exit(1);
     }
+    
+    if (argc == 1)
+    {
+      fileName = (char *) malloc (strlen (tinyvmHome) + 32);
+      strcpy (fileName, tinyvmHome);
+      strcat (fileName, "/bin/tinyvm.srec");
+      printf ("Firmware file: %s\n", fileName);
+    }      
+    else if (argc == 2)
+    {
+      fileName = argv[1];
+    }
+    else
+    {
+      fprintf(stderr, "Use: %s [filename]\n", argv[0]);
+      exit(1);
+    }
 
-    if ((file = fopen(argv[1], "r")) == NULL) {
-	fprintf(stderr, "%s: failed to open\n", argv[1]);
+    if ((file = fopen(fileName, "r")) == NULL) {
+	fprintf(stderr, "%s: failed to open\n", fileName);
 	exit(1);
     }
 
@@ -443,7 +462,7 @@ main(int argc, char **argv)
 	    default: errstr = "unknown error"; break;
 	    }
 	    if (errstr) {
-		fprintf(stderr, "%s: %s on line %d\n", argv[1], errstr, line);
+		fprintf(stderr, "%s: %s on line %d\n", fileName, errstr, line);
 		exit(1);
 	    }
 	}
@@ -455,7 +474,7 @@ main(int argc, char **argv)
 	else if (srec.type == 1) {
 	    if (srec.addr < IMAGE_START || srec.addr + srec.count > IMAGE_END){
 		fprintf(stderr, "%s: address out of bounds on line %d\n",
-			argv[1], line);
+			fileName, line);
 		exit(1);
 	    }
 	    if (!strip && (srec.addr + srec.count - IMAGE_START > length))
@@ -465,7 +484,7 @@ main(int argc, char **argv)
 	else if (srec.type == 9) {
 	    if (srec.addr < IMAGE_START || srec.addr > IMAGE_END) {
 		fprintf(stderr, "%s: address out of bounds on line %d\n",
-			argv[1], line);
+			fileName, line);
 		exit(1);
 	    }
 	    image_start = srec.addr;
@@ -517,10 +536,7 @@ main(int argc, char **argv)
 	    break;
     }
     if (i == 5) {
-	fprintf(stderr, "%s: Delete firmware failed. (Note that "
-                "you can delete the TinyVM firmware by holding "
-                "both the Run and Prgm buttons down while pressing "
-                "the On-Off button).\n", progname);
+	fprintf(stderr, "%s: Delete firmware failed.\n", argv[0]);
 	exit(1);
     }
 

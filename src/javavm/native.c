@@ -14,10 +14,10 @@
 
 #include <rom.h>
 
+extern void reset_rcx();
+
 void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 {
-  ClassRecord *classRecord;
-
   switch (signature)
   {
     case START_V:
@@ -39,6 +39,9 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       break;      
     case CALLROM3_V:
       __rcall3 (paramBase[0], paramBase[1], paramBase[2], paramBase[3]);
+      break;
+    case CALLROM4_V:
+      __rcall4 (paramBase[0], paramBase[1], paramBase[2], paramBase[3], paramBase[4]);
       break;
     case READMEMORYBYTE_B:
       #if 0
@@ -62,6 +65,9 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       *(++stackTop) = ptr2word (((byte *) word2ptr (paramBase[0])) + HEADER_SIZE);
       do_return (1);
       return;
+    case RESETRCX_V:
+      reset_rcx();
+      break;
   }  
   do_return (0);
 } 

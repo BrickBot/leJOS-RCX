@@ -1,7 +1,8 @@
 
 // Test for arrays
 
-import tinyvm.rcx.ROM;
+import tinyvm.rcx.*
+;
 
 public class Test05
 {
@@ -14,7 +15,7 @@ public class Test05
 
     for (int i = 0; i < pTones.length; i++)
     {
-      ROM.playTone (pTones[i], pDurations[i]);
+      Sound.playTone (pTones[i], pDurations[i]);
     }
     for (int k = 0; k < 100000; k++) {}
   }
