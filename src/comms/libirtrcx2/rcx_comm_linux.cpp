@@ -72,7 +72,6 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 {
 	char *bufp = (char*) buf;
 
-	FILEDESCR fd = ((Port*) port)->fileHandle;
 	fd_set fds;
 
 	struct timeval tv;
@@ -80,14 +79,12 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 	tv.tv_usec = (timeout % 1000) * 1000;
 
 	long len = 0;
-	int retry = 10;
-
 	while (len < maxlen) 
 	{
 		FD_ZERO(&fds);
-		FD_SET(fd, &fds);
+		FD_SET(((Port*) port)->fileHandle, &fds);
 
-      int selected = select(1, &fds, NULL, NULL, &tv);
+      int selected = TEMP_FAILURE_RETRY (select(FD_SETSIZE, &fds, NULL, NULL, &tv));
 		if (selected > 0)
 		{
 			int count = read(fd, &bufp[len], maxlen - len);
@@ -97,8 +94,9 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 				return RCX_READ_FAIL;
 			}
 			len += count;
+			timeout = 10; // reduce timout of following reads
 		}
-		else if (selected == 0 && (len > 0 || retry-- == 0))
+		else if (selected == 0)
 		{
 			break;
 		}
