@@ -28,7 +28,6 @@ public class Sound
 
   /**
    * Beeps once.
-   * @param aQueued Whether the sound is queued.
    */
   public static void beep()
   {
@@ -37,7 +36,6 @@ public class Sound
 
   /**
    * Beeps twice.
-   * @param aQueued Whether the sound is queued.
    */
   public static void twoBeeps()
   {
@@ -46,7 +44,6 @@ public class Sound
 
   /**
    * Downward tones.
-   * @param aQueued Whether the sound is queued.
    */
   public static void beepSequence()
   {
@@ -55,7 +52,6 @@ public class Sound
 
   /**
    * Low buzz.
-   * @param aQueued Whether the sound is queued.
    */
   public static void buzz()
   {
@@ -63,10 +59,10 @@ public class Sound
   }
 
   /**
-   * Plays a tone, given its frequency and duration. Frequency is audible from about 31 to 2100. The
+   * Plays a tone, given its frequency and duration. Frequency is audible from about 31 to 2100 Hertz. The
    * duration argument is in hundreds of a seconds (centiseconds, not milliseconds) and is truncated
    * at 256, so the maximum duration of a tone is 2.56 seconds.
-   * @param aFrequency The frequency of the tone.
+   * @param aFrequency The frequency of the tone in Hertz (Hz).
    * @param aDuration The duration of the tone, in centiseconds. Value is truncated at 256 centiseconds.
    */
   public static void playTone (int aFrequency, int aDuration)
