@@ -2,7 +2,12 @@
 <?eclipse-cdt version="2.0"?>
 
 <cdtproject id="org.eclipse.cdt.make.core.make">
-<extension point="org.eclipse.cdt.core.BinaryParser" id="org.eclipse.cdt.core.ELF"/>
+<extension id="org.eclipse.cdt.core.Cygwin_PE" point="org.eclipse.cdt.core.BinaryParser">
+<attribute key="addr2line" value="addr2line"/>
+<attribute key="cygpath" value="cygpath"/>
+<attribute key="c++filt" value="c++filt"/>
+<attribute key="nm" value="nm"/>
+</extension>
 <data>
 
 <item id="cdt_resolver">
@@ -11,6 +16,38 @@
 <item id="org.eclipse.cdt.core.pathentry">
 <pathentry kind="src" path=""/>
 <pathentry kind="out" path=""/>
+<pathentry kind="con" path="org.eclipse.cdt.make.core.DISCOVERED_SCANNER_INFO"/>
+</item>
+<item id="cdt_indexer">
+<indexEnabled indexValue="true"/>
+<indexerProblemsEnabled indexProblemsValue="7"/>
+</item>
+
+
+<item id="org.eclipse.cdt.make.core.buildtargets">
+<buildTargets>
+<target name="all" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<buildCommand>make</buildCommand>
+<buildArguments>-l -c "make -C /home/Markus/lejos all"</buildArguments>
+<buildTarget>all</buildTarget>
+<stopOnError>true</stopOnError>
+<useDefaultCommand>true</useDefaultCommand>
+</target>
+<target name="clean" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<buildCommand>make</buildCommand>
+<buildArguments>-l -c "make -C /home/Markus/lejos all"</buildArguments>
+<buildTarget>clean</buildTarget>
+<stopOnError>false</stopOnError>
+<useDefaultCommand>true</useDefaultCommand>
+</target>
+<target name="check release" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<buildCommand>make</buildCommand>
+<buildArguments>-l -c "make -C /home/Markus/lejos all"</buildArguments>
+<buildTarget>check_release</buildTarget>
+<stopOnError>true</stopOnError>
+<useDefaultCommand>true</useDefaultCommand>
+</target>
+</buildTargets>
 </item>
 </data>
 </cdtproject>
