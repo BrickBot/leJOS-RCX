@@ -146,6 +146,8 @@ int main (int argc, char *argv[])
     toolName = TOOL_NAME;
   
   newargv[count++] = toolName;
+  newargv[count++] = "-Dtinyvm.linker=" LINKER_TOOL;
+  newargv[count++] = "-Dtinyvm.loader=" LOADER_TOOL;
   newargv[count++] = "-Dtinyvm.write.order=" WRITE_ORDER;
   newargv[count++] = "-Dtinyvm.loader=" LOADER_TOOL;
   newargv[count++] = append ("-Dtinyvm.home=", tinyvmHome); 
