@@ -6,8 +6,6 @@ import java.io.InputStream;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import js.tinyvm.io.IByteWriter;
 import js.tinyvm.io.IOUtilities;
@@ -44,7 +42,8 @@ public class ClassRecord implements WritableData
    JavaClass iCF;
    Binary iBinary;
    final RecordTable iMethodTable = new RecordTable("methods", false, false);
-   final RecordTable iInstanceFields = new RecordTable("instance fields", true, false);
+   final RecordTable iInstanceFields = new RecordTable("instance fields", true,
+      false);
    final Hashtable iStaticValues = new Hashtable();
    final Hashtable iStaticFields = new Hashtable();
    final Hashtable iMethods = new Hashtable();
@@ -231,7 +230,8 @@ public class ClassRecord implements WritableData
       RecordTable aClassRecords, ClassPath aClassPath, Vector aInterfaceMethods)
       throws TinyVMException
    {
-      _logger.log(Level.INFO, "Processing CONSTANT_Class entries in " + iName);
+      // _logger.log(Level.INFO, "Processing CONSTANT_Class entries in " +
+      // iName);
 
       ConstantPool pPool = iCF.getConstantPool();
       Constant[] constants = pPool.getConstantPool();
@@ -243,7 +243,7 @@ public class ClassRecord implements WritableData
             String pClassName = ((ConstantClass) pEntry).getBytes(pPool);
             if (pClassName.startsWith("["))
             {
-               _logger.log(Level.INFO, "Skipping array: " + pClassName);
+               // _logger.log(Level.INFO, "Skipping array: " + pClassName);
                continue;
             }
             if (aClasses.get(pClassName) == null)
@@ -375,7 +375,7 @@ public class ClassRecord implements WritableData
    public void storeConstants (RecordTable aConstantTable,
       RecordTable aConstantValues) throws TinyVMException
    {
-      _logger.log(Level.INFO, "Processing other constants in " + iName);
+      // _logger.log(Level.INFO, "Processing other constants in " + iName);
 
       ConstantPool pPool = iCF.getConstantPool();
       Constant[] constants = pPool.getConstantPool();
@@ -402,7 +402,7 @@ public class ClassRecord implements WritableData
       RecordTable aExceptionTables, HashVector aSignatures, boolean aAll)
       throws TinyVMException
    {
-      _logger.log(Level.INFO, "Processing methods in " + iName);
+      // _logger.log(Level.INFO, "Processing methods in " + iName);
 
       Method[] methods = iCF.getMethods();
       for (int i = 0; i < methods.length; i++)
@@ -423,8 +423,8 @@ public class ClassRecord implements WritableData
          }
          else
          {
-            _logger.log(Level.INFO, "Omitting " + meth + " for class " + iName);
-            // aWriter.println("Omitting " + meth + " for class " + iName);
+            // _logger.log(Level.INFO, "Omitting " + meth + " for class " +
+            // iName);
          }
       }
       aMethodTables.add(iMethodTable);
@@ -434,7 +434,7 @@ public class ClassRecord implements WritableData
       RecordTable aStaticFields, RecordTable aStaticState)
       throws TinyVMException
    {
-      _logger.log(Level.INFO, "Processing methods in " + iName);
+      // _logger.log(Level.INFO, "Processing methods in " + iName);
 
       Field[] fields = iCF.getFields();
       for (int i = 0; i < fields.length; i++)
@@ -529,6 +529,6 @@ public class ClassRecord implements WritableData
       return pOther.iName.equals(iName);
    }
 
-   private static final Logger _logger = Logger.getLogger("TinyVM");
+   // private static final Logger _logger = Logger.getLogger("TinyVM");
 }
 

@@ -3,8 +3,6 @@ package js.tinyvm;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import js.tinyvm.io.IByteWriter;
 import js.tinyvm.io.IOUtilities;
@@ -152,8 +150,8 @@ public class RecordTable extends WritableDataWithOffset
                {
                   if (pData instanceof RecordTable)
                   {
-                     _logger.log(Level.SEVERE, "Aligned sequence: "
-                        + ((RecordTable) pData)._align);
+                     // _logger.log(Level.SEVERE, "Aligned sequence: "
+                     //    + ((RecordTable) pData)._align);
                   }
                   throw new TinyVMException("Bug RT-1: Written="
                      + (writer.offset() - pPrevSize) + " Length=" + pLength
@@ -185,7 +183,7 @@ public class RecordTable extends WritableDataWithOffset
             _length += ((WritableData) iter.next()).getLength();
          }
 
-         _logger.log(Level.INFO, "length of " + _name + ": " + _length);
+         // _logger.log(Level.INFO, "length of " + _name + ": " + _length);
 
          if (_align)
          {
@@ -201,7 +199,8 @@ public class RecordTable extends WritableDataWithOffset
     */
    public void initOffset (int startOffset) throws TinyVMException
    {
-      _logger.log(Level.INFO, "init offset of " + _name + ": " + startOffset);
+      // _logger.log(Level.INFO, "init offset of " + _name + ": " +
+      // startOffset);
 
       super.initOffset(startOffset);
 
@@ -216,6 +215,6 @@ public class RecordTable extends WritableDataWithOffset
       }
    }
 
-   private static final Logger _logger = Logger.getLogger("TinyVM");
+   // private static final Logger _logger = Logger.getLogger("TinyVM");
 }
 

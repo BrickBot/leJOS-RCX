@@ -1,8 +1,5 @@
 package js.tinyvm;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.apache.bcel.classfile.Constant;
 import org.apache.bcel.classfile.ConstantCP;
 import org.apache.bcel.classfile.ConstantClass;
@@ -206,7 +203,8 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
                + ":" + pName + " from class " + iCF.getClassName());
          }
          assert pOffset <= TinyVMConstants.MAX_FIELD_OFFSET: "Check: field offset in range";
-         TinyVMType fieldType = TinyVMType.tinyVMTypeFromSignature(cnat.getSignature(iCF.getConstantPool()));
+         TinyVMType fieldType = TinyVMType.tinyVMTypeFromSignature(cnat
+            .getSignature(iCF.getConstantPool()));
 
          return (fieldType.type() << TinyVMConstants.F_SIZE_SHIFT) | pOffset;
       }
@@ -262,8 +260,8 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
          int pMethodIndex = pTopClass.getMethodIndex(pMethod);
          assert pMethodIndex != -1
             && pMethodIndex < TinyVMConstants.MAX_METHODS: "Check: method index in range";
-         _logger.log(Level.INFO, "processMethod: special: " + pClassIndex
-            + ", " + pMethodIndex);
+         // _logger.log(Level.INFO, "processMethod: special: " + pClassIndex
+         //    + ", " + pMethodIndex);
          return (pClassIndex << 8) | (pMethodIndex & 0xFF);
       }
       else
@@ -412,5 +410,5 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
       return pOutCode;
    }
 
-   private static final Logger _logger = Logger.getLogger("TinyVM");
+   // private static final Logger _logger = Logger.getLogger("TinyVM");
 }
