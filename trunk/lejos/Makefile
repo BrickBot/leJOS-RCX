@@ -24,7 +24,7 @@ else
   PATH_SEP=:
 endif
 
-JAVADOC_SOURCE=classes${PATH_SEP}rcxcomm/rcxclasses
+JAVADOC_SOURCE="classes${PATH_SEP}rcxcomm/rcxclasses"
 
 export CLASSPATH
 export JAVA
@@ -52,7 +52,7 @@ dir_and_zip:
 	$(MAKE) $(MFLAGS) pcjavadoc
 	rm -rf ${TEMP}/${TINYVM_VERSION}.doc
 	mkdir ${TEMP}/${TINYVM_VERSION}.doc
-	tar cf - apidocs pcapidocs docs README RELEASENOTES CLICKME.html LICENSE ACKNOWLEDGMENTS Makefile | (cd ${TEMP}/${TINYVM_VERSION}.doc; tar xfpB -)
+	tar cf - apidocs pcapidocs visionapidocs docs README RELEASENOTES CLICKME.html LICENSE ACKNOWLEDGMENTS Makefile | (cd ${TEMP}/${TINYVM_VERSION}.doc; tar xfpB -)
 	cd ${TEMP}/${TINYVM_VERSION}.doc
 	rm -f ${TEMP}/${TINYVM_VERSION}.doc/Makefile
 	cd ${TEMP}; tar cvf ${TINYVM_VERSION}.doc.tar ${TINYVM_VERSION}.doc; gzip ${TINYVM_VERSION}.doc.tar
@@ -75,7 +75,7 @@ dir_and_zip_win:
 	$(MAKE) $(MFLAGS) javadoc
 	$(MAKE) $(MFLAGS) pcjavadoc
 	rm -f ${TEMP}/${TINYVM_VERSION}.doc.zip
-	cd ..; zip -r ${TEMP}/${TINYVM_VERSION}.doc.zip lejos/apidocs lejos/pcapidocs lejos/docs lejos/README lejos/RELEASENOTES lejos/CLICKME.html lejos/LICENSE lejos/ACKNOWLEDGMENTS
+	cd ..; zip -r ${TEMP}/${TINYVM_VERSION}.doc.zip lejos/apidocs lejos/pcapidocs lejos/visionapidocs lejos/docs lejos/README lejos/RELEASENOTES lejos/CLICKME.html lejos/LICENSE lejos/ACKNOWLEDGMENTS
 	diff bin/lejos.srec ${TEMP}/lejos/bin/lejos.srec
 
 check:
@@ -99,7 +99,7 @@ java_tools:
 	${JAVAC} -classpath "jtools${PATH_SEP}./lib/pcrcxcomm.jar" jtools/js/tools/*.java
 
 generated_files: common/classes.db common/signatures.db
-	${JAVA} -Dtinyvm.home="." js.tools.GenerateConstants
+	${JAVA} -classpath $(CLASSPATH) -Dtinyvm.home="." js.tools.GenerateConstants
 
 java_loader:
 	@echo "====> Making loader/linker (lejos)"
@@ -136,7 +136,7 @@ pcjavadoc:
 
 visiondoc:
 	if [ ! -d visionapidocs ]; then mkdir visionapidocs; fi
-	javadoc -protected -windowtitle "leJOS Vision API documentation" -author -d visionapidocs -sourcepath vision josx.vision
+	javadoc -protected -windowtitle "leJOS Vision API documentation" -author -d visionapidocs -classpath $(JMFHOME)/lib/jmf.jar${PATH_SEP}./lib/pcrcxcomm.jar -sourcepath vision josx.vision
 
 clean:
 	rm -f `find . -name '*.class'`
