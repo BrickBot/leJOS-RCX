@@ -1,5 +1,5 @@
 /*
- *  fastdl.s
+ *  fastdl.S
  *
  *  A hack so to get the ROM running in a state with a doubled serial
  *  baud rate, at least until it is turned off and back on again.
