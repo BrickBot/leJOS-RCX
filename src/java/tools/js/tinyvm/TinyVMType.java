@@ -10,7 +10,7 @@ import org.apache.bcel.generic.Type;
 public class TinyVMType
 {
    //
-   // All values
+   // All byte values
    //
    
    public static final byte T_REFERENCE_TYPE = 0;
@@ -26,6 +26,10 @@ public class TinyVMType
    public static final byte T_ARRAY_TYPE = T_REFERENCE_TYPE;
    public static final byte T_OBJECT_TYPE = T_REFERENCE_TYPE;
 
+   //
+   // All values
+   //
+   
    public static final TinyVMType T_REFERENCE = new TinyVMType(T_REFERENCE_TYPE, 4);
    public static final TinyVMType T_BOOLEAN = new TinyVMType(T_BOOLEAN_TYPE, 1);
    public static final TinyVMType T_CHAR = new TinyVMType(T_CHAR_TYPE, 2);
@@ -38,7 +42,18 @@ public class TinyVMType
    public static final TinyVMType T_ARRAY = T_REFERENCE;
    public static final TinyVMType T_OBJECT = T_REFERENCE;
 
+   //
+   // attributes
+   //
+   
+   /**
+    * Byte value of type.
+    */
    private final byte _type;
+   
+   /**
+    * Size in bytes of type.
+    */
    private final int _size;
    
    /**
