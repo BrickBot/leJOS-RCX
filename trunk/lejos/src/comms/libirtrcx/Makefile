@@ -61,7 +61,9 @@ mkimg$(EXT): mkimg.o srec.o
 
 fastdl.h: mkimg$(EXT) fastdl.srec
 	./mkimg fastdl.srec > fastdl.h
+
 osx_usb: osx_usb.c
 	$(CC) -c $(CFLAGS) $^
+
 clean:
 	rm -f *.o *~ *.bak fastdl.h mkimg$(EXT) ../../bin/firmdl3$(EXT)
