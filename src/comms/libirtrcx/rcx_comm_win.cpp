@@ -37,7 +37,6 @@
 #include <windows.h>
 
 #define USB_TOWER_NAME "\\\\.\\LEGOTOWER1"
-#define DEFAULTTTY "usb"
 
 typedef struct timeval timeval_t;
 
@@ -54,6 +53,9 @@ void __rcx_open_setDevice(Port* port, char* symbolicName, bool fast);
 // Set serial port parameters.
 // Returns if success.
 bool __rcx_open_setSerialPortParameters (Port* port);
+
+// Has timeout expired?
+bool __rcx_read_isTimedOut (timeval* begin, int timeout_ms);
 
 // Read from USB port.
 int __rcx_read_usb (void* port, void* buf, int maxlen, int timeout_ms);
@@ -83,42 +85,66 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 	return ((Port*) port)->usb? 
 	  __rcx_read_usb (port, buf, maxlen, timeout) :
 	  __rcx_read_serial (port, buf, maxlen, timeout);
-	  
+}
+
+bool __rcx_read_isTimedOut (timeval* begin, int timeout_ms)
+{
+   struct timeval now;
+   gettimeofday(&now, 0);
+
+   int elapsed_ms = (now.tv_sec - begin->tv_sec) * 1000 + (now.tv_usec - begin->tv_usec) / 1000;
+   return elapsed_ms >= timeout_ms;
 }
 
 int __rcx_read_usb (void* port, void* buf, int maxlen, int timeout_ms)
 {
-	timeout_ms = 1000;
 	char* bufp = (char*) buf;
 	int len = 0;
 
-	while (len < maxlen) 
+   struct timeval timebegin; 
+   DWORD count = 0;
+
+   // try to read first bytes for timeout_ms milliseconds
+	do 
 	{
-		DWORD count = 0;
-		
-		struct timeval timebegin, now;
 		gettimeofday(&timebegin, 0);
-	
-		while (count == 0) 
+
+      count = 0;
+		if (ReadFile(((Port*) port)->fileHandle, bufp, maxlen, &count, NULL) == FALSE)
 		{
-			ReadFile(((Port*) port)->fileHandle, &bufp[len], maxlen - len, &count, NULL);
-         if (__comm_debug) fprintf(stderr, "usb mode: read %d\n", count);
-			gettimeofday(&now, 0);
-			int elapsed_ms = (now.tv_sec - timebegin.tv_sec) * 1000 + (now.tv_usec - timebegin.tv_usec) / 1000;	
-			if (elapsed_ms > timeout_ms)
-			{
-            if (__comm_debug) fprintf(stderr, "usb mode: read time out\n");
-				break;
-			}
+			__rcx_perror("ReadFile");
+			if (__comm_debug) fprintf(stderr, "usb mode: read error %lu\n", (unsigned long) GetLastError());
+			return RCX_READ_FAIL;
 		}
-		
-		if (count == 0) 
-		{
-			break;
-		}
-		
-		len += count;
+      if (__comm_debug) fprintf(stderr, "usb mode: read %d\n", count);
+		len = count;
 	}
+	while (count == 0 && !__rcx_read_isTimedOut(&timebegin, timeout_ms));
+
+	// try to read following bytes (if any) with shorter timeout
+   if (count > 0 && len < maxlen)
+   {
+		do 
+		{
+			if (count > 0)
+			{
+				// reset timer
+            gettimeofday(&timebegin, 0);
+			}
+
+			count = 0;
+			if (ReadFile(((Port*) port)->fileHandle, &bufp[len], maxlen-len, &count, NULL) == FALSE)
+			{
+				__rcx_perror("ReadFile");
+				if (__comm_debug) fprintf(stderr, "usb mode: read error %lu\n", (unsigned long) GetLastError());
+				return RCX_READ_FAIL;
+			}
+	      if (__comm_debug) fprintf(stderr, "usb mode: read %d\n", count);
+			
+			len += count;
+		}
+		while (len < maxlen && (count > 0 || !__rcx_read_isTimedOut(&timebegin, 10)));
+   }
 
 	return len;
 }
@@ -144,7 +170,7 @@ int __rcx_read_serial (void* port, void* buf, int maxlen, int timeout_ms)
 		if (ReadFile(((Port*) port)->fileHandle, &bufp[len], maxlen - len, &count, NULL) == FALSE) 
 		{
 			__rcx_perror("ReadFile");
-			fprintf(stderr, "serial mode: error reading tty: %lu\n", (unsigned long) GetLastError());
+			fprintf(stderr, "serial mode: read error %lu\n", (unsigned long) GetLastError());
 			return RCX_READ_FAIL;
 		}
       if (__comm_debug) fprintf(stderr, "serial mode: read %d\n", count);
