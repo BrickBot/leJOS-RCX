@@ -3,12 +3,14 @@
 #include "trace.h"
 #include "constants.h"
 #include "specialsignatures.h"
+#include "specialclasses.h"
 #include "memory.h"
 #include "threads.h"
 #include "classes.h"
 #include "language.h"
 #include "configure.h"
 #include "interpreter.h"
+#include "exceptions.h"
 
 #ifdef VERIFY
 static boolean memoryInitialized = false;
@@ -16,22 +18,20 @@ static boolean memoryInitialized = false;
 
 #ifdef EMULATE
 
-extern byte *gMemory;
-extern TWOBYTES gMemorySize;
+extern TWOBYTES *gMemory;
+extern TWOBYTES  gMemorySize;
 
 #define USER_MEMORY_START gMemory
-#define USER_MEMORY_TOP   (gMemory + gMemorySize)
+#define TOTAL_MEMORY_SIZE gMemorySize
 
 #else // not EMULATE
 
 extern char _end;
 
 #define USER_MEMORY_START ((TWOBYTES *) &_end)
-#define USER_MEMORY_TOP ((TWOBYTES *) 0xFFFE)
+#define TOTAL_MEMORY_SIZE  (0xFFFE - ((TWOBYTES) &_end))
 
 #endif EMULATE
-
-#define MAX_ALLOC_PTR (USER_MEMORY_TOP - NATIVE_STACK_SIZE)
 
 #define NULL_OFFSET 0xFFFF
 
@@ -62,6 +62,14 @@ byte typeSize[] = {
 static TWOBYTES freeOffset = NULL_OFFSET;
 static TWOBYTES *startPtr;
 
+extern Object *memcheck_allocate (TWOBYTES size);
+extern void initialize_state (Object *objRef, TWOBYTES numWords);
+extern void deallocate (TWOBYTES *ptr, TWOBYTES size);
+extern TWOBYTES *allocate (TWOBYTES size);
+extern void set_array_element (byte *aRef, byte aSize, TWOBYTES aIndex, STACKWORD aWord);
+extern STACKWORD make_word (byte *ptr, byte aSize);
+extern void copy_word (byte *ptr, byte aSize, STACKWORD aWord);
+
 inline void set_class (Object *obj, byte classIndex)
 {
   obj->flags = classIndex;
@@ -73,6 +81,24 @@ inline void set_array (Object *obj, byte elemSize, byte length)
 }
 
 /**
+ * Checks if the class needs to be initialized.
+ * If so, the static initializer is dispatched.
+ * Otherwise, an instance of the class is allocated.
+ *
+ * @param btAddr Back-track PC address, in case
+ *               a static initializer needs to be invoked.
+ * @return Object reference or <code>null</code> iff
+ *         NullPointerException had to be thrown or
+ *         static initializer had to be invoked.
+ */
+Object *new_object_checked (byte classIndex, byte *btAddr)
+{
+  if (dispatch_static_initializer (classIndex, btAddr))
+    return null;
+  return new_object_for_class (classIndex);
+}
+
+/**
  * Allocates and initializes the state of
  * an object, which is pushed on the operand
  * stack.
@@ -80,27 +106,30 @@ inline void set_array (Object *obj, byte elemSize, byte length)
 Object *new_object_for_class (byte classIndex)
 {
   Object *ref;
+  TWOBYTES instanceSize;
+
   // TBD: Check for class initialization!
-  ref = (Object *) checked_alloc (get_class_record(classIndex)->size);
+  instanceSize = get_class_record(classIndex)->classSize;
+  ref = memcheck_allocate (instanceSize);
   if (ref == null)
     return null;
 
   // Initialize default values
   set_class (ref, classIndex);
-  initialize_state (ref, get_class_record(classIndex)->classSize);
+  initialize_state (ref, instanceSize);
   return ref;
 }
 
 /**
  * @param numWords Number of 2-byte words used in allocating the object.
  */
-TWOBYTES initialize_state (Object *objRef, TWOBYTES numWords)
+void initialize_state (Object *objRef, TWOBYTES numWords)
 {
-  TWOBYTES *ptr;
+  register TWOBYTES *ptr;
 
   numWords -= NORM_OBJ_SIZE;
   ptr = ((TWOBYTES *) objRef) + NORM_OBJ_SIZE;
-  for (i = numWords; i-- > 0;)
+  while (numWords-- > 0)
   {
     *ptr++ = 0x0000;
   }  
@@ -120,16 +149,17 @@ Object *new_primitive_array (byte primitiveType, STACKWORD length)
 {
   Object *ref;
   byte elemSize;
+  TWOBYTES allocSize;
 
   // Hack to disallow allocations longer than 255:
   if (length > 0xFF)
   {
-    throw_excetion (outOfMemoryError);
+    throw_exception (outOfMemoryError);
     return null;
   }
   elemSize = typeSize[primitiveType];
   allocSize = get_array_size ((byte) length, elemSize);
-  ref = checked_alloc (allocSize);
+  ref = memcheck_allocate (allocSize);
   if (ref == null)
     return null;
   set_array (ref, elemSize, (byte) length);
@@ -156,8 +186,6 @@ void free_array (Object *objectRef)
 Object *new_multi_array (byte elemType, byte totalDimensions, 
                          byte reqDimensions)
 {
-  // TBD: change instruction code
-
   STACKWORD numElements;
   Object *ref;
 
@@ -176,8 +204,9 @@ Object *new_multi_array (byte elemType, byte totalDimensions,
     return null;
   while (--numElements >= 0)
   {
-    set_array_element (ref, 4, numElements, 
-      new_multi_array (elemType, totalDimensions - 1, reqDimensions - 1));
+    set_array_element ((byte *) ref, 4, numElements, 
+      (STACKWORD) new_multi_array (elemType, 
+         totalDimensions - 1, reqDimensions - 1));
   }
   return ref;
 }
@@ -190,11 +219,8 @@ STACKWORD get_array_element (byte *aRef, byte aSize, TWOBYTES aIndex)
 void set_array_element (byte *aRef, byte aSize, TWOBYTES aIndex, 
                         STACKWORD aWord)
 {
-  copy_word (pRef + aIndex * aSize + HEADER_SIZE, aSize, aWord);
+  copy_word (aRef + aIndex * aSize + HEADER_SIZE, aSize, aWord);
 }
-
-// TBD: Constants and statics should be written
-// in this manner.
 
 STACKWORD make_word (byte *ptr, byte aSize)
 {
@@ -213,17 +239,17 @@ void copy_word (byte *ptr, byte aSize, STACKWORD aWord)
 {
   byte i;
 
-  for (i = aSize; --i >= 0;)
+  for (i = aSize; i-- > 0;)
   {
     ptr[i] = (byte) (aWord & 0xFF);
     aWord = aWord >> 8;
   }
 }
 
-TWOBYTES *checked_alloc (TWOBYTES size)
+Object *memcheck_allocate (TWOBYTES size)
 {
-  TWOBYTES *ref;
-  ref = allocate (get_class_record(classIndex)->size);
+  Object *ref;
+  ref = (Object *) allocate (size);
   if (ref == null)
   {
     #ifdef VERIFY
@@ -255,7 +281,7 @@ void init_memory (TWOBYTES offset)
   #endif
 
   startPtr = USER_MEMORY_START + offset;
-  deallocate (startPtr, MAX_ALLOC_PTR - startPtr);
+  deallocate (startPtr, TOTAL_MEMORY_SIZE - offset);
 }
 
 /**

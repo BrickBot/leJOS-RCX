@@ -14,6 +14,7 @@
 #define C_HASCLINIT   0x04
 #define C_INTERFACE   0x08
 
+extern byte get_class_index (Object *obj);
 extern void dispatch_special (byte classIdx, byte methodIndex, byte *rAddr);
 extern void dispatch_virtual (Object *obj, TWOBYTES signature, byte *rAddr);
 extern short find_method (byte classIndex, TWOBYTES signature);
@@ -30,7 +31,7 @@ typedef struct S_MasterRecord
 typedef struct S_ClassRecord
 {
   /**
-   * Space occupied by fields (including flags) in 2-byte words.
+   * Space occupied by instance in 2-byte words.
    */
   TWOBYTES classSize;
   /**

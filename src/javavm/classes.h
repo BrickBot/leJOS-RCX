@@ -14,7 +14,6 @@
 #define LENGTH_MASK     0x00FF
 
 #define is_array(OBJ_)          ((OBJ_)->flags & ARRAY_MASK)
-#define get_class_index(OBJ_)   ((OBJ_)->flags & CLASS_MASK)
 #define get_element_size(ARR_)  ((((ARR_)->flags >> ELEM_SIZE_SHIFT) & ELEM_SIZE_MASK) + 1)
 #define get_array_length(ARR_)  ((ARR_)->flags & LENGTH_MASK)
 #define get_monitor_count(OBJ_) ((OBJ_)->flags & COUNT_MASK)
@@ -47,11 +46,8 @@ typedef struct S_Object
 
 typedef struct S_Thread
 {
-  //--------------- Hidden object state first:
-  TWOBYTES flags;
-  TWOBYTES syncInfo;
+  Object _super;
 
-  //--------------- Thread fields:
   REFERENCE nextThread;
   REFERENCE waitingOn;
   REFERENCE stackFrameArray;

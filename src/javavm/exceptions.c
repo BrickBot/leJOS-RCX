@@ -3,6 +3,7 @@
 #include "trace.h"
 #include "constants.h"
 #include "specialsignatures.h"
+#include "specialclasses.h"
 #include "exceptions.h"
 #include "threads.h"
 #include "classes.h"
@@ -10,6 +11,13 @@
 #include "configure.h"
 #include "interpreter.h"
 #include "memory.h"
+
+Object *outOfMemoryError = null;
+
+void init_exceptions()
+{
+  outOfMemoryError = new_object_for_class (JAVA_LANG_OUTOFMEMORYERROR);
+}
 
 /**
  * @return false iff all threads are dead.
@@ -22,6 +30,10 @@ void trow_exception (Object *exception)
   ExceptionRecord *exceptionRecord;
   byte numExceptionHandlers;
   byte i;
+
+  #ifdef VERIFY
+  assert (exception != null, EXCEPTIONS0);
+  #endif
 
  LABEL_PROPAGATE:
   if (currentThread->state == DEAD)

@@ -1,8 +1,15 @@
+
+#include "types.h"
+#include "classes.h"
+
 #ifndef _EXCEPTIONS_H
 #define _EXCEPTIONS_H
 
-#include "types.h"
+extern Object *outOfMemoryError;
 
-extern void throw_exception (REFERENCE throwable);
+extern void init_exceptions();
+extern void throw_exception (Object *throwable);
 
 #endif
+
+

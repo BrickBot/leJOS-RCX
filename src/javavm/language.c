@@ -2,11 +2,19 @@
  * The language datastructures.
  */
 
-#include "language.h"
 #include "types.h"
-#include "classes.h"
-#include "specialclasses.h"
+#include "trace.h"
+#include "constants.h"
 #include "specialsignatures.h"
+#include "specialclasses.h"
+#include "memory.h"
+#include "threads.h"
+#include "classes.h"
+#include "language.h"
+#include "configure.h"
+#include "interpreter.h"
+#include "exceptions.h"
+
 
 #define F_SIZE_MASK    0xE0
 #define F_SIZE_SHIFT   5
@@ -20,14 +28,32 @@ boolean classesInitialized = false;
 
 #define get_stack_object(MREC_)  ((Object *) *(stackTop - (MREC_)->numParameters + 1))
 
+byte get_class_index (Object *obj)
+{
+  byte f;
+
+  f = obj->flags;
+  if (f & ARRAY_MASK)
+    return JAVA_LANG_OBJECT;
+  return (f & CLASS_MASK);
+}
+
 /**
  * Puts or gets field.
  */
-void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStatic) 
+void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStatic,
+                   byte *btAddr) 
   byte *sourcePtr;
   byte *destPtr;
   byte *fieldBase;
   TWOBYTES offset;
+
+  if (aStatic)
+  {
+    pRec = get_class_record (hiByte);
+    if (dispatch_static_initializer (pRec, btAddr))
+      return;     
+  }
 
   // TBD: Check for class initialization (in statics only?)
   // TBD: byte alignment not right
@@ -61,16 +87,14 @@ void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStatic)
 /**
  * @return Method index or -1.
  */
-short find_method (byte classIndex, TWOBYTES methodSignature)
+short find_method (ClassRecord *classRecord, TWOBYTES methodSignature)
 {
-  ClassRecord *classRecord;
   MethodRecord *methodRecord;
   byte i;
 
-  classRecord = get_class_record(classIndex);
   for (i = 0; i < classRecord->numMethods; i++)
   {
-    methodRecord = get_method_record(classRecord,i);
+    methodRecord = get_method_record (classRecord, i);
     if (methodRecord->signatureId == methodSignature)
       return (short) i;
     // TBD: Check if cast preservs sign
@@ -78,23 +102,36 @@ short find_method (byte classIndex, TWOBYTES methodSignature)
   return -1;
 }
 
+boolean dispatch_static_initializer (ClassRecord *aRec, byte *retAddr)
+{
+  if (is_initialized (aRec))
+    return false;
+  set_initialized (aRec);
+  if (!has_clinit (aRec))
+    return false;
+  dispatch_special (aRec, find_method (aRec, __CLINIT_V), retAddr);
+  return true;
+}
+
 void dispatch_virtual (Object *ref, TWOBYTES signature)
 {
- LABEL_METHODLOOKUP:
-  // TBD: consider arrays in next statement
+  ClassRecord *classRecord;
+
   classIndex = get_class_index(ref);
-  methodIndex = find_method (classIndex, signature);
+ LABEL_METHODLOOKUP:
+  classRecord = get_class_record (classIndex);
+  methodIndex = find_method (classRecord, signature);
   if (methodIndex == -1)
   {
     if (classIndex == JAVA_LANG_OBJECT)
     {
-      throw_exception (...);
+      throw_exception (noSuchMethodError);
       return;
     }
-    classIndex = get_class_record(classIndex)->parentClass;
+    classIndex = classRecord->parentClass;
     goto LABEL_METHODLOOP;
   }
-  dispatch_special (classIndex, methodIndex);
+  dispatch_special (classRecord, methodIndex);
 }
 
 /**
