@@ -11,6 +11,9 @@ exceptions.o: ${VMSRC}/exceptions.c ${EXTRADEP}
 memory.o: ${VMSRC}/memory.c ${EXTRADEP}
 	${CC} ${CFLAGS} -c ${VMSRC}/memory.c
 
+poll.o: ${VMSRC}/poll.c ${EXTRADEP}
+	${CC} ${CFLAGS} -c ${VMSRC}/poll.c
+
 language.o: ${VMSRC}/language.c ${EXTRADEP}
 	${CC} ${CFLAGS} -c ${VMSRC}/language.c
 

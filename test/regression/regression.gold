@@ -24,7 +24,7 @@
 --  Thread            : 1
 --  Method signature  : 0
 --  Root method sig.  : 0
---  Bytecode offset   : 145
+--  Bytecode offset   : 146
 ----------------- Run of Test07.tvm
 & ROM call 3: 0x1A4E (8192, 1, 1)
 & ROM call 3: 0x1A4E (8192, 3, 1)
@@ -48,7 +48,7 @@
 & ROM call 3: 0x327C (6003, 2000, 20)
 & ROM call 3: 0x327C (6003, 200, 20)
 ----------------- Run of Test12.tvm
-& ROM call 3: 0x1FF2 (12319, 28, 12290)
+& ROM call 3: 0x1FF2 (12319, 26, 12290)
 & ROM call 0: 0x27C8
 & ROM call 3: 0x1FF2 (12319, 40, 12290)
 & ROM call 0: 0x27C8
@@ -612,3 +612,42 @@
 ----------------- Run of TestDaemon.tvm
 ----------------- Run of TestThreadState.tvm
 ----------------- Run of TestMonitor.tvm
+----------------- Run of TestNat.tvm
+& Setting sensor 0, type LIGHT
+& Setting sensor 0, mode = PERCENT, slope = 0
+& Setting sensor 1, type LIGHT
+& Setting sensor 1, mode = PERCENT, slope = 0
+& Reading sensor 1, requested value CANONICAL, returned value 0
+& Setting sensor 2, type LIGHT
+& Setting sensor 2, mode = PERCENT, slope = 0
+& Reading sensor 2, requested value CANONICAL, returned value 0
+& Reading sensor 1, requested value CANONICAL, returned value 1
+& Reading sensor 2, requested value CANONICAL, returned value 1
+& Reading sensor 1, requested value CANONICAL, returned value 2
+& Reading sensor 2, requested value CANONICAL, returned value 2
+& Reading sensor 1, requested value CANONICAL, returned value 3
+& Reading sensor 1, requested value CANONICAL, returned value 4
+& Reading sensor 2, requested value CANONICAL, returned value 3
+& Reading sensor 1, requested value CANONICAL, returned value 5
+& Reading sensor 2, requested value CANONICAL, returned value 4
+& Reading sensor 1, requested value CANONICAL, returned value 6
+& Reading sensor 1, requested value CANONICAL, returned value 7
+& Reading sensor 2, requested value CANONICAL, returned value 5
+& Reading sensor 1, requested value CANONICAL, returned value 8
+& Reading sensor 2, requested value CANONICAL, returned value 6
+& Reading sensor 1, requested value CANONICAL, returned value 9
+& Reading sensor 1, requested value CANONICAL, returned value 10
+& Reading sensor 2, requested value CANONICAL, returned value 7
+& Reading sensor 1, requested value CANONICAL, returned value 11
+& Reading sensor 2, requested value CANONICAL, returned value 8
+& Reading sensor 1, requested value CANONICAL, returned value 12
+& Reading sensor 2, requested value CANONICAL, returned value 9
+& Reading sensor 1, requested value CANONICAL, returned value 13
+& Reading sensor 1, requested value CANONICAL, returned value 14
+& Reading sensor 2, requested value CANONICAL, returned value 10
+& Reading sensor 1, requested value CANONICAL, returned value 15
+& Reading sensor 1, requested value CANONICAL, returned value 16
+& Reading sensor 1, requested value CANONICAL, returned value 17
+& Reading sensor 1, requested value CANONICAL, returned value 18
+& Reading sensor 1, requested value CANONICAL, returned value 19
+& Reading sensor 1, requested value CANONICAL, returned value 20

@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "classes.h"
 #include "interpreter.h"
+#include "platform_hooks.h"
 #include "threads.h"
 #include "opcodes.h"
 #include "configure.h"
@@ -13,6 +14,7 @@
 #include "specialclasses.h"
 #include "fields.h"
 #include "stack.h"
+#include "poll.h"
 
 
 #define F_OFFSET_MASK  0x0F
@@ -170,38 +172,42 @@ boolean array_store_helper()
  */
 void engine()
 {
-  register short numOpcodes;
-  
-  gMakeRequest = false;
-  switch_thread();
-  numOpcodes = OPCODES_PER_TIME_SLICE;
- LABEL_ENGINELOOP: 
-  if (!(--numOpcodes))
-  {
-    #if DEBUG_THREADS
-    printf ("switching thread: %d\n", (int) numOpcodes);
-    #endif
-    schedule_request (REQUEST_SWITCH_THREAD);
-    #if DEBUG_THREADS
-    printf ("done switching thread\n");
-    #endif
-    numOpcodes = OPCODES_PER_TIME_SLICE;
-  }
-  if (gMakeRequest)
-  {
-    gMakeRequest = false;
-    switch (gRequestCode)
-    {
-      case REQUEST_SWITCH_THREAD:
-        if (!switch_thread())
-          return;
-	break;
-      case REQUEST_EXIT:
-        return;
-    }
-  }
+  register short numOpcodes = 1;
 
-  poll_hardware();
+  gMakeRequest = false;  
+
+ LABEL_ENGINELOOP: 
+  do
+  {
+    // Poll various bits of hardware
+    do_poll();
+      
+    if (gMakeRequest)
+    {
+      gMakeRequest = false;
+      switch (gRequestCode)
+      {
+        case REQUEST_SWITCH_THREAD:
+          numOpcodes=1;
+          break;
+        case REQUEST_EXIT:
+          return;
+      }
+    }
+  
+    if (currentThread == null || !(--numOpcodes))
+    {
+      #if DEBUG_THREADS
+      printf ("switching thread: %d\n", (int) numOpcodes);
+      #endif
+      switch_thread();
+      #if DEBUG_THREADS
+      printf ("done switching thread\n");
+      #endif
+      numOpcodes = OPCODES_PER_TIME_SLICE;
+    }
+
+  } while (currentThread == null);	// No runnable thread
 
   //-----------------------------------------------
   // SWITCH BEGINS HERE

@@ -4,6 +4,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 #include "types.h"
 #include "trace.h"
 #include "constants.h"
@@ -18,8 +19,46 @@
 #include "interpreter.h"
 #include "exceptions.h"
 #include "platform_config.h"
+#include "sensors.h"
+#include "poll.h"
 
 static TWOBYTES gSensorValue = 0;
+
+static char* sensorReadTypes[3] = {
+  "RAW",
+  "CANONICAL",
+  "BOOLEAN"
+};
+
+static char *sensorSetTypes[5] = {
+  "RAW",
+  "TOUCH",
+  "TEMP",
+  "LIGHT",
+  "ROT"
+};
+
+static char *getSensorMode(byte code)
+{
+  static char smBuffer[256];
+
+  strcpy(smBuffer, "mode = ");  
+  switch (code & 0xF0)
+  {
+    case 0x00: strcat(smBuffer, "RAW"); break;
+    case 0x20: strcat(smBuffer, "BOOLEAN"); break;
+    case 0x40: strcat(smBuffer, "EDGE"); break;
+    case 0x60: strcat(smBuffer, "PULSE"); break;
+    case 0x80: strcat(smBuffer, "PERCENT"); break;
+    case 0xA0: strcat(smBuffer, "DEGC"); break;
+    case 0xC0: strcat(smBuffer, "DEGF"); break;
+    case 0xE0: strcat(smBuffer, "ANGLE"); break;
+    default: sprintf(smBuffer, "mode = INVALID (0x%1X)", code & 0xF0); break;
+  }
+  
+  sprintf(&smBuffer[strlen(smBuffer)], ", slope = %d", code & 0x0F);
+  return smBuffer;
+}
 
 extern int	verbose;	/* If non-zero, generates verbose output. */
 char *get_meaning(STACKWORD *);
@@ -227,15 +266,42 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
     case resetSerial_4_5V:
       printf ("& Call to resetRcx");
       return;
+    case setPoller_4_5V:
+      set_poller(word2ptr(paramBase[0]));
+      return;
     case readSensorValue_4II_5I:
       // Parameters: int romId (0..2), int requestedValue (0..2).
-      if (gSensorValue > 100)
-	gSensorValue = 0;
-      push_word (gSensorValue++);
+      if (verbose)
+         printf("> ");
+      else
+         printf("& ");
+      printf("Reading sensor %ld, requested value %s, returned value %d\n",paramBase[0],sensorReadTypes[paramBase[1]],sensors[paramBase[0]].value);
+      push_word (sensors[paramBase[0]].value);
       return;
     case setSensorValue_4III_5V:
       // Arguments: int romId (1..3), int value, int requestedValue (0..3) 
-      gSensorValue = paramBase[1];
+      if (verbose)
+         printf("> ");
+      else
+         printf("& ");
+      printf("Setting sensor %ld, ", paramBase[0]);
+      switch ((byte) paramBase[2])
+      {
+         case 0:
+           printf("%s\n", getSensorMode(paramBase[1]));
+           return;
+         case 1:	      
+           printf("type %s\n", sensorSetTypes[paramBase[1]]);
+           return;
+         case 2:
+           printf("canonical value %ld\n", paramBase[1]);
+           sensors[paramBase[0]].value = paramBase[1];
+           return;
+         case 3:
+           printf("boolean value %ld\n", paramBase[1]);
+           sensors[paramBase[0]].value = paramBase[1];
+           return;
+      }
       return;
     case freeMemory_4_5J:
       push_word (0);

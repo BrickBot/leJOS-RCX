@@ -3,14 +3,14 @@ VMSRC=../vmsrc
 LD=ld
 CC=gcc
 
-## No -O2 option below because gcc 2.95.2 crashes!
-#CFLAGS=-I../vmsrc -I. -Wall -Wno-unused -DDEBUG_THREADS=1 -DDEBUG_MONITOR=1
+# No -O2 option below because gcc 2.95.2 crashes!
+#CFLAGS=-I../vmsrc -I. -Wall -Wno-unused -DDEBUG_POLL=1 -DDEBUG_THREADS=1
 CFLAGS=-I../vmsrc -I. -Wall -Wno-unused
 
 DUMP_OBJ=dump.o load.o
 
 VMEMUL_OBJ=interpreter.o threads.o exceptions.o \
-	   memory.o language.o verbose.o \
+	   memory.o language.o verbose.o sensors.o poll.o \
            tvmemul.o traceemul.o nativeemul.o load.o opcodeinfo.o
 
 DUMP_TARGET=../bin/emu-dump

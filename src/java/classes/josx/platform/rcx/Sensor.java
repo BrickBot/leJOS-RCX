@@ -39,8 +39,6 @@ package josx.platform.rcx;
  */
 public class Sensor
 {
-  static final long SLEEP_TIME = 20;
-  
   private int iSensorId;
   private short iNumListeners = 0;
   private final SensorListener[] iListeners = new SensorListener[8];
@@ -121,6 +119,7 @@ public class Sensor
       }
     }
     iListeners[iNumListeners++] = aListener;
+    SENSOR_THREAD.addToMask(iSensorId);
   }
 
   /**
@@ -144,7 +143,7 @@ public class Sensor
 
   /**
    * Sets the sensor's mode and type. If this method isn't called,
-   * the default mode is 3 (LIGHT) and the default type is 0x80 (PERCENT).
+   * the default type is 3 (LIGHT) and the default mode is 0x80 (PERCENT).
    * @param aType 0 = RAW, 1 = TOUCH, 2 = TEMP, 3 = LIGHT, 4 = ROT.
    * @param aMode 0x00 = RAW, 0x20 = BOOL, 0x40 = EDGE, 0x60 = PULSE, 0x80 = PERCENT,
    *              0xA0 = DEGC,
@@ -177,48 +176,53 @@ public class Sensor
 
   /**
    * <i>Low-level API</i> for reading sensor values.
-   * @param aCode Sensor ID (0..2).
+   * @param aSensorId Sensor ID (0..2).
    * @param aRequestType 0 = raw value, 1 = canonical value, 2 = boolean value.
    */
   public static native int readSensorValue (int aSensorId, int aRequestType);
-
+  
   private static native void setSensorValue (int aSensorId, int aVal, int aRequestType);
   
   private static class SensorThread extends Thread
   {
+  	int mask;
+  	Poll poller = new Poll();
     int[] iPreviousValue = new int[3];
 	
-	void snooze(long millis) {
-		try {
-			sleep(SLEEP_TIME);
-		} catch (InterruptedException ie) {
-		}
+	private void call(int sid) {
+		Sensor sensor = SENSORS[sid];
+        synchronized (sensor){
+			int newValue = readSensorValue(sid, 1);
+			int numListeners = sensor.iNumListeners;
+			for (int i = 0; i < numListeners; i++) {
+				sensor.iListeners[i].stateChanged (sensor, iPreviousValue[sid], newValue);
+			}
+            iPreviousValue[sid] = newValue;
+        }
+    }
+
+	public void addToMask(int id) {
+		mask |= 1 << id;
+		
+		// Interrupt the polling thread, not the current one!
+		interrupt();
 	}
-    
+	
     public void run()
     {
       for (;;)
       {
-	for (int pIdx = 0; pIdx < 3; pIdx++)
-	{
-	  int pOldValue = iPreviousValue[pIdx];
-          int pNewValue = readSensorValue (pIdx, 1);
-	  if (pOldValue != pNewValue)
-	  {
-	    Sensor pSensor = SENSORS[pIdx];
-            synchronized (pSensor)
-            {
-	      int pNumListeners = pSensor.iNumListeners;
-              for (int i = 0; i < pNumListeners; i++)
-	      {
-                pSensor.iListeners[i].stateChanged (pSensor, pOldValue, pNewValue);
-		snooze(SLEEP_TIME);
-	      }
-              iPreviousValue[pIdx] = pNewValue;
-	    }
-	  }
-	  snooze(SLEEP_TIME);
-	}
+	  	try  {
+			int changed = poller.poll(mask, 0);
+		
+			if ((changed & Poll.SENSOR1_MASK) != 0)
+				call(0);
+			if ((changed & Poll.SENSOR2_MASK) != 0)
+				call(1);
+			if ((changed & Poll.SENSOR3_MASK) != 0)
+				call(2);
+	  	} catch (InterruptedException ie) {
+	  	}	
       }	    
     }     	  
   }

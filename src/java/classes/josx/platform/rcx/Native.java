@@ -4,16 +4,17 @@
 package josx.platform.rcx;
 
 /**
- * Provides access to native rountines.
+ * Provides access to native routines.
  */
-class Native
+public class Native
 {
   /**
    * Should be used for all native memory accesses.
    * @see josx.platform.rcx.ROM#readMemoryByte
    * @see josx.platform.rcx.ROM#writeMemoryByte
    */
-  static final Object MEMORY_MONITOR = new Object();
+  public static final Object MEMORY_MONITOR = new Object();
+  
   static final byte[] iAuxData = new byte[7];
   static final int iAuxDataAddr = getDataAddress (iAuxData);
 

@@ -80,6 +80,9 @@ void dispatch_virtual (Object *ref, TWOBYTES signature, byte *retAddr)
   MethodRecord *auxMethodRecord;
   byte auxByte;
 
+#if DEBUG_METHODS
+  printf("dispatch_virtual %d\n", signature);
+#endif
   if (ref == JNULL)
   {
     throw_exception (nullPointerException);
@@ -106,7 +109,7 @@ void dispatch_virtual (Object *ref, TWOBYTES signature, byte *retAddr)
     if (is_synchronized(auxMethodRecord))
     {
       current_stackframe()->monitor = ref;
-      enter_monitor (ref);
+      enter_monitor (currentThread, ref);
     }
   }
 }
@@ -231,7 +234,6 @@ void do_return (byte numWords)
 {
   StackFrame *stackFrame;
   STACKWORD *fromStackPtr;
-  boolean *fromIsRefPtr;
 
   stackFrame = current_stackframe();
 
@@ -249,7 +251,7 @@ void do_return (byte numWords)
   assert (stackFrame != null, LANGUAGE3);
   #endif
   if (stackFrame->monitor != null)
-    exit_monitor (stackFrame->monitor);
+    exit_monitor (currentThread, stackFrame->monitor);
 
   #if DEBUG_THREADS || DEBUG_METHODS
   printf ("do_return: stack frame array size: %d\n", currentThread->stackFrameArraySize);

@@ -46,14 +46,15 @@ typedef struct S_StackFrame
 
 extern boolean init_thread (Thread *thread);
 extern StackFrame *current_stackframe();
-extern void enter_monitor (Object* obj);
-extern void exit_monitor (Object* obj);
+extern void enter_monitor (Thread *pThread, Object* obj);
+extern void exit_monitor (Thread *pThread, Object* obj);
 extern boolean switch_thread();
 extern void join_thread(Thread *thread);
 extern void dequeue_thread(Thread *thread);
 extern void enqueue_thread(Thread *thread);
 extern void monitor_wait(Object *obj, const FOURBYTES time);
 extern void monitor_notify(Object *obj, const boolean all);
+extern void monitor_notify_unchecked(Object *obj, const boolean all);
 
 #define stackframe_array_ptr()   (word2ptr(currentThread->stackFrameArray))
 #define stack_array_ptr()        (word2ptr(currentThread->stackArray))

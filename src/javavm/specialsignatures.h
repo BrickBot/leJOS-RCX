@@ -42,7 +42,9 @@
 #define setMemoryBit_4III_5V 35
 #define resetSerial_4_5V 36
 #define readSensorValue_4II_5I 37
-#define setSensorValue_4III_5V 38
-#define assert_4Ljava_3lang_3String_2Z_5V 39
-#define assertEQ_4Ljava_3lang_3String_2II_5V 40
+#define setPoller_4_5V 38
+#define setThrottle_4I_5V 39
+#define setSensorValue_4III_5V 40
+#define assert_4Ljava_3lang_3String_2Z_5V 41
+#define assertEQ_4Ljava_3lang_3String_2II_5V 42
 #endif // _SPECIALSIGNATURES_H

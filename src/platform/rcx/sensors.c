@@ -1,6 +1,11 @@
 #include "platform_config.h"
 
+#include "types.h"
+#include "threads.h"
+#include "classes.h"
+#include "language.h"
 #include "sensors.h"
+#include "poll.h"
 
 #define SENSOR_MODE_MASK 0xe0
 
@@ -13,10 +18,9 @@ sensor_t sensors[3];
 void poll_sensors( void)
 {
   byte i;
-
-  for( i=0; i<3; i++){
-    sensor_t *pSensor = &sensors[i];
-
+  sensor_t *pSensor = sensors;
+ 
+  for( i=0; i<3; i++, pSensor++){
 #ifdef ANGLE_DOUBLE_CHECK
     /* we accept a state as valid only if it occurs at least twice in a row */
     if( ( pSensor->mode & SENSOR_MODE_MASK ) == SENSOR_MODE_ANGLE){
@@ -37,4 +41,8 @@ void poll_sensors( void)
       read_sensor( 0x1000+i, pSensor);
     }
   }
+
+  // See if the Poll instance is interested    
+  poll_inputs();
 }
+
