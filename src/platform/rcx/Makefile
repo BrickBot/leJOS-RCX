@@ -6,14 +6,15 @@ include ../Makefile.config
 
 #CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -I. -O2 -Wall
 CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -I. -O2 -Wall -fomit-frame-pointer
-LFLAGS += -L${LIBRCX_HOME}/lib --relax -L${LIBRCX_HOME}/float
+LFLAGS += -L${LIBRCX_HOME}/lib --relax -L${LIBRCX_HOME}/float -L/usr/local/h8300-hms/lib
 
 LIBS = -lrcx -lfloat -lc
 
 CC = $(BINDIR)/$(BINPREFIX)gcc
 AS = $(BINDIR)/$(BINPREFIX)as
 AR = $(BINDIR)/$(BINPREFIX)ar
-LD = $(BINDIR)/$(BINPREFIX)ld -u__start
+LD = $(BINDIR)/$(BINPREFIX)ld -u__start --oformat coff-h8300
+OC = $(BINDIR)/$(BINPREFIX)objcopy -I coff-h8300 -O srec
 
 # other variables
 
@@ -57,7 +58,8 @@ all: ${PROGS}
 
 rcx.map: rcx.lds $(OBJS)
 	$(LD) $(LFLAGS) -Trcx.lds -Map rcx.map -o ${TINYVMBINARY} $(OBJS) $(LIBS)
-	
+	$(OC)  ${TINYVMBINARY}
+
 rcx_gen.lds: rcx.map
 	${JAVA} -classpath ../jtools js.tools.CodePacker rcx.lds rcx.map rcx_gen.lds
 
@@ -66,3 +68,4 @@ clean:
 
 ${TINYVMBINARY}: rcx_gen.lds
 	$(LD) $(LFLAGS) -Trcx_gen.lds -o ${TINYVMBINARY} $(OBJS) $(LIBS)
+	$(OC)  ${TINYVMBINARY}
