@@ -51,7 +51,7 @@ Java_josx_rcxcomm_irTower_open(JNIEnv *env, jobject obj, jstring jport)
 
   // USB Tower does not need wake-up
   
-  if (fh == INVALID_HANDLE_VALUE) res = RCX_OPEN_FAIL;
+  if (fh == BADFILE) res = RCX_OPEN_FAIL;
   else if (!usb_flag) res = rcx_wakeup_tower(fh, TIME_OUT);
 
   // Get the OS error, if a failure has occurred
@@ -75,6 +75,21 @@ Java_josx_rcxcomm_irTower_open(JNIEnv *env, jobject obj, jstring jport)
   }
 
   env->SetIntField(obj,fid,err);
+
+  // Set usbFlag
+
+  fid = env->GetFieldID(cls,"usbFlag","I");
+
+  if (fid == 0) {
+
+#ifdef TRACE
+    printf("Could not get field id for usbFlag.\n");
+#endif
+
+    return (jint) RCX_INTERNAL_ERR;
+  }
+
+  env->SetIntField(obj,fid,usb_flag);
 
   // Set the handle
 
@@ -134,7 +149,7 @@ Java_josx_rcxcomm_irTower_close(JNIEnv *env, jobject obj)
 
   // Close the handle
 
-  if (fh == INVALID_HANDLE_VALUE) {
+  if (fh == BADFILE) {
 
 #ifdef TRACE
 	  printf("File already closed\n");
@@ -149,7 +164,7 @@ Java_josx_rcxcomm_irTower_close(JNIEnv *env, jobject obj)
 
   // Write closed handle back
 
-  fh = INVALID_HANDLE_VALUE;
+  fh = BADFILE;
 
   env->SetLongField(obj,fid,(jlong) fh);
 
@@ -192,7 +207,7 @@ Java_josx_rcxcomm_irTower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n
 
 	// Check that file is open
 
-	if (fh == INVALID_HANDLE_VALUE) {
+	if (fh == BADFILE) {
 
 #ifdef TRACE
 		printf("File not open\n");
@@ -277,7 +292,7 @@ Java_josx_rcxcomm_irTower_read(JNIEnv *env, jobject obj, jbyteArray arr)
 
 	// Check that file is open
 
-	if (fh == INVALID_HANDLE_VALUE) {
+	if (fh == BADFILE) {
 
 #ifdef TRACE
 		printf("File not open\n");
@@ -355,7 +370,7 @@ Java_josx_rcxcomm_irTower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 
 	// Check that file is open
 
-	if (fh == INVALID_HANDLE_VALUE) {
+	if (fh == BADFILE) {
 
 #ifdef TRACE
 		printf("File not open\n");
@@ -440,7 +455,7 @@ Java_josx_rcxcomm_irTower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
 
 	// Check that file is open
 
-	if (fh == INVALID_HANDLE_VALUE) {
+	if (fh == BADFILE) {
 
 #ifdef TRACE
 		printf("File not open\n");
