@@ -323,7 +323,7 @@ int rcx_wakeup_tower (FILEDESCR fd, int timeout)
 		}
 		count += len = nbread(fd, buf, BUFFERSIZE, 50);
 		if (len < 0) return len;
-		if (len == sizeof(msg) && !memcmp(buf, msg, sizeof(msg)))
+		if (len >= sizeof(msg) && !memcmp(buf, msg, sizeof(msg)))
 			return RCX_OK; /* success */
 		if (__comm_debug) {
 			printf("recvlen = %d\n", len);
