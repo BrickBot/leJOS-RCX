@@ -44,14 +44,14 @@ ifneq (,$(findstring $(OSTYPE),cygwin32 cygwin_nt-5.0 cygwin_nt-5.1 CYGWIN_NT-4.
 	RCXCOMM_OS_H=rcx_comm_win.h
 	EXT=.exe
 	LIBIRTRCX=$(LEJOS_HOME)/bin/irtrcx.dll
-        CFLAGS=-mno-cygwin -Wl,--add-stdcall-alias -shared -D__CYGWIN32__
+	CFLAGS=-mno-cygwin -Wl,--add-stdcall-alias -shared -D__CYGWIN32__
 	LFLAGS=-shared
 endif
 
 ifneq (,$(findstring $(OSTYPE), darwin))
 	RCXCOMM_OS_C=rcx_comm_osx.c osx_usb.c
 	RCXCOMM_OS_H=rcx_comm_osx.h osx_usb.h
-        CFLAGS += -g
+	CFLAGS += -g
 	LIBS += -framework IOKit -framework CoreFoundation
 	LFLAGS = -dynamiclib
 	LIBIRTRCX=$(LEJOS_HOME)/bin/libirtrcx.dylib
