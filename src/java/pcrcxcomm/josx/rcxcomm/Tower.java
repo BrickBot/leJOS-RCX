@@ -176,7 +176,7 @@ public class Tower
             }
             catch (InterruptedException e1)
             {
-               // ignore
+               throw new TowerException("interrupted");
             }
          }
       }
