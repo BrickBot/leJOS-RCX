@@ -13,7 +13,7 @@ public abstract class ByteWriter implements IByteWriter
     * Data output stream used for writing.
     */
    private DataOutputStream _out;
-   
+
    /**
     * Constructor.
     * 
@@ -30,67 +30,71 @@ public abstract class ByteWriter implements IByteWriter
 
    public void writeBoolean (boolean aBoolean) throws IOException
    {
-      debug(1, aBoolean? 1 : 0);
+      // debug(1, aBoolean? 1 : 0);
       _out.writeBoolean(aBoolean);
    }
 
    public void writeByte (int aByte) throws IOException
    {
-      debug(1, aByte);
+      // debug(1, aByte);
       _out.writeByte(aByte);
    }
 
    public void writeChar (int aChar) throws IOException
    {
-      debug(2, aChar);
+      // debug(2, aChar);
       _out.writeChar(aChar);
    }
 
    public void writeShort (int aShort) throws IOException
    {
-      debug(2, aShort);
+      // debug(2, aShort);
       _out.writeShort(aShort);
    }
 
    public void writeInt (int aInt) throws IOException
    {
-      debug(4, aInt);
+      // debug(4, aInt);
       _out.writeInt(aInt);
    }
 
    public void writeLong (long aLong) throws IOException
    {
-      debug(8, aLong);
+      // debug(8, aLong);
       _out.writeLong(aLong);
    }
-   
+
    public void writeFloat (float aFloat) throws IOException
    {
-      debug(4, Float.floatToIntBits(aFloat));
+      // debug(4, Float.floatToIntBits(aFloat));
       _out.writeFloat(aFloat);
    }
-   
+
    public void writeDouble (double aDouble) throws IOException
    {
-      debug(8, Double.doubleToLongBits(aDouble));
+      // debug(8, Double.doubleToLongBits(aDouble));
       _out.writeDouble(aDouble);
    }
-   
+
    //
    // Direct byte writing interface
    //
-   
+
    public void write (byte[] aBytes) throws IOException
    {
-      debug(aBytes.length);
+      // debug(aBytes);
       _out.write(aBytes, 0, aBytes.length);
    }
-   
+
    public void write (int aByte) throws IOException
    {
+      // debug(1, aByte);
       _out.write(aByte);
    }
-   
+
+   /**
+    * Current offset in file.
+    */
    public int offset ()
    {
       return _out.size();
@@ -100,18 +104,14 @@ public abstract class ByteWriter implements IByteWriter
    // debug
    //
 
-   protected void debug (int bytes)
+   protected void debug (byte[] bytes)
    {
-      if (offset() == 0x0e29)
-      {
-         System.out.println("break");
-      }
       String offset = "00000000" + Integer.toHexString(offset());
       offset = offset.substring(offset.length() - 4);
-      System.out.println(offset + ": " + bytes + " bytes");
+      System.out.println(offset + ": " + bytes.length + " bytes");
       System.out.flush();
    }
-   
+
    protected void debug (int width, long aValue)
    {
       String offset = "00000000" + Integer.toHexString(offset());
