@@ -4,7 +4,7 @@ package josx.robotics;
 * Arbitrator controls which behavior should currently be active in 
 * a behavior control system. Make sure to call start() after the 
 * Arbitrator is instantiated.
-* @see robotics.rcx.Behavior
+* @see Behavior
 * @author <a href="mailto:bbagnall@escape.ca">Brian Bagnall</a>
 * @version 0.1  27-July-2001
 */
@@ -75,17 +75,20 @@ public class Arbitrator {
       
       public void run() {
          while(true) {
-            if(current != NONE) {
-               done = false;
-               behavior[current].action();
-               current = NONE;
-               done = true;
+         	synchronized(this)
+         	{
+            	if(current != NONE) {
+               		done = false;
+               		behavior[current].action();
+               		current = NONE;
+               		done = true;
+            	}
             }
             Thread.yield();
          }
       }
       
-      public void execute(int index) {
+      public synchronized void execute(int index) {
          current = index;
       }
    }
