@@ -55,7 +55,7 @@ public class LLCReliableHandler extends PacketHandler {
             inAck[0] == inAck[1]) {
           sequence = !sequence;
           return true; 
-        } else error++;
+        }
       }
     }
   }
@@ -71,8 +71,6 @@ public class LLCReliableHandler extends PacketHandler {
     return temp;
   }
 
-  private int error = 0;
-
   /** Check if a packet is available.
    * @return true if a packet is available, else false
    */
@@ -87,7 +85,6 @@ public class LLCReliableHandler extends PacketHandler {
         outAck[1] = outAck[0];
         lowerHandler.sendPacket(outAck, 2);
       } else {
-        error++;
         continue;
       }
 
@@ -96,8 +93,6 @@ public class LLCReliableHandler extends PacketHandler {
         inPacketLength = len;
         receiveSequence = !receiveSequence;
         return true;
-      } else {
-        error++;
       }
     }
     return false;

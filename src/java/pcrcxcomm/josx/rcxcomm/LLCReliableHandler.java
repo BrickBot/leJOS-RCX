@@ -10,10 +10,8 @@ public class LLCReliableHandler extends PacketHandler {
   private byte [] inAck = new byte[2];
   private byte [] outAck = new byte [2];
   private boolean debug = false;
-  private boolean firstReceive = true;
   private int inPacketLength = 0;
   private boolean sequence = false, receiveSequence = false;
-  private int error = 0;
 
   public LLCReliableHandler(PacketHandler handler) {
     super(handler);
@@ -95,11 +93,6 @@ public class LLCReliableHandler extends PacketHandler {
       if ((inPacket[0] & 0x8) == (receiveSequence ? 0x8 : 0x0)) {
         inPacketLength = len;
         receiveSequence = !receiveSequence;
-        firstReceive = false;
-        return true;
-      } else if (firstReceive) { // Don't sequence error the first receive
-        inPacketLength = len;
-        firstReceive = false;
         return true;
       } else { 
         if (debug) System.out.println("Sequence error");
