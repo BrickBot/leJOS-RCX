@@ -1,0 +1,89 @@
+The View example
+================
+
+The View example lets you explore the capabilities of sensors and motors.
+
+Compile and load it onto the RCX using 'make',
+then start the program by pressing the 'Run' button.
+
+
+Views
+-----
+
+Pressing the 'View' button cycles between 7 views:
+
+- Sensors 1..3
+- Motors A..C
+- Battery voltage
+
+An up or down cursor or a battery symbol shows which view is active.
+
+
+Sensor view
+-----------
+
+In a sensor view the value of the sensor is displayed
+(in your programs you can read it by Sensor.readValue()).
+It depends on sensor mode and whether the power supply
+for the sensor is activated or not.
+
+Press the 'Prgm' button to cycle through the modes
+(displayed as the program number):
+
+0: raw values 0..1023, correspond to 0..5V input voltage
+1: boolean values 0..1, goes to 1 below raw value 460, to 0 above 562
+2: count edges (e.g. presses and releases of a touch sensor)
+3: count rising edges (w.r.t. raw values, releases of a touch sensor)
+4: percent, popular for the light sensor
+5: angle, counts in 1/16 of a complete revolution for the rotation sensor
+6: temperature in degrees Celsius for the temperature sensor
+7: temperature in degrees Fahrenheit for the temperature sensor
+
+Press the 'Run' button to toggle activation of the sensor power supply
+(the little man is walking when the supply is activated).
+
+- Rotation sensors need the power supply activated.
+- Light sensor are more sensitive when activated.
+  Also see how the LED turns on and off when you press the run button.
+- Temperature sensors get heated slightly when you apply power.
+
+
+Motor View
+----------
+
+Use the 'Run' button to cycle through the states of a motor
+(the state is displayed by the small left and right angles):
+
+  >: forward (+9V applied to outputs)
+<  : backward (-9V applied to outputs)
+< >: stop (outputs connected in a short circuit)
+   : float (outputs not connected)
+
+Use the 'Prgm' button to cycle though the power levels
+(displayed as the program number):
+
+0: 1/8 power
+1: 2/8 power
+2: 3/8 power
+3: 4/8 power (half power)
+...
+7: 8/8 power (full power)
+
+- Notice how the power level affects forward, backward and stop.
+- Try it with a light connected to the motor.
+  If you turn the motor in the float state the power it generates
+  makes the light shine.  In the stop state the light stays dark.
+
+Power levels work by setting the motor to forward, backward or stopped
+for the corresponding fraction of each 8ms interval (1/125 of a second),
+and to float for the rest.
+
+
+Battery View
+------------
+
+This displays the battery voltage in volt.
+
+- Start a motor, go into the battery view and make it work harder.
+  If you use batteries you can see how the voltage goes down,
+  for AC power the voltage is quite stable.
