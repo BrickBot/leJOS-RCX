@@ -93,6 +93,8 @@ bool __rcx_read_isTimedOut (timeval* begin, int timeout_ms)
    gettimeofday(&now, 0);
 
    int elapsed_ms = (now.tv_sec - begin->tv_sec) * 1000 + (now.tv_usec - begin->tv_usec) / 1000;
+	if (__comm_debug) fprintf(stderr, "elapsed = %d\n", elapsed_ms);
+	if (__comm_debug) fprintf(stderr, "timeout = %d\n", timeout_ms);
    return elapsed_ms >= timeout_ms;
 }
 
@@ -105,15 +107,14 @@ int __rcx_read_usb (void* port, void* buf, int maxlen, int timeout_ms)
    DWORD count = 0;
 
    // try to read first bytes for timeout_ms milliseconds
+   gettimeofday(&timebegin, 0);
 	do 
 	{
-		gettimeofday(&timebegin, 0);
-
       count = 0;
 		if (ReadFile(((Port*) port)->fileHandle, bufp, maxlen, &count, NULL) == FALSE)
 		{
-			__rcx_perror("ReadFile");
 			if (__comm_debug) fprintf(stderr, "usb mode: read error %lu\n", (unsigned long) GetLastError());
+			__rcx_perror("ReadFile");
 			return RCX_READ_FAIL;
 		}
       if (__comm_debug) fprintf(stderr, "usb mode: read %d\n", count);
@@ -135,8 +136,8 @@ int __rcx_read_usb (void* port, void* buf, int maxlen, int timeout_ms)
 			count = 0;
 			if (ReadFile(((Port*) port)->fileHandle, &bufp[len], maxlen-len, &count, NULL) == FALSE)
 			{
-				__rcx_perror("ReadFile");
 				if (__comm_debug) fprintf(stderr, "usb mode: read error %lu\n", (unsigned long) GetLastError());
+				__rcx_perror("ReadFile");
 				return RCX_READ_FAIL;
 			}
 	      if (__comm_debug) fprintf(stderr, "usb mode: read %d\n", count);
@@ -169,8 +170,8 @@ int __rcx_read_serial (void* port, void* buf, int maxlen, int timeout_ms)
 		DWORD count = 0;
 		if (ReadFile(((Port*) port)->fileHandle, &bufp[len], maxlen - len, &count, NULL) == FALSE) 
 		{
-			__rcx_perror("ReadFile");
 			fprintf(stderr, "serial mode: read error %lu\n", (unsigned long) GetLastError());
+			__rcx_perror("ReadFile");
 			return RCX_READ_FAIL;
 		}
       if (__comm_debug) fprintf(stderr, "serial mode: read %d\n", count);
@@ -279,7 +280,7 @@ bool __rcx_open_setSerialPortParameters (Port* port)
 	{	
 		// Get current DCB
 		__rcx_perror("GetCommState");
-		return 0;
+		return false;
 	} 
 
 	dcb.ByteSize = 8;
