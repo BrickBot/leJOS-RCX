@@ -61,6 +61,6 @@ static inline JINT jlong_compare (JLONG a1, JLONG a2)
 }
 #endif
 
-#endif _TYPES_H
+#endif // _TYPES_H
 
 

@@ -183,7 +183,7 @@ static inline void initialize_binary()
   }
 }  
 
-#endif _LANGUAGE_H
+#endif // _LANGUAGE_H
 
 
 

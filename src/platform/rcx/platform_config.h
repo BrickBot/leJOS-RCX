@@ -55,4 +55,4 @@ static inline void poll_hardware()
   }
 }
 
-#endif _PLATFORM_CONFIG_H
+#endif // _PLATFORM_CONFIG_H

@@ -35,7 +35,7 @@ static inline void schedule_request (const byte aCode)
   gRequestCode = aCode;
 }
 
-#endif _INTERPRET_H
+#endif // _INTERPRET_H
 
 
 

@@ -199,7 +199,7 @@ void free_array (Object *objectRef)
 {
   #ifdef VERIFY
   assert (is_array(objectRef), MEMORY7);
-  #endif VERIFY
+  #endif // VERIFY
 
   deallocate ((TWOBYTES *) objectRef, get_array_size (objectRef));
 }
@@ -257,7 +257,7 @@ Object *new_multi_array (byte elemType, byte totalDimensions,
 
     ref_array(ref)[*numElemPtr] = ptr2word (new_multi_array (elemType, totalDimensions - 1, reqDimensions - 1, numElemPtr + 1));
 
-    #endif WIMPY_MATH
+    #endif // WIMPY_MATH
   }
 
 
@@ -279,7 +279,7 @@ void store_word (byte *ptr, byte aSize, STACKWORD aWord)
     ptr[ctr] = wptr[aSize-ctr-1];
     #else
     ptr[ctr] = wptr[ctr];
-    #endif LITTLE_ENDIAN
+    #endif // LITTLE_ENDIAN
   }
 }
 
@@ -309,7 +309,7 @@ void store_word (byte *ptr, byte aSize, STACKWORD aWord)
   }
 }
 
-#endif WIMPY_MATH
+#endif // WIMPY_MATH
 
 typedef union 
 {
@@ -338,7 +338,7 @@ void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr)
     #ifdef VERIFY
     default:
       assert (aSize == 4, MEMORY9);
-    #endif VERIFY
+    #endif // VERIFY
   }
   #if LITTLE_ENDIAN
   ((AuxStackUnion *) aWordPtr)->st.byte0 = ptr[3];  
@@ -364,7 +364,7 @@ void scan_memory (TWOBYTES *numNodes, TWOBYTES *biggest, TWOBYTES *freeMem)
 {
 }
 
-#endif DEBUG_RCX_MEMORY
+#endif // DEBUG_RCX_MEMORY
 
 /**
  * @param ptr Beginning of heap.

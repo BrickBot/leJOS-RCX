@@ -93,7 +93,7 @@ case OP_FCMPG:
   do_fcmp (word2jfloat(pop_word()), word2jfloat(tempStackWord), 0);
   goto LABEL_ENGINELOOP;
   
-#endif FP_ARITHMETIC
+#endif // FP_ARITHMETIC
 
 #if 0
   
@@ -111,7 +111,7 @@ case OP_LCMP:
   }
   goto LABEL_ENGINELOOP;    
 
-#endif 0
+#endif // 0
 
 // Notes:
 // - Not supported: TABLESWITCH, LOOKUPSWITCH, GOTO_W, JSR_W, LCMP

@@ -24,6 +24,6 @@ then
   cp $OUT_FILE $GOLD_FILE
 else
   echo "##### BEGIN REGRESSION DIFF #####"
-  diff $OUT_FILE $GOLD_FILE
+  diff -w $OUT_FILE $GOLD_FILE
   echo "#####  END REGRESSION DIFF  #####"
 fi

@@ -52,7 +52,7 @@ case OP_LDC2_W:
 
   #ifdef VERIFY
   assert (tempConstRec->constantSize == 8, INTERPRETER6);
-  #endif VERIFY
+  #endif // VERIFY
 
   tempBytePtr = get_constant_ptr (tempConstRec);
   make_word (tempBytePtr, 4, &tempStackWord);
@@ -152,7 +152,7 @@ case OP_DCONST_1:
   push_word (jfloat2word((JFLOAT) 1.0));
   goto LABEL_ENGINELOOP;
 
-#endif FP_ARITHMETIC
+#endif // FP_ARITHMETIC
 
   
 // Notes:

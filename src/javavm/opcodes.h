@@ -208,4 +208,4 @@
 #define OP_GOTO_W	200
 #define OP_JSR_W	201
 #define OP_BREAKPOINT	202
-#endif _OPCODES_H
+#endif // _OPCODES_H

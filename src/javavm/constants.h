@@ -18,4 +18,4 @@
 #define T_INT 10
 #define T_LONG 11
 
-#endif _CONSTANTS_H
+#endif // _CONSTANTS_H

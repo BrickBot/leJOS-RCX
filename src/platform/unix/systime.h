@@ -3,4 +3,4 @@
 
 extern FOURBYTES get_sys_time_impl();
 
-#endif _SYSTIME_H
+#endif // _SYSTIME_H

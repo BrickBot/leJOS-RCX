@@ -27,7 +27,7 @@
 #error LOADER_TOOL undefined
 #endif
 
-#ifdef WINNT
+#if defined(WINNT) || defined(__CYGWIN32__)
 #define PATH_SEPARATOR ";"
 #else
 #define PATH_SEPARATOR ":"
@@ -46,7 +46,7 @@ char *get_classpath (char *program, char *relpath)
   char *lejosjar;
   #ifdef __CYGWIN__
   char *auxstr;
-  #endif __CYGWIN__
+  #endif // __CYGWIN__
 
   dname = pdirname (program);
   if (dname == NULL)
@@ -62,7 +62,7 @@ char *get_classpath (char *program, char *relpath)
   printf ("converted=%s\n", lejosjar);
   #endif
   
-  #endif __CYGWIN__
+  #endif // __CYGWIN__
   
   oldcpath = getenv ("CLASSPATH");
   if (oldcpath == NULL)
@@ -82,7 +82,7 @@ void set_classpath (char *toolsPath)
   
   #ifdef __CYGWIN__
   char *auxstr;
-  #endif __CYGWIN__
+  #endif // __CYGWIN__
 
   #ifdef __CYGWIN__
   auxstr = (char *) malloc (MAX_PATH);
@@ -93,7 +93,7 @@ void set_classpath (char *toolsPath)
   printf ("converted=%s\n", toolsPath);
   #endif
   
-  #endif __CYGWIN__
+  #endif // __CYGWIN__
 
   envasg = append ("CLASSPATH=", toolsPath);
   #if TRACE
@@ -107,7 +107,7 @@ char *get_loader_classpath (char *libpath)
   char *cpath, *oldcpath;
   #ifdef __CYGWIN__
   char *auxstr;
-  #endif __CYGWIN__
+  #endif // __CYGWIN__
 
   #ifdef __CYGWIN__
   auxstr = (char *) malloc (MAX_PATH);
@@ -118,7 +118,7 @@ char *get_loader_classpath (char *libpath)
   printf ("converted=%s\n", libpath);
   #endif
   
-  #endif __CYGWIN__
+  #endif // __CYGWIN__
   
   oldcpath = getenv ("CLASSPATH");
   if (oldcpath == NULL)
@@ -143,7 +143,7 @@ int main (int argc, char *argv[])
   char **newargv;
   #ifdef __CYGWIN__
   char *auxstr;
-  #endif __CYGWIN__
+  #endif // __CYGWIN__
   
   directory = pdirname (argv[0]);
   if (directory == NULL)
@@ -162,7 +162,7 @@ int main (int argc, char *argv[])
   printf ("converted=%s\n", tinyvmHome);
   #endif
   
-  #endif __CYGWIN__
+  #endif // __CYGWIN__
 
   newargv = (char **) malloc (sizeof (char *) * (argc + 20));
   count = 0;

@@ -82,7 +82,7 @@ case OP_DDIV:
                     word2jfloat(tempStackWord)));
   goto LABEL_ENGINELOOP;
 
-#endif FP_ARITHMETIC
+#endif // FP_ARITHMETIC
 
 // Notes:
 // - Not supported: LADD, LSUB, LMUL, LREM, FREM, DREM

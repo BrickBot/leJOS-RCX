@@ -71,7 +71,7 @@
 #include <string.h>
 #include "util.h"
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN32__)
   #include <windows.h>
 #endif
 
@@ -82,7 +82,7 @@
 
 #if defined(LINUX) || defined(linux)
 #define DEFAULTTTY   "/dev/ttyS0" /* Linux - COM1 */
-#elif defined (_WIN32)
+#elif defined(_WIN32) || defined(__CYGWIN32__)
 #define DEFAULTTTY   "com1"       /* Cygwin - COM1 */
 #elif defined (sun)
 #define DEFAULTTTY   "/dev/ttya"  /* Solaris - first serial port - untested */

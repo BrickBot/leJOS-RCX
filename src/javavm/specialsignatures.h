@@ -45,4 +45,4 @@
 #define setSensorValue_4III_5V 38
 #define assert_4Ljava_3lang_3String_2Z_5V 39
 #define assertEQ_4Ljava_3lang_3String_2II_5V 40
-#endif _SPECIALSIGNATURES_H
+#endif // _SPECIALSIGNATURES_H

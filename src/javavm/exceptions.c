@@ -65,7 +65,7 @@ void throw_exception (Object *exception)
   
   #ifdef VERIFY
   assert (exception != null, EXCEPTIONS0);
-  #endif VERIFY
+  #endif // VERIFY
 
 #if DEBUG_EXCEPTIONS
   printf("Throw exception\n");
@@ -83,7 +83,7 @@ void throw_exception (Object *exception)
   
   #ifdef VERIFY
   assert (currentThread->state > DEAD, EXCEPTIONS1);
-  #endif VERIFY
+  #endif // VERIFY
   
   gExceptionPc = pc;
   gExcepMethodRec = null;

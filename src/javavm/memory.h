@@ -25,7 +25,7 @@ extern int getHeapFree();
 
 #if DEBUG_RCX_MEMORY
 extern void scan_memory (TWOBYTES *numNodes, TWOBYTES *biggest, TWOBYTES *freeMem);
-#endif DEBUG_RCX_MEMORY
+#endif // DEBUG_RCX_MEMORY
 
 #define HEADER_SIZE (sizeof(Object))
 // Size of object header in 2-byte words
@@ -43,7 +43,7 @@ extern void scan_memory (TWOBYTES *numNodes, TWOBYTES *biggest, TWOBYTES *freeMe
 #define jlong_array(OBJ_)   ((JLONG *) array_start(OBJ_))
 #define jfloat_array(OBJ_)  ((JFLOAT *) array_start(OBJ_))
 
-#endif _MEMORY_H
+#endif // _MEMORY_H
 
 
 

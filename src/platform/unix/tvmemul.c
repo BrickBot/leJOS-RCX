@@ -85,7 +85,7 @@ void run(void)
   #if DEBUG_RUNS
   for (count = 0; count < 100; count++)
   {
-  #endif DEBUG_RUNS
+  #endif // DEBUG_RUNS
 
   #if DEBUG_RCX_MEMORY
   {
@@ -113,7 +113,7 @@ void run(void)
 
   #if DEBUG_RUNS
   }
-  #endif DEBUG_RUNS
+  #endif // DEBUG_RUNS
 }
 
 /***************************************************************************
