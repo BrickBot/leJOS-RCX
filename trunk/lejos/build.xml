@@ -45,6 +45,12 @@
         <include name="jtools.jar"/>
         <include name="vision.jar"/>
       </fileset>  	
+      <fileset dir="${src}">
+        <include name="classes-src.zip"/>
+        <include name="rcxcomm-src.zip"/>
+        <include name="pcrcxcomm-src.zip"/>
+        <include name="vision-src.zip"/>
+      </fileset>  	
   	</delete>	
   </target>
 
@@ -57,6 +63,7 @@
     <tstamp/>
     <mkdir dir="${build}"/>
     <mkdir dir="${lib}"/>
+    <mkdir dir="${src}"/>
   </target>
 
   <!--
@@ -68,7 +75,7 @@
     <mkdir dir="${build}/classes"/>
     <javac srcdir="${javasrc}/classes" destdir="${build}/classes" fork="yes" optimize="on" debug="on" target="1.1"/>
     <jar destfile="${lib}/classes.jar" basedir="${build}/classes" update="false"/>
-    <zip destfile="${build}/classes-src.zip" basedir="${javasrc}/classes"/>
+    <zip destfile="${build}/classes-src.zip" basedir="${javasrc}/classes" update="false"/>
   </target>
 
   <!--
@@ -82,7 +89,7 @@
       <classpath location="${lib}/classes.jar"/>
     </javac>
     <jar destfile="${lib}/rcxcomm.jar" basedir="${build}/rcxcomm" update="false"/>
-    <zip destfile="${build}/rcxcomm-src.zip" basedir="${javasrc}/rcxcomm"/>
+    <zip destfile="${build}/rcxcomm-src.zip" basedir="${javasrc}/rcxcomm" update="false"/>
   </target>
 
   <!--
@@ -94,7 +101,7 @@
     <mkdir dir="${build}/pcrcxcomm"/>
     <javac srcdir="${javasrc}/pcrcxcomm" destdir="${build}/pcrcxcomm" fork="yes" optimize="on" debug="on" source="1.4"/>
     <jar destfile="${lib}/pcrcxcomm.jar" basedir="${build}/pcrcxcomm" update="false"/>
-    <zip destfile="${build}/pcrcxcomm-src.zip" basedir="${javasrc}/pcrcxcomm"/>
+    <zip destfile="${build}/pcrcxcomm-src.zip" basedir="${javasrc}/pcrcxcomm" update="false"/>
   </target>
 
   <!--
@@ -113,7 +120,7 @@
       <classpath path="${lib}/jmf.jar:${lib}/pcrcxcomm.jar" />
     </javac>
     <jar destfile="${lib}/vision.jar" basedir="${build}/vision" update="false"/>
-    <zip destfile="${build}/vision-src.zip" basedir="${javasrc}/vision"/>
+    <zip destfile="${build}/vision-src.zip" basedir="${javasrc}/vision" update="false"/>
   </target>
 
   <!--
@@ -136,17 +143,20 @@
     </javac>
     <jar destfile="${lib}/jtools.jar" basedir="${build}/tools" update="false">
       <fileset dir="${bin}">
-        <include name="*.srec"/>
+        <include name="lejos.srec"/>
+        <include name="fastdl2x.srec"/>
+        <include name="fastdl4x.srec"/>
       </fileset>
     </jar>
   </target>
 
   <!--
     ==================================================
-    Target jar: create all jar files
+    Target jar: deploy all files (does NOT generate anything)
     ==================================================
   -->
-  <target name="all" depends="clean, classes, rcxcomm, pcrcxcomm, vision, jtools" description="generate all jar files">
+  <target name="deploy" depends="" description="deploy all files">
+  	<!-- all leJOS libs -->
     <mkdir dir="${org.lejos}/lib"/>
     <delete>
       <fileset dir="${org.lejos}/lib">
@@ -158,14 +168,39 @@
         <include name="*.jar"/>
       </fileset>
     </copy>
+  	<!-- sources for all leJOS libs -->
     <mkdir dir="${org.lejos}/src"/>
+    <delete>
+      <fileset dir="${org.lejos}/src">
+        <include name="*.zip"/>
+      </fileset>
+    </delete>
     <copy todir="${org.lejos}/src">
       <fileset dir="${build}">
         <include name="*.zip"/>
       </fileset>
     </copy>
+  	<!-- OS specific drivers (currently only win32) -->
+    <mkdir dir="${org.lejos}/os/win32/x86"/>
+    <delete>
+      <fileset dir="${org.lejos}/os/win32/x86">
+        <include name="*.dll"/>
+      </fileset>
+    </delete>
+    <copy todir="${org.lejos}/os/win32/x86">
+      <fileset dir="${bin}">
+        <include name="*.dll"/>
+      </fileset>
+    </copy>
   </target>
   
+  <!--
+    ==================================================
+    Target jar: create all jar files
+    ==================================================
+  -->
+  <target name="all" depends="clean, classes, rcxcomm, pcrcxcomm, vision, jtools, deploy" description="make all"/>
+	  
   <!--
     ==================================================
     Target jar: create leJOS API docs
@@ -230,6 +265,6 @@
     Target jar: create leJOS Vision API docs
     ==================================================
   -->
-  <target name="alldoc" depends="doc, pcdoc, visiondoc" description="generate all API docs"/>
+  <target name="alldocs" depends="doc, pcdoc, visiondoc" description="generate all API docs"/>
 
 </project>
