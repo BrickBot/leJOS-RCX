@@ -7,6 +7,8 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.bcel.util.ClassPath;
+
 import js.tinyvm.io.ByteWriter;
 import js.tinyvm.util.HashVector;
 
