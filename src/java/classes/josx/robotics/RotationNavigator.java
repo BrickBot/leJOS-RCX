@@ -24,7 +24,7 @@ import josx.util.*;
  * @author <a href="mailto:bbagnall@escape.ca">Brian Bagnall</a>
  * @version 0.1  19-August-2001
  */
-public class RotationNavigator extends Thread implements Navigator, SensorConstants {
+public class RotationNavigator implements Navigator, SensorConstants {
 
    // orientation and co-ordinate data
    private float angle;
@@ -106,7 +106,8 @@ public class RotationNavigator extends Thread implements Navigator, SensorConsta
       
       // Thread is for keeping the RCX straight when driving by
       // monitoring the rotation sensors while moving.
-      this.start();
+      SteerThread steering = new SteerThread();
+      steering.start();
    }
    
    /**
@@ -272,6 +273,11 @@ public class RotationNavigator extends Thread implements Navigator, SensorConsta
       command = FORWARD;
    }
 
+   /**
+    * Inner class that monitors the rotation sensors and keeps the
+    * navigator steering straight.
+    */
+   private class SteerThread extends Thread {
    public void run() {
       while(true) {
          while(command == FORWARD) {
@@ -313,7 +319,8 @@ public class RotationNavigator extends Thread implements Navigator, SensorConsta
          Thread.yield();
       }
    }
-
+   }
+   
    /**
    * Moves the RCX robot backward until stop() is called.
    *
@@ -348,4 +355,4 @@ public class RotationNavigator extends Thread implements Navigator, SensorConsta
          y = y + (float)(Math.sin(Math.toRadians(angle)) * centimeters);
       }
    }
-}   
+}
