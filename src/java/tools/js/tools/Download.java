@@ -13,6 +13,7 @@ import js.common.ToolProgressMonitor;
  */
 public class Download extends AbstractTool
 {
+   public static final int CHECKSUM_WAIT = 1000;
    private static final int WRITE_MAX = 256;
    private static final int MAX_ZEROS = 32;
    private static final int MAGIC = 0xCAF6;
@@ -149,6 +150,15 @@ public class Download extends AbstractTool
    {
       deleteFirmware();
       downloadFirmware(image, length, baseAddress);
+      // ROM needs time to check the checksum of the firmware
+      try
+      {
+         Thread.sleep(CHECKSUM_WAIT);
+      }
+      catch (InterruptedException e)
+      {
+         throw new ToolException("interrupted");
+      }
       unlockFirmware();
    }
 
@@ -248,7 +258,7 @@ public class Download extends AbstractTool
    public void unlockFirmware () throws ToolException
    {
       byte[] send = new byte[6];
-      byte[] recv = new byte[26];
+      byte[] recv = new byte[27]; // TODO was 26, is 27 OK???
 
       getProgressMonitor().operation("Unlocking firmware");
 
@@ -260,7 +270,7 @@ public class Download extends AbstractTool
       send[4] = 79; // 'O'
       send[5] = (byte) 174; // '®'
 
-      // TODO Use longer timeout so ROM has time to checksum firmware
+      // Use longer timeout so ROM has time to checksum firmware
       try
       {
          int numRead = _tower.sendPacketReceivePacket(send, recv, 10);
