@@ -1,7 +1,7 @@
 /*
- *  divhi3.c
+ *  rcall0.c
  *
- *  Wrapper for ROM divhi3 routine, a 16-bit signed divide: r0 /= r1
+ *  Implements a generic wrapper for ROM routines with no parameters.
  *
  *  The contents of this file are subject to the Mozilla Public License
  *  Version 1.0 (the "License"); you may not use this file except in
@@ -22,25 +22,18 @@
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
  */
 
-__asm__ ("
     .section .text
 
-    .global ___divhi3
+    .global ___rcall0
 
-___divhi3:
+___rcall0:
 
-    push    r5
     push    r6
 
-    mov.w   r0,r6
-    mov.w   r1,r5
-
-    jsr     @@82
+    jsr     @r0
 
     mov.w   r6,r0
 
     pop     r6
-    pop     r5
 
     rts
-");

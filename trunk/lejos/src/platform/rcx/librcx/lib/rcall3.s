@@ -1,7 +1,7 @@
 /*
- *  umodhi3.c
+ *  rcall3.c
  *
- *  Wrapper for ROM umodhi3 routine, a 16-bit unsigned modulo: r0 %= r1
+ *  Implements a generic wrapper for ROM routines with three parameters.
  *
  *  The contents of this file are subject to the Mozilla Public License
  *  Version 1.0 (the "License"); you may not use this file except in
@@ -22,25 +22,26 @@
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
  */
 
-__asm__ ("
     .section .text
 
-    .global ___umodhi3
+    .global ___rcall3
 
-___umodhi3:
+___rcall3:
 
-    push    r5
     push    r6
 
-    mov.w   r0,r6
-    mov.w   r1,r5
+    mov.w   @(4,r7),r3
+    push    r3
+    push    r2
+    mov.w   r1,r6
 
-    jsr     @@76
+    jsr     @r0
+
+    adds    #2,r7
+    adds    #2,r7
 
     mov.w   r6,r0
 
     pop     r6
-    pop     r5
 
     rts
-");

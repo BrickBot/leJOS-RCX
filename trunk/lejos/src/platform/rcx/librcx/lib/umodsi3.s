@@ -1,7 +1,9 @@
 /*
- *  udivsi3.c
+ *  umodsi3.c
  *
- *  Wrapper for ROM udivsi3 routine, a 32-bit unsigned divide: r0r1 /= r2r3
+ *  32-bit unsigned modulo: r0r1 %= r2r3
+ *
+ *  Calls the ROM version of udivsi3, which leaves the remainder in r3r4.
  *
  *  The contents of this file are subject to the Mozilla Public License
  *  Version 1.0 (the "License"); you may not use this file except in
@@ -22,12 +24,10 @@
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
  */
 
-__asm__ ("
     .section .text
+    .global ___umodsi3
 
-    .global ___udivsi3
-
-___udivsi3:
+___umodsi3:
 
     push    r4
     push    r5
@@ -40,12 +40,11 @@ ___udivsi3:
 
     jsr     @@86
 
-    mov.w   r6,r1
-    mov.w   r5,r0
+    mov.w   r4,r1
+    mov.w   r3,r0
 
     pop     r6
     pop     r5
     pop     r4
 
     rts
-");

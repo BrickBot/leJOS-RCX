@@ -1,7 +1,7 @@
 /*
- *  mulhi3.c
+ *  mulsi3.c
  *
- *  Wrapper for ROM mulhi3 routine, a 16-bit multiply: r0 *= r1
+ *  Wrapper for ROM mulsi3 routine, a 32-bit multiply: r0r1 *= r2r3
  *
  *  The contents of this file are subject to the Mozilla Public License
  *  Version 1.0 (the "License"); you may not use this file except in
@@ -22,22 +22,28 @@
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
  */
 
-__asm__ ("
     .section .text
 
-    .global ___mulhi3
+    .global ___mulsi3
 
-___mulhi3:
+___mulsi3:
 
-    mov.b   r1h,r2l
-    mov.b   r0h,r1h
+    push    r4
+    push    r5
+    push    r6
 
-    mulxu.b r0l,r2
-    mulxu.b r1l,r0
-    mulxu.b r1h,r1
+    mov.w   r1,r6
+    mov.w   r0,r5
+    mov.w   r3,r4
+    mov.w   r2,r3
 
-    add.b   r1l,r0h
-    add.b   r2l,r0h
+    jsr     @@84
+
+    mov.w   r6,r1
+    mov.w   r5,r0
+
+    pop     r6
+    pop     r5
+    pop     r4
 
     rts
-");

@@ -1,7 +1,8 @@
 /*
- *  rcall1.c
+ *  ucmpsi2.c
  *
- *  Implements a generic wrapper for ROM routines with one parameter.
+ *  Implementation of ucmpsi2, a 32-bit unsigned compare: r0r1 <=> r2r3
+ *  Returns -1, 0, or 1, which might not be correct.
  *
  *  The contents of this file are subject to the Mozilla Public License
  *  Version 1.0 (the "License"); you may not use this file except in
@@ -22,22 +23,41 @@
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
  */
 
-__asm__ ("
     .section .text
 
-    .global ___rcall1
+    .global ___ucmpsi2
 
-___rcall1:
+___ucmpsi2:
 
-    push    r6
+    sub.w   r3,r1
+    subx.b  r2l,r0l
+    subx.b  r2h,r0h
 
-    mov.w   r1,r6
+    blo     else_0
 
-    jsr     @r0
+        beq     else_1
 
-    mov.w   r6,r0
+            ; First operand greater than second operand
 
-    pop     r6
+            mov.w   #1,r0
+            rts
 
-    rts
-");
+        else_1:
+
+            ; First operand equal to second operand
+
+            sub.w   r0,r0
+            rts
+
+        endif_1:
+
+    else_0:
+
+        ; First operand less than second operand
+
+        mov.w   #-1,r0
+        rts
+
+    endif_0:
+
+    ; Not reached

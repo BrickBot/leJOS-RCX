@@ -1,9 +1,7 @@
 /*
- *  umodsi3.c
+ *  rcall1.c
  *
- *  32-bit unsigned modulo: r0r1 %= r2r3
- *
- *  Calls the ROM version of udivsi3, which leaves the remainder in r3r4.
+ *  Implements a generic wrapper for ROM routines with one parameter.
  *
  *  The contents of this file are subject to the Mozilla Public License
  *  Version 1.0 (the "License"); you may not use this file except in
@@ -24,30 +22,20 @@
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
  */
 
-__asm__ ("
     .section .text
 
-    .global ___umodsi3
+    .global ___rcall1
 
-___umodsi3:
+___rcall1:
 
-    push    r4
-    push    r5
     push    r6
 
     mov.w   r1,r6
-    mov.w   r0,r5
-    mov.w   r3,r4
-    mov.w   r2,r3
 
-    jsr     @@86
+    jsr     @r0
 
-    mov.w   r4,r1
-    mov.w   r3,r0
+    mov.w   r6,r0
 
     pop     r6
-    pop     r5
-    pop     r4
 
     rts
-");

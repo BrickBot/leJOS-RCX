@@ -1,8 +1,7 @@
 /*
- *  cmpsi2.c
+ *  mulhi3.c
  *
- *  Implementation of cmpsi2, a 32-bit signed compare: r0r1 <=> r2r3
- *  Returns -1, 0, or 1, which might not be correct.
+ *  Wrapper for ROM mulhi3 routine, a 16-bit multiply: r0 *= r1
  *
  *  The contents of this file are subject to the Mozilla Public License
  *  Version 1.0 (the "License"); you may not use this file except in
@@ -23,43 +22,20 @@
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
  */
 
-__asm__ ("
     .section .text
 
-    .global ___cmpsi2
+    .global ___mulhi3
 
-___cmpsi2:
+___mulhi3:
 
-    sub.w   r3,r1
-    subx.b  r2l,r0l
-    subx.b  r2h,r0h
+    mov.b   r1h,r2l
+    mov.b   r0h,r1h
 
-    blt     else_0
+    mulxu.b r0l,r2
+    mulxu.b r1l,r0
+    mulxu.b r1h,r1
 
-        beq     else_1
+    add.b   r1l,r0h
+    add.b   r2l,r0h
 
-            ; First operand greater than second operand
-
-            mov.w   #1,r0
-            rts
-
-        else_1:
-
-            ; First operand equal to second operand
-
-            sub.w   r0,r0
-            rts
-
-        endif_1:
-
-    else_0:
-
-        ; First operand less than second operand
-
-        mov.w   #-1,r0
-        rts
-
-    endif_0:
-
-    ; Not reached
-");
+    rts
