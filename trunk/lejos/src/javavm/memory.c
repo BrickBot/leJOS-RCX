@@ -159,7 +159,7 @@ Object *new_object_for_class (const byte classIndex)
 /**
  * Return the size in words of an array of the given type
  */
-TWOBYTES comp_array_size (const byte length, const byte elemType)
+TWOBYTES comp_array_size (const TWOBYTES length, const byte elemType)
 {
   return NORM_OBJ_SIZE + (((TWOBYTES) length * typeSize[elemType]) + 1) / 2;
 }
@@ -174,17 +174,17 @@ Object *new_primitive_array (const byte primitiveType, STACKWORD length)
   Object *ref;
   TWOBYTES allocSize;
 
-  // Hack to disallow allocations longer than 255:
+  // Check if length is too large to be representable
   if (length > (ARRAY_LENGTH_MASK >> ARRAY_LENGTH_SHIFT))
   {
     throw_exception (outOfMemoryError);
     return JNULL;
   }
-  allocSize = comp_array_size ((byte) length, primitiveType);
+  allocSize = comp_array_size (length, primitiveType);
   ref = memcheck_allocate (allocSize);
   if (ref == null)
     return JNULL;
-  set_array (ref, primitiveType, (byte) length);
+  set_array (ref, primitiveType, length);
   initialize_state (ref, allocSize);
   return ref;
 }
