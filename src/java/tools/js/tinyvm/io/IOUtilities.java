@@ -9,7 +9,7 @@ public class IOUtilities
    {
       int pRegSize = aOut.offset();
       int pPad = adjustedSize(pRegSize, aMinRecSize) - pRegSize;
-      aOut.write(new byte[pPad], 0, pPad);
+      aOut.write(new byte[pPad]);
    }
 
    public static int adjustedSize (int aSize, int aMinRecSize)

@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Basic byte writer implementation (writer order independant part)
+ * Basic byte writer implementation (write order independant part)
  */
 public abstract class ByteWriter implements IByteWriter
 {
@@ -80,10 +80,10 @@ public abstract class ByteWriter implements IByteWriter
    // Direct byte writing interface
    //
    
-   public void write (byte[] aBytes, int aOffset, int aLength) throws IOException
+   public void write (byte[] aBytes) throws IOException
    {
-      debug(aLength);
-      _out.write(aBytes, aOffset, aLength);
+      debug(aBytes.length);
+      _out.write(aBytes, 0, aBytes.length);
    }
    
    public void write (int aByte) throws IOException
@@ -108,7 +108,7 @@ public abstract class ByteWriter implements IByteWriter
       }
       String offset = "00000000" + Integer.toHexString(offset());
       offset = offset.substring(offset.length() - 4);
-      System.out.println(offset + ": multiple bytes");
+      System.out.println(offset + ": " + bytes + " bytes");
       System.out.flush();
    }
    

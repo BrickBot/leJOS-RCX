@@ -40,8 +40,7 @@ public interface IByteWriter
    // Direct byte writing interface
    //
    
-   public void write (byte[] aBytes, int aOffset, int aLength)
-   throws IOException;
+   public void write (byte[] aBytes) throws IOException;
 
    public void write (int aByte) throws IOException;
    
