@@ -1,8 +1,4 @@
-ifneq (,$(findstring $(OSTYPE),darwin))
-CC=cc
-else
-CC=gcc
-endif
+CC=$(shell ../../cctest.sh)
 
 JDK=$(shell dirname $(shell dirname $(shell which java)))
 
