@@ -38,20 +38,8 @@ Adding a Native Method
 
 Modify common/signatures.db, rcx_impl/native.c and unix_impl/nativeemul.c.
 
-The format of common/signatures.db is as follows:
-
-    methodName(argumentTypes)resultType
-
-where types are encoded as
-
-    Lp/q/Class;      p.q.Class
-    V                void
-    Z                boolean
-    B                byte
-    S                short
-    I                int
-    J                long
-
+The format of common/signatures.db is the method name followed
+by the method descriptor as defined in the Java VM Specification 4.3.3.
 From this js.tools.GenerateConstants derives vmsrc/specialsignatures.h,
 look into it to see the mangled name for use in rcx_impl/native.c
 and unix_impl/nativeemul.c.

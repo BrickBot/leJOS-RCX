@@ -48,7 +48,6 @@ exit(I)V
 # java.lang.Runtime
 freeMemory()J
 totalMemory()J
-getRuntime()Ljava/lang/Runtime;
 
 # java.lang.Throwable
 getMessage()Ljava/lang/String;

@@ -8,11 +8,6 @@ package josx.platform.rcx;
  */
 public class Battery
 {
-  /*
-   * LEGO firmware calculates raw * 43988 / 1560 to get mV
-   */
-  private static final float VOLT_PER_INTERNAL_UNIT = (float)(43.988/1560.0);
-
   /**
    * @return Battery voltage.
    */
@@ -27,10 +22,21 @@ public class Battery
   }
 
   /**
+   * @return Battery voltage in mV.
+   */
+  public static int getVoltageMilliVolt()
+  {
+    /*
+     * calculation from LEGO firmware
+     */
+    return Battery.getVoltageInternal() * 43988 / 1560;
+  }
+
+  /**
    * @return Battery voltage in Volt.
    */
   public static float getVoltage()
   {
-    return VOLT_PER_INTERNAL_UNIT * Battery.getVoltageInternal();
+    return (float)(Battery.getVoltageMilliVolt() * 0.001);
   }
 }

@@ -42,9 +42,9 @@ ENTRY(__start)
 MEMORY
 {
     rom (r)     : o = 0x0000, l = 0x8000
-    mem         : o = 0x8000, l = 0x6f00
-    romdata1    : o = 0xef00, l = 0x0100     /* exact boundaries unclear */
-    extra1      : o = 0xf010, l = 0x0b70
+    mem         : o = 0x8000, l = 0x6f32
+    romdata1    : o = 0xef32, l = 0x00cf
+    extra1      : o = 0xf001, l = 0x0b7f
     hwreserved1 : o = 0xfb80, l = 0x0200     /* reserved by hardware */
     romdata2    : o = 0xfd80, l = 0x0010     /* used in init_timer */
     intvectors  : o = 0xfd90, l = 0x0030     /* interrupt vectors */
@@ -79,7 +79,9 @@ SECTIONS
     } > mem
 
     .romdata1 : {
-        _angle_state = 0x32 ; /* 0xef32 */
+        __romdata1 = . ;
+        _angle_state = 0x00 ; /* 0xef32 */
+        _transmitting = 0x61 ; /* 0xef93 */
     } > romdata1
 
     .extra : {

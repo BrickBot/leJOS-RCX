@@ -30,7 +30,6 @@ public interface SpecialSignatureConstants {
     "exit(I)V",
     "freeMemory()J",
     "totalMemory()J",
-    "getRuntime()Ljava/lang/Runtime;",
     "getMessage()Ljava/lang/String;",
     "call(S)V",
     "call(SS)V",

@@ -13,7 +13,7 @@ LIBS = -lrcx -lfloat
 CC = $(BINDIR)/$(BINPREFIX)gcc
 AS = $(BINDIR)/$(BINPREFIX)as
 AR = $(BINDIR)/$(BINPREFIX)ar
-LD = $(BINDIR)/$(BINPREFIX)ld -Trcx.lds -u__start
+LD = $(BINDIR)/$(BINPREFIX)ld -u__start
 
 # other variables
 
@@ -58,8 +58,8 @@ all: ${PROGS}
 clean:
 	rm -f core ../bin/*.srec *.o *~
 
-${TINYVMBINARY}: $(OBJS)
-	$(LD) $(LFLAGS) -o ${TINYVMBINARY} $(OBJS) $(LIBS)
+${TINYVMBINARY}: $(OBJS) rcx.lds
+	$(LD) $(LFLAGS) -Trcx.lds -o ${TINYVMBINARY} $(OBJS) $(LIBS)
 
 
 

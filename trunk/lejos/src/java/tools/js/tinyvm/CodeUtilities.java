@@ -313,7 +313,8 @@ implements OpCodeConstants, OpCodeInfo, Constants
                                       (aCode[i+1] & 0xFF), false);
           pOutCode[i++] = (byte) (pWord3 >> 8);
           pOutCode[i++] = (byte) (pWord3 & 0xFF);
-          pOutCode[i++] = (byte) OP_NOP;
+          pOutCode[i++] = (byte) OP_NOP; // before: count
+          pOutCode[i++] = (byte) OP_NOP; // before: 0
           break;
         case OP_INVOKESPECIAL:
         case OP_INVOKESTATIC:

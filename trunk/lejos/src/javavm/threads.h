@@ -15,6 +15,10 @@
 #define CONDVAR_WAITING  5 // Someone called wait() on us in a synchronized block.
 #define SLEEPING         6 // ZZZZZzzzzzzzz
 
+#define INTERRUPT_CLEARED    0
+#define INTERRUPT_REQUESTED  1
+#define INTERRUPT_GRANTED    2
+
 // These values must match the statics in Thread.java
 #define MIN_PRIORITY  1
 #define NORM_PRIORITY 5
@@ -106,7 +110,7 @@ static inline int get_thread_priority(Thread *thread)
  */
 static inline void interrupt_thread(Thread *thread)
 {
-  thread->interrupted = 1;
+  thread->interruptState = INTERRUPT_REQUESTED;
 }
 
 extern void set_thread_priority(Thread *thread, const FOURBYTES priority);
