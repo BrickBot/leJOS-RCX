@@ -19,7 +19,7 @@ public class Assertion {
 	public static native void test(String s, boolean flag);
 	
 	/**
-	 * If the actual value != the expected value, throw an Error.
+	 * If the actual value is not equal to the expected value, throw an Error.
 	 * @param s A string that may be printed along with any other
 	 *          error text.
 	 * @param expected the expected value.
