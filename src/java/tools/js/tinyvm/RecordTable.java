@@ -46,6 +46,8 @@ implements Constants
       {
         if (aOut.size() != pPrevSize + pLength)
 	{
+	  if (pData instanceof RecordTable)
+	    System.err.println ("Aligned sequence: " + ((RecordTable) pData).iAlign);
           Utilities.fatal ("Bug RT-1: Written=" + (aOut.size() - pPrevSize) + 
                            " Length=" + pLength + " Class=" +
                            pData.getClass().getName());
@@ -68,7 +70,7 @@ implements Constants
     }
     Utilities.trace ("RT.getLength: " + iLength);
     if (iAlign)
-      return IOUtilities.adjustedSize (iLength, 2); 
+      iLength = IOUtilities.adjustedSize (iLength, 2); 
     return iLength;
   }
 

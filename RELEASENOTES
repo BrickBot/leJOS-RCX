@@ -9,12 +9,13 @@ leJOS 1.0.0beta1:
   - Brian Bagnall's latest changes to Math (log, exp, sqrt, and more!)
   - Changed memory allocation and deallocation routines, in preparation
     for upcoming implementation of garbage collection.
-  - Longest array length is now 511 (was 255).
+  - Max array length is now 511 (was 255).
   - Linker warns about truncated long and double constants.
   - Battery power shown as percentage in program-download mode.
   - This should now work: To kill a running program, hold Run while 
     you press On/Off.
-  - Miscellaneous bug fixes.
+  - Miscellaneous bug fixes (e.g. a js.tinyvm.Sequence bug reported
+    by K. E. Elby).
 
 leJOS 1.0.0alpha5:
 ------------------
