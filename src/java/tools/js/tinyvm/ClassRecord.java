@@ -4,8 +4,6 @@ import java.io.*;
 import java.util.*;
 import js.classfile.*;
 
-// TBD: Array classes
-
 public class ClassRecord implements WritableData, Constants
 {
   int iIndex = -1;
@@ -19,6 +17,7 @@ public class ClassRecord implements WritableData, Constants
   final EnumerableSet iMethodTable = new EnumerableSet();
   final RecordTable iInstanceFields = new Sequence();
   final Hashtable iStaticValues = new Hashtable();
+  final Hashtable iStaticFields = new Hashtable();
   final Hashtable iMethods = new Hashtable();
   int iParentClassIndex;
   int iArrayElementType;
@@ -222,12 +221,25 @@ public class ClassRecord implements WritableData, Constants
     return getApparentInstanceFieldOffset (aName) + 4;
   }
 
+  /**
+   * @return Offset relative to the start of the
+   *         static state block.
+   */
   public int getStaticFieldOffset (String aName)
   {
     StaticValue pValue = (StaticValue) iStaticValues.get (aName);
     if (pValue == null)
       return -1;
-    return pValue.getOffset();
+    return pValue.getOffset() - iBinary.iStaticState.getOffset();
+  }
+
+  public int getStaticFieldIndex (String aName)
+  {
+    StaticFieldRecord pRecord = (StaticFieldRecord) iStaticFields.get (aName);
+    if (pRecord == null)
+      return -1;
+    // TBD: This indexOf call is slow
+    return ((Sequence) iBinary.iStaticFields).indexOf (pRecord);
   }
 
   public void storeConstants (RecordTable aConstantTable, RecordTable aConstantValues)
@@ -278,6 +290,7 @@ public class ClassRecord implements WritableData, Constants
 
 
   public void storeFields (RecordTable aInstanceFieldTables,
+                           RecordTable aStaticFields,
                            RecordTable aStaticState)
   {
     Utilities.trace ("Processing methods in " + iName);
@@ -288,10 +301,13 @@ public class ClassRecord implements WritableData, Constants
       if (pField.isStatic())
       {
         StaticValue pValue = new StaticValue (pField);
+        StaticFieldRecord pRec = new StaticFieldRecord (pField, this);
         String pName = pField.getName().toString();
         Utilities.assert (!iStaticValues.containsKey (pName));
         iStaticValues.put (pName, pValue);
+        iStaticFields.put (pName, pRec);
         aStaticState.add (pValue);
+        aStaticFields.add (pRec);
       }
       else
       {

@@ -228,6 +228,28 @@ implements IConstants
     }
   }
 
+  public static int getTypeSize (int aType)
+  {
+    switch (aType)
+    {
+      case T_BYTE:
+      case T_BOOLEAN:
+        return 1;
+      case T_SHORT:
+      case T_CHAR:
+        return 2;
+      case T_INT:
+      case T_REFERENCE:
+      case T_FLOAT:
+        return 4;
+      case T_LONG:
+      case T_DOUBLE:
+        return 8;
+      default:
+        throw new Error ("Bug IFR-3: " + aType);
+    }
+  }
+
 
 }
   

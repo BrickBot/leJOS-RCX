@@ -19,6 +19,8 @@
 #define INTERPRETER2   12
 #define INTERPRETER3   13
 #define INTERPRETER4   14
+#define INTERPRETER5   15
+#define INTERPRETER6   16
 
 #define THREADS0       20
 #define THREADS1       21
@@ -38,14 +40,12 @@
 #define EXCEPTIONS0    40
 #define EXCEPTIONS1    41
 
-inline void assert (boolean aCond, int aCode)
-{
-  #ifdef EMULATE
-  printf ("Assertion violation: %d\n", aCode);
-  #else
-  // TBD
-  #endif
-}
+#define LANGUAGE0    50
+#define LANGUAGE1    51
+#define LANGUAGE2    50
+#define LANGUAGE3    51
+
+extern void assert (boolean aCond, int aCode);
 
 #endif // VERIFY
 

@@ -3,7 +3,7 @@
  */
 
 case OP_ATHROW:
-  throw_exception (word2obj(*stackTop--));
+  throw_exception_checked (word2obj(*stackTop--));
   if (gMustExit)
     return;
   goto LABEL_ENGINELOOP;

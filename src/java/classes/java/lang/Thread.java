@@ -22,7 +22,7 @@ public abstract class Thread
   // Static state follows:
 
   private static byte _TVM_threadIdCounter;
-  private static _TVM_outOfMemoryError = new OutOfMemoryError();
+  private static Error _TVM_outOfMemoryError = new OutOfMemoryError();
   
   public Thread()
   {
@@ -33,7 +33,7 @@ public abstract class Thread
   {
     this.name = name;
     if (_TVM_threadIdCounter >= 63)
-      _TVM_throwOutOfMemoryError;
+      _TVM_throwOutOfMemoryError();
     _TVM_threadId = ++_TVM_threadIdCounter;
   }
   

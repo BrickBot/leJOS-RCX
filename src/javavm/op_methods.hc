@@ -6,7 +6,7 @@ case OP_INVOKEVIRTUAL:
   // Stack: (see method)
   // Arguments: 2
   // Note: pc is updated by dispatch method
-  dispatch_virtual (mk_pobject (*(stackTop - (pc[0] >> 4))), 
+  dispatch_virtual (word2obj (*(stackTop - (pc[0] >> 4))), 
     (TWOBYTES) pc[1] | (TWOBYTES) (pc[0] & 0x0F), pc + 2);
   if (gMustExit)
     return;
@@ -16,7 +16,7 @@ case OP_INVOKESTATIC:
   // Stack: (see method)
   // Arguments: 2
   // Note: pc is updated by dispatch method
-  dispatch_special (pc[0], pc[1], pc + 2);
+  dispatch_special_checked (pc[0], pc[1], pc + 2, pc - 1);
   if (gMustExit)
     return;
   goto LABEL_ENGINELOOP;

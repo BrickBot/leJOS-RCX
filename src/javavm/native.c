@@ -1,13 +1,30 @@
 
 #include "types.h"
-#include "classes.h"
-#include "nativemethods.h"
+#include "trace.h"
+#include "constants.h"
+#include "specialsignatures.h"
+#include "specialclasses.h"
+#include "memory.h"
 #include "threads.h"
+#include "classes.h"
+#include "language.h"
+#include "configure.h"
+#include "interpreter.h"
+#include "exceptions.h"
 
-void native_method (Thread* thread, TWOBYTES id)
+void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 {
+  ClassRecord *classRecord;
+
   switch (id)
   {
-    // TBD
+    //    case _TVM_MAIN_METHOD_V:
+    //  classRecord = get_class_record (ENTRY_CLASS);
+    //  dispatch_special (classRecord, find_method (classRecord, MAIN_V),
+    //                    retAddr);
+    //  return;
+    case START_V:
+      init_thread ((Thread *) paramBase[0]);
+      return;
   }  
 } 
