@@ -2,7 +2,8 @@
 Jose's comments (02/28/00):
 ---------------------------
 
-- TinyVM is linked with Kekoa Proudfoot's rcx library.
+- TinyVM is linked with Kekoa Proudfoot's rcx library
+  from librcx.
 
 - TinyVM sources include "rom.h" from Kekoa Proudfoot's
   librcx.
@@ -30,7 +31,7 @@ Jose's comments (02/28/00):
   files.
 
 - I'd like to thank anyone else who has played
-  a part in understanding the workings of the RCX.
+  a part in figuring out RCX internals.
 
 - SPECIAL THANKS to my wife, Erika, for putting up 
   with me during the development of this project.
