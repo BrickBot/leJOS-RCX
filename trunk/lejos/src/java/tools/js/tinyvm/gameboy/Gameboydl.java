@@ -10,10 +10,12 @@ import js.common.ToolProgressListener;
 import js.common.ToolProgressListenerImpl;
 import js.tinyvm.Constants;
 import js.tinyvm.TinyVMException;
+import js.tools.FirmdlException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -63,21 +65,7 @@ public class Gameboydl implements Constants
    */
   public void start (String[] args) throws TinyVMException
   {
-    Options options = new Options();
-    options.addOption("v", "verbose", false,
-        "print class and signature information");
-    options.addOption("i", "input", true, "binary to download");
-
-    CommandLine commandLine;
-    try
-    {
-      commandLine = new GnuParser().parse(options, args);
-      checkParameters(commandLine, options);
-    }
-    catch (ParseException e)
-    {
-      throw new TinyVMException(e);
-    }
+    CommandLine commandLine = parse(args);
 
     // options
     _verbose = commandLine.hasOption("v");
@@ -100,25 +88,40 @@ public class Gameboydl implements Constants
   }
 
   /**
-   * Check parameters.
+   * Parse commandline.
    * 
-   * @param classpath
-   * @param classes
-   * @param all
-   * @return @throws TinyVMException
-   * @throws TinyVMException
+   * @param args command line
+   * @throws FirmdlException
    */
-  protected void checkParameters (CommandLine commandLine, Options options)
-      throws TinyVMException
+  protected CommandLine parse (String[] args) throws TinyVMException
   {
+    assert args != null : "Precondition: args != null";
+
+    Options options = new Options();
+    options.addOption("v", "verbose", false,
+        "print class and signature information");
+    Option inputOption = new Option("i", "input", true, "binary to download");
+    inputOption.setArgName("binary");
+    options.addOption(inputOption);
+
+    CommandLine result;
     try
     {
-      if (commandLine.getArgs().length == 0)
+      try
+      {
+        result = new GnuParser().parse(options, args);
+      }
+      catch (ParseException e)
+      {
+        throw new TinyVMException(e.getMessage());
+      }
+
+      if (result.getArgs().length == 0)
       {
         throw new TinyVMException("No class specified");
       }
 
-      if (commandLine.getArgs().length > 1)
+      if (result.getArgs().length > 1)
       {
         throw new TinyVMException("More than one class specified");
       }
@@ -129,13 +132,16 @@ public class Gameboydl implements Constants
       PrintWriter printWriter = new PrintWriter(writer);
       printWriter.println(e.getMessage());
 
-      String usage = getClass().getName() + " [options] class\n";
+      String usage = getClass().getName() + " [options] class";
       // TODO check format parameters
-      new HelpFormatter().printHelp(printWriter, 80, usage.toString(), null,
-          options, 0, 2, null);
+      new HelpFormatter().printHelp(printWriter, 80, usage, null, options, 0,
+          2, null);
 
       throw new TinyVMException(writer.toString());
     }
+
+    assert result != null : "Postconditon: result != null";
+    return result;
   }
 
   /**
