@@ -91,7 +91,7 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 			int count = read(((Port*) port)->fileHandle, &bufp[len], maxlen - len);
 			if (count < 0) 
 			{
-				perror("read");
+				__rcx_perror("read");
 				return RCX_READ_FAIL;
 			}
 			len += count;
@@ -103,7 +103,7 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 		}
 		else if (selected < 0) 
 		{
-			perror("select");
+			__rcx_perror("select");
 			return RCX_READ_FAIL;
 		}
 	}
@@ -113,7 +113,12 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 
 int __rcx_write(void* port, void* buf, int len) 
 {
-	return TEMP_FAILURE_RETRY (write(((Port*) port)->fileHandle, buf, len));
+	int written = TEMP_FAILURE_RETRY (write(((Port*) port)->fileHandle, buf, len));
+	if (written < 0)
+	{
+		__rcx_perror("write");
+		return RCX_WRITE_FAIL;
+	}
 }
 
 void __rcx_purge(void* port)
@@ -133,44 +138,37 @@ void __rcx_purge(void* port)
 		int count = read(((Port*) port)->fileHandle, bufp, BUFFERSIZE);
 		if (count < 0) 
 		{
-			perror("read");
+			__rcx_perror("read");
 		}
 	}
 	else if (selected < 0) 
 	{
-		perror("select");
+		__rcx_perror("select");
 	}
 }
 
 void __rcx_flush(void* port)
 {
-	fsync(((Port*) port)->fileHandle);
+	// no working blocking flush for linux...
 }
 
 void* __rcx_open(char *tty, bool fast)
 {
-	if (__comm_debug) printf("mode = %s\n", fast ? "fast" : "slow");
-	if (__comm_debug) printf("tty = %s\n", tty);
-
 	bool success = true;
 
 	Port* result = (Port*) malloc(sizeof(Port));
 	__rcx_open_setDevice(result, tty, fast);
 	
-   if (__comm_debug) printf("device = %s\n", result->deviceName);
-	if (__comm_debug) printf("port type = %s\n", result->usb? "usb" : "serial");
-
 	result->fileHandle = open(result->deviceName, O_RDWR);
 	if (result->fileHandle < 0) 
 	{ 
-		if (__comm_debug) printf("Error %lu: Opening %s\n", errno, result->deviceName);
+		__rcx_perror("open");
 		success = false;
 	}
 	else if (!result->usb)
 	{
       // Setup serial port
       success = __rcx_open_setSerialPortParameters(result);
-		if (__comm_debug && !success) printf("Error %lu: Setting serial port parameters for %s\n", errno, result->deviceName);
 	}
 
 	if (!success)
@@ -188,6 +186,9 @@ void* __rcx_open(char *tty, bool fast)
 
 void __rcx_open_setDevice (Port* port, char* symbolicName, bool fast)
 {
+	if (__comm_debug) printf("mode = %s\n", fast ? "fast" : "slow");
+	if (__comm_debug) printf("symbolic device = %s\n", tty);
+
 	strncpy(port->symbolicName, symbolicName, 32);
    port->symbolicName[31] = 0;
    
@@ -212,6 +213,9 @@ void __rcx_open_setDevice (Port* port, char* symbolicName, bool fast)
 		port->usb = false;	
       port->fast = fast; // 4x: no complements, doubled baud rate
 	}
+
+   if (__comm_debug) printf("device = %s\n", result->deviceName);
+	if (__comm_debug) printf("port type = %s\n", result->usb? "usb" : "serial");
 }
 
 bool __rcx_open_setSerialPortParameters (Port* port)
@@ -231,12 +235,22 @@ bool __rcx_open_setSerialPortParameters (Port* port)
 		cfsetispeed(&ios, B2400);
 		cfsetospeed(&ios, B2400);
 	}
-    
-	return tcsetattr(((Port*) port)->fileHandle, TCSANOW, &ios) != -1;
+   
+   int result = tcsetattr(((Port*) port)->fileHandle, TCSANOW, &ios);
+   if (result < 0)
+	{
+		__rcx_perror("tcsetattr");
+	}
+   
+	return result == -1;
 }
 
 void __rcx_close(void* port)
 {
-	close(((Port*) port)->fileHandle);
+	int result = close(((Port*) port)->fileHandle);
+	if (result < 0)
+	{
+		__rcx_perror("close");
+	}
 	free(port);
 }
