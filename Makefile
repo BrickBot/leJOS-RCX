@@ -104,19 +104,19 @@ check_release:
 	cd $(REGRESSION_SRC); ./run.sh
 
 all_jtools: java_tools generated_files java_loader
-	cd $(JTOOLS_SRC); jar cf $(LEJOS_HOME)/lib/jtools.jar `find . -name '*.class'`
+	cd $(JTOOLS_SRC); jar cf ../../../lib/jtools.jar `find . -name '*.class'`
 
 java_tools:
 	@echo ""
 	@echo "====> Making java tools"
 	@echo ""
-	${JAVAC} -classpath "$(LEJOS_HOME)/src/java/tools${PATH_SEP}$(LEJOS_HOME)/lib/pcrcxcomm.jar" $(JTOOLS_SRC)/js/tools/*.java
+	${JAVAC} -classpath "./src/java/tools${PATH_SEP}./lib/pcrcxcomm.jar" $(JTOOLS_SRC)/js/tools/*.java
 
 generated_files:
 	@echo ""
 	@echo "====> Generating constants"
 	@echo "" 
-	${JAVA} -classpath $(CLASSPATH) -Dtinyvm.home="$(LEJOS_HOME)/src" js.tools.GenerateConstants
+	${JAVA} -classpath $(CLASSPATH) -Dtinyvm.home="./src" js.tools.GenerateConstants
 
 java_loader:
 	@echo ""
@@ -152,7 +152,7 @@ core_classes:
 	@echo "====> Making core classes"
 	@echo ""
 	${JAVAC} -classpath  $(CORE_CLASSES_SRC) `find $(CORE_CLASSES_SRC) -name '*.java'`
-	cd $(CORE_CLASSES_SRC); jar cf $(LEJOS_HOME)/lib/classes.jar `find . -name '*.class'`
+	cd $(CORE_CLASSES_SRC); jar cf ../../../lib/classes.jar `find . -name '*.class'`
 
 rcx_comm:
 	@echo ""
