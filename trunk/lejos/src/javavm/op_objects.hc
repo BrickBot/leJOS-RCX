@@ -6,15 +6,15 @@ case OP_NEW:
   // Stack: +1
   // Arguments: 2
   // Hi byte unused
-  gBytePtr = (byte *) new_object_checked (pc[1], pc - 1);
-  if (gBytePtr != JNULL)
+  tempBytePtr = (byte *) new_object_checked (pc[1], pc - 1);
+  if (tempBytePtr != JNULL)
   { 
     #if 0
     trace (-1, (short) pc[1], 1);
-    trace (-1, (short) gBytePtr, 2);
-    trace (-1, get_class_index((Object *) gBytePtr), 3);
+    trace (-1, (short) tempBytePtr, 2);
+    trace (-1, get_class_index((Object *) tempBytePtr), 3);
     #endif
-    push_ref (ptr2ref(gBytePtr));
+    push_ref (ptr2ref(tempBytePtr));
     pc += 2;
   }
   goto LABEL_ENGINELOOP;

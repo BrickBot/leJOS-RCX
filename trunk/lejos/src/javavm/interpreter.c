@@ -10,6 +10,7 @@
 #include "memory.h"
 #include "language.h"
 #include "exceptions.h"
+#include "specialclasses.h"
 #include "stack.h"
 
 #define F_OFFSET_MASK  0x0F
@@ -24,6 +25,8 @@ boolean gMustExit;
 byte *pc;
 STACKWORD *localsBase;
 STACKWORD *stackTop;
+boolean *isReference;
+boolean *isReferenceBase;
 
 // Temporary globals:
 
@@ -93,12 +96,13 @@ static inline Object *create_string (ConstantRecord *constantRecord,
   arr = new_primitive_array (T_CHAR, constantRecord->constantSize);
   if (arr == JNULL)
   {
-    deallocate (ref, class_size (JAVA_LANG_STRING));    
+    deallocate (obj2ptr(ref), class_size (JAVA_LANG_STRING));    
     return JNULL;
   }
-  ((String *) ref)->characters = obj2ref(arr);
+  ((String *) ref)->characters = ptr2word(arr);
   for (i = 0; i < constantRecord->constantSize; i++)
-    jchararray(arr)[i] = (JCHAR) get_constant_ptr(constantRecord)[i];
+    jchar_array(arr)[i] = (JCHAR) get_constant_ptr(constantRecord)[i];
+  return ref;
 }
 
 /**

@@ -6,7 +6,7 @@ typedef unsigned char byte;
 typedef byte boolean;
 typedef unsigned short TWOBYTES;
 typedef unsigned long FOURBYTES;
-typedef FOURBYTES REFERENCE; // 4 bytes
+typedef FOURBYTES REFERENCE;
 typedef FOURBYTES STACKWORD;
 
 typedef char JBYTE;
@@ -34,18 +34,22 @@ typedef struct
 #define word2jint(WORD_)    ((JINT) (WORD_))
 #define word2obj(WORD_)     ((Object *) word2ptr(WORD_))
 #define obj2word(OBJ_)      ptr2word(OBJ_)
+#define obj2ref(OBJ_)       ptr2ref(OBJ_)
+#define obj2ptr(OBJ_)       ((void *) (OBJ_))
 
 #ifdef EMULATE
 
 #define ptr2word(PTR_)  ((STACKWORD) (PTR_))
+#define ptr2ref(PTR_)   ((REFERENCE) (PTR_))
 #define word2ptr(WRD_)  ((void *) (WRD_))
 
 #else
 
 #define ptr2word(PTR_)  ((STACKWORD) (TWOBYTES) (PTR_))
+#define ptr2ref(PTR_)   ((REFERENCE) (TWOBYTES) (PTR_))
 #define word2ptr(WRD_)  ((void *) (TWOBYTES) (WRD_))
 
-#endif
+#endif EMULATE
 
 static inline JINT jlong_compare (JLONG a1, JLONG a2)
 {

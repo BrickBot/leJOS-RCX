@@ -30,7 +30,7 @@ case OP_LDC:
       tempWordPtr = (void *) create_string (tempConstRec, pc - 2);
       if (tempWordPtr == JNULL)
         goto LABEL_ENGINELOOP;
-      push_ref (ptr2ref (tempWordPtr));
+      push_ref (ptr2word (tempWordPtr));
       break;
     case T_INT:
     case T_FLOAT:
@@ -53,10 +53,10 @@ case OP_LDC2_W:
   assert (tempConstRec->constantSize == 8, INTERPRETER6);
   #endif VERIFY
 
-  gBytePtr = get_constant_ptr (gConstRec);
-  make_word (gBytePtr, 4, &tempStackWord);
+  tempBytePtr = get_constant_ptr (tempConstRec);
+  make_word (tempBytePtr, 4, &tempStackWord);
   push_word (tempStackWord);
-  make_word (gBytePtr + 4, 4, &tempStackWord);
+  make_word (tempBytePtr + 4, 4, &tempStackWord);
   push_word (tempStackWord);
   pc += 2;
   goto LABEL_ENGINELOOP;

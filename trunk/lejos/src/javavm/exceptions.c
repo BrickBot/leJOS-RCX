@@ -11,6 +11,7 @@
 #include "configure.h"
 #include "interpreter.h"
 #include "memory.h"
+#include "stack.h"
 
 Object *outOfMemoryError;
 Object *noSuchMethodError;

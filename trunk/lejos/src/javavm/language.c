@@ -34,6 +34,7 @@ void *installedBinary;
 // (Gotta be careful with these; a lot of stuff
 // is not reentrant because of globals like these).
 
+static ClassRecord *tempClassRecord;
 static MethodRecord *tempMethodRecord;
 
 // Methods:
@@ -53,10 +54,10 @@ byte get_class_index (Object *obj)
  */
 MethodRecord *find_method (ClassRecord *classRecord, TWOBYTES methodSignature)
 {
-  gByte = classRecord->numMethods;
-  while (gByte--)
+  tempByte = classRecord->numMethods;
+  while (tempByte--)
   {
-    tempMethodRecord = get_method_record (classRecord, gByte);
+    tempMethodRecord = get_method_record (classRecord, tempByte);
     if (tempMethodRecord->signatureId == methodSignature)
       return tempMethodRecord;
   }
@@ -223,7 +224,7 @@ void do_return (byte numWords)
 {
   StackFrame *stackFrame;
   STACKWORD *fromStackPtr;
-  STACKWORD *fromIsRefPtr;
+  boolean *fromIsRefPtr;
 
   stackFrame = current_stackframe();
 
