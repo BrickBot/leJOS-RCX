@@ -6,7 +6,7 @@ package josx.rcxcomm;
  */
 public class LNPIntegrityHandler extends PacketHandler {
   private byte [] inPacket = new byte[259];
-  private byte [] outPacket = new byte[259];
+  private byte [] outPacket = new byte[260];
   private int inPacketLength = 0;
   private byte op;
   private boolean isAddressing;
@@ -44,14 +44,15 @@ public class LNPIntegrityHandler extends PacketHandler {
    */
   public boolean sendPacket(byte [] packet, int len) {
     int sum = op + len - 1;
-    outPacket[0] = op;
-    outPacket[1] = (byte) len;
+    outPacket[0] = (byte)0xff;	// padding, may be lost in reception
+    outPacket[1] = op;
+    outPacket[2] = (byte) len;
     for(int i=0; i<len; i++) {
       sum += packet[i];
-      outPacket[i+2] = packet[i];
+      outPacket[i+3] = packet[i];
     }
-    outPacket[len+2] = (byte) sum;
-    return lowerHandler.sendPacket(outPacket, len+3);
+    outPacket[len+3] = (byte) sum;
+    return lowerHandler.sendPacket(outPacket, len+4);
   }
 
   /** Receive a packet.
