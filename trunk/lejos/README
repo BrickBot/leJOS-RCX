@@ -5,7 +5,9 @@ Summary
 
 -- You need a Java Development Kit (JDK) 1.4 or above.
 -- Your PATH must contain the JDK's bin directory.
+-- Make sure you have set JAVA_HOME properly to the root directory of the JDK.
 -- You need ANT 1.6 or above.
+-- Your PATH must contain the ant binary.
 -- In Unix, type 'make' to finish installation of leJOS.
 -- Add leJOS's bin directory to your PATH.
 -- Set RCXTTY to your 'tower' device (e.g. COM1 or USB or /dev/ttyS0).
