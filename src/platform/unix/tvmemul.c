@@ -90,7 +90,11 @@ void run(void)
 int main (int argc, char *argv[])
 {
   if (argc != 2)
-    abort_tool ("Use: %s <path>\n", argv[0]);
+  {
+    printf ("%s runs a binary dumped by the linker.\n", argv[0]);
+    printf ("Use: %s <path>\n", argv[0]);
+    exit (1);
+  }
   #if DEBUG_STARTUP
   printf ("Reading binary %s\n", argv[1]);
   #endif
