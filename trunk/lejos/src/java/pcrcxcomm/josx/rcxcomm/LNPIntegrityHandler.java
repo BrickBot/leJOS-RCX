@@ -10,7 +10,7 @@ public class LNPIntegrityHandler extends PacketHandler {
   private int inPacketLength = 0;
   private byte op;
   private boolean isAddressing;
-  private boolean debug = true;
+  private boolean debug = false;
 
   /**
    * Create a packet handler for broadcast or addressing integrity packets
