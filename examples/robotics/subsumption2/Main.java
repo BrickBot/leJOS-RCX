@@ -20,9 +20,9 @@ public class Main implements ButtonListener {
 
 	  	Sense s1 = new SenseNoOwner(new Wander());
 		s1.setPri(Thread.MIN_PRIORITY);
-		Sense s2 = new SenseLeft(new AvoidLeft());
+		Sense s2 = new SenseBumper(Sensor.S3, new AvoidLeft());
 		s2.setPri(Thread.MIN_PRIORITY+1);
-		Sense s3 = new SenseRight(new AvoidRight());
+		Sense s3 = new SenseBumper(Sensor.S1, new AvoidRight());
 		s3.setPri(Thread.MIN_PRIORITY+1);
 	
 		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
@@ -69,8 +69,6 @@ interface Action {
  * A runnable instance of an FSM,
  */
 abstract class Actuator extends Thread {
-	public static final Motor LEFT_MOTOR = Motor.C;
-	public static final Motor RIGHT_MOTOR = Motor.A;
 	public static final boolean FORWARD = true;
 	public static final boolean BACKWARD = false;
 	public static final int END = -1;
@@ -163,9 +161,6 @@ abstract class Actuator extends Thread {
  * an actuator in this implementation.
  */
 abstract class Sense extends Thread implements SensorListener, SensorConstants {
-	public static final Sensor LEFT_BUMBER = Sensor.S3;
-	public static final Sensor RIGHT_BUMBER = Sensor.S1;
-
 	Actuator actuator;
 	
 	Sense(Actuator actuator) {
@@ -198,27 +193,30 @@ abstract class Sense extends Thread implements SensorListener, SensorConstants {
 /**
  * Defines a thread to detect an obstacle on the left.
  */
-class SenseLeft extends Sense {
-	SenseLeft(Actuator actuator) {
+class SenseBumper extends Sense {
+	Sensor bumper;
+
+	SenseBumper(Sensor bumper, Actuator actuator) {
 		super(actuator);
-		
-		LEFT_BUMBER.setTypeAndMode (SENSOR_TYPE_TOUCH, SENSOR_MODE_BOOL);
-		LEFT_BUMBER.activate();
+
+		this.bumper = bumper;
+		bumper.setTypeAndMode (SENSOR_TYPE_TOUCH, SENSOR_MODE_BOOL);
+		bumper.activate();
 		
 		// Add a listener for the bumper
-		LEFT_BUMBER.addSensorListener(this);
+		bumper.addSensorListener(this);
 	}
 	
 	public void run() {
 		// Never exit the thread
 		do {
 			// Grab the monitor of the bumper
-			synchronized (LEFT_BUMBER) {
+			synchronized (bumper) {
 			
 				// While bumper isn't pressed wait.
-				while (!LEFT_BUMBER.readBooleanValue()) {
+				while (!bumper.readBooleanValue()) {
 					try {
-						LEFT_BUMBER.wait();
+						bumper.wait();
 					} catch (InterruptedException ie) {
 					}
 					Sound.playTone(440, 10);
@@ -240,15 +238,15 @@ class AvoidLeft extends Actuator {
 		actions = new Action[2];
 		actions[0] = new Action() {
 			public int act() {
-				LEFT_MOTOR.setPower(7); LEFT_MOTOR.backward();
-				RIGHT_MOTOR.setPower(7); RIGHT_MOTOR.backward();
+				Motor.C.setPower(7); Motor.C.backward();
+				Motor.A.setPower(7); Motor.A.backward();
 				return (200);
 			}
 		};
 		
 		actions[1] = new Action() {
 			public int act() {
-				LEFT_MOTOR.forward();
+				Motor.C.forward();
 				return (200);
 			}
 		};
@@ -260,43 +258,6 @@ class AvoidLeft extends Actuator {
 }
 
 /**
- * Defines a thread to detect an obstacle on the left.
- */
-class SenseRight extends Sense {
-	SenseRight(Actuator actuator) {
-		super(actuator);
-		
-		RIGHT_BUMBER.setTypeAndMode (SENSOR_TYPE_TOUCH, SENSOR_MODE_BOOL);
-		RIGHT_BUMBER.activate();
-		
-		// Add a listener for the bumper
-		RIGHT_BUMBER.addSensorListener(this);
-	}
-	
-	public void run() {
-		// Never exit the thread
-		do {
-			// Grab the monitor of the bumper
-			synchronized (RIGHT_BUMBER) {
-			
-				// While bumper isn't pressed wait.
-				while (!RIGHT_BUMBER.readBooleanValue()) {
-					try {
-						RIGHT_BUMBER.wait();
-					} catch (InterruptedException ie) {
-					}
-					Sound.playTone(1000, 10);
-				}
-			}
-			Sound.playTone(1400, 10);
-			
-			// Execute our FSM
-			actuator.execute();
-		} while (true);
-	}
-}
-
-/**
  * Defines a finite state machine to avoid an obstacle on the right.
  */		
 class AvoidRight extends Actuator {
@@ -304,15 +265,15 @@ class AvoidRight extends Actuator {
 		actions = new Action[2];
 		actions[0] = new Action() {
 			public int act() {
-				LEFT_MOTOR.setPower(7); LEFT_MOTOR.backward();
-				RIGHT_MOTOR.setPower(7); RIGHT_MOTOR.backward();
+				Motor.C.setPower(7); Motor.C.backward();
+				Motor.A.setPower(7); Motor.A.backward();
 				return (200);
 			}
 		};
 		
 		actions[1] = new Action() {
 			public int act() {
-				RIGHT_MOTOR.forward();
+				Motor.A.forward();
 				return (200);
 			}
 		};
@@ -355,22 +316,22 @@ class Wander extends Actuator {
 		actions = new Action[3];
 		actions[0] = new Action() {
 			public int act() {
-				LEFT_MOTOR.setPower(7); LEFT_MOTOR.forward();
-				RIGHT_MOTOR.setPower(7); RIGHT_MOTOR.forward();
+				Motor.C.setPower(7); Motor.C.forward();
+				Motor.A.setPower(7); Motor.A.forward();
 				return (5000);
 			}
 		};
 		
 		actions[1] = new Action() {
 			public int act() {
-				LEFT_MOTOR.setPower(3);
+				Motor.C.setPower(3);
 				return (2000);
 			}
 		};
 		
 		actions[2] = new Action() {
 			public int act() {
-				LEFT_MOTOR.setPower(7); LEFT_MOTOR.backward();
+				Motor.C.setPower(7); Motor.C.backward();
 				return (700);
 			}
 		};
