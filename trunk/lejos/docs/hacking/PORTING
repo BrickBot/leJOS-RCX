@@ -1,0 +1,28 @@
+Making leJOS work on other platforms
+------------------------------------
+
+This should not be too hard, as leJOS already runs in the
+RCX and on top of a Unix system, two very different platforms.
+Of course, leJOS is intended for use in devices with fairly
+limited memories (32 Kb - 1 Mb).
+
+Do post a message in the tinyvm-develop mailing list if you're
+interested in porting leJOS to other platforms, just so you
+can prevent yourself or others from unnecessarily duplicating
+existing efforts.
+
+Create a new directory, e.g. my_device_impl. Use
+rcx_impl and unix_impl as examples. Every platform needs
+to provide a platform_config.h file and implementations for
+all methods defined in vmsrc/platform_hooks.h. You will
+need a C cross-compiler for your platform. Only gcc has been
+tested.
+
+An important component of the porting effort is getting
+a linked binary into the device. In the RCX, the firmware
+must contain some logic (rcx_impl/main.c) that allows
+a download tool (tools/tvm.c) to send the binary over an
+IR link. In Unix, the linked binary is simply a file that 
+is loaded into memory.
+
+

@@ -1,0 +1,47 @@
+Where is rom.h?
+---------------
+
+If you want to build the rcx_impl directory, you need to
+install Kekoa Proudfoot's librcx, as explained in the
+H8300_X_COMPILER file. 
+
+Building
+--------
+
+make         : What users run to install. Creates jar files and tools.
+make all     : make + rcx_impl directory, which creates bin/lejos.srec.
+make release : make all + releases according to VERSION file in /usr/tmp.
+make clean   : remove class files, object files, etc.
+
+Organization
+------------
+
+bin      : User tools.
+lib      : Jar files (user API and linker utilities).
+vmsrc    : Platform independent kernel (C) source.
+rcx_impl : RCX specific native code.
+unix_impl: Unix specific native code for emulation.
+jtools   : Java source code for linker.
+classes  : Java source code for user API.
+
+Adding a Native Method
+----------------------
+
+Modify common/signatures.db, rcx_impl/native.c and unix_impl/nativeemul.c.
+Also, before the next release, make sure the magic number is changed
+in vmsrc/magic.h and jtools/js/tinyvm/Constants.java. This kind of
+thing must be announced in the tinyvm-develop mailing list.
+
+Naming conventions
+------------------
+
+In Java code, please stick to what the Java Language Spec says:
+
+- Class names are capitalized.
+- Field and method names start with a lower case letter,
+  and they have no underscores.
+- Constant names are all uppercase, and they typically
+  have underscores.
+- Package names are all lowercase.
+
+

@@ -1,0 +1,62 @@
+
+This document contains information for those interested
+in modifying the C source code of the VM, in particular
+for cross-compilation to the H8300 microcontroller.
+
+Cross-compiler for Unix
+-----------------------
+
+You should download binutils-2.9.1 and gcc-2.8.1 from
+www.gnu.org, and install them, in that order, using:
+
+	./configure --target=h8300-hitachi-hms --prefix=/usr/local
+	make
+	su
+	make install
+	
+Create Makefile.config containing:
+
+  BINDIR=/usr/local/bin
+  BINPREFIX=h8300-hitachi-hms-
+	
+Cross-compiler for CygWin
+-------------------------
+
+(Stolen from legOS pages at SourceForge)
+
+Download the cross-compiler from
+http://legos.sourceforge.net/files/windows/cygwin/win-h8-egcs-1.1.2.zip
+and unzip it in c:\cygnus\cygwin-b20\H-i586-cygwin32. Create a soft-link
+from /bin to /cygnus/cygwin-b20/H-i586-cygwin32/bin.
+
+Create Makefile.config containing:
+
+  BINDIR=/cygnus/cygwin-b20/H-i586-cygwin32/bin
+  BINPREFIX=h8300-hms-
+
+Setting up the environment under CygWin can be problematic.
+For reference, here's what my cygnus.bat file contains:
+
+  @ECHO OFF
+  SET MAKE_MODE=UNIX
+  SET PATH=%PATH%;c:\cygnus\cygwin~1\h-i586~1\bin
+  SET HOME=/home/jose
+  bash
+
+And this is what my $HOME/.bashrc file looks like:
+
+  echo Running .bashrc
+
+  export LEJOS_ROOT=//d/projects/lejos
+  export LIBRCX_HOME=//d/projects/librcx
+  export RCXTTY=COM2
+  
+  OLD_PATH=$PATH
+  export PATH=/cygnus/cygwin-b20/H-i586-cygwin32/h8300-hms/bin/:/cygnus/cygwin-b20/H-i586-cygwin32/bin
+  export PATH=$PATH:/cygnus/cygwin-b20/H-i586-cygwin32/lib/gcc-lib/h8300-hms/egcs-2.91.66/
+  export PATH=$PATH://d/jdk1.2.2/bin
+  export PATH=$PATH:$LEJOS_ROOT/bin
+  export PATH=$PATH:$OLD_PATH
+  
+
+

@@ -146,10 +146,11 @@ implements Constants
   {
     if (aArgs.size() != 1)
     {
+      System.out.println (TOOL_NAME + " links and downloads a program.");
       System.out.println ("Use: " + TOOL_NAME + " [options] className");
       System.out.println ("Options:");
-      System.out.println ("  -o <path>         Dump binary into path");
-      System.out.println ("  -verbose[=<n>]    Print additional messages");
+      System.out.println ("  -o <path>         Dump binary into path (no download)");
+      System.out.println ("  -verbose[=<n>]    Print class and signature information");
       System.exit (1);
     }
     processOptions (aOptions);
