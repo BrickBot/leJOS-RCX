@@ -217,11 +217,14 @@ main(int argc, char **argv)
         }
     }
 
+#if defined (_WIN32) || defined(__CYGWIN32__)
+    /* stricmp not available on Linux */
     if ( stricmp( tty , "usb" ) == 0 ) {
 	usb_flag = 1;
 	if ( __comm_debug ) fprintf(stderr, "USB IR Tower mode.\n");
 	tty="\\\\.\\legotower1";
     }
+#endif
 
     /* Wake up the tower */
     fd = rcx_init(tty, 0);
