@@ -42,7 +42,7 @@ The above are also provided by TinyVM. But in addition
 to these, leJOS also offers:
 
 - A Windows version, which doesn't require CygWin.
-- Floating point operations (doubles work like floats).
+- Floating point operations (doubles truncated to 32 bits).
 - String constants.
 - Casting of longs to ints and vice versa.
 - Marks references in the stack (which makes it feasible
@@ -176,7 +176,7 @@ Emulation
 You should be able to run linked programs in the 
 host computer. All you need to do is use emu-lejos 
 instead of lejos, and emu-lejosrun to run a linked
-program, e.g.
+binary, e.g.
 
   emu-lejos -o MyProgram.bin MyProgram
   emu-lejosrun MyProgram.bin
@@ -256,8 +256,4 @@ Questions/Problems
 Please direct feedback to Jose Solorzano at jhsolorz@yahoo.com. 
 You can also subscribe to the tinyvm-discussion mailing list. Look 
 for the "Mailing Lists" section at http://sourceforge.net/projects/tinyvm.
-
-
-
-
 

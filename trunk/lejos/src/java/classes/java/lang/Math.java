@@ -17,7 +17,7 @@ public final class Math {
 	// Math constants
 	public static final double E = 2.718281828459045;
 	public static final double PI = 3.141592653589793;
-	public static final double NaN = 0.0f / 0.0f;
+	static final double NaN = 0.0f / 0.0f;
 
 	// These constants are used for method trig()
 	private static final byte SIN = 0;
@@ -26,7 +26,7 @@ public final class Math {
 
 	// Accuracy constant: is used to specify how many digits of
 	// accuracy is desired for some methods.
-	private static final float ACCURACY = 0.00000000001f;
+	private static final float ACCURACY = 0.0000001f;
 
 	// Used to generate random numbers.
 	private static java.util.Random RAND = new java.util.Random(System.currentTimeMillis());
@@ -147,12 +147,36 @@ public final class Math {
 	}
 
 	/**
-	* Power function.
+	* Power function.  This is a slow but accurate method.
 	* Thanks to David Edwards of England for conceiving the code.
 	*/
 	public static double pow(double a, double b) {
 		return exp(b * log(a));
 	}
+
+	/**
+	* Power function.  This one is faster, but can only do powers of integer.
+	*/
+	public static double pow(double a, int b) {
+		float c = 1.0f;
+		
+		if(b==0)
+			return 1.0;
+		
+		if(b > 0) {
+			for(int i=0;i<b;i++) {
+				c = c * (float) a;
+			}
+		}
+		else if(b < 0) {
+			for(int i=0;i>b;i--) {
+				c = c / (float) a;
+			}	
+		}	
+		
+		return c;
+	}
+
 	
 	/**
 	* Returns the absolute value of a double value. If the argument is not negative, the argument is
