@@ -4,7 +4,8 @@ import java.io.*;
 import josx.rcxcomm.*;
 
 /**
- * RCX Downloading utilitiies
+ * RCX Downloading utilities
+ * @author Lawrie Griffiths
  */
 public class Download {
 
@@ -15,9 +16,10 @@ public class Download {
   /**
    * Open the tower
    **/
-  public static void open(String port) {
+  public static void open(String port, boolean fastMode) {
     tower = new Tower();
     int r;
+    tower.setFast((fastMode ? 1 : 0));
     if ((r=tower.open(port)) < 0) {
       System.err.println("Open failed: " + tower.strerror(-r) +
                  ", errno = " + tower.getError());
@@ -151,7 +153,7 @@ public class Download {
   /**
    * Download the firmware 
    */
-  public static void downloadFirmware(byte [] image, int len, int start)
+  public static void downloadFirmware(byte [] image, int len, int start, boolean verbose)
   {
     short cksum = 0;
     byte [] send = new byte[6];
@@ -160,8 +162,8 @@ public class Download {
     byte opcode = 0x45;
     int numToWrite, status;
 
-    System.err.println("Downloading firmware");
-    System.err.println("Total image size = " + len + "(" + (len+1023)/1024 + "k)");
+    if (verbose) System.err.println("Downloading firmware");
+    if (verbose) System.err.println("Total image size = " + len + "(" + (len+1023)/1024 + "k)");
     // System.err.println("start = " + start);
 
     /* Compute image checksum */
@@ -201,7 +203,7 @@ public class Download {
     numToWrite = TOWRITEMAX;
     for(index = 1; numToWrite == TOWRITEMAX; index++) {
       numToWrite = (addr + TOWRITEMAX > len ? len - addr : TOWRITEMAX);
-      System.err.print("\r  " + (int) (((float) addr/(float) len)*100f) + "%\r");
+      if (verbose) System.err.print("\r  " + (int) (((float) addr/(float) len)*100f) + "%\r");
       String s = "Transfer = ";
       if ((status = transfer_data (opcode, numToWrite < TOWRITEMAX ? index : index, 
                                    image, addr, numToWrite)) < 0)
@@ -214,19 +216,20 @@ public class Download {
       opcode ^= 0x08;
       addr += numToWrite;
     }
-    System.err.println("Firmware downloaded");
+    if (verbose) System.err.println("Firmware downloaded");
   }
 
   /**
    * Delete the firmware
    **/
-  public static void deleteFirmware()
+  public static void deleteFirmware(boolean verbose)
   {
     byte [] send = new byte[6];
     byte [] recv = new byte[1];
     int r=0;
 
-    System.err.println("Deleting firmware");
+    if (verbose) System.err.println("Deleting firmware");
+
     /* Delete firmware */
     send[0] = 0x65;
     send[1] = 1;
@@ -246,19 +249,19 @@ public class Download {
       System.err.println("Delete firmware failed, response = " + r);
       System.exit(1);
     }
-    System.err.println("Firmware deleted");
+    if (verbose) System.err.println("Firmware deleted");
   }
 
   /**
    * Unlock the firmware
    **/
-  public static void unlockFirmware()
+  public static void unlockFirmware(boolean verbose)
   {
     byte [] send = new byte[6];
     byte [] recv = new byte[26];
     int r = 0;
 
-    System.err.println("Unlocking firmware");
+    if (verbose) System.err.println("Unlocking firmware");
 
     /* Unlock firmware */
     send[0] = (byte) 0xa5;
@@ -282,18 +285,18 @@ public class Download {
       System.exit(1);
     }
 
-    System.err.println("Firmware unlocked");
+    if (verbose) System.err.println("Firmware unlocked");
   }
 
   /**
    * Install the firmware
    **/
   public static void installFirmware(byte [] image, int length,
-	               int entry)
+	               int entry, boolean verbose)
   {
-    deleteFirmware();
-    downloadFirmware(image, length, entry);
-    unlockFirmware();
+    deleteFirmware(verbose);
+    downloadFirmware(image, length, entry, verbose);
+    unlockFirmware(verbose);
   }
 }
 
