@@ -1,4 +1,4 @@
-import tinyvm.rcx.*;
+import josx.platform.rcx.*;
 
 class Sender
 {
