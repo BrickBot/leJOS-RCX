@@ -3,7 +3,6 @@ package js.tinyvm;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.Constant;
 import org.apache.bcel.classfile.ConstantCP;
 import org.apache.bcel.classfile.ConstantClass;
@@ -207,7 +206,8 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
                + ":" + pName + " from class " + iCF.getClassName());
          }
          assert pOffset <= TinyVMConstants.MAX_FIELD_OFFSET: "Check: field offset in range";
-         int pFieldType = TinyVMConstants.tinyVMType(Utility.typeOfSignature(cnat.getSignature(iCF.getConstantPool())));
+         int pFieldType = TinyVMConstants.tinyVMType(Utility
+            .typeOfSignature(cnat.getSignature(iCF.getConstantPool())));
          assert pFieldType >= 0 && pFieldType <= 0xF: "Check: valid field type";
 
          return (pFieldType << TinyVMConstants.F_SIZE_SHIFT) | pOffset;
@@ -308,7 +308,7 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
             case OP_ANEWARRAY:
                // Opcode is changed: ANEWARRAY -> NEWARRAY
                pOutCode[i - 1] = (byte) OP_NEWARRAY;
-               pOutCode[i++] = (byte) TinyVMConstants.tinyVMType(Constants.T_ARRAY);
+               pOutCode[i++] = (byte) TinyVMConstants.T_ARRAY;
                pOutCode[i++] = (byte) OP_NOP;
                break;
             case OP_MULTIANEWARRAY:

@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import js.tinyvm.io.IByteWriter;
 
-import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.Field;
 
 public class InstanceFieldRecord implements WritableData
@@ -43,28 +42,26 @@ public class InstanceFieldRecord implements WritableData
    /**
     * Get type size in bytes.
     * 
-    * @param type type to get size for
+    * @param type tiny vm type to get size for
     */
    public static int getTypeSize (byte type) throws TinyVMException
    {
       switch (type)
       {
-         case Constants.T_VOID:
-            return 0; // TODO correct?
-         case Constants.T_BYTE:
-         case Constants.T_BOOLEAN:
+         case TinyVMConstants.T_BYTE:
+         case TinyVMConstants.T_BOOLEAN:
             return 1;
-         case Constants.T_SHORT:
-         case Constants.T_CHAR:
+         case TinyVMConstants.T_SHORT:
+         case TinyVMConstants.T_CHAR:
             return 2;
+         // case TinyVMConstants.T_ARRAY:
+         // case TinyVMConstants.T_OBJECT:
          case TinyVMConstants.T_REFERENCE:
-         case Constants.T_INT:
-         case Constants.T_ARRAY:
-         case Constants.T_OBJECT:
-         case Constants.T_FLOAT:
+         case TinyVMConstants.T_INT:
+         case TinyVMConstants.T_FLOAT:
             return 4;
-         case Constants.T_LONG:
-         case Constants.T_DOUBLE:
+         case TinyVMConstants.T_LONG:
+         case TinyVMConstants.T_DOUBLE:
             return 8;
          default:
          {

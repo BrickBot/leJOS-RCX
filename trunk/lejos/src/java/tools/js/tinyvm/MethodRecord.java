@@ -139,7 +139,9 @@ public class MethodRecord implements WritableData
    }
 
    /**
-    * @return Number of parameter words, including <code>this</code>.
+    * Number of parameter words, including <code>this</code>.
+    * 
+    * @param aMethod bcel method object
     */
    public static int getNumParamWords (Method aMethod)
    {
