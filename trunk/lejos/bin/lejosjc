@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # lejosjc: Java tool for compiling java programs for LeJOS
