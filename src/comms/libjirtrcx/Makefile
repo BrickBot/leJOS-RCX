@@ -14,6 +14,11 @@ else
 IRTOWER=../../bin/libirtower.so
 CCOPT=-o ${IRTOWER} -shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) 
 endif
+# This is for OS X
+ifneq (,$(findstring darwin,$(OSTYPE)))
+CCOPT= -o ${IRTOWER} -bundle -fPIC -I/System/Library/Frameworks/JavaVM.framework/Headers
+IRTOWER=../../bin/libirtower.jnilib
+endif
 
 .EXPORT_ALL_VARIABLES :
 
