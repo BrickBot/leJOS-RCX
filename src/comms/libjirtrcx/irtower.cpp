@@ -260,7 +260,7 @@ JNIEXPORT jboolean JNICALL
 Java_josx_rcxcomm_Tower_isRCXAlive(JNIEnv *env, jobject obj)
 {
 #ifdef TRACE
-    printf("Entering isAlive\n");
+    printf("Entering isRCXAlive\n");
 #endif
   
     // Check if RCX is alive
@@ -268,7 +268,7 @@ Java_josx_rcxcomm_Tower_isRCXAlive(JNIEnv *env, jobject obj)
     bool result = rcx_is_alive(fh, !rcx_is_fast()) == 1;
 
 #ifdef TRACE
-    printf("Exiting isAlive\n");
+    printf("Exiting isRCXAlive\n");
 #endif
 
     return (jboolean) result;
