@@ -14,7 +14,7 @@ import java.net.*;
 class Browser {
   private static URL url;
   private static URLConnection urlc;
-  private static final String page = "http://phorum.org/license.txt";
+  private static final String page = "http://homepage.ntlworld.com/lawrie.griffiths/rcxbrowse.html";
 
   public static void main(String[] args) throws IOException {
     url = new URL(page);
