@@ -39,6 +39,7 @@
 #include <sys/time.h>
 
 #include <stdio.h>
+// #include <stdio_ext.h>
 #include <ctype.h>
 #include <errno.h>
 #include <string.h>
@@ -76,14 +77,15 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 	fd_set fds;
 
 	struct timeval tv;
-	tv.tv_sec = timeout / 1000;
-	tv.tv_usec = (timeout % 1000) * 1000;
 
 	long len = 0;
 	while (len < maxlen) 
 	{
 		FD_ZERO(&fds);
 		FD_SET(fd, &fds);
+
+		tv.tv_sec = timeout / 1000;
+		tv.tv_usec = (timeout % 1000) * 1000;
 
       int selected = TEMP_FAILURE_RETRY (select(FD_SETSIZE, &fds, NULL, NULL, &tv));
 		if (selected > 0)
@@ -120,13 +122,34 @@ int __rcx_write(void* port, void* buf, int len)
 void __rcx_purge(void* port)
 {
    int fd = fileno(((Port*) port)->fileHandle);
-	_fpurge(fd)
+
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(fd, &fds);
+
+	struct timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = 1;
+
+   int selected = TEMP_FAILURE_RETRY (select(FD_SETSIZE, &fds, NULL, NULL, &tv));
+	if (selected > 0)
+	{
+      char bufp[BUFFERSIZE];
+		int count = read(fd, bufp, BUFFERSIZE);
+		if (count < 0) 
+		{
+			perror("read");
+		}
+	}
+	else if (selected < 0) 
+	{
+		perror("select");
+	}
 }
 
 void __rcx_flush(void* port)
 {
-   int fd = fileno(((Port*) port)->fileHandle);
-	fflush(fd);
+	fflush(((Port*) port)->fileHandle);
 }
 
 void* __rcx_open(char *tty, bool fast)
@@ -142,7 +165,7 @@ void* __rcx_open(char *tty, bool fast)
    if (__comm_debug) printf("device = %s\n", result->deviceName);
 	if (__comm_debug) printf("port type = %s\n", result->usb? "usb" : "serial");
 
-	result->fileHandle = fopen(result->deviceName, O_RDWR);
+	result->fileHandle = fopen(result->deviceName, "r+");
 	if (result->fileHandle == BADFILE) 
 	{ 
 		if (__comm_debug) printf("Error %lu: Opening %s\n", errno, result->deviceName);
