@@ -38,7 +38,7 @@ release:
 	$(MAKE) $(MFLAGS) clean
 	rm -rf apidocs pcapidocs
 	$(MAKE) $(MFLAGS) all
-	$(MAKE) $(MFLAGS) vision
+	$(MAKE) $(MFLAGS) visionapi
 	$(MAKE) $(MFLAGS) visiondoc
 	export TINYVM_VERSION=lejos_`cat VERSION`; $(MAKE) dir_and_zip
 
@@ -62,7 +62,7 @@ release_win:
 	$(MAKE) clean
 	rm -rf apidocs pcapidocs visionapidocs
 	$(MAKE) all
-	$(MAKE) $(MFLAGS) vision
+	$(MAKE) $(MFLAGS) visionapi
 	$(MAKE) $(MFLAGS) visiondoc
 	export TINYVM_VERSION=lejos_win32_`cat VERSION`; make dir_and_zip_win
 
