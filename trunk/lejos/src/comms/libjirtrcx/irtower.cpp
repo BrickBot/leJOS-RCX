@@ -32,6 +32,14 @@ int GetLastError() {
 }
 #endif
 
+// Set and unset the fast flag to support fast download
+
+JNIEXPORT jint JNICALL 
+Java_josx_rcxcomm_Tower_setFast(JNIEnv *env, jobject obj, jint fast)
+{
+  rcx_set_fast(fast);
+  return (jint) 0;
+}
 
 // open - Open the IR Tower
 
@@ -56,7 +64,7 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport)
 
   // Get a handle for the tower device
 
-  fh = rcx_init(tty,0);
+  fh = rcx_init(tty,rcx_is_fast());
 
   // USB Tower does not need wake-up
   
@@ -393,7 +401,7 @@ Java_josx_rcxcomm_Tower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 
     // Write the bytes
 
-    actual = rcx_send(fh,body,n,1);
+    actual = rcx_send(fh,body,n,!rcx_is_fast());
 
 
     if (actual < 0) {
@@ -482,7 +490,7 @@ Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
 
     // Receive a packet
 
-    actual = rcx_recv(fh, body, jsize, TIME_OUT, 1);
+    actual = rcx_recv(fh, body, jsize, TIME_OUT, !rcx_is_fast());
 
     if (actual < 0) err = GetLastError();
 
@@ -581,7 +589,7 @@ Java_josx_rcxcomm_Tower_isAlive(JNIEnv *env, jobject obj)
   
     // Check if RCX is alive
 
-    alive = rcx_is_alive(fh,1);
+    alive = rcx_is_alive(fh,!rcx_is_fast());
 
     
 #ifdef TRACE

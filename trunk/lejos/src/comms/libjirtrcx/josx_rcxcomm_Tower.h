@@ -10,6 +10,14 @@ extern "C" {
 /*
  * Class:     josx_rcxcomm_Tower
  * Method:    close
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_josx_rcxcomm_Tower_setFast
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     josx_rcxcomm_Tower
+ * Method:    close
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_josx_rcxcomm_Tower_close
