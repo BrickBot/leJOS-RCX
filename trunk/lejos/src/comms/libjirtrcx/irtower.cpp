@@ -1,6 +1,7 @@
 #include <jni.h>
 #include "josx_rcxcomm_irTower.h"
 #include <stdio.h>
+#include <string.h>
 
 #if defined(_WIN32)
 #include <windows.h>
