@@ -33,8 +33,11 @@ leJOS 1.0.2:
   - Reduced footprint to 16k
   
   Juergen Stuber has added:
-  - Fixed rotational sensor mode.
-  - SLEEP_TIME now 20ms everywhere, 60ms reaction time for buttons & sensors
+  - Fixed rotation sensor mode.
+  - Modified main loop to check only one flag for increased speed.
+  - Cleaned up hooks.
+  - Added performance test to examples.
+  - Internal changes to button and sensor listener code to make it smaller.
 
   Brian Bagnall has added:
   - Behavioural API

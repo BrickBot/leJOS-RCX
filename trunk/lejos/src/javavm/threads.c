@@ -444,7 +444,7 @@ void monitor_wait(Object *obj, const FOURBYTES time)
   set_monitor_count(obj, 0);
   
   // Gotta yield
-  switch_thread();
+  schedule_request( REQUEST_SWITCH_THREAD);
 }
 
 /*

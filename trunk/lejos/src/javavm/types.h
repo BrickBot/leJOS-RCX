@@ -1,8 +1,7 @@
-
-#include "platform_config.h"
-
 #ifndef _TYPES_H
 #define _TYPES_H
+
+#include "platform_config.h"
 
 typedef byte boolean;
 

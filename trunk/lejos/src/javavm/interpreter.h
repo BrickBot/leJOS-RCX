@@ -1,19 +1,21 @@
 
 #include "types.h"
 #include "constants.h"
+#include "classes.h"
 
 #ifndef _INTERPRETER_H
 #define _INTERPRETER_H
 
-#define REQUEST_EXIT          0
+#define REQUEST_TICK          0
 #define REQUEST_SWITCH_THREAD 1
+#define REQUEST_EXIT          2
 
 /**
  * The single instance of Runtime.
  */
 extern Runtime *runtime;
 
-extern boolean gMakeRequest;
+extern volatile boolean gMakeRequest;
 extern byte    gRequestCode;
 
 extern byte *pc;
@@ -33,7 +35,7 @@ static inline void schedule_request (const byte aCode)
   gRequestCode = aCode;
 }
 
-#endif // _INTERPRET_H
+#endif /* _INTERPRETER_H */
 
 
 

@@ -153,11 +153,11 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       init_thread ((Thread *) word2ptr(paramBase[0]));
       return;
     case yield_4_5V:
-      switch_thread();
+      schedule_request( REQUEST_SWITCH_THREAD);
       return;
     case sleep_4J_5V:
       sleep_thread (paramBase[1]);
-      switch_thread();
+      schedule_request( REQUEST_SWITCH_THREAD);
       return;
     case getPriority_4_5I:
       push_word (get_thread_priority ((Thread*)word2ptr(paramBase[0])));

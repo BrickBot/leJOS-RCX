@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "trace.h"
 
-void assert (boolean aCond, int aCode)
+void assert_hook (boolean aCond, int aCode)
 {
   if (aCond)
     return;

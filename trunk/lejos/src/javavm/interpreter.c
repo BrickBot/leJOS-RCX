@@ -40,7 +40,7 @@ Runtime *runtime = &_runtime;
 
 // Interpreter globals:
 
-boolean gMakeRequest;
+volatile boolean gMakeRequest;
 byte    gRequestCode;
 
 byte *pc;
@@ -162,50 +162,74 @@ boolean array_store_helper()
     pop_ref();
     return true;
   }
-  return false;    
+  return false;
 }
 
 /**
  * Everything runs inside here, essentially.
- * Notes:
- * 1. currentThread must be initialized.
+ *
+ * To be able use only a single fast test on each instruction
+ * several assumptions are made:
+ * - currentThread is initialized and non-null and
+ *   it is not set to null by any bytecode instruction.
+ * - Thus it is not allowed to call schedule_thread() in instructions,
+ *   use schedule_request( REQUEST_SWITCH_THREAD) instead.
+ * - Whenever gMakeRequest is false, gRequestCode is REQUEST_TICK.
+ * - Thus anybody who sets gRequestCode must also set gMakeRequest to true
+ *   (using schedule_request assures this).
+ * - Only the request handler may set gMakeRequest to false.
+ * - The millisecond timer interrupt must set gMakeRequest to true
+ *   for time slices to work.
+ * 
  */
 void engine()
 {
-  register short numOpcodes = 1;  // Force switch_thread() call
+  byte ticks_until_switch;
 
-  gMakeRequest = false;  
+  assert( currentThread != null, INTERPRETER0);
+
+  schedule_request( REQUEST_SWITCH_THREAD);
 
  LABEL_ENGINELOOP: 
-  // Poll various bits of hardware
-  do_poll();
-    
-  if (gMakeRequest)
+  instruction_hook();
+
+  assert( currentThread != null, INTERPRETER1);
+
+  while( gMakeRequest)
   {
+    byte requestCode = gRequestCode;
+    
     gMakeRequest = false;
-    switch (gRequestCode)
-    {
-      case REQUEST_SWITCH_THREAD:
-        numOpcodes=1;
-        break;
-      case REQUEST_EXIT:
-        return;
+    gRequestCode = REQUEST_TICK;
+    
+    tick_hook();
+
+    if( requestCode == REQUEST_EXIT)
+      return;
+
+    if( requestCode == REQUEST_TICK)
+      ticks_until_switch--;
+
+    if( requestCode == REQUEST_SWITCH_THREAD
+        || ticks_until_switch == 0){
+      ticks_until_switch = TICKS_PER_TIME_SLICE;
+#if DEBUG_THREADS
+      printf ("switching thread: %d\n", (int)ticks_until_switch);
+#endif
+      switch_thread();
+#if DEBUG_THREADS
+      printf ("done switching thread\n");
+#endif
+      switch_thread_hook();
+    }
+    if( currentThread == null   /* no runnable thread */
+        && gRequestCode == REQUEST_TICK){ /* no important request */
+      schedule_request( REQUEST_SWITCH_THREAD);
     }
   }
 
-  if (currentThread == null || !(--numOpcodes))
-  {
-    #if DEBUG_THREADS
-    printf ("switching thread: %d\n", (int) numOpcodes);
-    #endif
-    switch_thread();
-    #if DEBUG_THREADS
-    printf ("done switching thread\n");
-    #endif
-    numOpcodes = OPCODES_PER_TIME_SLICE;
-    if (currentThread == null)
-    	goto LABEL_ENGINELOOP;
-  }
+  assert( gRequestCode == REQUEST_TICK, INTERPRETER2);
+  assert( currentThread != null, INTERPRETER3);
 
   //-----------------------------------------------
   // SWITCH BEGINS HERE
