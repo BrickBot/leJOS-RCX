@@ -129,7 +129,7 @@ void __rcx_flush(void* port)
 	__rcx_read(((Port*) port)->fileHandle, echo, BUFFERSIZE, 200);
 }
 
-void* __rcx_open(char *tty, int is_fast)
+void* __rcx_open(char *tty, bool is_fast)
 {
 	if (__comm_debug) printf("mode = %s\n", is_fast ? "fast" : "slow");
 	if (__comm_debug) printf("tty= %s\n", tty);
