@@ -7,7 +7,7 @@ ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 endif
 
-JAVAC=javac -target 1.1
+JAVAC=javac -target 1.1 -source 1.2
 JAVADOC=javadoc
 JAVA=java
 TEMP=/usr/tmp
