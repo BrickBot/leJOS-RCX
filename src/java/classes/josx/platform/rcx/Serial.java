@@ -115,12 +115,18 @@ public class Serial
    * Sends a packet to the IR tower or another RCX.
    * In general, the IR tower will only receive <i>responses</i>
    * to messages it has sent. The call returns immediately.
+   * @return false if a packet is already being sent.
    */
-  public static void sendPacket (byte[] aBuffer, int aOffset, int aLen)
+  public static boolean sendPacket (byte[] aBuffer, int aOffset, int aLen)
   {
+    if (isSending())
+        return false;
+        
     Native.callRom ((short) 0x343e, (short) 0x1775, (short) 0, 
                      (short) (Native.getDataAddress (aBuffer) + aOffset),
                      (short) aLen);
+                     
+    return true;
   }
 
   /**

@@ -36,5 +36,27 @@ public final class String
   {
     return this;
   }
+  
+  public boolean equals(Object other)
+  {
+    if (other == null)
+      return false;
+      
+    try {
+      String os = (String)other;
+      if (os.characters.length != characters.length)
+         return false;
+         
+      for (int i=0; i<characters.length; i++)
+      {
+        if (characters[i] != os.characters[i])
+          return false;
+      }
+      
+      return true;
+    } catch (ClassCastException e) {
+    }    
+    return false;
+  }
 }
 
