@@ -33,3 +33,4 @@ $(OBJECTS) : $(SOURCES)
 
 clean :
 	rm -f $(BINARY) $(SIGNATURE) *.class *~ core
+	rm -rf build
