@@ -184,8 +184,7 @@ public class ClassRecord implements WritableData
     */
    public int computeClassSize () throws TinyVMException
    {
-      ClassRecord pParent = getParent();
-      int pSize = (pParent != null)? pParent.getClassSize() : 0;
+      int pSize = hasParent()? getParent().getClassSize() : 0;
       for (Iterator iter = iInstanceFields.iterator(); iter.hasNext();)
       {
          InstanceFieldRecord pRec = (InstanceFieldRecord) iter.next();
@@ -194,34 +193,38 @@ public class ClassRecord implements WritableData
       return pSize;
    }
 
+   public boolean hasParent ()
+   {
+      return !"java.lang.Object".equals(iCF.getClassName());
+   }
+   
    public ClassRecord getParent ()
    {
-      JavaClass pParent = iCF.getSuperClass();
-      if (pParent == null)
-         return null;
-      ClassRecord pRec = iBinary.getClassRecord(pParent.getClassName().replace(
-         '.', '/'));
-      return pRec;
+      assert hasParent(): "Precondition: hasParent()";
+
+      ClassRecord result = iBinary.getClassRecord(iCF.getSuperclassName().replace('.', '/'));
+      
+      assert result != null: "Postconditon: result != null";
+      return result;
    }
 
    public void initParent () throws TinyVMException
    {
-      ClassRecord pRec = getParent();
-      if (pRec == null)
+      if (hasParent())
+      {
+         iParentClassIndex = iBinary.getClassIndex(getParent());
+         if (iParentClassIndex == -1)
+         {
+            throw new TinyVMException("Superclass of " + iCF.getClassName() + " not found");
+         }
+      }
+      else // only java.lang.Object has no super class...
       {
          iParentClassIndex = 0;
          if (!iCF.getClassName().equals("java.lang.Object"))
          {
             throw new TinyVMException("Expected java.lang.Object: "
                + iCF.getClassName());
-         }
-      }
-      else
-      {
-         iParentClassIndex = iBinary.getClassIndex(pRec);
-         if (iParentClassIndex == -1)
-         {
-            throw new TinyVMException("Class not found");
          }
       }
    }
@@ -321,10 +324,11 @@ public class ClassRecord implements WritableData
       MethodRecord pRec = getMethodRecord(aSig);
       if (pRec != null)
          return pRec;
-      ClassRecord pParent = getParent();
-      if (pParent == null)
+      if (!hasParent())
+      {
          return null;
-      return pParent.getVirtualMethodRecord(aSig);
+      }
+      return getParent().getVirtualMethodRecord(aSig);
    }
 
    int getMethodIndex (MethodRecord aRecord)
@@ -334,8 +338,7 @@ public class ClassRecord implements WritableData
 
    int getApparentInstanceFieldOffset (String aName) throws TinyVMException
    {
-      ClassRecord pParent = getParent();
-      int pOffset = (pParent != null)? pParent.getClassSize() : 0;
+      int pOffset = hasParent()? getParent().getClassSize() : 0;
       for (Iterator iter = iInstanceFields.iterator(); iter.hasNext();)
       {
          InstanceFieldRecord pRec = (InstanceFieldRecord) iter.next();
