@@ -46,7 +46,7 @@ void gettimeofday(struct timeval *tv, void *tzp);
 // some internal methods
 //
 
-int __rcx_open_setDevice(Port* port, char* symbolicName);
+int __rcx_open_setDevice(Port* port, char* symbolicName, int fast);
 int __rcx_open_setSerialPortParameters (Port* port);
 
 //
@@ -179,14 +179,13 @@ void* __rcx_open(char *tty, int fast)
 	int success = 1;
 
 	Port* result = malloc(sizeof(Port));
-	__rcx_open_setDevice(result, tty);
-	result->fast = fast;
+	__rcx_open_setDevice(result, tty, fast);
 			
 	result->fileHandle = CreateFile(
 	  result->deviceName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 	if (result->fileHandle == INVALID_HANDLE_VALUE) 
    {
-		fprintf(stderr, "Error %lu: Opening %s\n", (unsigned long) GetLastError(), result->deviceName);
+		if (__comm_debug) printf("Error %lu: Opening %s\n", (unsigned long) GetLastError(), result->deviceName);
 		success = 0;
 	}
 	else if (result->usb == 0)
@@ -210,12 +209,13 @@ void* __rcx_open(char *tty, int fast)
 // Set port parameters.
 // Returns 1 if success.
 // (Internal method)
-int __rcx_open_setDevice (Port* port, char* symbolicName)
+int __rcx_open_setDevice (Port* port, char* symbolicName, int fast)
 {
 	strncpy(port->symbolicName, symbolicName, 32);
 	strncpy(port->deviceName, USB_TOWER_NAME, 32);
 	port->usb = 1;	
-	
+	port->fast = port->usb? 0 : fast;	
+
 	return 1;
 }
 
