@@ -1,14 +1,17 @@
-LEJOSHOME = ../..
+LEJOS_HOME = ../../..
 
-LEJOSC = $(LEJOSHOME)/bin/lejosc
-LEJOS = $(LEJOSHOME)/bin/lejos
-EMULEJOS = $(LEJOSHOME)/bin/emu-lejos
-LEJOSRUN = $(LEJOSHOME)/bin/lejosrun
-EMULEJOSRUN = $(LEJOSHOME)/bin/emu-lejosrun
-LEJOSFIRMDL = $(LEJOSHOME)/bin/lejosfirmdl
+COMPILE = $(LEJOS_HOME)/bin/lejosjc
+LINK = $(LEJOS_HOME)/bin/lejoslink
+DOWNLOAD = $(LEJOS_HOME)/bin/lejosdl
+FIRMDL = $(LEJOS_HOME)/bin/firmdl
+
+EMULINK = $(LEJOS_HOME)/bin/emu-lejos
+EMULATE = $(LEJOS_HOME)/bin/emu-lejosrun
+
+DOWNLOAD_OPTIONS = --tty=/dev/ttyS0
 
 CLASSPATH = .
-CLASSLIB = $(LEJOSHOME)/lib/classes.jar
+CLASSLIB = $(LEJOS_HOME)/lib/classes.jar
 
 SOURCES = MemoryTest.java
 OBJECTS = MemoryTest.class
@@ -24,22 +27,22 @@ SIGNATURE = MemoryTest.sig
 default : run
 
 run : $(BINARY)
-	$(LEJOSRUN) $(BINARY)
+	$(DOWNLOAD) $(DOWNLOAD_OPTIONS) $(BINARY)
 
 emulate : $(EMUBINARY)
-	$(EMULEJOSRUN) -v $(EMUBINARY)
+	$(EMULATE) $(EMUBINARY)
 
 firmdl :
-	$(LEJOSFIRMDL)
+	$(FIRMDL)
 
 $(BINARY) : $(OBJECTS)
-	$(LEJOS) -verbose $(PROGRAMS) -o $(BINARY) > $(SIGNATURE)
+	$(LINK) -verbose $(PROGRAMS) -o $(BINARY) > $(SIGNATURE)
 
 $(EMUBINARY) : $(OBJECTS)
-	$(EMULEJOS) $(PROGRAMS) -o $(EMUBINARY)
+	$(EMULINK) $(PROGRAMS) -o $(EMUBINARY)
 
 $(OBJECTS) : $(SOURCES) $(CLASSLIB)
-	$(LEJOSC) $(SOURCES)
+	$(COMPILE) $(SOURCES)
 
 clean :
 	rm -f $(BINARY) $(SIGNATURE) *.class *~ core
