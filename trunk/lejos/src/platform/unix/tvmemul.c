@@ -28,6 +28,7 @@
 #define EXTRA_MEMORY_SIZE 1536 /* 3 Kb */
 #define DEBUG_RUNS  0
 
+byte *region;
 Thread   *bootThread;
 struct timeval gStart;
 struct itimerval itimer =
@@ -91,7 +92,6 @@ void run(void)
 
   // Initialize memory
   {
-    byte *region;
     TWOBYTES size;
 
     memory_init ();

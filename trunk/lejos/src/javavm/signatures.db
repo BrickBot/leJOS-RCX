@@ -91,3 +91,6 @@ read()I
 isSending()Z
 isSendError()Z
 
+# josx.platform.rcx.PersistentMemoryArea
+getRegionAddress()I
+

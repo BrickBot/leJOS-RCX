@@ -10,6 +10,18 @@ public class MemoryTest
   public static void main (String[] arg)
 	throws InterruptedException
   {
+  	LCD.showNumber(1234);
+  	Thread.sleep(1000);
+  	
+  	// Display the number of runs.
+  	PersistentMemoryArea pMem = PersistentMemoryArea.get((short)0xcafe, (short)1);  	
+  	LCD.showNumber(4321);
+  	Thread.sleep(1000);
+  	
+  	pMem.writeByte(0, (byte)(pMem.readByte(0)+1));
+  	LCD.showNumber(pMem.readByte(0));
+  	Thread.sleep(2000);
+  	
     do
     {
       String s = "Some text";

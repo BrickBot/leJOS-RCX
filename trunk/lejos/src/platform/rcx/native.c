@@ -18,6 +18,7 @@
 #include "llc.h"
 
 extern void reset_rcx_serial();
+extern char *mmStart;
 
 /**
  * NOTE: The technique is not the same as that used in TinyVM.
@@ -268,6 +269,9 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
     case isSendError_4_5Z:
       push_word(llc_send_error());
       return;   
+    case getRegionAddress_4_5I:
+      push_word (getRegionAddress());
+      return;
     default:
       throw_exception (noSuchMethodError);
       return;

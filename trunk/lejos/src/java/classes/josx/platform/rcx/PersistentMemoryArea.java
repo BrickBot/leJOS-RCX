@@ -2,7 +2,8 @@ package josx.platform.rcx;
 
 /**
  * A memory area for persistent storage.
- * Only removing batteries will delete it.
+ * The memory persists between runs of a program. Downloading
+ * a new program will trash the area (unless you're very lucky).
  *
  * The magic number should be different for each application
  * (use a random integer).
@@ -15,7 +16,7 @@ package josx.platform.rcx;
 public class PersistentMemoryArea
 {
   // must be consistent with VM memory layout!
-  private static final int REGION_HEADER_SIZE = 4;
+  private static final int REGION_HEADER_SIZE = 2;
   private static final int ARRAY_HEADER_SIZE  = 4;
   private static final int IS_ALLOCATED_MASK  = 0x8000;
   private static final int IS_ARRAY_MASK      = 0x4000;
@@ -23,13 +24,19 @@ public class PersistentMemoryArea
   private static final int T_INT              = 10;
   private static final int INT_SIZE           = 4;
 
-  private static final int REGION_ADDRESS       = 0xf002;
-  private static final int BLOCK_HEADER_ADDRESS = REGION_ADDRESS +
-                                                    REGION_HEADER_SIZE;
-  private static final int MAGIC_ADDRESS = BLOCK_HEADER_ADDRESS + 
-                                             ARRAY_HEADER_SIZE;
-  private static final int SIZE_ADDRESS  = MAGIC_ADDRESS+2;
-  private static final int START_ADDRESS = MAGIC_ADDRESS+4;
+  private static int regionAddress;
+  private static int blockHeaderAddress;
+  private static int magicAddress;
+  private static int sizeAddress;
+  private static int startAddress;
+
+  static {
+  	regionAddress      = getRegionAddress();
+  	blockHeaderAddress = regionAddress + REGION_HEADER_SIZE;
+  	magicAddress       = blockHeaderAddress + ARRAY_HEADER_SIZE;
+  	sizeAddress        = magicAddress+2;
+	startAddress       = sizeAddress+2;
+  };
 
   private static PersistentMemoryArea singleton = null;
 
@@ -39,35 +46,47 @@ public class PersistentMemoryArea
   {
   }
 
-  public static PersistentMemoryArea get (int magic, int size)
+  /**
+   * Allocate a persistent array of 'size' bytes. If this is a new
+   * array, the values are initialized to zero. 
+   * @param magic a 2 byte integer used to idenitfy the specific memory area.
+   * @param size the size in bytes. This should be in the range 0 thru 511.
+   * @exception OutOfMemoryError not enoug memory to allocate the array.
+   */
+  public static PersistentMemoryArea get (short magic, short size)
     throws OutOfMemoryError  
   {
     if (singleton == null) {
       synchronized (Memory.MONITOR) {
-        short blockHeader = Memory.readShort ((short)BLOCK_HEADER_ADDRESS);
         // magic (2) + size (2) + round up (INT_SIZE-1)
-        int arraySize = (size + 4 + INT_SIZE-1)/INT_SIZE; 
-        int blockSize = ARRAY_HEADER_SIZE + INT_SIZE * arraySize;
+        
+        // arraySize is the size in 4 byte words of the array.
+        int arraySize = (size + 4 + INT_SIZE-1)/INT_SIZE;
+        
+        // blockSize is the size in 2 byte words of the block. 
+        int blockSize = ARRAY_HEADER_SIZE / 2 + INT_SIZE * arraySize / 2;
+        
+        // blockHeader is the size in 2 byte words of this segment.
+        short blockHeader = Memory.readShort ((short)blockHeaderAddress);
 
         if ((blockHeader & IS_ALLOCATED_MASK) != 0 || // too late for us
             blockSize > blockHeader || // not enough space left
             arraySize > 511) {  // array would be too big
           throw new OutOfMemoryError();
         } else {
-          // write header for following block
-          Memory.writeShort (BLOCK_HEADER_ADDRESS+blockSize,
+          Memory.writeShort (blockHeaderAddress+2*blockSize,
                              (short)(blockHeader-blockSize));
           // write array header
-          blockHeader = (short)(IS_ARRAY_MASK | T_INT << ELEM_TYPE_SHIFT | arraySize);
-          Memory.writeShort (BLOCK_HEADER_ADDRESS, blockHeader);
-          if (Memory.readShort (MAGIC_ADDRESS) != magic
-              && Memory.readShort (SIZE_ADDRESS) != size) {
+          blockHeader = (short)(IS_ALLOCATED_MASK | IS_ARRAY_MASK | T_INT << ELEM_TYPE_SHIFT | arraySize);
+          Memory.writeShort (blockHeaderAddress, blockHeader);
+          if (Memory.readShort (magicAddress) != magic
+              && Memory.readShort (sizeAddress) != size) {
             // not what we are looking for, need to reinitialize
             for (short i = 0; i < size; i++) {
-              Memory.writeByte (START_ADDRESS+i, (byte)0);
+              Memory.writeByte (startAddress+i, (byte)0);
             }
-            Memory.writeShort (MAGIC_ADDRESS, (short)magic);
-            Memory.writeShort (SIZE_ADDRESS, (short)size);
+            Memory.writeShort (magicAddress, (short)magic);
+            Memory.writeShort (sizeAddress, (short)size);
           }
         }
       }
@@ -77,23 +96,41 @@ public class PersistentMemoryArea
     return singleton;
   }
 
+  /**
+   * Read the byte at index 'i'
+   * @param i the index starting at 0.
+   * @exception ArrayIndexOutOfBoundsException if the index is
+   * out of bounds.
+   */
   public byte readByte (int i)
     throws ArrayIndexOutOfBoundsException
   {
     if (i >= 0 && i < size) {
-      return Memory.readByte (START_ADDRESS+i);
+      return Memory.readByte (startAddress+i);
     } else {
       throw new ArrayIndexOutOfBoundsException();
     }
   }
 
+  /**
+   * Write a byte at index 'i'
+   * @param i the index starting at 0.
+   * @param b the byte value.
+   * @exception ArrayIndexOutOfBoundsException if the index is
+   * out of bounds.
+   */
   public void writeByte (int i, byte b)
     throws ArrayIndexOutOfBoundsException
   {
     if (i >= 0 && i < size) {
-      Memory.writeByte (START_ADDRESS+i, (byte)b);
+      Memory.writeByte (startAddress+i, (byte)b);
     } else {
       throw new ArrayIndexOutOfBoundsException();
     }
   }
+
+  /**
+   * Returns the address of the start of the heap.
+   */  
+  private static native int getRegionAddress();
 }

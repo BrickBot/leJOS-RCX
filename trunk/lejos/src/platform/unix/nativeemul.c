@@ -61,6 +61,8 @@ static char *getSensorMode(byte code)
 }
 
 extern int	verbose;	/* If non-zero, generates verbose output. */
+extern byte *region;
+
 char *get_meaning(STACKWORD *);
 
 void dump_flag(Object *obj)
@@ -330,6 +332,23 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       push_word (paramBase[0]);
       return;
 
+    case init_4_5V:
+      return;
+    case read_4_5I:
+      push_word(0);
+      return;
+    case write_4_1BI_5V:
+      return;
+    case isSending_4_5Z:
+      push_word(0);
+      return;
+    case isSendError_4_5Z:
+      push_word(0);
+      return;   
+    case getRegionAddress_4_5I:
+      printf("> Get region address - 0x%lX\n", (int)region);
+      push_word ((int)region);
+      return;
     default:
 #ifdef DEBUG_METHODS
       printf("Received bad native method code: %d\n", signature);
