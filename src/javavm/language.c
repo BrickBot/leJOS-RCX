@@ -16,10 +16,6 @@
 #include "exceptions.h"
 #include "native.h"
 
-#define F_SIZE_MASK    0xE0
-#define F_SIZE_SHIFT   5
-#define F_OFFSET_MASK  0x1F
-
 #ifdef VERIFY
 boolean classesInitialized = false;
 #endif
@@ -49,74 +45,6 @@ byte get_class_index (Object *obj)
   if (f & ARRAY_MASK)
     return JAVA_LANG_OBJECT;
   return (f & CLASS_MASK);
-}
-
-/**
- * Puts or gets field.
- */
-void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStatic,
-                   byte *btAddr)
-{
-  byte *fieldBase;
-  STATICFIELD fieldRecord;
-  byte fieldSize;
-  byte numWordsMinus1;
-
-  #if DEBUG_FIELDS
-  printf ("handleField: %d, %d, %d, %d\n", (int) hiByte, (int) loByte, 
-          (int) doPut, (int) aStatic);
-  #endif
-
-  if (aStatic)
-  {
-    if (dispatch_static_initializer (get_class_record (hiByte), btAddr))
-      return;
-    fieldRecord = ((STATICFIELD *) get_static_fields_base())[loByte];
-    fieldSize = ((fieldRecord >> 12) & 0x03) + 1;
-    numWordsMinus1 = fieldRecord >> 14;
-    fieldBase = get_static_state_base() + get_static_field_offset (fieldRecord);
-  }
-  else
-  {
-    fieldSize = ((hiByte >> F_SIZE_SHIFT) & 0x03) + 1;
-    numWordsMinus1 = hiByte >> 7;
-    if (doPut)
-      stackTop -= (numWordsMinus1 + 1);
-    #if DEBUG_FIELDS
-    printf ("-- numWords-1  = %d\n", (int) numWordsMinus1);
-    printf ("-- stackTop[0,1] = %d, %d\n", (int) stackTop[0], (int) stackTop[1]);
-    #endif
-    if (stackTop[0] == JNULL)
-    {
-      throw_exception (nullPointerException);
-      return;
-    }
-    fieldBase = ((byte *) word2ptr (stackTop[0])) + 
-                (((TWOBYTES) (hiByte & F_OFFSET_MASK) << 8) | loByte);
-    if (doPut)
-      stackTop++;
-  }
-
-  #if DEBUG_FIELDS
-  printf ("-- fieldSize  = %d\n", (int) fieldSize);
-  printf ("-- fieldBase  = %d\n", (int) fieldBase);
-  #endif
-
-  // fieldRecord is a counter below
-  fieldRecord = 0;
-  while (true)
-  {
-    if (doPut)
-      save_word (fieldBase, fieldSize, *stackTop);
-    else
-      make_word (fieldBase, fieldSize, stackTop);
-    if (fieldRecord++ >= numWordsMinus1)
-      break;
-    fieldBase += fieldSize;
-    stackTop++;
-  }
-  if (doPut)
-    stackTop -= (numWordsMinus1 + 1);
 }
 
 /**

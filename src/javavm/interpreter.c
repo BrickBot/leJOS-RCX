@@ -10,6 +10,10 @@
 #include "language.h"
 #include "exceptions.h"
 
+#define F_SIZE_MASK    0xE0
+#define F_SIZE_SHIFT   5
+#define F_OFFSET_MASK  0x1F
+
 #if DEBUG_BYTECODE
 extern char *OPCODE_NAME[];
 #endif

@@ -20,6 +20,8 @@ Exceptions                  : [XXXX Y], XXXX = method sig.;
                               Y = exception class index % 10.
                               Press View to continue.
 
+(More details in Setup section below)
+
 What is TinyVM?
 ---------------
 
@@ -86,9 +88,8 @@ Environment:
     installation directory.
   - Your PATH is assumed to point to the 
     JDK's bin directory.
-  - You should adjust your PATH so that the 
-    scripts under $TINYVM_HOME/bin can be
-    easily executed.
+  - You should also add $TINYVM_HOME/bin to
+    your PATH.
   - RCXTTY must be defined to point to the
     IR device file. For example, in my system
     it's /dev/ttyS1. I suspect that in most
@@ -161,7 +162,9 @@ Running a Example
      If the RCX is in range, the LCD will show 
      the download count as  the number of bytes 
      divided by 100. (As of this writing, tvm
-     does not report communication errors).
+     does not report communication errors. If TinyVM
+     receives bad data, you'll hear beeps, meaning that 
+     the firmware is returning to program-download state).
      TinyVM will execute the program, as soon as
      the download has been completed. When 
      all non-daemon threads are finished, 
@@ -237,7 +240,8 @@ mind are:
   - Floating point operations are not supported.
   - Operations on variables of type long are not 
     suported.
-  - Operations on Strings may break your programs.
+  - String constants are not used by the VM to
+    create String objects (i.e. don't use Strings).
   - The instanceof operation will always be true  
     for interfaces. In bytecode, CHECKCAST succeeds
     on all interface classes (which is a bit unsafe).
@@ -253,7 +257,11 @@ Known Bugs
 ----------
 
   - A StackOverflowError will crash the VM.
-  - OutOfMemoryError is reported as NullPointerException.
+  - Finally blocks are not executed if OutOfMemoryErrors
+    are thrown.
+  - System.arraycopy is currently unimplemented.
+    Hence, operations on StringBuffers will
+    misbehave.
   - Unknown native methods are not reported.
 
 Documentation

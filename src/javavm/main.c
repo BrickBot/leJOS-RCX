@@ -105,8 +105,8 @@ int main (void)
   init_timer (&timerdata0, &timerdata1[0]);
   init_power();
   init_sensors();
-  init_serial (&state0, &state1, 1, 1);
  LABEL_DOWNLOAD:
+  init_serial (&state0, &state1, 1, 1);
   play_system_sound (SOUND_QUEUED, 1);
   set_data_pointer (MEM_START);
   clear_display();
