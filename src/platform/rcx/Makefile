@@ -50,7 +50,7 @@ include ../vmsrc/Makefile.include
 
 PROGS = ${TINYVMBINARY}
 OBJS = interpreter.o threads.o exceptions.o poll.o \
-       memory.o language.o native.o main.o sensors.o systime.o
+       memory.o language.o native.o main.o sensors.o systime.o llc.o
 
 all: ${PROGS}
 	@echo Done building TinyVM srec
