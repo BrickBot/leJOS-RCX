@@ -5,7 +5,7 @@
 include ${TINYVM_HOME}/Makefile.config
 include ${TINYVM_HOME}/Makefile.common
 
-CFLAGS += -O1 -Wall -Wno-unused
+CFLAGS += -I${LIBRCX_HOME}/lib -O1 -Wall -Wno-unused
 LFLAGS += -L${LIBRCX_HOME}/lib -relax
 
 LIBS = -lrcx
@@ -13,7 +13,7 @@ LIBS = -lrcx
 CC = $(BINDIR)/$(BINPREFIX)gcc
 AS = $(BINDIR)/$(BINPREFIX)as
 AR = $(BINDIR)/$(BINPREFIX)ar
-LD = $(BINDIR)/$(BINPREFIX)ld -T${LIBRCX_HOME}/lib/rcx.lds -u__start
+LD = $(BINDIR)/$(BINPREFIX)ld -T${TINYVM_HOME}/vmsrc/rcx.lds -u__start
 
 # other variables
 
@@ -47,7 +47,7 @@ OBJS = interpreter.o threads.o exceptions.o \
        memory.o language.o native.o main.o
 
 all: ${PROGS}
-	echo Done building TinyVM srec
+	@echo Done building TinyVM srec
 
 clean:
 	rm -f core *.srec *.o *~

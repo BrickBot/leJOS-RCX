@@ -43,9 +43,14 @@ void do_goto (boolean aCond)
   #endif
 
   if (aCond)
-    pc += (JSHORT) ((((TWOBYTES) pc[0] << 8) | pc[1]) - 1);
+  {
+    pc--;
+    pc += (JSHORT) (((TWOBYTES) pc[0] << 8) | pc[1]);
+  }
   else
+  {
     pc += 2;
+  }
 }
 
 void do_isub (void)

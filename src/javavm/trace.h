@@ -63,6 +63,8 @@ extern void assert (boolean aCond, int aCode);
 
 #endif
 
+#define DEBUG_RCX      1
+
 #endif _TRACE_H
 
 

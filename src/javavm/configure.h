@@ -37,9 +37,9 @@
 #define REMOVE_DEAD_THREADS              1
 
 /**
- * Size of native stack in 2-byte words.
+ * Size of native stack in bytes.
  */
-#define NATIVE_STACK_SIZE                16
+#define NATIVE_STACK_SIZE                24
 
 
 /**
