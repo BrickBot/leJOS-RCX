@@ -1,6 +1,6 @@
 /**
  * Jose's changes:
- * -- Defined _end to ALIGN(2).
+ * -- _end is ALIGN(2) now.
  */
 
 /*
@@ -39,7 +39,10 @@ OUTPUT_ARCH(h8300)
 ENTRY(__start)
 MEMORY
 {
-    mem : o = 0x8000, l = 0x6f00
+    mem    : o = 0x8000, l = 0x6f00
+    extra1 : o = 0xef50, l = 0x00b0
+    extra2 : o = 0xf010, l = 0x0d70
+    extra3 : o = 0xfe00, l = 0x0100
 }
 SECTIONS
 {
@@ -62,4 +65,8 @@ SECTIONS
         *(COMMON)
         __end = ALIGN(2) ;
     } > mem
+
+    .extra : {
+        __extraMemory = . ; 
+    } > extra2
 }

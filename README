@@ -44,7 +44,13 @@ Java bytecodes. Source is compiled by a regular
 Java compiler. A javac wrapper, tvmc, is provided
 to take care of setup issues, like using 
 $TINYVM_HOME/lib/classes.jar instead of the
-JDK's classes.zip.
+JDK's classes.zip. TINYVMPATH is used instead
+of CLASSPATH. (You cannot, of course, include
+classes.zip or your favorite Java framework in
+TINYVMPATH. Any native methods there won't be
+understood by TinyVM. Any APIs you framework
+requires from Java probably won't be provided
+by TinyVM).
 
 To keep the VM's footprint as small as possible,
 no class-loading code was included in it. Instead,
@@ -240,6 +246,13 @@ mind are:
     work. Class.forName() throws NoSuchMethorError.
   - Most JDK APIs are unavailable.
 
+Known Bugs
+----------
+
+  - A StackOverflowError will crash the VM.
+  - OutOfMemoryError is reported as NullPointerException.
+  - Unknown native methods are not reported.
+
 Documentation
 -------------
 
@@ -257,8 +270,8 @@ You can contact Jose at jhsolorz@yahoo.com if you
 have any questions, problems, or if you'd like to
 contribute to TinyVM in any way.
 
-Read the "Limitations" section above, just in case 
-the problem you're encountering is a known limitation/bug.
+Read the "Limitations" and "Known Bugs" sections above, 
+just in case.
 
 
 

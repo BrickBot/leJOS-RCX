@@ -21,6 +21,8 @@ extern char _data_end;
 extern char _text_begin;
 extern char _data_begin;
 
+extern char _extraMemory;
+
 Thread *bootThread;
 
 #if !EMULATE && VERIFY
@@ -29,7 +31,10 @@ Thread *bootThread;
 
 #define MEM_START      (&_end)
 #define RAM_START_ADDR 0x8000
-#define RAM_SIZE       0x6F00
+#define RAM_SIZE       0x6EF8
+
+// Note: 0xEEF8-0xEF00 are used by Sensor class.
+
 #define MEM_END_ADDR   (RAM_START_ADDR + RAM_SIZE)
 #define MEM_END        ((char *) MEM_END_ADDR)
 #define BUFSIZE        6
@@ -99,6 +104,10 @@ int main (void)
 {
   init_timer (&timerdata0, &timerdata1[0]);
   init_power();
+  init_sensors();
+  set_sensor_active (0x1000);
+  set_sensor_active (0x1001);
+  set_sensor_active (0x1002);
   init_serial (&state0, &state1, 1, 1);
  LABEL_DOWNLOAD:
   play_system_sound (SOUND_QUEUED, 1);
@@ -151,6 +160,7 @@ int main (void)
       }
     }
   } while (1);
+
   // Initialize binary image location
   #if 0
   debug (-1, ((TWOBYTES) MEM_START) / 10, 0);

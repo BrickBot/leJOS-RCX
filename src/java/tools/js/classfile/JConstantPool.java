@@ -115,7 +115,6 @@ public class JConstantPool implements IDumpable, IConstantPool
     //System.out.println ("# Size of constant pool = " + pSize);
     for (int pIndex = 0; pIndex < pSize; pIndex++)
     {
-      //System.out.print ("# Entry number " + (pIndex+1));
       JConstantPoolEntry pEntry = readEntry (aIn);
       addEntryToTable (pEntry);
       if (pEntry instanceof JCPE_Double || pEntry instanceof JCPE_Long)

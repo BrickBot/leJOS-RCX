@@ -10,8 +10,9 @@
 #include "configure.h"
 #include "interpreter.h"
 #include "memory.h"
+#include "exceptions.h"
 
-#define NO_OWNER 0
+#define NO_OWNER 0x00
 
 #define get_stack_frame() ((StackFrame *) (currentThread->currentStackFrame))
 
@@ -19,6 +20,7 @@
  * Thread currently being executed by engine().
  */
 Thread* currentThread;
+byte gThreadCounter;
 
 StackFrame *current_stackframe()
 {
@@ -32,7 +34,7 @@ StackFrame *current_stackframe()
 
 inline byte get_thread_id (Object *obj)
 {
-  return (byte) ((obj->syncInfo >> THREAD_SHIFT) & THREAD_MASK);
+  return (byte) ((obj->syncInfo & THREAD_MASK) >> THREAD_SHIFT);
 }
 
 inline void set_thread_id (Object *obj, byte threadId)
@@ -54,12 +56,19 @@ inline void set_monitor_count (Object *obj, byte count)
 
 void init_thread (Thread *thread)
 {
+  thread->threadId = ++gThreadCounter;
   thread->stackFrameArray = ptr2word (new_primitive_array (T_STACKFRAME, MAX_STACK_FRAMES));
   thread->stackArray = ptr2word (new_primitive_array (T_INT, STACK_SIZE));
+  if (thread->threadId == NO_OWNER || thread->stackFrameArray == JNULL ||
+      thread->stackArray == JNULL)
+  {
+    throw_exception (outOfMemoryError);
+    return;
+  }
 
   #ifdef VERIFY
   assert (is_array (word2obj (thread->stackFrameArray)), THREADS0);
-  assert (is_array (word2obj (thread->stackFrameArray)), THREADS1);
+  assert (is_array (word2obj (thread->stackArray)), THREADS1);
   #endif
 
   thread->stackFrameArraySize = 0;
@@ -135,8 +144,12 @@ void switch_thread()
     assert (nextThread->waitingOn != JNULL, THREADS3);
     #endif
 
-    if (get_thread_id((Object *) word2ptr (nextThread->waitingOn)) == NO_OWNER)
+    if (get_thread_id (word2obj (nextThread->waitingOn)) == NO_OWNER)
     {
+      // NOW enter the monitor (guaranteed to succeed)
+      currentThread = nextThread;
+      enter_monitor (word2obj (nextThread->waitingOn));
+      // Let the thread run.
       nextThread->state = RUNNING;
       #ifdef SAFE
       nextThread->waitingOn = JNULL;
@@ -219,14 +232,16 @@ void enter_monitor (Object* obj)
 {
   byte owner;
   byte tid;
+
   owner = get_thread_id (obj);
   tid = currentThread->threadId;
   if (owner != NO_OWNER && tid != owner)
   {
+    // Make thread wait until the monitor is relinquished.
     currentThread->state = WAITING;
     currentThread->waitingOn = ptr2word (obj);
     // Gotta yield
-    switch_thread();
+    switch_thread();    
     return;
   }
   set_thread_id (obj, tid);

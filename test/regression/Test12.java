@@ -11,14 +11,12 @@ public class Test12
   public void plainMethod()
   {
     int p = iCounter;
-    for (int i = 0; i < p * 4; i++) {}
     iCounter = p + 1;
   }
 
   public synchronized void syncMethod()
   {
     int p = iCounter;
-    for (int i = 0; i < p * 4; i++) {}
     iCounter = p + 1;
   }    
 
@@ -27,7 +25,6 @@ public class Test12
     synchronized (MONITOR)
     {
       int p = iCounter;
-      for (int i = 0; i < p * 4; i++) {}
       iCounter = p + 1;
     }
   }    
@@ -57,13 +54,13 @@ public class Test12
       pObj3.syncMethod2();
     }
     for (int i = 0; i < 1000; i++) {}
-    ROM.setLcdNumber (ROM.LCD_CODE_PROGRAM, pObj1.iCounter, ROM.LCD_POINT_DECIMAL_0);
+    ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, pObj1.iCounter, ROM.LCD_POINT_DECIMAL_0);
     ROM.refreshLcd();
     for (int i = 0; i < 50000; i++) {}
-    ROM.setLcdNumber (ROM.LCD_CODE_PROGRAM, pObj1.iCounter, ROM.LCD_POINT_DECIMAL_0);
+    ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, pObj2.iCounter, ROM.LCD_POINT_DECIMAL_0);
     ROM.refreshLcd();
     for (int i = 0; i < 50000; i++) {}
-    ROM.setLcdNumber (ROM.LCD_CODE_PROGRAM, pObj1.iCounter, ROM.LCD_POINT_DECIMAL_0);
+    ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, pObj3.iCounter, ROM.LCD_POINT_DECIMAL_0);
     ROM.refreshLcd();
     for (int i = 0; i < 50000; i++) {}    
   }
