@@ -15,6 +15,7 @@
 #include "systime.h"
 #include "sensors.h"
 #include "poll.h"
+#include "llc.h"
 
 extern void reset_rcx_serial();
 
@@ -251,7 +252,15 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
     case intBitsToFloat_4I_5F:
       push_word (paramBase[0]);
       return;
-
+    case init_4_5V:
+      llc_init();
+      return;
+    case write_4B_5V:
+      llc_write((unsigned char) paramBase[0]);
+      return;
+    case read_4_5I:
+      push_word(llc_read());
+      return;
     default:
       throw_exception (noSuchMethodError);
       return;
