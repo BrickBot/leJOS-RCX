@@ -29,7 +29,7 @@ COPT = -O2
 
 # Default: Unix
 RCXCOMM=rcx_comm_linux.cpp
-CFLAGS=-I$(LEJOS_HOME)/src/tools/linux/legousbtower -shared -fpic
+CFLAGS=-shared -fpic
 LFLAGS=-shared -lstdc++
 IRTRCX=$(LEJOS_HOME)/bin/libirtrcx.so
 
