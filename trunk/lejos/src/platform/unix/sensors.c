@@ -16,9 +16,17 @@ sensor_t sensors[3] = {
   { 0, 0, 0, 0, 0 }
 };
 
-FOURBYTES last_time[3] = {
-  0, 0, 0
-};
+FOURBYTES last_time[3];
+
+void init_sensors( void)
+{
+  FOURBYTES time = get_sys_time();
+  byte i;
+
+  for (i=0; i<3; i++) {
+    last_time[i] = time;
+  }
+}
 
 /**
  * Increment sensor values every 300, 600 and 900 ms

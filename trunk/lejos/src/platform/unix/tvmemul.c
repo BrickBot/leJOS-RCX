@@ -21,14 +21,14 @@
 #include "load.h"
 #include "trace.h"
 #include "poll.h"
+#include "sensors.h"
 #include "platform_hooks.h"
 
 #define MEMORY_SIZE 8192 /* 16 Kb */
+#define EXTRA_MEMORY_SIZE 1536 /* 3 Kb */
 #define DEBUG_RUNS  0
 
 Thread   *bootThread;
-TWOBYTES *gMemory;
-TWOBYTES gMemorySize = MEMORY_SIZE;
 struct timeval gStart;
 struct itimerval itimer =
 {
@@ -87,9 +87,20 @@ void run(void)
   init_poller();
   // Initialize binary image state
   initialize_binary();
+
   // Initialize memory
-  gMemory = (TWOBYTES *) malloc (gMemorySize * sizeof (TWOBYTES));
-  init_memory (gMemory, gMemorySize);
+  {
+    byte *region;
+    TWOBYTES size;
+
+    memory_init ();
+    region = (byte *) malloc (size * sizeof (TWOBYTES));
+    memory_add_region (region, region + size * sizeof (TWOBYTES));
+    size = EXTRA_MEMORY_SIZE;
+    region = (byte *) malloc (size * sizeof (TWOBYTES));
+    memory_add_region (region, region + size * sizeof (TWOBYTES));
+  }
+
   // Initialize exceptions
   init_exceptions();
   // Create the boot thread (bootThread is a special global)
@@ -186,12 +197,16 @@ int main (int argc, char *argv[])
 	readBinary (file);
 	if (gettimeofday(&gStart, NULL)) 
 		perror("main: gettimeofday");
-	signal(SIGALRM, timer_handler);
+	timer_handler (SIGALRM);
 	if (setitimer(ITIMER_REAL, &itimer, null) < 0)
 	{
 	  printf ("Failed to set interval timer\n");
 	  exit(1);
 	}
+
+        init_sensors ();
+        last_ad_time = get_sys_time();
+
 	run();
 	return 0;
 } 
