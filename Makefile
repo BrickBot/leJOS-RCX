@@ -118,6 +118,8 @@ clean:
 	rm -rf `find . -name 'core'`
 	rm -rf `find . -name '*.o'`
 	rm -rf `find . -name '*~'`
+	rm -rf `find . -name '*.bak'`
+	rm -rf `find . -name '*.stackdump'`
 
 cleaner: clean
 	rm -rf `find . -name '*.srec'`
