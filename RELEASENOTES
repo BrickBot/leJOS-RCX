@@ -1,3 +1,6 @@
+leJOS 1.0.5:
+------------
+
   Brian Bagnall and Lawrie Griffihs have added:
   - the josx.rcxcomm package for stream-based communication between PC and RCX
 
@@ -8,6 +11,7 @@
   - MacOSX support
 
   Juergen Stuber has added:
+  - P1 one remote control now starts program (the one selected by Prgm)
   - added memory regions + 3K extra memory
   - added file TODO
   - Persistent memory
@@ -17,7 +21,7 @@
   - removed Runtime as special class
   - corrected bug in scheduler that could interrupt wrong thread
   - renamed class josx.util.Test to Assertion, method assert to test etc.
-    to avoid name class with JDK 1.4 reserved word assert
+    to avoid name clash with JDK 1.4 reserved word assert
   
 leJOS 1.0.4:
 ------------
