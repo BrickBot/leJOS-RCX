@@ -132,9 +132,9 @@ visiondoc:
 
 clean:
 	${ANT} clean
-	rm -f `find . -name 'core'`
 	rm -f `find . -name '*.o'`
 	rm -f `find . -name '*~'`
+	rm -f `find . -name '*.core'`
 	rm -f `find . -name '*.tvm'`
 	rm -f `find . -name '*.bin'`
 	rm -f `find . -name '*.sig'`
@@ -145,10 +145,6 @@ clean:
 
 distclean: clean
 	rm -f `find . -name '.#*'`
-	rm -f `find . -name '*.tvm'`
-	rm -f `find . -name '*.bin'`
-	rm -f `find . -name '*.sig'`
-	rm -f `find . -name '*.core'`
 	rm -f `find . -name '*.lst'`
 	rm -f `find . -name '*.log'`
 
@@ -160,7 +156,6 @@ distclean_src: distclean
 	rm -f `find . -name '*.so' -o -name '*.dylib' -o -name '*.jnilib' -o -name '*.dll'`
 	rm -f `find . -name '.DS_Store'`	# Mac OS X Finder droppings
 	rm -f `find . -name '*.exe'`
-	rm -f `find . -name '*.jar'`
 
 distclean_win: distclean
 	/bin/strip `find . -name '*.exe'`
