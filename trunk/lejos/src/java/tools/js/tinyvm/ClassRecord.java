@@ -3,6 +3,7 @@ package js.tinyvm;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -390,7 +391,7 @@ public class ClassRecord implements WritableData, Constants
   }
 
   public void storeMethods (RecordTable aMethodTables,
-      RecordTable aExceptionTables, HashVector aSignatures, boolean aAll)
+      RecordTable aExceptionTables, HashVector aSignatures, boolean aAll, PrintWriter aWriter)
       throws TinyVMException
   {
     _logger.log(Level.INFO, "Processing methods in " + iName);
@@ -415,6 +416,7 @@ public class ClassRecord implements WritableData, Constants
       else
       {
         _logger.log(Level.INFO, "Omitting " + meth + " for class " + iName);
+        aWriter.println("Omitting " + meth + " for class " + iName);
       }
     }
     aMethodTables.add(iMethodTable);

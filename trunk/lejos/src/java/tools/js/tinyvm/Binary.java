@@ -1,5 +1,10 @@
 package js.tinyvm;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -13,6 +18,12 @@ import js.tinyvm.util.HashVector;
  */
 public class Binary implements SpecialClassConstants, SpecialSignatureConstants
 {
+  /** the writer for signature writing. */  
+  private StringWriter stringWriter;
+  
+  /** the signature writer. */
+  private PrintWriter signatureWriter;
+  
   // State that is written to the binary:
   final RecordTable iEntireBinary = new Sequence();
 
@@ -34,7 +45,15 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
   final Hashtable iClasses = new Hashtable();
   final HashVector iSignatures = new HashVector();
 
-  public void dump (ByteWriter aOut) throws TinyVMException
+  /**
+   * Default constructor, initializes some internal writer.
+   */
+  public Binary() {
+    this.stringWriter = new StringWriter();
+    this.signatureWriter = new PrintWriter(this.stringWriter);
+  }
+
+	public void dump (ByteWriter aOut) throws TinyVMException
   {
     iEntireBinary.dump(aOut);
   }
@@ -108,6 +127,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     {
       ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
       _logger.log(Level.INFO, "Class " + pIndex + ": " + pRec.iName);
+      appendSignature("Class " + pIndex + ": " + pRec.iName);
       pRec.storeReferredClasses(iClasses, iClassTable, aClassPath,
           pInterfaceMethods);
     }
@@ -160,7 +180,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     for (int pIndex = 0; pIndex < pSize; pIndex++)
     {
       ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
-      pRec.storeMethods(iMethodTables, iExceptionTables, iSignatures, iAll);
+      pRec.storeMethods(iMethodTables, iExceptionTables, iSignatures, iAll, this.signatureWriter);
     }
   }
 
@@ -236,30 +256,71 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     {
       Signature pSig = (Signature) iSignatures.elementAt(i);
       _logger.log(Level.INFO, "Signature " + i + ": " + pSig.getImage());
+      appendSignature("Signature " + i + ": " + pSig.getImage());
     }
     _logger.log(Level.INFO, "Master record : " + iMasterRecord.getLength()
         + " bytes.");
+    appendSignature("Master record : " + iMasterRecord.getLength()
+        + " bytes.");
     _logger.log(Level.INFO, "Class records : " + iClassTable.size() + " ("
+        + iClassTable.getLength() + " bytes).");
+    appendSignature("Class records : " + iClassTable.size() + " ("
         + iClassTable.getLength() + " bytes).");
     _logger.log(Level.INFO, "Field records : " + getTotalNumInstanceFields()
         + " (" + iInstanceFieldTables.getLength() + " bytes).");
+    appendSignature("Field records : " + getTotalNumInstanceFields()
+        + " (" + iInstanceFieldTables.getLength() + " bytes).");
     _logger.log(Level.INFO, "Method records: " + getTotalNumMethods() + " ("
         + iMethodTables.getLength() + " bytes).");
+    appendSignature("Method records: " + getTotalNumMethods() + " ("
+        + iMethodTables.getLength() + " bytes).");
     _logger.log(Level.INFO, "Code          : " + iCodeSequences.size() + " ("
+        + iCodeSequences.getLength() + " bytes).");
+    appendSignature("Code          : " + iCodeSequences.size() + " ("
         + iCodeSequences.getLength() + " bytes).");
 
     _logger
         .log(Level.INFO, "Class table offset   : " + iClassTable.getOffset());
+    appendSignature("Class table offset   : " + iClassTable.getOffset());
     _logger.log(Level.INFO, "Constant table offset: "
+        + iConstantTable.getOffset());
+    appendSignature("Constant table offset: "
         + iConstantTable.getOffset());
     _logger.log(Level.INFO, "Method tables offset : "
         + iMethodTables.getOffset());
+    appendSignature("Method tables offset : "
+        + iMethodTables.getOffset());
     _logger.log(Level.INFO, "Excep tables offset  : "
+        + iExceptionTables.getOffset());
+    appendSignature("Excep tables offset  : "
         + iExceptionTables.getOffset());
   }
 
-  public static Binary createFromClosureOf (Vector aEntryClasses,
-      ClassPath aClassPath, boolean aAll) throws TinyVMException
+  /**
+   * append a signature to internal writers.
+   * @param msg the message
+   */
+  public void appendSignature(String msg) {
+    // TODO system out only in verbose level
+    System.out.println (msg);
+    this.signatureWriter.println(msg);
+  }
+
+  /**
+   * Flush all signature information into a file.
+   * 
+   * @param aFile the file to flush for
+   * @throws FileNotFoundException will be raised, if file cannot be opened
+   */
+  public void flushSignatureFile(File aFile) throws FileNotFoundException {
+    PrintWriter pw = new PrintWriter(new FileOutputStream(aFile));
+    pw.print(this.stringWriter.toString());
+    pw.flush();
+    pw.close();
+  }
+		       
+  public static Binary createFromClosureOf (Vector aEntryClasses, ClassPath aClassPath, boolean aAll)
+  throws TinyVMException
   {
     Binary pBin = new Binary();
     // From special classes and entry class, store closure
