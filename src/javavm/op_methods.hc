@@ -14,7 +14,7 @@ case OP_INVOKEVIRTUAL:
     TWOBYTES offset;
 
     
-    mr = (TWOBYTES) pc[1] | (TWOBYTES) (pc[0] & 0x0F);
+    mr = (TWOBYTES) pc[1] | ((TWOBYTES)(pc[0] & 0x0F) << 8);
     offset = pc[0] >> 4;
     sw = get_ref_at (offset);
     dispatch_virtual (word2obj (sw), mr, pc + 2);
@@ -22,7 +22,7 @@ case OP_INVOKEVIRTUAL:
     #else
 
     dispatch_virtual (word2obj (get_ref_at (pc[0] >> 4)), 
-      (TWOBYTES) pc[1] | (TWOBYTES) (pc[0] & 0x0F), pc + 2);
+      (TWOBYTES) pc[1] | ((TWOBYTES)(pc[0] & 0x0F) << 8), pc + 2);
  
     #endif
   }
