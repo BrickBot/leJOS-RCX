@@ -15,6 +15,7 @@ leJOS 2.0
   Brian Bagnall has added:
   - Modified trig functions in Math class - they are now 10x faster.
     Code donated by Paulo Costa
+  - Support for floats in DataInputStream and DataOutputStream
 
   Lawrie Griffiths has added:
   - Decoupling of ListenerThread from Sensor, Button and Serial, so that these
