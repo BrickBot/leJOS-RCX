@@ -83,7 +83,7 @@ long transfer_data (FILEDESCR fd, byte opcode, ushort index, byte *buffer, long 
           actualLength,   // send length
           response,       // receive buffer
           2,              // receive length
-          length == TOWRITEMAX ? 50 : 150,             // receive timeout ms
+          length == TOWRITEMAX ? 100 : 200,             // receive timeout ms
           RETRIES,        // num tries
           1               // use complements
       );
@@ -292,13 +292,14 @@ main(int argc, char **argv)
         3,              // send length
         response,       // receive buffer
         3,              // receive length
-        50,             // timeout ms
+        100,             // timeout ms
         1,              // num tries
         1               // use complements
     );
     if (numRead != 3)
     {
       printf (numRead == -1 ? "No response from RCX. " : "Bad response from RCX. ");
+	  printf ("Status = %s. ", rcx_strerror(numRead));
       printf ("Please make sure RCX has leJOS firmware "
               "and is in range. The firmware must be in program download mode. "
 	      "Turn RCX off and on if necessary.\n");

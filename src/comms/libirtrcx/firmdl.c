@@ -233,7 +233,7 @@ void image_dl(FILEDESCR fd, unsigned char *image, int len, unsigned short start,
     send[4] = 7;
     send[5] = 11;
 
-    if (rcx_sendrecv(fd, send, 6, recv, 1, 50, RETRIES, use_comp) != 1) {
+    if (rcx_sendrecv(fd, send, 6, recv, 1, 100, RETRIES, use_comp) != 1) {
 	fprintf(stderr, "%s: delete firmware failed\n", progname);
 	exit(1);
     }
@@ -246,7 +246,7 @@ void image_dl(FILEDESCR fd, unsigned char *image, int len, unsigned short start,
     send[4] = (cksum >> 8) & 0xff;
     send[5] = 0;
 
-    if (rcx_sendrecv(fd, send, 6, recv, 2, 50, RETRIES, use_comp) != 2) {
+    if (rcx_sendrecv(fd, send, 6, recv, 2, 100, RETRIES, use_comp) != 2) {
 	fprintf(stderr, "%s: start firmware download failed\n", progname);
 	exit(1);
     }
@@ -275,7 +275,7 @@ void image_dl(FILEDESCR fd, unsigned char *image, int len, unsigned short start,
 	    cksum += send[5 + i];
 	send[size + 5] = cksum & 0xff;
 
-	if (rcx_sendrecv(fd, send, size + 6, recv, 2, 50, RETRIES,
+	if (rcx_sendrecv(fd, send, size + 6, recv, 2, 100, RETRIES,
 			 use_comp) != 2 || recv[1] != 0) {
 	    fprintf(stderr, "%s: transfer data failed\n", progname);
 	    exit(1);
@@ -292,7 +292,7 @@ void image_dl(FILEDESCR fd, unsigned char *image, int len, unsigned short start,
     send[5] = 174;	// '®'
 
     /* Use longer timeout so ROM has time to checksum firmware */
-    if (rcx_sendrecv(fd, send, 6, recv, 26, 150, RETRIES, use_comp) != 26) {
+    if (rcx_sendrecv(fd, send, 6, recv, 26, 200, RETRIES, use_comp) != 26) {
 	fprintf(stderr, "%s: unlock firmware failed\n", progname);
 	exit(1);
     }

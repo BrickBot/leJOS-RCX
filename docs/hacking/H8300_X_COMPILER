@@ -2,6 +2,9 @@ This document contains information for those interested
 in modifying the C source code of the VM, in particular
 for cross-compilation to the H8300 microcontroller.
 
+For further details of how to build the source see the file
+GUIDELINES.
+
 Cross-compiler for Unix
 -----------------------
 There are instructions for setting up a cross-compilation environment
@@ -11,16 +14,11 @@ build-your-own option.  They work flawlessly in Linux and on cygwin
 most recent versions of the GNU utilities and has improvements on
 the h8300 cross-compilation environment.
 
-Alternatively:
+You can download the various packages required from
+http://www.gnu.org/order/ftp.html
 
-You should download binutils-2.9.1 and gcc-2.8.1 from
-www.gnu.org, and install them, in that order, using:
+newlib is available at: ftp://sources.redhat.com/pub/newlib/index.html
 
-	./configure --target=h8300-hitachi-hms --prefix=/usr/local
-	make
-	su
-	make install
-	
 Create Makefile.config containing:
 
   BINDIR=/usr/local/bin
@@ -32,9 +30,12 @@ Cross-compiler for CygWin 1.3.2
 Download and install Cygwin from http://sources.redhat.com/cygwin/
 
 Go to http://h8300-hms.sourceforge.net/ and follow the
-instructions for building the tools yourself. You can
-download the various packages required from
+instructions for building the tools yourself.
+
+You can download the various packages GNU required from
 http://www.gnu.org/order/ftp.html
+
+newlib is available at: ftp://sources.redhat.com/pub/newlib/index.html
 
 If you follow the instructions verbatim you will have to modify
 Makefile.config in the lejos root directory to point BINDIR at
@@ -42,45 +43,12 @@ Makefile.config in the lejos root directory to point BINDIR at
 
 Following this procedure will provide you with the most up
 to date versions of the tools.
+
+Note 1: the cygwin make is called make not gmake.
+
+Note 2: binutils failed to correctly configure on a later version
+of cygwin. The file binutils-2.11.2/objdir/libiberty/config.h had
+to be modified to #define HAVE_SYS_ERRLIST.
  	
-
-Cross-compiler for CygWin B20
------------------------------
-(Stolen from legOS pages at SourceForge)
-
-This assumes CygWin B20. Download the cross-compiler from
-http://legos.sourceforge.net/files/windows/cygwin/win-h8-egcs-1.1.2.zip
-and unzip it in c:\cygnus\cygwin-b20\H-i586-cygwin32. Create a soft-link
-from /bin to /cygnus/cygwin-b20/H-i586-cygwin32/bin.
-
-Create Makefile.config containing:
-
-  BINDIR=/cygnus/cygwin-b20/H-i586-cygwin32/bin
-  BINPREFIX=h8300-hms-
-
-Setting up the environment under CygWin can be problematic.
-For reference, here's what my cygnus.bat file contains:
-
-  @ECHO OFF
-  SET MAKE_MODE=UNIX
-  SET PATH=%PATH%;c:\cygnus\cygwin~1\h-i586~1\bin
-  SET HOME=/home/jose
-  bash
-
-And this is what my $HOME/.bashrc file looks like:
-
-  echo Running .bashrc
-
-  export LEJOS_ROOT=//d/projects/lejos
-  export LIBRCX_HOME=//d/projects/librcx
-  export RCXTTY=COM2
-  
-  OLD_PATH=$PATH
-  export PATH=/cygnus/cygwin-b20/H-i586-cygwin32/h8300-hms/bin/:/cygnus/cygwin-b20/H-i586-cygwin32/bin
-  export PATH=$PATH:/cygnus/cygwin-b20/H-i586-cygwin32/lib/gcc-lib/h8300-hms/egcs-2.91.66/
-  export PATH=$PATH://d/jdk1.2.2/bin
-  export PATH=$PATH:$LEJOS_ROOT/bin
-  export PATH=$PATH:$OLD_PATH
-  
 
 
