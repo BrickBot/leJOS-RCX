@@ -1,5 +1,5 @@
 #include <jni.h>
-#include "josx_rcxcomm_irTower.h"
+#include "josx_rcxcomm_Tower.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -42,7 +42,7 @@ int usb_flag;
 // open - Open the IR Tower
 
 JNIEXPORT jint JNICALL 
-Java_josx_rcxcomm_irTower_open(JNIEnv *env, jobject obj, jstring jport)
+Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport)
 {
   jclass cls;
   jfieldID fid;
@@ -159,7 +159,7 @@ Java_josx_rcxcomm_irTower_open(JNIEnv *env, jobject obj, jstring jport)
 // close - Close the IR Tower
 
 JNIEXPORT jint JNICALL 
-Java_josx_rcxcomm_irTower_close(JNIEnv *env, jobject obj)
+Java_josx_rcxcomm_Tower_close(JNIEnv *env, jobject obj)
 {
   jclass cls;
   jfieldID fid;
@@ -215,7 +215,7 @@ Java_josx_rcxcomm_irTower_close(JNIEnv *env, jobject obj)
 // write - write bytes to IR Tower
 
 JNIEXPORT jint JNICALL
-Java_josx_rcxcomm_irTower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
+Java_josx_rcxcomm_Tower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 {
     int err = 0;
     FILEDESCR fh;
@@ -296,7 +296,7 @@ Java_josx_rcxcomm_irTower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n
 // read - Read Bytes from IR Tower
 
 JNIEXPORT jint JNICALL
-Java_josx_rcxcomm_irTower_read(JNIEnv *env, jobject obj, jbyteArray arr)
+Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr)
 {
     int err = 0, jsize;
     FILEDESCR fh;
@@ -374,7 +374,7 @@ Java_josx_rcxcomm_irTower_read(JNIEnv *env, jobject obj, jbyteArray arr)
 // send - send a message to IR Tower
 
 JNIEXPORT jint JNICALL
-Java_josx_rcxcomm_irTower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
+Java_josx_rcxcomm_Tower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 {
     int err = 0;
     FILEDESCR fh;
@@ -461,7 +461,7 @@ Java_josx_rcxcomm_irTower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 // read - Read Bytes from IR Tower
 
 JNIEXPORT jint JNICALL
-Java_josx_rcxcomm_irTower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
+Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
 {
     int err = 0, jsize;
     FILEDESCR fh;
@@ -541,7 +541,7 @@ Java_josx_rcxcomm_irTower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
 // hexdump - print a hex dump to stdout
 
 JNIEXPORT void JNICALL
-Java_josx_rcxcomm_irTower_hexdump(JNIEnv *env, jobject obj, jstring jprefix, jbyteArray arr, jint n)
+Java_josx_rcxcomm_Tower_hexdump(JNIEnv *env, jobject obj, jstring jprefix, jbyteArray arr, jint n)
 {
 
 #ifdef TRACE
@@ -577,7 +577,7 @@ Java_josx_rcxcomm_irTower_hexdump(JNIEnv *env, jobject obj, jstring jprefix, jby
 // isAlive - test if IR Tower is alive
 
 JNIEXPORT jint JNICALL
-Java_josx_rcxcomm_irTower_isAlive(JNIEnv *env, jobject obj)
+Java_josx_rcxcomm_Tower_isAlive(JNIEnv *env, jobject obj)
 {
     FILEDESCR fh;
     jclass cls;
@@ -618,7 +618,7 @@ Java_josx_rcxcomm_irTower_isAlive(JNIEnv *env, jobject obj)
 // strerror - get error message corresponding to a result code
 
 JNIEXPORT jstring JNICALL
-Java_josx_rcxcomm_irTower_strerror(JNIEnv *env, jobject obj, jint errno)
+Java_josx_rcxcomm_Tower_strerror(JNIEnv *env, jobject obj, jint errno)
 {
 
 #ifdef TRACE
