@@ -16,7 +16,6 @@ public class RCXPort extends DataPort {
   boolean open = false;
   int usbFlag = 0;
   int sendTime = 0;
-  boolean listen = false;
 
   /** Creates new RCXPort
   * @param port. Specifies the port that the IR Tower is connected to.
