@@ -12,7 +12,8 @@ leJOS 1.0.0alpha3:
   - Changed Random(int) to Random(long).
   - Fixed memory leak. Thread stacks were not getting deallocated
     properly on program death.
-  - 
+  - Fixed Makefiles and other things to make leJOS installable
+    under Linux.
   
 leJOS 1.0.0alpha2:
 ------------------
