@@ -1,6 +1,8 @@
 package js.tinyvm;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
 public class HashVector
 {

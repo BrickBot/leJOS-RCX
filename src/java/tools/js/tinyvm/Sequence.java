@@ -1,7 +1,7 @@
 package js.tinyvm;
 
-import java.util.*;
-import js.classfile.*;
+import java.util.Enumeration;
+import java.util.Vector;
 
 public class Sequence extends RecordTable
 {

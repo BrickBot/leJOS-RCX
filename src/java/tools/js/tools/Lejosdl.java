@@ -1,7 +1,9 @@
 package js.tools;
 
-import java.io.*;
-import josx.rcxcomm.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Simple Lejos program downloader - replaces lejosrun

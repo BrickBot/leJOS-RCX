@@ -1,8 +1,6 @@
 package js.tinyvm;
 
-import java.io.*;
-import java.util.*;
-import js.classfile.*;
+import java.util.Enumeration;
 
 public abstract class RecordTable extends WritableDataWithOffset
 implements Constants

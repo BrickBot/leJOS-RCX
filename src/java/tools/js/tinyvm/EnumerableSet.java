@@ -1,7 +1,6 @@
 package js.tinyvm;
 
-import java.util.*;
-import js.classfile.*;
+import java.util.Enumeration;
 
 public class EnumerableSet extends RecordTable
 {

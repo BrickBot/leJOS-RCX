@@ -1,7 +1,6 @@
 package js.tools;
 
-import java.io.*;
-import josx.rcxcomm.*;
+import josx.rcxcomm.Tower;
 
 /**
  * RCX Downloading utilities

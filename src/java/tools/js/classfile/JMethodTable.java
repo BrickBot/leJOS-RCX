@@ -1,5 +1,5 @@
 package js.classfile;
-import java.io.*;
+import java.io.InputStream;
 
 public class JMethodTable extends JTable
 {

@@ -1,8 +1,7 @@
 package js.tinyvm;
 
-import java.io.*;
-import java.util.*;
-import js.classfile.*;
+import js.classfile.JClassName;
+import js.classfile.JField;
 
 public class StaticFieldRecord implements WritableData, Constants
 {

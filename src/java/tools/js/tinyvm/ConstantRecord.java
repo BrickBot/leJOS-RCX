@@ -1,8 +1,11 @@
 package js.tinyvm;
 
-import java.io.*;
-import java.util.*;
-import js.classfile.*;
+import js.classfile.JCPE_Double;
+import js.classfile.JCPE_Float;
+import js.classfile.JCPE_Integer;
+import js.classfile.JCPE_Long;
+import js.classfile.JCPE_String;
+import js.classfile.JConstantPoolEntry;
 
 public class ConstantRecord implements WritableData, Constants
 {

@@ -1,8 +1,7 @@
 package js.classfile;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.InputStream;
+import java.util.Enumeration;
 
 public class JAttributeTable extends JTable
 {

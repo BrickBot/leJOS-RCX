@@ -1,8 +1,5 @@
 package js.tinyvm;
 
-import java.io.*;
-import java.util.*;
-import js.classfile.*;
 
 public class EntryClassIndex implements WritableData, Constants
 {

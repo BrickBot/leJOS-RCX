@@ -1,6 +1,18 @@
 package js.tinyvm;
 
-import js.classfile.*;
+import js.classfile.IConstantPoolEntry;
+import js.classfile.JCPE_Class;
+import js.classfile.JCPE_Double;
+import js.classfile.JCPE_Fieldref;
+import js.classfile.JCPE_Float;
+import js.classfile.JCPE_Integer;
+import js.classfile.JCPE_Long;
+import js.classfile.JCPE_NameAndType;
+import js.classfile.JCPE_RefEntry;
+import js.classfile.JCPE_String;
+import js.classfile.JClassFile;
+import js.classfile.JClassName;
+import js.classfile.JConstantPoolEntry;
 
 public class CodeUtilities
 implements OpCodeConstants, OpCodeInfo, Constants

@@ -1,8 +1,6 @@
 package js.tinyvm;
 
-import java.io.*;
-import java.util.*;
-import js.classfile.*;
+import js.classfile.JField;
 
 public class InstanceFieldRecord implements WritableData, Constants
 {

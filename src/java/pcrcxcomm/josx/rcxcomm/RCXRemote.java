@@ -1,7 +1,8 @@
 package josx.rcxcomm;
 
-import josx.rcxcomm.*;
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 /**
  * Utility class to support remote execution.

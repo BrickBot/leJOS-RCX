@@ -1,6 +1,6 @@
 package js.tools;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
  * Respresentation of an H8300 S-record

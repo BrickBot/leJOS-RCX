@@ -1,6 +1,6 @@
 package js.tinyvm;
 
-import java.io.*;
+import java.io.IOException;
 
 public interface ByteWriter
 {

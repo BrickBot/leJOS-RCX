@@ -1,6 +1,5 @@
 package js.tinyvm;
 
-import java.io.*;
 
 public class CodeSequence extends WritableDataWithOffset
 {

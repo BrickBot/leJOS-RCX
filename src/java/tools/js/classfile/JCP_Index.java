@@ -1,5 +1,6 @@
 package js.classfile;
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class JCP_Index implements IDumpable
 {

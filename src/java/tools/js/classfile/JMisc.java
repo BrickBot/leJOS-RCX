@@ -1,7 +1,5 @@
 package js.classfile;
 
-import java.util.*;
-import java.lang.reflect.*;
 
 public class JMisc
 {

@@ -73,12 +73,10 @@ public class HttpProxy {
   class RCXThread extends Thread {
     private Socket sock;  
     private HttpProxy proxy;
-    private boolean start;
 
     RCXThread(HttpProxy proxy, Socket sock) {
       this.sock = sock;
       this.proxy = proxy;
-      this.start = start;
     }
 
     public void run() {
