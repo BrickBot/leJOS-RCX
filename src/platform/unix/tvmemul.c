@@ -67,7 +67,8 @@ struct timeval now;
 void timer_handler(int signo)
 {
   gettimeofday(&now, 0);
-  timersub(&now, &gStart, &now);
+  // 11/17/01: Jose commented out:
+  //timersub(&now, &gStart, &now);
   sys_time = now.tv_sec*1000 + now.tv_usec/1000;
   signal(SIGALRM, timer_handler);
 }
