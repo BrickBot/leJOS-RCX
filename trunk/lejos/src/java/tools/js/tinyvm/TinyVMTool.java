@@ -8,9 +8,9 @@ import java.util.logging.Logger;
 
 import js.common.AbstractTool;
 import js.common.ToolProgressMonitor;
-import js.tinyvm.io.BEDataOutputStream;
-import js.tinyvm.io.ByteWriter;
-import js.tinyvm.io.LEDataOutputStream;
+import js.tinyvm.io.BEByteWriter;
+import js.tinyvm.io.IByteWriter;
+import js.tinyvm.io.LEByteWriter;
 
 /**
  * Tiny VM.
@@ -103,9 +103,9 @@ public class TinyVMTool extends AbstractTool
       try
       {
          OutputStream bufferedStream = new BufferedOutputStream(stream, 4096);
-         ByteWriter byteWriter = bigEndian
-            ? (ByteWriter) new BEDataOutputStream(bufferedStream)
-            : (ByteWriter) new LEDataOutputStream(bufferedStream);
+         IByteWriter byteWriter = bigEndian
+            ? (IByteWriter) new BEByteWriter(bufferedStream)
+            : (IByteWriter) new LEByteWriter(bufferedStream);
          binary.dump(byteWriter);
          bufferedStream.close();
       }

@@ -2,7 +2,7 @@ package js.tinyvm.old;
 
 import java.io.IOException;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 import js.tinyvm.io.IOUtilities;
 
 public class MasterRecord implements WritableData, Constants
@@ -14,7 +14,7 @@ public class MasterRecord implements WritableData, Constants
       iBinary = aBinary;
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter aOut) throws TinyVMException
    {
       int pMagicNumber = MAGIC_MASK;
       int pConstantTableOffset = iBinary.iConstantTable.getOffset();

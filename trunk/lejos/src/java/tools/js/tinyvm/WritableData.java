@@ -1,6 +1,6 @@
 package js.tinyvm;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 
 public interface WritableData
 {
@@ -10,7 +10,7 @@ public interface WritableData
     * @param writer writer to write binary to
     * @throws TinyVMException
     */
-   public void dump (ByteWriter writer) throws TinyVMException;
+   public void dump (IByteWriter writer) throws TinyVMException;
 
    /**
     * Returns the length of the record, in bytes.

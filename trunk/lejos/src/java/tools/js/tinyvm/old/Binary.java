@@ -10,7 +10,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 import js.tinyvm.util.HashVector;
 
 /**
@@ -57,7 +57,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
       this.signatureWriter = new PrintWriter(System.out);
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter aOut) throws TinyVMException
    {
       iEntireBinary.dump(aOut);
    }

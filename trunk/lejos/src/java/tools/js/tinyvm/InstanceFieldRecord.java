@@ -2,7 +2,7 @@ package js.tinyvm;
 
 import java.io.IOException;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 
 import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.Field;
@@ -28,7 +28,7 @@ public class InstanceFieldRecord implements WritableData
       return 1;
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter aOut) throws TinyVMException
    {
       try
       {

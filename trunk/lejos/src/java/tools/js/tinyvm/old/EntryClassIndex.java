@@ -2,7 +2,7 @@ package js.tinyvm.old;
 
 import java.io.IOException;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 
 public class EntryClassIndex implements WritableData, Constants
 {
@@ -20,7 +20,7 @@ public class EntryClassIndex implements WritableData, Constants
       return 1;
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter aOut) throws TinyVMException
    {
       try
       {

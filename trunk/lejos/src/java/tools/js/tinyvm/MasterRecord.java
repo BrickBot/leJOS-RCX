@@ -2,7 +2,7 @@ package js.tinyvm;
 
 import java.io.IOException;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 import js.tinyvm.io.IOUtilities;
 
 /**
@@ -34,7 +34,7 @@ public class MasterRecord implements WritableData
    /**
     * Dump.
     */
-   public void dump (ByteWriter writer) throws TinyVMException
+   public void dump (IByteWriter writer) throws TinyVMException
    {
       assert writer != null: "Precondition: writer != null";
 

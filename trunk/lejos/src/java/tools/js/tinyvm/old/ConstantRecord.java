@@ -2,7 +2,7 @@ package js.tinyvm.old;
 
 import java.io.IOException;
 
-import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IByteWriter;
 import js.tinyvm.io.IOUtilities;
 import js.tinyvm.old.classfile.JCPE_Double;
 import js.tinyvm.old.classfile.JCPE_Float;
@@ -83,7 +83,7 @@ public class ConstantRecord implements WritableData, Constants
       return iSize;
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter aOut) throws TinyVMException
    {
       assert iSize != -1: "Check: iSize != -1";
       assert iConstantValue != null: "Check: iConstantValue != null";

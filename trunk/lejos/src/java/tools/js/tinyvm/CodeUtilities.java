@@ -283,6 +283,10 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
 
    public byte[] processCode (byte[] aCode) throws TinyVMException
    {
+      if (aCode.length == 34)
+      {
+         System.out.println("break");
+      }
       byte[] pOutCode = new byte[aCode.length];
       int i = 0;
       while (i < aCode.length)
