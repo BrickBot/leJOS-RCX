@@ -14,7 +14,7 @@ public class MemoryTest
   	Thread.sleep(1000);
   	
   	// Display the number of runs.
-  	PersistentMemoryArea pMem = PersistentMemoryArea.get((short)0xcafe, (short)1);  	
+  	PersistentMemoryArea pMem = PersistentMemoryArea.get(0xcafe, 1);  	
   	LCD.showNumber(4321);
   	Thread.sleep(1000);
   	

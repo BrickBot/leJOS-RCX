@@ -4,13 +4,31 @@ package josx.platform.rcx;
  * A memory area for persistent storage.
  * The memory persists between runs of a program. Downloading
  * a new program will trash the area (unless you're very lucky).
- *
+ * <P>
  * The magic number should be different for each application
  * (use a random integer).
+ * <P>
  * At the moment there can be only one PersistentMemoryArea,
  * that will be reinitialized if you change the magic number.
  * This may change in the future, with more than one area and
  * magic number used to distinguish them.
+ * <P>
+ * In case you experience problems, the specific restrictions are
+ * as follows (which might help you fix the problem):
+ * <ol>
+ * <li>There can be only one persistent area of memory.
+ * <li>It will not survive an application reload unless it is exactly
+ * the same application (which means the application is axactly the
+ * same size, it uses the same magic number and the persistent area
+ * is exactly the same size).
+ * <li>You can call PersistentMemoryArea.get(magic, size) exactly once
+ * in any one run of an application. If you call it more than once you
+ * will get an out-of-memory error.
+ * <li>There is a very remote chance that on the first run of an
+ * application it will be falsely determined that the persistent area
+ * already exists. For this to happen, the area of heap used will have
+ * to contain an exact match for the magic number and size requested.
+ * </ol>
  */
 
 public class PersistentMemoryArea
@@ -53,7 +71,7 @@ public class PersistentMemoryArea
    * @param size the size in bytes. This should be in the range 0 thru 511.
    * @exception OutOfMemoryError not enoug memory to allocate the array.
    */
-  public static PersistentMemoryArea get (short magic, short size)
+  public static PersistentMemoryArea get (int magic, int size)
     throws OutOfMemoryError  
   {
     if (singleton == null) {
