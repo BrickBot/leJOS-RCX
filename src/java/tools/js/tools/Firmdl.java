@@ -4,8 +4,9 @@ import java.io.*;
 
 /**
  * Java RCX firmware downloader - replaces lejosfirmdl
+ * @author Lawrie Griffiths
  */
-public class Firmdl {
+public class Firmdl implements FastImage {
 
   private static final int SEGMENT_BREAK = 1024;
   private static final int IMAGE_START = 0x8000;
@@ -14,6 +15,7 @@ public class Firmdl {
 
   private static FileReader fr = null;
   private static BufferedReader br = null;
+  private static boolean fastMode = false;
 
   private static char [] readRecord() throws IOException {
     String s = br.readLine();
@@ -186,8 +188,7 @@ public class Firmdl {
         System.err.println("For debug output set RCXCOMM_DEBUG=Y");
         System.exit(1);
       } else if (args[i].equals("--fast") || args[i].equals("-f")) {
-        System.err.println("Fast mode not yet supported");
-        System.exit(1);
+        fastMode = true;
       } else usage = true;
     }
 
@@ -201,7 +202,7 @@ public class Firmdl {
       System.exit(1);
     }
 
-    if (download) Download.open(tty);
+    if (download) Download.open(tty, false);
 
     // Open the file
 
@@ -227,7 +228,13 @@ public class Firmdl {
     fr.close();
 
     if (download) {
-      Download.installFirmware(image.data, length, image.entry);
+      if (fastMode) {
+        System.out.println("Installing fastmode image");
+        Download.installFirmware(fastdlImage, fastdlImage.length, IMAGE_START, false);
+        Download.close();
+        Download.open(tty, fastMode);
+      }
+      Download.installFirmware(image.data, length, image.entry, true);
       Download.close();
     }
   }

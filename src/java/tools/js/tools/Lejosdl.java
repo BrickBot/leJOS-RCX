@@ -67,7 +67,7 @@ public class Lejosdl {
       System.exit (1);
     }
 
-    Download.open(tty);
+    Download.open(tty, false);
 
     buffer = new byte[(int) pLength];
     fis.read(buffer);
