@@ -17,7 +17,7 @@ For more inforamtion see the leJOS FAQ at <http://lejos.sourceforge.net/faq/>.
 Serial support:
 leJOS is known to work with OS X and a serial tower.
 However as current MACs don't have a serial interface you need a USB to serial converter with OS X driver supprt to attach the LEGO serial IR tower to your MAC. 
-Before you ca run lejos, set the RCXTTY variable to the cu device of your serial adapter.
+Before you can run lejos, set the RCXTTY variable to the cu device of your serial adapter.
 See the leJOS FAQ (<http://lejos.sourceforge.net/faq/> for more information.
 
 USB support:
