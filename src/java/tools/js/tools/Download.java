@@ -256,7 +256,7 @@ public class Download {
     /* Use longer timeout so ROM has time to checksum firmware */
 
     tower.send(send,6);
-    try {Thread.sleep(1000);} catch (InterruptedException ie) {}
+
     if ((r=tower.receive(recv)) < 0) {
       System.err.println("Unlock firmware failed " + r);
       System.exit(1);
