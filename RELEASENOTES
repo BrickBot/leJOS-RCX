@@ -1,3 +1,10 @@
+leJOS 1.0.0alpha5:
+------------------
+
+  - Significant changes to Sensor API. See setTypeAndMode.
+  - java.lang.Math.atan(double), contributed by Brian Bagnall.
+  - 
+  
 leJOS 1.0.0alpha4:
 ------------------
   

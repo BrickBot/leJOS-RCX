@@ -18,6 +18,7 @@ public class Test37
      traceNumber ((int) (Math.sin (Math.PI / 6.0) * 100.0), 1);
      traceNumber ((int) (Math.cos (Math.PI / 6.0) * 100.0), 2);
      traceNumber ((int) (Math.tan (Math.PI / 6.0) * 100.0), 3);
+     traceNumber ((int) (Math.atan (1.0) * 100.0), 3);
      traceNumber ((int) (Math.sqrt (2.0) *  100), 4);
    }
 }
