@@ -22,11 +22,11 @@ public class MasterRecord implements WritableData, Constants
                        " CTSize=" + iBinary.iConstantTable.size());
     }
     int pStaticFieldsOffset = iBinary.iStaticFields.getOffset();
-    Utilities.assert (pStaticFieldsOffset > 0 && pStaticFieldsOffset <= 0xFFFF);
+    Utilities.assert (pStaticFieldsOffset >= 0 && pStaticFieldsOffset <= 0xFFFF);
     int pStaticStateOffset = iBinary.iStaticState.getOffset();
-    Utilities.assert (pStaticStateOffset > 0 && pStaticStateOffset <= 0xFFFF);
-    int pStaticStateLength = iBinary.iStaticState.getLength() / 2;
-    Utilities.assert (pStaticStateLength > 0 && pStaticStateLength <= 0xFFFF);
+    Utilities.assert (pStaticStateOffset >= 0 && pStaticStateOffset <= 0xFFFF);
+    int pStaticStateLength = (iBinary.iStaticState.getLength() + 1) / 2;
+    Utilities.assert (pStaticStateLength >= 0 && pStaticStateLength <= 0xFFFF);
     int pNumStaticFields = iBinary.iStaticFields.size();
     int pEntryClassesOffset = iBinary.iEntryClassIndices.getOffset();
     int pNumEntryClasses = iBinary.iEntryClassIndices.size();
