@@ -2,6 +2,9 @@ package josx.rcxcomm.remotecontrol;
 
 /*
  * $Log$
+ * Revision 1.4  2004/07/20 17:02:34  markus_heiden
+ * mh: reworked tower jni implementation
+ *
  * Revision 1.3  2004/06/21 22:49:26  markus_heiden
  * reformatted code
  * Revision 1.2 2004/06/12 14:59:27
@@ -124,10 +127,12 @@ public class RemoteControlMessenger
    /**
     * creates a new instance of RemoteControlMessenger
     */
-   public RemoteControlMessenger ()
+   public RemoteControlMessenger() throws UnsatisfiedLinkError
    {
       // instantiate tower
-      fTower = new Tower();
+   	  // TODO use default constructor
+   	  // fTower = new Tower();
+      fTower = new Tower("/dev/usb/legousbtower0");
       // instantiate packet
       fPacket = new byte[3];
       // set lego remote opcode
@@ -144,7 +149,7 @@ public class RemoteControlMessenger
     * 
     * @param int the message to send (in terms of RemoteControlMessenger
     *           constants)
-    * @throws IOException if message code is invalid
+    * @throws IOException 
     */
    public void send (byte[] aMessageCode) throws IOException
    {
@@ -168,8 +173,9 @@ public class RemoteControlMessenger
     * 
     * @param byte[] the data packet to send
     * @param int the length of the packet
+    * @throws IOException 
     */
-   private void sendPacket (byte[] aPacket, int aPacketLength)
+   private void sendPacket (byte[] aPacket, int aPacketLength) throws IOException
    {
       // TODO rework
       try
@@ -183,7 +189,9 @@ public class RemoteControlMessenger
       }
       catch (TowerException e)
       {
-         e.printStackTrace();
+      	IOException ioExc = new IOException(e.getMessage());
+      	ioExc.fillInStackTrace();
+        throw ioExc;
       }
    } // sendPacket()
 
