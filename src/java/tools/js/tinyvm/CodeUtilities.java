@@ -281,10 +281,6 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
 
    public byte[] processCode (byte[] aCode) throws TinyVMException
    {
-      if (aCode.length == 14)
-      {
-         System.out.println("break");
-      }
       byte[] pOutCode = new byte[aCode.length];
       int i = 0;
       while (i < aCode.length)
@@ -312,7 +308,7 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
             case OP_ANEWARRAY:
                // Opcode is changed: ANEWARRAY -> NEWARRAY
                pOutCode[i - 1] = (byte) OP_NEWARRAY;
-               pOutCode[i++] = (byte) Constants.T_OBJECT;
+               pOutCode[i++] = (byte) TinyVMConstants.tinyVMType(Constants.T_ARRAY);
                pOutCode[i++] = (byte) OP_NOP;
                break;
             case OP_MULTIANEWARRAY:
