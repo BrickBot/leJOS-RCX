@@ -57,7 +57,7 @@ public class TowerException extends Exception
          case 12:
             return "not open";
          default:
-            return "unknown error";
+            return "unknown error (error code " + status + ")";
       }
    }
 }

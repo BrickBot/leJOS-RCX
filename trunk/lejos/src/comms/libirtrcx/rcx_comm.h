@@ -31,20 +31,20 @@
 // Error codes
 //
 
-#define RCX_OK             0
-#define RCX_NO_TOWER      -1
-#define RCX_BAD_LINK      -2
-#define RCX_BAD_ECHO      -3
-#define RCX_NO_RESPONSE   -4
-#define RCX_BAD_RESPONSE  -5
-#define RCX_WRITE_FAIL    -6
-#define RCX_READ_FAIL     -7
-#define RCX_OPEN_FAIL     -8
-#define RCX_INTERNAL_ERR  -9
+#define RCX_OK               0
+#define RCX_NO_TOWER        -1
+#define RCX_BAD_LINK        -2
+#define RCX_BAD_ECHO        -3
+#define RCX_NO_RESPONSE     -4
+#define RCX_BAD_RESPONSE    -5
+#define RCX_WRITE_FAIL      -6
+#define RCX_READ_FAIL       -7
+#define RCX_OPEN_FAIL       -8
+#define RCX_INTERNAL_ERR    -9
 #define RCX_ALREADY_CLOSED -10
-#define RCX_ALREADY_OPEN -11
-#define RCX_NOT_OPEN     -12
-#define RCX_TIMED_OUT     -13
+#define RCX_ALREADY_OPEN   -11
+#define RCX_NOT_OPEN       -12
+#define RCX_TIMED_OUT      -13
 
 #define RCX_NOT_IMPL -256
 
