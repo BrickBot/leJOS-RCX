@@ -7,12 +7,12 @@ import java.io.*;
  * RCXAbstractPort implements input and output stream handling and input
  * buffering. It uses a packet handler for sending and receivng packets.
  * This version is abstract because it has no packet handler defined.
- * Specific versions of RCXAbstractPorts override the constructor and
+ * Specific versions of RCXAbstractPort override the constructor and
  * set up the packet handler to use a specific protocol stack. 
  * @author Brian Bagnall
  * @author Lawrie Griffiths
  */
-public class RCXAbstractPort {
+public abstract class RCXAbstractPort {
 
    private boolean portOpen = true;
    private Listener listener;
@@ -23,12 +23,12 @@ public class RCXAbstractPort {
    protected PacketHandler packetHandler;
 
    /**
-    *  Parameterless constructor for the RCXAbstractPort.
-    *  Opens the port.
-    * @param p the packet handler
+    * Constructor for the RCXAbstractPort.
+    * Opens the port, and sets the protocol packet handler.
+    * @param handler the packet handler
     */
-   public RCXAbstractPort(PacketHandler p) throws IOException {
-      packetHandler = p;
+   public RCXAbstractPort(PacketHandler handler) throws IOException {
+      packetHandler = handler;
       rcxin = new RCXInputStream(this);
       rcxout = new RCXOutputStream(packetHandler);
       listener = new Listener();
@@ -37,17 +37,17 @@ public class RCXAbstractPort {
    }
 
    /**
-    * Constructor for a names port (e.g. com1 or usb).
+    * Constructor for a named port (e.g. com1 or usb).
     * The port name is ignored on he RCX.
-    * @param port the ort name, e.g com1 or usb
-    * @param p, the packet handler
+    * @param port the port name, e.g com1 or usb
+    * @param handler, the packet handler
     */
-   public RCXAbstractPort(String port, PacketHandler p) throws IOException {
-     this(p);
+   public RCXAbstractPort(String port, PacketHandler handler) throws IOException {
+     this(handler);
    }
 
    /**
-    * Switch listeing on and off on the PC, for a serial tower.
+    * Switch listening on and off on the PC, for a serial tower.
     * @param listen true to listen, else false 
     **/
    public void setListen(boolean listen) {
@@ -130,7 +130,7 @@ public class RCXAbstractPort {
       private IOException ioe = new IOException();
 
       /** Creates new RCXInputStream
-      * @param port The RCXAbsttractPort which should deliver data for to this InputStream
+      * @param port The RCXAbstractPort which should deliver data for to this InputStream
       */
       public RCXInputStream(RCXAbstractPort port) {
          dataPort = port;
