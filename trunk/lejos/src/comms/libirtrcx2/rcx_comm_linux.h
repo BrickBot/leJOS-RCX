@@ -37,7 +37,7 @@
 
 #endif
 
-#define FILEDESCR	int
-#define BADFILE	-1
+#define FILEDESCR	FILE*
+#define BADFILE	NULL
 
 #endif /* RCX_COMM_LINUX_H_INCLUDED */
