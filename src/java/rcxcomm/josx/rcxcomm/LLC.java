@@ -13,6 +13,9 @@ public class LLC {
   private static int sendTime;
   private static final int COLLISION_DELAY = 200;
 
+  private LLC() {
+  }
+
   /** 
    * Initialize LLC
    **/
@@ -24,7 +27,7 @@ public class LLC {
    **/
   public static native int read();
 
-  public static native void write(byte [] buf, int len);
+  private static native void write(byte [] buf, int len);
 
   /**
    * Indicate whether the last send is still active
@@ -33,7 +36,7 @@ public class LLC {
   public static native boolean isSending();
 
   /**
-   * Indicate whether the last send is still active
+   * Return the error status of the last send
    * @return true if still sending, else false
    **/
   public static native boolean isSendError();
@@ -42,7 +45,7 @@ public class LLC {
    * Send a number of bytes and wait for completion of transmission
    * @param buf the array of bytes to send
    * @param len the number of bytes to send
-   * *return true if the send is successful, else false
+   * @return true if the send is successful, else false
    **/
   public static boolean sendBytes(byte [] buf, int len) {
     if (isSending()) return false;
