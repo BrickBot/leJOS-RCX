@@ -486,7 +486,7 @@ public class ClassRecord implements WritableData, Constants
     catch (Exception e)
     {
       // TODO refactor exceptions
-      throw new TinyVMException(e);
+      throw new TinyVMException(e.getMessage());
     }
 
     return pCR;
