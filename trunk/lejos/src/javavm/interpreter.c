@@ -151,6 +151,7 @@ void engine()
 {
   register short numOpcodes;
   
+  gMakeRequest = false;
   switch_thread();
   numOpcodes = OPCODES_PER_TIME_SLICE;
  LABEL_ENGINELOOP: 

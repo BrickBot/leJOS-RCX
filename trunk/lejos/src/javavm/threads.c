@@ -23,6 +23,7 @@
  */
 Thread* currentThread;
 byte gThreadCounter;
+byte gProgramNumber;
 
 StackFrame *current_stackframe()
 {
@@ -235,7 +236,7 @@ boolean switch_thread()
       {
         ClassRecord *classRecord;
 
-        classRecord = get_class_record (get_entry_class (0));
+        classRecord = get_class_record (get_entry_class (gProgramNumber));
         // Initialize top word with fake parameter for main():
         set_top_ref (JNULL);
         // Push stack frame for main method:

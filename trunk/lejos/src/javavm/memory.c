@@ -36,21 +36,21 @@ byte typeSize[] = {
   8  // 11 == T_LONG
 };
 
-// Two-byte pointers are used so that pointer
-// arithmetic works as expected.
-
-/**
- * Top of the free block list.
- */
-static TWOBYTES freeOffset;
-
 /**
  * Beginning of heap.
  */
 static TWOBYTES *startPtr;
+static TWOBYTES *memoryTop;
+static TWOBYTES *allocPtr;
 
 extern void deallocate (TWOBYTES *ptr, TWOBYTES size);
 extern TWOBYTES *allocate (TWOBYTES size);
+
+/**
+ * @param numWords Number of 2-byte words used in allocating the object.
+ */
+#define initialize_state(OBJ_,NWORDS_) zero_mem(((TWOBYTES *) (OBJ_)) + NORM_OBJ_SIZE, (NWORDS_) - NORM_OBJ_SIZE)
+#define get_object_size(OBJ_)          (get_class_record(get_na_class_index(OBJ_))->classSize)
 
 /**
  * Zeroes out memory.
@@ -63,33 +63,23 @@ void zero_mem (register TWOBYTES *ptr, register TWOBYTES numWords)
     *ptr++ = 0;
 }
 
-static inline void set_class (Object *obj, const byte classIndex)
+static inline void set_array (Object *obj, const byte elemType, const TWOBYTES length)
 {
-  obj->flags = CLASS_MASK & classIndex;
-}
-
-static inline void set_array (Object *obj, const byte elemSize, const byte length)
-{
-  obj->flags = ARRAY_MASK | ((TWOBYTES) (elemSize - 1) << ELEM_SIZE_SHIFT) | 
-               length;
   #ifdef VERIFY
-  assert (is_array(obj), MEMORY0);
+  assert (elemType <= (ELEM_TYPE_MASK >> ELEM_TYPE_SHIFT), MEMORY0); 
+  assert (length <= (ARRAY_LENGTH_MASK >> ARRAY_LENGTH_SHIFT), MEMORY1);
   #endif
-}
-
-/**
- * @param numWords Number of 2-byte words used in allocating the object.
- */
-inline void initialize_state (const Object *objRef, const TWOBYTES numWords)
-{
-  zero_mem (((TWOBYTES *) objRef) + NORM_OBJ_SIZE, numWords - NORM_OBJ_SIZE);
+  obj->flags = IS_ALLOCATED_MASK | IS_ARRAY_MASK | ((TWOBYTES) elemType << ELEM_TYPE_SHIFT) | length;
+  #ifdef VERIFY
+  assert (is_array(obj), MEMORY3);
+  #endif
 }
 
 inline Object *memcheck_allocate (const TWOBYTES size)
 {
   Object *ref;
   ref = (Object *) allocate (size);
-  if (ref == null)
+  if (ref == JNULL)
   {
     #ifdef VERIFY
     assert (outOfMemoryError != null, MEMORY5);
@@ -145,16 +135,9 @@ Object *new_object_for_class (const byte classIndex)
   }
 
   // Initialize default values
-  set_class (ref, classIndex);
-  #if 0
-  trace (-1, classIndex, 1);
-  trace (-1, ((short) ref) - 56000, 2);
-  trace (-1, (short) get_class_index(ref), 3);
-  #endif
+
+  ref->flags = IS_ALLOCATED_MASK | classIndex;
   initialize_state (ref, instanceSize);
-  #if 0
-  trace (-1, (short) get_class_index(ref), 4);
-  #endif
 
   #if DEBUG_OBJECTS
   printf ("new_object_for_class: returning %d\n", (int) ref);
@@ -163,9 +146,9 @@ Object *new_object_for_class (const byte classIndex)
   return ref;
 }
 
-TWOBYTES get_array_size (const byte length, const byte elemSize)
+TWOBYTES comp_array_size (const byte length, const byte elemType)
 {
-  return NORM_OBJ_SIZE + (((TWOBYTES) length * elemSize) + 1) / 2;
+  return NORM_OBJ_SIZE + (((TWOBYTES) length * typeSize[elemType]) + 1) / 2;
 }
 
 /**
@@ -176,23 +159,27 @@ TWOBYTES get_array_size (const byte length, const byte elemSize)
 Object *new_primitive_array (const byte primitiveType, STACKWORD length)
 {
   Object *ref;
-  byte elemSize;
   TWOBYTES allocSize;
 
   // Hack to disallow allocations longer than 255:
-  if (length > 0xFF)
+  if (length > (ARRAY_LENGTH_MASK >> ARRAY_LENGTH_SHIFT))
   {
     throw_exception (outOfMemoryError);
     return JNULL;
   }
-  elemSize = typeSize[primitiveType];
-  allocSize = get_array_size ((byte) length, elemSize);
+  allocSize = comp_array_size ((byte) length, primitiveType);
   ref = memcheck_allocate (allocSize);
   if (ref == null)
     return JNULL;
-  set_array (ref, elemSize, (byte) length);
+  set_array (ref, primitiveType, (byte) length);
   initialize_state (ref, allocSize);
   return ref;
+}
+
+TWOBYTES get_array_size (Object *obj)
+{
+  return comp_array_size (get_array_length (obj),
+                          get_element_type (obj));	
 }
 
 void free_array (Object *objectRef)
@@ -201,9 +188,7 @@ void free_array (Object *objectRef)
   assert (is_array(objectRef), MEMORY7);
   #endif VERIFY
 
-  deallocate ((TWOBYTES *) objectRef, get_array_size (
-              get_array_length (objectRef),
-              get_element_size (objectRef)));  
+  deallocate ((TWOBYTES *) objectRef, get_array_size (objectRef));
 }
 
 /**
@@ -303,6 +288,76 @@ void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr)
 // 2. First 2 bytes of free block is size.
 // 3. Second 2 bytes of free block is abs. offset of next free block.
 
+// /**
+//  * @param ptr Beginning of heap.
+//  * @param size Size of heap in 2-byte words.
+//  */
+// void init_memory (void *ptr, TWOBYTES size)
+// {
+//   #ifdef VERIFY
+//   memoryInitialized = true;
+//   #endif
+// 
+//   startPtr = ptr;
+//   freeOffset = NULL_OFFSET;
+//   #if DEBUG_MEMORY
+//   printf ("Setting start of memory to %d\n", (int) startPtr);
+//   printf ("Going to reserve %d words\n", size);
+//   #endif
+//   deallocate (startPtr, size);
+// }
+// 
+// /**
+//  * @param size Size of object in 2-byte words.
+//  */
+// TWOBYTES *allocate (TWOBYTES size)
+// {
+//   register TWOBYTES *ptr;
+//   TWOBYTES *anchorOffsetRef;
+// 
+//   #if DEBUG_MEMORY
+//   printf ("Allocating %d words.\n", size);
+//   #endif
+//   anchorOffsetRef = &freeOffset;
+//   while (*anchorOffsetRef != NULL_OFFSET)
+//   { 
+//     ptr = startPtr + *anchorOffsetRef;
+//     if (ptr[0] >= size + 2)
+//     {
+//       ptr[0] = ptr[0] - size;
+//       return ptr + ptr[0];
+//     }
+//     if (ptr[0] >= size)
+//     {
+//       // This is necessary or we could run out of memory.
+//       *anchorOffsetRef = ptr[1]; 
+//       return ptr;     
+//     }
+//     anchorOffsetRef = &(ptr[1]);
+//   }
+//   #if DEBUG_MEMORY
+//   printf ("No more memory!");
+//   #endif
+//   return null;      
+// }
+// 
+// void deallocate (TWOBYTES *ptr, TWOBYTES size)
+// {
+//   // TBD: consolidate free blocks
+//   ptr[0] = size;
+//   ptr[1] = freeOffset;
+//   freeOffset = ptr - startPtr;
+// }
+//
+ 
+#if DEBUG_RCX_MEMORY
+
+void scan_memory (TWOBYTES *numNodes, TWOBYTES *biggest, TWOBYTES *freeMem)
+{
+}
+
+#endif DEBUG_RCX_MEMORY
+
 /**
  * @param ptr Beginning of heap.
  * @param size Size of heap in 2-byte words.
@@ -314,82 +369,63 @@ void init_memory (void *ptr, TWOBYTES size)
   #endif
 
   startPtr = ptr;
-  freeOffset = NULL_OFFSET;
+  memoryTop = ((TWOBYTES *) ptr) + size;
+  allocPtr = ptr;
   #if DEBUG_MEMORY
   printf ("Setting start of memory to %d\n", (int) startPtr);
   printf ("Going to reserve %d words\n", size);
   #endif
-  deallocate (startPtr, size);
+  deallocate (ptr, size);
+}
+
+TWOBYTES *allocate (TWOBYTES size)
+{
+  TWOBYTES blockHeader;
+  TWOBYTES *ptr;
+  boolean rolled = false;
+  
+  ptr = allocPtr;
+  for (;;)
+  {
+    blockHeader = ptr[0];
+    if (blockHeader & IS_ALLOCATED_MASK)
+    {
+      TWOBYTES s = (blockHeader & IS_ARRAY_MASK) ? get_array_size ((Object *) ptr) :
+                                             get_object_size ((Object *) ptr);
+      ptr += s;
+    }
+    else
+    {
+      if (size <= blockHeader)
+      {
+        allocPtr = ptr + size;
+	if (size < blockHeader)
+          allocPtr[0] = blockHeader - size;
+        return ptr;
+      }
+      ptr += blockHeader;
+    }
+    if (ptr >= memoryTop)
+    {
+      ptr = startPtr;
+      rolled = true;
+    }      
+    if (rolled && ptr >= allocPtr)
+      return JNULL;
+  }
 }
 
 /**
- * @param size Size of object in 2-byte words.
+ * @param size Must be exactly same size used in allocation.
  */
-TWOBYTES *allocate (TWOBYTES size)
-{
-  register TWOBYTES *ptr;
-  TWOBYTES *anchorOffsetRef;
-
-  #if DEBUG_MEMORY
-  printf ("Allocating %d words.\n", size);
-  #endif
-  anchorOffsetRef = &freeOffset;
-  while (*anchorOffsetRef != NULL_OFFSET)
-  { 
-    ptr = startPtr + *anchorOffsetRef;
-    if (ptr[0] >= size + 2)
-    {
-      ptr[0] = ptr[0] - size;
-      return ptr + ptr[0];
-    }
-    if (ptr[0] >= size)
-    {
-      // This is necessary or we could run out of memory.
-      *anchorOffsetRef = ptr[1]; 
-      return ptr;     
-    }
-    anchorOffsetRef = &(ptr[1]);
-  }
-  #if DEBUG_MEMORY
-  printf ("No more memory!");
-  #endif
-  return null;      
-}
-
 void deallocate (TWOBYTES *ptr, TWOBYTES size)
 {
-  // TBD: consolidate free blocks
+  #ifdef VERIFY
+  assert (size <= (FREE_BLOCK_SIZE_MASK >> FREE_BLOCK_SIZE_SHIFT), MEMORY3);
+  #endif
+  
   ptr[0] = size;
-  ptr[1] = freeOffset;
-  freeOffset = ptr - startPtr;
 }
-
-#if DEBUG_RCX_MEMORY
-
-void scan_memory (TWOBYTES *numNodes, TWOBYTES *biggest, TWOBYTES *freeMem)
-{
-  TWOBYTES offset;
-
-  *numNodes = 0;
-  *biggest = 0;
-  *freeMem = 0;
-  offset = freeOffset;
-  while (offset != NULL_OFFSET)
-  {
-    TWOBYTES *ptr;
-    
-    ptr = startPtr + offset;
-    (*numNodes)++;
-    if (ptr[0] > (*biggest))
-      *biggest = ptr[0];
-    (*freeMem) += ptr[0];
-    offset = ptr[1];
-  }	
-}
-
-#endif DEBUG_RCX_MEMORY
-
-
 
 
 

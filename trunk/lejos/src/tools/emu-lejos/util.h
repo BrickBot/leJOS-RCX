@@ -15,3 +15,4 @@ extern char *append (char *str1, char *str2);
 extern char *pdirname (char *argv0);
 
 #endif _UTIL_H
+
