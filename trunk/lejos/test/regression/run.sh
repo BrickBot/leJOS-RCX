@@ -10,8 +10,10 @@ export PATH=.:../bin:$PATH
 rm $OUT_FILE
 for i in $TEST_CLASSES
 do
+  echo ------------------ Cleaning $i
+  rm $i.tvm
   echo ------------------ Compiling $i
-  lejosc $i.java
+  lejosjc $i.java
   echo ------------------ Linking $i
   emu-lejos $i -o $i.tvm
   echo ------------------ Running $i
