@@ -17,3 +17,7 @@ Wishlist:
 - other code mangling by linker
 - new sensor code for slow counting (how?)
 - implement lookupswitch/tableswitch vm instruction (as option)?
+- give StringBuffer a default capacity to make String = ".." + 123; work 
+  and to save wasting a zero length String object. Consider making add of
+  number increase capacity and avoid dragging in Math class.
+
