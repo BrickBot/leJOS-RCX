@@ -1,6 +1,9 @@
-package fsa.rcx.demos.remote;
+//package fsa.rcx.demos.remote;
 
-import tinyvm.rcx.*;
+// Changes:
+// 11/18/00 - Jose ported it from TinyVM to leJOS.
+
+import josx.platform.rcx.*;
 
 /**
    This class provides an active listener recognising IR messages from 
@@ -29,7 +32,8 @@ import tinyvm.rcx.*;
 		
 	 @author C. Ponsard  <chp@info.ucl.ac.be>
 	 @version 1/11/2000
- */
+	 
+ */ 
 public class Remote extends Thread {
 
   private byte[] p1 = new byte[10];
@@ -223,7 +227,7 @@ public class Remote extends Thread {
 	  if (c==0) TextLCD.print(stop);
 		else LCD.setNumber(0x3001,(c-1),0x3002);
   	LCD.refresh();
-    Time.sleep(500);
+	try { Thread.sleep(500); } catch (InterruptedException e) { }
   }
 
   /**
@@ -261,7 +265,7 @@ public class Remote extends Thread {
 				  else if (c2==0x40) decMotorA();
 				  else if (c2==0x80) decMotorB();
 					
-					Time.sleep(50);
+					try { Thread.sleep(50); } catch (InterruptedException e) {}
 					continue;
 				}
 				
@@ -275,7 +279,7 @@ public class Remote extends Thread {
 				  else if (c1==0x40) stopAll();
 				  else if (c1==0x80) sound();
 					
-					Time.sleep(50);
+					try { Thread.sleep(50); } catch (InterruptedException e) { }
           continue;
 				}	
       }
