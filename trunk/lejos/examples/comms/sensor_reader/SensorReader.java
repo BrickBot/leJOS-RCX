@@ -3,9 +3,7 @@ import josx.rcxcomm.*;
 import josx.platform.rcx.*;
 
 /**
- * This is an RCX class that reads a sensor value and returns the value
- * to the PC via the IR tower.
- * @author Brian Bagnall
+ * @author LEGO3 Team at DTU-IAU
  */
 public class SensorReader {
   
@@ -14,18 +12,23 @@ public class SensorReader {
     RCXPort port = null;
     try {
       port = new RCXPort();
-      DataOutputStream out = new DataOutputStream(port.getOutputStream());
       while (true) {
         sensorID = port.getInputStream().read();
         sensorValue = Sensor.readSensorValue(sensorID, 0);
         LCD.showNumber(sensorValue);
-        out.writeInt(sensorValue);
-        out.flush();        
+        port.getOutputStream().write(sensorValue/256);
+        port.getOutputStream().write(sensorValue%256);
+        port.getOutputStream().flush();
       }
     } catch (IOException ioE) {
-      LCD.showNumber(1111);
     } finally {
       port.close();
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException iE) { }
     }
   }
+
 }
+
+
