@@ -19,8 +19,6 @@ extern byte    gRequestCode;
 extern byte *pc;
 extern STACKWORD *stackTop;
 extern STACKWORD *localsBase;
-extern boolean *isReference;
-extern boolean *isReferenceBase;
 
 // Temp globals:
 

@@ -25,7 +25,7 @@ leJOS 1.0.2:
   - Added instructions on building with CygWin1.3.2 and GCC 3.0.
   - Modified code in several places to reduce footprint.
   - Modified compile options to reduce footprint.
-  - Footprint is now 18k :-(
+  - Reduced footprint to 16k
   
   Juergen Stuber has added:
   - Fixed rotational sensor mode.

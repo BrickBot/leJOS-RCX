@@ -37,13 +37,11 @@ typedef struct S_StackFrame
   MethodRecord *methodRecord;
   // Object's monitor if method is synchronized
   Object *monitor;
-  // The following 2 fields are constant for a given stack frame.
+  // The following field is constant for a given stack frame.
   STACKWORD *localsBase;
-  boolean *isReferenceBase;
   // The following fields only need to be assigned to on switch_thread.
   byte *pc;
   STACKWORD *stackTop;
-  boolean *isReference;
 } StackFrame;
 
 extern boolean init_thread (Thread *thread);

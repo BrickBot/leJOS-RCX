@@ -19,7 +19,7 @@ Summary
 What is leJOS?
 --------------
 
-leJOS is a tiny (~ 17 Kb) Java-based operating system
+leJOS is a tiny (~ 16 Kb) Java-based operating system
 that has been ported to the following platforms:
 
 - Lego Mindstorms RCX, i.e. Hitachi H8300

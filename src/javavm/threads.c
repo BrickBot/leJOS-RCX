@@ -52,7 +52,6 @@ StackFrame *current_stackframe()
 void update_stack_frame (StackFrame *stackFrame)
 {
   stackFrame->stackTop = stackTop;
-  stackFrame->isReference = isReference;
   stackFrame->pc = pc;
 }  
 
@@ -61,11 +60,7 @@ void update_registers (StackFrame *stackFrame)
   pc = stackFrame->pc;
   stackTop = stackFrame->stackTop;
   localsBase = stackFrame->localsBase;
-  isReference = stackFrame->isReference;
-  isReferenceBase = stackFrame->isReferenceBase;
 }
-
-
 
 inline byte get_thread_id (Object *obj)
 {
@@ -134,22 +129,11 @@ boolean init_thread (Thread *thread)
     return false;    
   }
   
-  // Allocate reference flag array of same size
-  thread->isReferenceArray = ptr2word (new_primitive_array (T_BOOLEAN, STACK_SIZE));
-  if (thread->isReferenceArray == JNULL)
-  {
-    free_array (ref2obj(thread->stackFrameArray));
-    free_array (ref2obj(thread->stackArray));
-    thread->stackFrameArray = JNULL;
-    thread->stackArray = JNULL;
-    return false;
-  }
   gThreadCounter++;
   
   #ifdef VERIFY
   assert (is_array (word2obj (thread->stackFrameArray)), THREADS0);
   assert (is_array (word2obj (thread->stackArray)), THREADS1);
-  assert (is_array (word2obj (thread->isReferenceArray)), THREADS2);
   #endif
 
   thread->stackFrameArraySize = 0;
@@ -301,14 +285,12 @@ boolean switch_thread()
     
             #if REMOVE_DEAD_THREADS
             // This order of deallocation is actually crucial to avoid leaks
-            free_array ((Object *) word2ptr (currentThread->isReferenceArray));
             free_array ((Object *) word2ptr (currentThread->stackArray));
             free_array ((Object *) word2ptr (currentThread->stackFrameArray));
     
             #ifdef SAFE
             currentThread->stackFrameArray = JNULL;
             currentThread->stackArray = JNULL;
-            currentThread->isReferenceArray = JNULL;
             #endif // SAFE
             #endif // REMOVE_DEAD_THREADS
           

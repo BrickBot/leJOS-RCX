@@ -204,7 +204,6 @@ boolean dispatch_special (MethodRecord *methodRecord, byte *retAddr)
   stackFrame->methodRecord = methodRecord;
   stackFrame->monitor = null;
   stackFrame->localsBase = get_stack_ptr() + 1;
-  stackFrame->isReferenceBase = get_is_ref_ptr() + 1;
   // Initialize auxiliary global variables (registers)
   pc = get_code_ptr(methodRecord);
 
@@ -268,7 +267,6 @@ void do_return (byte numWords)
 
   // Place source ptr below data to be copied up the stack
   fromStackPtr = get_stack_ptr_at (numWords);
-  fromIsRefPtr = get_is_ref_ptr_at (numWords);
   // Pop stack frame
   currentThread->stackFrameArraySize--;
   stackFrame--;
@@ -282,7 +280,7 @@ void do_return (byte numWords)
 
   while (numWords--)
   {
-    push_word_or_ref (*(++fromStackPtr), *(++fromIsRefPtr));
+    push_word (*(++fromStackPtr));
   }  
 }
 
