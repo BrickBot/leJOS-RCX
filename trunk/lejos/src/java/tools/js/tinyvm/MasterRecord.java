@@ -1,5 +1,9 @@
 package js.tinyvm;
 
+import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IOUtilities;
+import js.tinyvm.util.Assertion;
+
 
 public class MasterRecord implements WritableData, Constants
 {

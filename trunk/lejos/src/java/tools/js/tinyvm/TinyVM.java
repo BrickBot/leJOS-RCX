@@ -10,6 +10,11 @@ import java.io.OutputStream;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import js.tinyvm.io.BEDataOutputStream;
+import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.LEDataOutputStream;
+import js.tinyvm.util.Assertion;
+
 public class TinyVM
 implements Constants
 {

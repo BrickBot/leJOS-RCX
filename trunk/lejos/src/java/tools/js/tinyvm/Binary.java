@@ -3,6 +3,10 @@ package js.tinyvm;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import js.tinyvm.io.ByteWriter;
+import js.tinyvm.util.Assertion;
+import js.tinyvm.util.HashVector;
+
 /**
  * Abstraction for dumped binary.
  */

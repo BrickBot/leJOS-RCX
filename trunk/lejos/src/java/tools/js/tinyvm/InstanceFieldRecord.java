@@ -1,6 +1,8 @@
 package js.tinyvm;
 
 import js.classfile.JField;
+import js.tinyvm.io.ByteWriter;
+import js.tinyvm.util.Assertion;
 
 public class InstanceFieldRecord implements WritableData, Constants
 {

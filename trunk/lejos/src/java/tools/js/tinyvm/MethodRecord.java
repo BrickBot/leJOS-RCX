@@ -9,6 +9,10 @@ import js.classfile.JCodeAttribute;
 import js.classfile.JExcep;
 import js.classfile.JExcepTable;
 import js.classfile.JMethod;
+import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IOUtilities;
+import js.tinyvm.util.Assertion;
+import js.tinyvm.util.HashVector;
 
 public class MethodRecord implements WritableData, Constants
 {

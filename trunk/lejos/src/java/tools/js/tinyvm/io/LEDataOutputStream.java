@@ -1,8 +1,9 @@
-package js.tinyvm;
+package js.tinyvm.io;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
 
 /**
  * Writes lo-byte first, hi-byte last.

@@ -1,5 +1,7 @@
 package js.tinyvm;
 
+import js.tinyvm.io.ByteWriter;
+
 
 public interface WritableData
 {

@@ -13,6 +13,7 @@ import js.classfile.JCPE_String;
 import js.classfile.JClassFile;
 import js.classfile.JClassName;
 import js.classfile.JConstantPoolEntry;
+import js.tinyvm.util.Assertion;
 
 public class CodeUtilities
 implements OpCodeConstants, OpCodeInfo, Constants

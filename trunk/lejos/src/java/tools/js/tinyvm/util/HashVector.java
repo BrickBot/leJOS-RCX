@@ -1,4 +1,4 @@
-package js.tinyvm;
+package js.tinyvm.util;
 
 import java.util.Enumeration;
 import java.util.Hashtable;

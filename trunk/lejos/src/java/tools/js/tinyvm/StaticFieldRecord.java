@@ -2,6 +2,8 @@ package js.tinyvm;
 
 import js.classfile.JClassName;
 import js.classfile.JField;
+import js.tinyvm.io.ByteWriter;
+import js.tinyvm.util.Assertion;
 
 public class StaticFieldRecord implements WritableData, Constants
 {

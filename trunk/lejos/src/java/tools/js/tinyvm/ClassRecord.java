@@ -20,6 +20,10 @@ import js.classfile.JConstantPool;
 import js.classfile.JConstantPoolEntry;
 import js.classfile.JField;
 import js.classfile.JMethod;
+import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IOUtilities;
+import js.tinyvm.util.Assertion;
+import js.tinyvm.util.HashVector;
 
 /**
  * Abstraction for a class record (see vmsrc/language.h).

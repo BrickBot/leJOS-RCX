@@ -3,6 +3,8 @@ package js.tinyvm;
 import java.io.DataOutputStream;
 
 import js.classfile.JField;
+import js.tinyvm.io.ByteWriter;
+import js.tinyvm.util.Assertion;
 
 public class StaticValue extends WritableDataWithOffset
 implements Constants

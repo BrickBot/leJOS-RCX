@@ -2,6 +2,8 @@ package js.tinyvm;
 
 import java.util.Enumeration;
 
+import js.tinyvm.util.HashVector;
+
 public class EnumerableSet extends RecordTable
 {
   final HashVector iVector = new HashVector();
