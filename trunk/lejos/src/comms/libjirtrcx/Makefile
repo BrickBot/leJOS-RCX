@@ -13,7 +13,7 @@ IRTRCX_INCL=$(LEJOS_HOME)/src/comms/libirtrcx
 ifneq (,$(findstring cygwin,$(OSTYPE)))
     # Windows with CygWin installed
     IRTOWER=$(LEJOS_HOME)/bin/jirtrcx.dll
-    CCOPT= -mno-cygwin -I$(IRTRCX_INCL) -I${JAVA_INCL} -I${JAVA_INCL}/win32 -Wl,--add-stdcall-alias -shared -static $(LEJOS_HOME)/bin/irtrcx.dll -DTRACE
+    CCOPT= -mno-cygwin -I$(IRTRCX_INCL) -I${JAVA_INCL} -I${JAVA_INCL}/win32 -Wl,--add-stdcall-alias -shared $(LEJOS_HOME)/bin/irtrcx.dll -DTRACE
 else
   ifneq (,$(findstring darwin,$(OSTYPE)))
     # Mac OS X
