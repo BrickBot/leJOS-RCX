@@ -10,7 +10,6 @@ ANT=ant
 TEMP=/usr/tmp
 
 LEJOS_HOME=$(shell pwd)
-LEJOS_HOME=G:\\workspace\\lejos
 
 MFLAGS = OSTYPE=$(OSTYPE) LEJOS_HOME=$(LEJOS_HOME)
 
