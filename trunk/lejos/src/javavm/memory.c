@@ -16,23 +16,6 @@
 static boolean memoryInitialized = false;
 #endif
 
-#ifdef EMULATE
-
-extern TWOBYTES *gMemory;
-extern TWOBYTES  gMemorySize;
-
-#define USER_MEMORY_START gMemory
-#define TOTAL_MEMORY_SIZE gMemorySize
-
-#else // not EMULATE
-
-extern char _end;
-
-#define USER_MEMORY_START ((TWOBYTES *) &_end)
-#define TOTAL_MEMORY_SIZE  (0xFFFE - ((TWOBYTES) &_end))
-
-#endif EMULATE
-
 #define NULL_OFFSET 0xFFFF
 
 // Size of object header in 2-byte words
@@ -58,7 +41,14 @@ byte typeSize[] = {
 // Two-byte pointers are used so that pointer
 // arithmetic works as expected.
 
+/**
+ * Top of the free block list.
+ */
 static TWOBYTES freeOffset = NULL_OFFSET;
+
+/**
+ * Beginning of heap.
+ */
 static TWOBYTES *startPtr;
 
 extern Object *memcheck_allocate (TWOBYTES size);
@@ -288,23 +278,21 @@ Object *memcheck_allocate (TWOBYTES size)
 // 3. Second 2 bytes of free block is abs. offset of next free block.
 
 /**
- * @param offset Size of classes and other
- *               loaded structures, in 2-byte words.
+ * @param ptr Beginning of heap.
+ * @param size Size of heap in 2-byte words.
  */
-void init_memory (TWOBYTES offset)
+void init_memory (void *ptr, TWOBYTES size)
 {
   #ifdef VERIFY
   memoryInitialized = true;
   #endif
 
-  startPtr = USER_MEMORY_START + offset;
+  startPtr = ptr;
   #if DEBUG_MEMORY
-  printf ("Location of gMemory: %d. gMemorySize: %d\n", (int) gMemory,
-          gMemorySize);
   printf ("Setting start of memory to %d\n", (int) startPtr);
-  printf ("Going to reserve %d words\n", TOTAL_MEMORY_SIZE - offset);
+  printf ("Going to reserve %d words\n", size);
   #endif
-  deallocate (startPtr, TOTAL_MEMORY_SIZE - offset);
+  deallocate (startPtr, size);
 }
 
 /**
