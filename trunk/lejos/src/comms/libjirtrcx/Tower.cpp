@@ -17,7 +17,7 @@ extern "C" {
 
 #include <stdlib.h>
 
-#include "irtower.h"
+#include "Tower.h"
 
 #define TIME_OUT 100
 #define WAKEUP_TIME_OUT 4000
@@ -38,7 +38,7 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport, jboolean f
   int result = 0;
 
 #ifdef TRACE
-  rcx_set_debug(1);
+  rcxSetDebug(1);
   printf("Entering open\n");
 #endif
 
@@ -46,20 +46,19 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport, jboolean f
   char* tty = (char*) env->GetStringUTFChars(jport, 0);
 
   // Get a handle for the tower device
-  rcx_set_fast(fastMode? 1 : 0);
-  FILEDESCR fh = rcx_init(tty, rcx_is_fast());
-  if (fh == BADFILE) 
+  void* port = rcxOpen(tty, fastMode);
+  if (port == NULL) 
   {
 	  result = RCX_OPEN_FAIL;
   } 
-  else if (!rcx_is_usb()) 
+  else if (!rcxIsUsb(port)) 
   {
     // Only serial tower needs wake-up
-	  result = rcx_wakeup_tower(fh, WAKEUP_TIME_OUT);
+	  result = rcxWakeupTower(port, WAKEUP_TIME_OUT);
   }
 
   setError(env, obj, result != 0);
-  setFileHandle(env, obj, fh);
+  setPort(env, obj, port);
 
   env->ReleaseStringUTFChars(jport, tty);
 
@@ -80,8 +79,8 @@ Java_josx_rcxcomm_Tower_close(JNIEnv *env, jobject obj)
 #endif
 
   // Close the handle
-  FILEDESCR fh = getFileHandle(env, obj);
-  if (fh == BADFILE) 
+  void* port = getPort(env, obj);
+  if (port == NULL) 
   {
 #ifdef TRACE
       printf("File already closed\n");
@@ -90,8 +89,8 @@ Java_josx_rcxcomm_Tower_close(JNIEnv *env, jobject obj)
       return (jint) RCX_ALREADY_CLOSED;
   }
   
-  rcx_close(fh);
-  setFileHandle(env, obj, BADFILE);
+  rcxClose(port);
+  setPort(env, obj, NULL);
 
 #ifdef TRACE
   printf("Exiting close\n");
@@ -108,8 +107,8 @@ Java_josx_rcxcomm_Tower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 #endif
 
     // Check that file is open
-    FILEDESCR fh = getFileHandle(env, obj);
-    if (fh == BADFILE) 
+    void* port = getPort(env, obj);
+    if (port == NULL) 
     {
 #ifdef TRACE
         printf("File not open\n");
@@ -124,7 +123,7 @@ Java_josx_rcxcomm_Tower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
     hexdump("tower writes", body, n);
 #endif
 
-    size_t result = rcx_write(fh, body, n);
+    size_t result = rcxWrite(port, body, n);
 
     setError(env, obj, result < 0);
 
@@ -147,8 +146,8 @@ Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr)
 #endif
 
     // Check that file is open
-    FILEDESCR fh = getFileHandle(env, obj);
-    if (fh == BADFILE) 
+    void* port = getPort(env, obj);
+    if (port == NULL) 
     {
 #ifdef TRACE
         printf("File not open\n");
@@ -161,7 +160,7 @@ Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr)
     int size = env->GetArrayLength(arr);
     jbyte* body = env->GetByteArrayElements(arr, 0);
 
-    size_t result = rcx_read(fh, body, size, TIME_OUT);
+    size_t result = rcxRead(port, body, size, TIME_OUT);
 
 	 setError(env, obj, result < 0);
 
@@ -184,8 +183,8 @@ Java_josx_rcxcomm_Tower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 #endif
 
     // Check that file is open
-    FILEDESCR fh = getFileHandle(env, obj);
-    if (fh == BADFILE) 
+    void* port = getPort(env, obj);
+    if (port == NULL) 
     {
 #ifdef TRACE
         printf("File not open\n");
@@ -198,11 +197,11 @@ Java_josx_rcxcomm_Tower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
     jbyte* body = env->GetByteArrayElements(arr, 0);
 
     // Write the bytes
-    size_t result = rcx_send(fh, body, n, !rcx_is_fast());
+    size_t result = rcxSend(port, body, n);
 
     // Flush buffers
 #if defined(_WIN32) || defined(__CYGWIN32__)
-    FlushFileBuffers (fh);
+    FlushFileBuffers (((Port*) port)->fileHandle);
 #endif
 
     setError(env, obj, result < 0);
@@ -226,8 +225,8 @@ Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
 #endif
 
     // Check that file is open
-    FILEDESCR fh = getFileHandle(env, obj);
-    if (fh == BADFILE) 
+    void* port = getPort(env, obj);
+    if (port == NULL) 
     {
 #ifdef TRACE
         printf("File not open\n");
@@ -241,7 +240,7 @@ Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
     jbyte* body = env->GetByteArrayElements(arr, 0);
 
     // Receive a packet
-    size_t actual = rcx_recv(fh, body, size, TIME_OUT, !rcx_is_fast());
+    size_t actual = rcxReceive(port, body, size, TIME_OUT);
 
     setError(env, obj, actual < 0);
 
@@ -264,8 +263,8 @@ Java_josx_rcxcomm_Tower_isRCXAlive(JNIEnv *env, jobject obj)
 #endif
   
     // Check if RCX is alive
-    FILEDESCR fh = getFileHandle(env, obj);
-    bool result = rcx_is_alive(fh, !rcx_is_fast()) == 1;
+    void* port = getPort(env, obj);
+    bool result = rcxIsAlive(port) == 1;
 
 #ifdef TRACE
     printf("Exiting isRCXAlive\n");
@@ -284,8 +283,8 @@ Java_josx_rcxcomm_Tower_isUSB(JNIEnv *env, jobject obj)
 #endif
   
     // Check if RCX is alive
-    FILEDESCR fh = getFileHandle(env, obj);
-    bool result = rcx_is_usb();
+    void* port = getPort(env, obj);
+    bool result = rcxIsUsb(port);
 
 #ifdef TRACE
     printf("Exiting isUSB\n");
@@ -302,48 +301,49 @@ void setError (JNIEnv* env, jobject obj, bool error)
 {
    jclass cls = env->GetObjectClass(obj);
    jfieldID fid = env->GetFieldID(cls, "_error", "I");
-   if (fid == 0)
-   {
-#ifdef TRACE
-      printf("Could not get error code field.\n");
-#endif
-   }
-   else
+   if (fid != 0)
    {
       env->SetIntField(obj, fid, error? GetLastError() : 0);
    }
-}
-
-void setFileHandle (JNIEnv* env, jobject obj, FILEDESCR fh)
-{
-   jclass cls = env->GetObjectClass(obj);
-   jfieldID fid = env->GetFieldID(cls, "_fileHandle", "J");
-   if (fid == 0)
-   {
 #ifdef TRACE
-      printf("Could not get file handle field.\n");
-#endif
-   }
    else
    {
-      // the warning regarding this cast may be ignored
-      env->SetLongField(obj,fid,(jlong) fh);
+      printf("Could not get error code field.\n");
    }
+#endif
 }
 
-FILEDESCR getFileHandle (JNIEnv* env, jobject obj)
+void setPort (JNIEnv* env, jobject obj, void* port)
 {
    jclass cls = env->GetObjectClass(obj);
-   jfieldID fid = env->GetFieldID(cls, "_fileHandle", "J");
+   jfieldID fid = env->GetFieldID(cls, "_port", "J");
+   if (fid != 0)
+   {
+      // the warning regarding this cast may be ignored
+      env->SetLongField(obj,fid,(jlong) port);
+   }
+#ifdef TRACE
+   else
+   {
+      printf("Could not get file handle field.\n");
+   }
+#endif
+}
+
+void* getPort (JNIEnv* env, jobject obj)
+{
+   jclass cls = env->GetObjectClass(obj);
+   jfieldID fid = env->GetFieldID(cls, "_port", "J");
    if (fid == 0)
    {
 #ifdef TRACE
       printf("Could not get file handle field.\n");
 #endif
 
-		return BADFILE;
+		return NULL;
    }
+
    // the warning regarding this cast may be ignored
-   FILEDESCR fh = (FILEDESCR) env->GetLongField(obj, fid);
-   return fh;
+   void* port = (void*) env->GetLongField(obj, fid);
+   return port;
 }

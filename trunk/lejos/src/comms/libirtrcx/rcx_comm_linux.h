@@ -25,9 +25,26 @@
 #ifndef RCX_COMM_LINUX_H_INCLUDED
 #define RCX_COMM_LINUX_H_INCLUDED
 
+#if defined(LINUX) || defined(linux)
+#define TOWER_NAME "/dev/usb/legousbtower0"
+#define DEFAULTTTY   "usb"       /* Linux - USB */
+/*
+ * Programming note (aB.)
+ * Shouldn't we use strcmp() which is a POSIX standard API (and works on Linux, Mac and any other Unix),
+ * and special-case Windows ?
+ */
+#define stricmp(x, y) strcmp(x, y)
+#define strnicmp(x, y, n) strncmp(x, y, n)
+
+#elif defined (sun)
+#define DEFAULTTTY   "/dev/ttya"  /* Solaris - first serial port - untested */
+
+#else
+#define DEFAULTTTY   "/dev/ttyd2" /* IRIX - second serial port */
+#endif
+
 #define FILEDESCR	int
 #define BADFILE	-1
-
 
 extern int       __rcx_write(FILEDESCR fd, const void *buf, size_t len);
 extern int       __rcx_read(FILEDESCR fd, void *buf, int maxlen, int timeout);

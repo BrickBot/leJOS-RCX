@@ -13,7 +13,7 @@ IRTRCX_INCL=$(LEJOS_HOME)/src/comms/libirtrcx
 ifneq (,$(findstring cygwin,$(OSTYPE)))
     # Windows with CygWin installed
     IRTOWER=$(LEJOS_HOME)/bin/jirtrcx.dll
-    CCOPT= -mno-cygwin -I$(IRTRCX_INCL) -I${JAVA_INCL} -I${JAVA_INCL}/win32 -Wl,--add-stdcall-alias -shared -L$(LEJOS_HOME)/bin -lirtrcx
+    CCOPT= -mno-cygwin -I$(IRTRCX_INCL) -I${JAVA_INCL} -I${JAVA_INCL}/win32 -Wl,--add-stdcall-alias -shared -static $(LEJOS_HOME)/bin/irtrcx.dll -DTRACE
 else
   ifneq (,$(findstring darwin,$(OSTYPE)))
     # Mac OS X
@@ -42,7 +42,7 @@ endif
 .EXPORT_ALL_VARIABLES :
 
 # Use CXX to get correct linkage (need C++ libraries)
-${IRTOWER}: irtower.cpp josx_rcxcomm_Tower.h
+${IRTOWER}: Tower.cpp josx_rcxcomm_Tower.h
 	$(CXX) $(CCOPT) $(COMM_OBJ) -o $@ *.cpp
 
 clean:

@@ -211,12 +211,12 @@ public class Tower
          String filename = System.mapLibraryName("irtrcx");
          String path = new File(jarFile.getParentFile(), filename)
             .getAbsolutePath();
-         // System.err.println("Loading native lib " + path);
-         System.load(path);
+         System.err.println("Loading native lib " + path);
+         // System.load(path);
 
          filename = System.mapLibraryName("jirtrcx");
          path = new File(jarFile.getParentFile(), filename).getAbsolutePath();
-         // System.err.println("Loading native lib " + path);
+         System.err.println("Loading native lib " + path);
          System.load(path);
       }
       catch (Throwable e)
@@ -226,9 +226,9 @@ public class Tower
          try
          {
             // try again the default way
-            // System.err.println("Loading native lib irtrcx");
-            System.loadLibrary("irtrcx");
-            // System.err.println("Loading native lib jirtrcx");
+            System.err.println("Loading native lib irtrcx");
+            // System.loadLibrary("irtrcx");
+            System.err.println("Loading native lib jirtrcx");
             System.loadLibrary("jirtrcx");
          }
          catch (Throwable e1)
@@ -244,10 +244,10 @@ public class Tower
    //
 
    /**
-    * File handle of tower.
+    * Handle of tower.
     * This field is only for native usage!
     */
-   private long _fileHandle;
+   private long _port;
    
    /**
     * System error code of last operation.

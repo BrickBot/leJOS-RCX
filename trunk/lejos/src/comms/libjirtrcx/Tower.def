@@ -1,0 +1,6 @@
+; Tower.def : Declares the module parameters for the DLL.
+
+LIBRARY      "jirtrcx"
+
+EXPORTS
+    ; Explicit exports can go here

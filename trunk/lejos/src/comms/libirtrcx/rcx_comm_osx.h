@@ -25,6 +25,11 @@
 #ifndef RCX_COMM_OSX_H_INCLUDED
 #define RCX_COMM_OSX_H_INCLUDED
 
+#define TOWER_NAME ""
+#define DEFAULTTTY   "usb"	  /* Default to USB on MAC */
+#define stricmp(x, y) strcmp(x, y)
+#define strnicmp(x, y, n) strncmp(x, y, n)
+
 /* Support storage of file descriptors or IODevices in a FILEDESCR */
 #include <stdint.h>
 #define FILEDESCR	intptr_t
@@ -32,11 +37,9 @@
 /* O_SYNC not defined on Mac OS X */
 #define O_SYNC 0
 
-
 extern int       __rcx_write(FILEDESCR fd, const void *buf, size_t len);
 extern int       __rcx_read(FILEDESCR fd, void *buf, int maxlen, int timeout);
 extern FILEDESCR __rcx_init (char *tty, int is_fast);
 extern void      __rcx_close (FILEDESCR fd);
 
 #endif /* RCX_COMM_OSX_H_INCLUDED */
-
