@@ -25,8 +25,7 @@ release:
 	cvs export -D tomorrow -d ${TEMP}/tinyvm_release tinyvm
 	zip -r ${TEMP}/tinyvm_`cat VERSION` ${TEMP}/tinyvm_release
 	diff bin/tinyvm.srec ${TEMP}/tinyvm_release/bin/tinyvm.srec
-	export TINYVM_HOME=${RELEASE_DIR}
-	cd ${RELEASE_DIR}; export TINYVM_HOME=${TEMP}/tinyvm_release; export PATH=${TINYVM_HOME}:${PATH}; make; cd regression; ./run/sh
+	cd ${TEMP}/tinyvm_release; export TINYVM_HOME=${TEMP}/tinyvm_release; export PATH=${TINYVM_HOME}/bin:${PATH}; which tvmc; make; cd regression; ./run/sh
 
 check:
 	@if [ -f ${TINYVM_HOME} ]; then \
