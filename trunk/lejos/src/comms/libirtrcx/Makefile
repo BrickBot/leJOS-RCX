@@ -36,6 +36,10 @@ ifndef OSTYPE
 	OSTYPE=$(MSDOS)
 endif
 
+ifneq (,$findstring $(OSTYPE), linux LINUX linux-gnu)
+   CFLAGS=-O2 -I../linux/legousbtower	
+endif
+
 ifneq (,$(findstring $(OSTYPE),cygwin32 CYGWIN_NT-4.0 WindowsNT Windows_NT))
 	EXT=.exe
 endif
