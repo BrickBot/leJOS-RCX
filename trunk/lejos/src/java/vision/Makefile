@@ -1,7 +1,7 @@
 JAVAC=javac
 
 vision:
-	${JAVAC} josx/vision/*.java
+	${JAVAC} -classpath "../lib/pcrcxcomm.jar" josx/vision/*.java
 	jar cf ../lib/vision.jar josx/vision/*.class
 
 javadoc:
