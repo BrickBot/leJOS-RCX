@@ -7,6 +7,33 @@
 #include "types.h"
 #include "classes.h"
 #include "language.h"
+#include "interpreter.h"
+
+#include "poll.h"
+
+extern void poll_sensors();
+
+extern int last_sys_time;
+extern int last_ad_time;
+
+static inline void instruction_hook()
+{
+  if( get_sys_time_impl() != last_sys_time){
+    last_sys_time = get_sys_time_impl();
+    gMakeRequest = true;
+  }
+}
+
+static inline void tick_hook()
+{
+  if( get_sys_time_impl() >= last_ad_time + 3){
+    last_ad_time = get_sys_time_impl();
+    poll_sensors();
+    poll_inputs();
+  }
+}
+
+extern void switch_thread_hook();
 
 /**
  * Called when thread is about to die due to an uncaught exception.
@@ -16,13 +43,6 @@ extern void handle_uncaught_exception (Object *exception,
 				       const MethodRecord *methodRecord,
 				       const MethodRecord *rootMethod,
 				       byte *pc);
-				       
-/**
- * Called when the current thread is switched.
- * Will be called continuously if all threads
- * are waiting or sleeping. 
- */
-extern void switch_thread_hook();
 
 /**
  * Dispatches a native method.
