@@ -6,7 +6,7 @@ Poll *poller = 0;
 short old_sensor_values[3];
 short old_st;
 int throttle = 1;
-FOURBYTES next_poll_time;
+FOURBYTES next_poll_time = 0;
 
 void set_poller(Poll *_poller)
 {
