@@ -5,6 +5,8 @@
 #ifndef _MEMORY_H
 #define _MEMORY_H
 
+#define DEBUG_RCX_MEMORY 0
+
 extern byte typeSize[];
 
 extern void init_memory (void *ptr, TWOBYTES size);
@@ -16,6 +18,10 @@ extern Object *new_primitive_array (byte primitiveType, STACKWORD length);
 extern Object *new_multi_array (byte elemType, byte totalDimensions, byte reqDimensions, STACKWORD *numElemPtr);
 extern void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr);
 extern void store_word (byte *ptr, byte aSize, STACKWORD aWord);
+
+#if DEBUG_RCX_MEMORY
+extern void scan_memory (TWOBYTES *numNodes, TWOBYTES *biggest, TWOBYTES *freeMem);
+#endif DEBUG_RCX_MEMORY
 
 #define HEADER_SIZE (sizeof(Object))
 // Size of object header in 2-byte words

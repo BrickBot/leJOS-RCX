@@ -55,6 +55,7 @@ extern void assert (boolean aCond, int aCode);
 
 #endif
 
+#define DEBUG_BYTECODE 0
 #define DEBUG_THREADS  0
 
 #if DEBUG_RCX

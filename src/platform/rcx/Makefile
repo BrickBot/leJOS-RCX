@@ -55,7 +55,7 @@ all: ${PROGS}
 	@echo Done building TinyVM srec
 
 clean:
-	rm -f core *.srec *.o *~
+	rm -f core ../bin/*.srec *.o *~
 
 ${TINYVMBINARY}: $(OBJS)
 	$(LD) $(LFLAGS) -o ${TINYVMBINARY} $(OBJS) $(LIBS)
