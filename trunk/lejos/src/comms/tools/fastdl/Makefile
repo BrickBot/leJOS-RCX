@@ -22,10 +22,13 @@ FASTDLPATH = $(LEJOS_HOME)/bin
 default: all
 
 all: fastdl2x.srec fastdl4x.srec
+	rm -f $(LEJOS_HOME)/bin/fastdl2x.srec $(LEJOS_HOME)/bin/fastdl2x.srec
+	cp fastdl2x.srec $(LEJOS_HOME)/bin
+	cp fastdl4x.srec $(LEJOS_HOME)/bin
 	@echo Done building fastdl.srec
 
 fastdl2x.o:
-	$(CC) fastdl.s -o fastdl2x.o -DDISABLE_COMPLEMENTS
+	$(CC) fastdl.S -o fastdl2x.o -DDISABLE_COMPLEMENTS
 
 fastdl4x.o:
 	$(CC) fastdl.s -o fastdl4x.o -DDISABLE_COMPLEMENTS -DDOUBLE_BAUD_RATE
