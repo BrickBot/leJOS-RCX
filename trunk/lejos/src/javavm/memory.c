@@ -55,6 +55,16 @@ byte typeSize[] = {
 static TWOBYTES freeOffset = NULL_OFFSET;
 static TWOBYTES *startPtr;
 
+inline void set_class (Object *obj, byte classIndex)
+{
+  obj->flags = classIndex;
+}
+
+inline void set_array (Object *obj, byte elemSize, byte length)
+{
+  obj->flags = ARRAY_MASK | ((elemSize - 1) << ELEM_SIZE_SHIFT) | length;
+}
+
 /**
  * @param offset Size of classes and other
  *               loaded structures, in 2-byte words.
@@ -74,23 +84,23 @@ void init_memory (TWOBYTES offset)
  * an object, which is pushed on the operand
  * stack.
  */
-REFERENCE new_object_for_class (byte classIndex)
+Object *new_object_for_class (byte classIndex)
 {
-  REFERENCE ref;
+  Object *ref;
   // TBD: Check for class initialization!
-  ref = (REFERENCE) object_alloc (get_class_record(classIndex)->size);
+  ref = (Object *) allocate (get_class_record(classIndex)->size);
   if (ref == null)
-  {
-    #ifdef VERIFY
-    assert (outOfMemoryError != null, MEMORY5);
-    #endif
-    throw_exception (outOfMemoryError);
-    return;
-  }
+    return null;
+
   // Initialize default values
   set_class (ref, classIndex);
   initialize_object (ref);
   return ref;
+}
+
+inline TWOBYTES get_array_size (byte length, byte elemSize)
+{
+  return NORM_OBJ_SIZE + ((byte) length * elemSize) / 2;
 }
 
 /**
@@ -98,20 +108,41 @@ REFERENCE new_object_for_class (byte classIndex)
  * plus the size necessary to allocate <code>length</code> elements
  * of the given type.
  */
-REFERENCE new_primitive_array (byte primitiveType, STACKWORD length)
+Object *new_primitive_array (byte primitiveType, STACKWORD length)
 {
-  REFERENCE ref;
-  ref = object_alloc (NORM_OBJ_SIZE + (length * typeSize[primitiveType]) / 2);
-  set_class (ref, ARRAY_CLASS);
-  // TBD: initialize, set length
+  Object *ref;
+  byte elemSize;
+
+  // Hack to disallow allocations longer than 255:
+  if (length > 0xFF)
+  {
+    throw_excetion (outOfMemoryError);
+    return null;
+  }
+  elemSize = typeSize[primitiveType];
+  ref = checked_alloc (get_array_size ((byte) length, elemSize));
+  if (ref == null)
+    return null;
+  set_array (ref, elemSize, (byte) length);
   return ref;
 }
 
-REFERENCE new_multi_array (byte classIndex, STACKWORD dimensions)
+void free_array (Object *objectRef)
+{
+  #ifdef VERIFY
+  assert (is_array(objectRef), MEMORY7);
+  #endif VERIFY
+
+  deallocate ((TWOBYTES *) objectRef, get_array_size (
+              get_array_length (objectRef),
+              get_element_size (objectRef)));  
+}
+
+Object *new_multi_array (byte classIndex, STACKWORD dimensions)
 {
   byte nextClass;
   STACKWORD numElements;
-  REFERENCE ref;
+  Object *ref;
   TWOBYTES i;  
 
   // TBD: review validity
@@ -123,12 +154,15 @@ REFERENCE new_multi_array (byte classIndex, STACKWORD dimensions)
   #endif
 
   ref = new_primitive_array (T_REFERENCE, *stackTop);
+  if (ref == null)
+    return null;
   nextClass = get_class_record(classIndex)->arrayElementType;
   numElements = *stackTop--;
   for (i = 0; i < numElements; i++)
   {
     set_array_element (ref, 4, i, new_multi_array (nextClass, dimensions - 1));
   }
+  return ref;
 }
 
 STACKWORD get_array_element (byte *aRef, byte aSize, TWOBYTES aIndex)
@@ -142,13 +176,33 @@ void set_array_element (byte *aRef, byte aSize, TWOBYTES aIndex,
   copy_word (pRef + aIndex * aSize + ARRAYHEADERSIZE, aSize, aWord);
 }
 
-// TBD: new allocation methods
+TWOBYTES *checked_alloc (TWOBYTES size)
+{
+  TWOBYTES *ref;
+  ref = allocate (get_class_record(classIndex)->size);
+  if (ref == null)
+  {
+    #ifdef VERIFY
+    assert (outOfMemoryError != null, MEMORY5);
+    #endif
+    throw_exception (outOfMemoryError);
+    return null;
+  }
+  ref->syncInfo = 0;
+  #ifdef SAFE
+  ref->flags = 0;
+  #endif
+  return ref;
+}
 
 // Notes on allocation:
 // 1. It's first-fit.
 // 2. First 2 bytes of free block is size.
 // 3. Second 2 bytes of free block is abs. offset of next free block.
 
+/**
+ * @param size Size of object in 2-byte words.
+ */
 TWOBYTES *allocate (TWOBYTES size)
 {
   register TWOBYTES *ptr;
