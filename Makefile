@@ -10,7 +10,7 @@ TEMP=/usr/tmp
 
 export CLASSPATH
 
-default: check all_jtools all_ctools core_classes tinyvm_emul
+default: check all_jtools all_ctools core_classes rcx_comm tinyvm_emul
 	@echo "====> Installation of leJOS done!"
 
 all: default lejos_bin
@@ -96,6 +96,9 @@ tinyvm_emul:
 core_classes:
 	${JAVAC} -classpath classes `find classes -name '*.java'`
 	cd classes; jar cf ../lib/classes.jar `find . -name '*.class'`
+
+rcx_comm:
+	cd rcxcomm; make
 
 javadoc:
 	if [ ! -d apidocs ]; then mkdir apidocs; fi
