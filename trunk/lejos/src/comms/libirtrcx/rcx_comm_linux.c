@@ -62,7 +62,7 @@ void __rcx_perror(char * str)
 
 /* Timeout read routine */
 
-int __rcx_read(port_t *port, void *buf, int maxlen, int timeout)
+int __rcx_read(rcx_dev_t *port, void *buf, int maxlen, int timeout)
 {
 	long len = 0;
     
@@ -104,19 +104,20 @@ int __rcx_read(port_t *port, void *buf, int maxlen, int timeout)
 }
 
 /* discard all characters in the input queue of tty */
-void __rcx_purge(port_t *port)
+void __rcx_purge(rcx_dev_t *port)
 {
 	char echo[BUFFERSIZE];
 	__rcx_read(port, echo, BUFFERSIZE, 200);
 }
 
 /* discard all characters in the input queue of tty */
-void __rcx_flush(port_t *port)
+void __rcx_flush(rcx_dev_t *port)
 {
 }
 
-int __rcx_write(port_t *port, unsigned char *buf, size_t len) 
+int __rcx_write(rcx_dev_t *port, const void *bufv, size_t len) 
 {
+	const unsigned char *buf = (const unsigned char *)bufv;
 	int l = 0;
 	while (l < len) {
 		int result = write(port->fd, buf+l, len-l);
@@ -131,15 +132,15 @@ int __rcx_write(port_t *port, unsigned char *buf, size_t len)
 
 /* RCX routines */
 
-port_t *__rcx_open(char *tty, int is_fast)
+rcx_dev_t *__rcx_open(char *tty, int is_fast)
 {
 	struct termios ios;
-	port_t *port = NULL;
+	rcx_dev_t *port = NULL;
 
 	if (__comm_debug) printf("mode = %s\n", is_fast ? "fast" : "slow");
 	if (__comm_debug) printf("tty= %s\n", tty);
 
-	port = malloc(sizeof(port_t));
+	port = malloc(sizeof(rcx_dev_t));
 	if (!port) {
 		perror("malloc");
 		exit(1);
@@ -194,7 +195,7 @@ port_t *__rcx_open(char *tty, int is_fast)
 	return port;
 }
 
-void __rcx_close(port_t *port)
+void __rcx_close(rcx_dev_t *port)
 {
 	close(port->fd);
 }

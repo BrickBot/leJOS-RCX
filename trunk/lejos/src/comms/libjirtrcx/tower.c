@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "rcx_comm.h"
 
@@ -37,8 +38,8 @@ static jfieldID _fieldIDError;
 /* Local prototypes */
 
 static void set_error(JNIEnv *env, jobject obj, int error);
-static void set_port(JNIEnv *env, jobject obj, port_t *port);
-static port_t *get_port(JNIEnv *env, jobject obj);
+static void set_port(JNIEnv *env, jobject obj, rcx_dev_t *port);
+static rcx_dev_t *get_port(JNIEnv *env, jobject obj);
 
 
 /* Public interface */
@@ -69,7 +70,7 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport, jboolean f
 {
 	int result = 0;
 	char *tty = NULL;
-	port_t *port = NULL;
+	rcx_dev_t *port = NULL;
 
 #ifdef TRACE
 	rcx_set_debug(1);
@@ -102,7 +103,7 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport, jboolean f
 JNIEXPORT jint JNICALL 
 Java_josx_rcxcomm_Tower_close(JNIEnv *env, jobject obj)
 {
-	port_t *port = NULL;
+	rcx_dev_t *port = NULL;
 
 	trace("Entering close\n");
 
@@ -128,7 +129,7 @@ Java_josx_rcxcomm_Tower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 	trace("Entering write\n");
 
 	// Check that file is open
-	port_t *port = get_port(env, obj);
+	rcx_dev_t *port = get_port(env, obj);
 	if (!port) {
 		trace("File not open\n");
 		return (jint) RCX_NOT_OPEN;
@@ -150,7 +151,7 @@ Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr, jint time
 	trace("Entering read\n");
 
 	/* Check that file is open */
-	port_t *port = get_port(env, obj);
+	rcx_dev_t *port = get_port(env, obj);
 	if (!port) {
 		trace("File not open\n");
 		return (jint)RCX_NOT_OPEN;
@@ -175,7 +176,7 @@ Java_josx_rcxcomm_Tower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 	trace("Entering send\n");
 
 	/* Check that file is open */
-	port_t *port = get_port(env, obj);
+	rcx_dev_t *port = get_port(env, obj);
 	if (!port) {
 		trace("File not open\n");
 
@@ -198,7 +199,7 @@ Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr, jint t
 	trace("Entering receive\n");
 
 	/* Check that file is open */
-	port_t *port = get_port(env, obj);
+	rcx_dev_t *port = get_port(env, obj);
 	if (!port) {
 		trace("File not open\n");
 		return (jint) RCX_NOT_OPEN;
@@ -221,7 +222,7 @@ Java_josx_rcxcomm_Tower_isRCXAlive(JNIEnv *env, jobject obj)
 	trace("Entering isRCXAlive\n");
   
 	/* Check if RCX is alive */
-	port_t *port = get_port(env, obj);
+	rcx_dev_t *port = get_port(env, obj);
 	int result = rcx_is_alive(port) == 1;
 
 	trace("Exiting isRCXAlive\n");
@@ -235,7 +236,7 @@ Java_josx_rcxcomm_Tower_isUSB(JNIEnv *env, jobject obj)
 	trace("Entering isUSB\n");
   
 	/* Check if RCX is alive */
-	port_t *port = get_port(env, obj);
+	rcx_dev_t *port = get_port(env, obj);
 	int result = rcx_is_usb(port);
 
 	trace("Exiting isUSB\n");
@@ -254,14 +255,18 @@ static void set_error(JNIEnv *env, jobject obj, int error)
 			    error ? GetLastError() : 0);
 }
 
-static void set_port(JNIEnv *env, jobject obj, port_t *port)
+static void set_port(JNIEnv *env, jobject obj, rcx_dev_t *port)
 {
 	/* the warning regarding this cast may be ignored */
-	(*env)->SetLongField(env, obj, _fieldIDPort, (jlong)port);
+	/* or it can be fixed ;-) */
+	intptr_t port_as_int = (intptr_t)port;
+	(*env)->SetLongField(env, obj, _fieldIDPort, (jlong)port_as_int);
 }
 
-static port_t *get_port(JNIEnv *env, jobject obj)
+static rcx_dev_t *get_port(JNIEnv *env, jobject obj)
 {
 	/* the warning regarding this cast may be ignored */
-	return (port_t *)(*env)->GetLongField(env, obj, _fieldIDPort);
+	/* or it can be fixed ;-) */
+	intptr_t port_as_intptr = (intptr_t)(*env)->GetLongField(env, obj, _fieldIDPort);
+	return (rcx_dev_t *)port_as_intptr;
 }

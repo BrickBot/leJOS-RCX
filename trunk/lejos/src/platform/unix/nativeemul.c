@@ -346,7 +346,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       push_word(0);
       return;   
     case getRegionAddress_4_5I:
-      printf("> Get region address - 0x%lX\n", (int)region);
+      printf("> Get region address - 0x%X\n", (int)region);
       push_word ((int)region);
       return;
     default:

@@ -29,7 +29,7 @@
 #define FILEDESCR	int
 #endif
 
-typedef struct _port port_t;
+typedef struct _rcx_port rcx_dev_t;
 
 
 #define BUFFERSIZE  4096
@@ -58,12 +58,12 @@ typedef struct _port port_t;
 /* Is tower attached to an usb port?
  * port: port handle
  */
-int rcx_is_usb(port_t *port);
+int rcx_is_usb(rcx_dev_t *port);
 
 /* Is tower set to fast mode?
  * port: port handle
  */
-int rcx_is_fast(port_t *port);
+int rcx_is_fast(rcx_dev_t *port);
 
 /* RCX functions */
 
@@ -72,19 +72,19 @@ int rcx_is_fast(port_t *port);
  * fast: use fast mode?
  * Returns port handle.
  */
-port_t *rcx_open(char *port, int fast);
+rcx_dev_t *rcx_open(char *port, int fast);
 
 /* Close tower.
  * port: port handle
  */
-void rcx_close(port_t *port);
+void rcx_close(rcx_dev_t *port);
 
 /* Wake up tower / RCX.
  * port: port handle
  * timeout_ms: timeout in ms
  * Returns error code.
  */
-int rcx_wakeup_tower(port_t *port, int timeout_ms);
+int rcx_wakeup_tower(rcx_dev_t *port, int timeout_ms);
 
 /* Read raw bytes.
  * port: port handle
@@ -93,7 +93,7 @@ int rcx_wakeup_tower(port_t *port, int timeout_ms);
  * timeout_ms: timeout in ms
  * Returns number of read bytes or an error code.
  */
-int rcx_read(port_t *port, void *buf, int maxlen, int timeout_ms);
+int rcx_read(rcx_dev_t *port, void *buf, int maxlen, int timeout_ms);
 
 /* Write raw bytes.
  * port: port handle
@@ -101,7 +101,7 @@ int rcx_read(port_t *port, void *buf, int maxlen, int timeout_ms);
  * len: number of bytes to write
  * Returns number of written bytes or an error code.
  */
-int rcx_write(port_t *port, void *buf, int len);
+int rcx_write(rcx_dev_t *port, void *buf, int len);
 
 /* Send a packet.
  * port: port handle
@@ -109,7 +109,7 @@ int rcx_write(port_t *port, void *buf, int len);
  * len: number of bytes to write
  * Returns number of sent bytes or an error code.
  */
-int rcx_send(port_t *port, void *buf, int len);
+int rcx_send(rcx_dev_t *port, void *buf, int len);
 
 /* Receive a packet.
  * port: port handle
@@ -118,7 +118,7 @@ int rcx_send(port_t *port, void *buf, int len);
  * timeout_ms: timeout in ms
  * Returns number of received bytes or an error code.
  */
-int rcx_receive(port_t *port, void *buf, int maxlen, int timeout_ms);
+int rcx_receive(rcx_dev_t *port, void *buf, int maxlen, int timeout_ms);
 
 /* Send a packet and receive a response.
  * port: port handle
@@ -129,7 +129,7 @@ int rcx_receive(port_t *port, void *buf, int maxlen, int timeout_ms);
  * retries: number of retries
  * Returns number of received bytes or an error code.
  */
-int rcx_send_receive(port_t *port,
+int rcx_send_receive(rcx_dev_t *port,
 		     void *send, int slen,
 		     void *recv, int rlen,
 		     int timeout, int retries);
@@ -137,16 +137,16 @@ int rcx_send_receive(port_t *port,
 /* Clear input and output buffers.
  * port: port handle
  */
-void rcx_purge(port_t *port);
+void rcx_purge(rcx_dev_t *port);
 
 /* Flush output buffers.
  * port: port handle
  */
-void rcx_flush(port_t *port);
+void rcx_flush(rcx_dev_t *port);
 
 /* Is RCX alive?
  */
-int rcx_is_alive (port_t *port);
+int rcx_is_alive (rcx_dev_t *port);
 
 /* error handling */
 

@@ -182,7 +182,7 @@ int __rcx_read_serial (void* port, void* buf, int maxlen, int timeout_ms)
 	return len;
 }
 
-int __rcx_write(void* port, void* buf, int len) 
+int __rcx_write(void* port, const void* buf, int len) 
 {
 	DWORD written = 0;
 	if (WriteFile(((Port*) port)->fileHandle, buf, len, &written, NULL) == 0)

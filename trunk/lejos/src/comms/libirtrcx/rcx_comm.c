@@ -36,6 +36,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/time.h>
 
 #include "rcx_comm_os.h"
 
@@ -52,7 +53,6 @@ typedef struct timeval timeval_t;
 #define tvsec(tv)     ((tv)->tv_sec)
 #define tvmsec(tv)    ((tv)->tv_usec) / 1000
 
-void gettimeofday(timeval_t *tv, void *tzp);
 
 static void timerReset(timeval_t *timer)
 {
@@ -76,7 +76,7 @@ static int timerRead(timeval_t *timer)
  * timeout_ms: timeout in ms
  * Returns number of received bytes or an error code.
  */
-static int rcx_receive_fast(port_t *port, void *buf, int maxlen, int timeout_ms);
+static int rcx_receive_fast(rcx_dev_t *port, void *buf, int maxlen, int timeout_ms);
 
 /* Receive packet in normal mode.
  * port: port handle
@@ -85,7 +85,7 @@ static int rcx_receive_fast(port_t *port, void *buf, int maxlen, int timeout_ms)
  * timeout_ms: timeout in ms
  * Returns number of received bytes or an error code.
  */
-static int rcx_receive_slow(port_t *port, void *buf, int maxlen, int timeout_ms);
+static int rcx_receive_slow(rcx_dev_t *port, void *buf, int maxlen, int timeout_ms);
 
 /* Encode bytes to correct message format.
  * port: port handle
@@ -94,29 +94,29 @@ static int rcx_receive_slow(port_t *port, void *buf, int maxlen, int timeout_ms)
  * message: buffer to which the message will be encoded
  * Returns length of encoded message
  */
-static int rcx_encode_message(port_t *port, char* send, int sendLength, char* message);
+static int rcx_encode_message(rcx_dev_t *port, char* send, int sendLength, char* message);
 
 /* Check if echo is correct.
  * port: port handle
  * send: buffer with send bytes
  * sendLength: number of sent bytes
  */
-static int rcx_check_echo(port_t *port, char* send, int sendLength);
+static int rcx_check_echo(rcx_dev_t *port, char* send, int sendLength);
 
 /* Reset port. (Clear input and output buffers)
  * port: port handle
  */
-static void rcx_reset(port_t *port);
+static void rcx_reset(rcx_dev_t *port);
 
 
 
 /* getter functions */
-int rcx_is_usb(port_t *port)
+int rcx_is_usb(rcx_dev_t *port)
 {
 	return port->usb;
 }
 
-int rcx_is_fast(port_t *port)
+int rcx_is_fast(rcx_dev_t *port)
 {
 	return port->fast;
 }
@@ -124,17 +124,17 @@ int rcx_is_fast(port_t *port)
 
 /* RCX functions */
 
-port_t *rcx_open(char *port_name, int fast)
+rcx_dev_t *rcx_open(char *port_name, int fast)
 {
 	return __rcx_open(port_name, fast);
 }
 
-void rcx_close(port_t *port)
+void rcx_close(rcx_dev_t *port)
 {
 	__rcx_close(port);
 }
 
-int rcx_wakeup_tower(port_t *port, int timeout_ms)
+int rcx_wakeup_tower(rcx_dev_t *port, int timeout_ms)
 {
 	/* wake up message */
 	char msg[] = { 0x10, 0xfe, 0x10, 0xfe };
@@ -179,7 +179,7 @@ int rcx_wakeup_tower(port_t *port, int timeout_ms)
 	return count == 0 ? RCX_NO_TOWER : RCX_BAD_LINK;	
 }
 
-int rcx_read(port_t *port, void *read, int readMaxLength, int timeout_ms)
+int rcx_read(rcx_dev_t *port, void *read, int readMaxLength, int timeout_ms)
 {
 	int result = __rcx_read(port, read, readMaxLength, timeout_ms);
 
@@ -191,14 +191,14 @@ int rcx_read(port_t *port, void *read, int readMaxLength, int timeout_ms)
    return result;
 }
 
-int rcx_write(port_t *port, void *write, int write_len) 
+int rcx_write(rcx_dev_t *port, void *write, int write_len) 
 {
 	if (__comm_debug) hexdump("W", write, write_len);
 
 	return  __rcx_write(port, write, write_len);
 }
 
-int rcx_send(port_t *port, void *send, int send_len)
+int rcx_send(rcx_dev_t *port, void *send, int send_len)
 {
 	int written = 0;
 
@@ -232,7 +232,7 @@ int rcx_send(port_t *port, void *send, int send_len)
 	return send_len;
 }
 
-int rcx_encode_message(port_t *port, char* send, int send_len, char* message)
+int rcx_encode_message(rcx_dev_t *port, char* send, int send_len, char* message)
 {
 	int is_fast = rcx_is_fast(port);
 	int len = 0;
@@ -255,7 +255,7 @@ int rcx_encode_message(port_t *port, char* send, int send_len, char* message)
 	return len;
 }
 
-int rcx_check_echo(port_t *port, char *send, int send_len)
+int rcx_check_echo(rcx_dev_t *port, char *send, int send_len)
 {
 	char echo[BUFFERSIZE];
 	int result = 0;
@@ -276,14 +276,14 @@ int rcx_check_echo(port_t *port, char *send, int send_len)
 	return result;
 }
 
-int rcx_receive(port_t *port, void *buf, int maxlen, int timeout_ms)
+int rcx_receive(rcx_dev_t *port, void *buf, int maxlen, int timeout_ms)
 {
 	return rcx_is_fast(port)
 		? rcx_receive_fast(port, buf, maxlen, timeout_ms)
 		: rcx_receive_slow(port, buf, maxlen, timeout_ms);
 }
 
-int rcx_receive_fast(port_t *port, void *buf, int maxlen, int timeout_ms)
+int rcx_receive_fast(rcx_dev_t *port, void *buf, int maxlen, int timeout_ms)
 {
 	char *bufp = (char *)buf;
 	unsigned char msg[BUFFERSIZE];
@@ -371,7 +371,7 @@ int rcx_receive_fast(port_t *port, void *buf, int maxlen, int timeout_ms)
 	return RCX_BAD_RESPONSE;
 }
 
-int rcx_receive_slow(port_t *port, void *buf, int maxlen, int timeout_ms)
+int rcx_receive_slow(rcx_dev_t *port, void *buf, int maxlen, int timeout_ms)
 {
 	char *bufp = (char*)buf;
 	unsigned char msg[BUFFERSIZE];
@@ -431,7 +431,7 @@ int rcx_receive_slow(port_t *port, void *buf, int maxlen, int timeout_ms)
 	return len;
 }
 
-int rcx_send_receive(port_t *port, void *send, int send_len, 
+int rcx_send_receive(rcx_dev_t *port, void *send, int send_len, 
 		     void *receive, int receive_len,
 		     int timeout_ms, int retries)
 {
@@ -464,7 +464,7 @@ int rcx_send_receive(port_t *port, void *send, int send_len,
 	return status;
 }
 
-void rcx_reset(port_t *port)
+void rcx_reset(rcx_dev_t *port)
 {
 	char buf[BUFFERSIZE];
 	
@@ -479,17 +479,17 @@ void rcx_reset(port_t *port)
 	rcx_read(port, buf, BUFFERSIZE, 1);
 }
 
-void rcx_purge(port_t *port)
+void rcx_purge(rcx_dev_t *port)
 {
 	__rcx_purge(port);
 }
 
-void rcx_flush(port_t *port)
+void rcx_flush(rcx_dev_t *port)
 {
 	__rcx_flush(port);
 }
 
-int rcx_is_alive(port_t *port)
+int rcx_is_alive(rcx_dev_t *port)
 {
 	unsigned char send[1] = { 0x10 };
 	unsigned char recv[1];

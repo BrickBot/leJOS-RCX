@@ -1,3 +1,9 @@
+#
+# Full paths work best inside emacs
+#
+PWD = $(shell pwd)
+SRCS = $(addprefix $(PWD)/, tower.c)
+
 CC=$(shell $(LEJOS_HOME)/cctest.sh)
 
 JAVA_INCL="$(JAVA_HOME)"/include
