@@ -35,9 +35,9 @@ public class Receiver
             pPacket[3] = 0x00;
             pPacket[4] = 0x01;
             pPacket[5] = 0x00;
-            pPacket[6] = 0x00;
+            pPacket[6] = 0x03;
             pPacket[7] = 0x00;
-            pPacket[8] = 0x00;
+            pPacket[8] = 0x09;
             Serial.sendPacket (pPacket, 0, 9);
         }
   	else if (pOpCode == 0x65)
