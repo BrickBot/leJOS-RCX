@@ -1,6 +1,8 @@
 package java.lang;
 
 public final class Math {
+
+   	final double [] DIGIT = {45.0, 26.56505118, 14.03624347, 7.125016349, 3.576334375, 1.789910608, 0.89517371, 0.447614171, 0.2238105, 0.111905677, 0.055952892, 0.027976453, 0.013988227, 0.006994114, 0.003497057};
 	
 	// Math constants
 	public static final double E = 2.718281828459045;
@@ -40,7 +42,7 @@ public final class Math {
 	public static double sqrt(double a) {
 		double b = a;
 		double delta = a;
-		double accuracy = 0.00000000000001;
+		double accuracy = 0.0000001; // Can't be smaller than this
 		
 		// Special situation if a < 0
 		if(a<0)
@@ -52,12 +54,16 @@ public final class Math {
 			delta = 1;
 		}
 		
+		// TBD: b*b should be assigned to a local.
 		while(((b*b) > (a + accuracy))||((b*b)<(a-accuracy))) {
 			delta = delta/2;
 			if((b*b) > a)
 				b = b - delta;
 			else
 				b = b + delta;
+				
+		        //josx.platform.rcx.LCD.showNumber ((int) (b * 100));
+			//josx.platform.rcx.Button.VIEW.waitForPressAndRelease();
 			//System.out.println("b = " + b);
 		}
 
@@ -73,6 +79,7 @@ public final class Math {
    	// ** Since the Java tan method uses radians, this function
    	// probably should:
    	// a = LegoMath.java.lang.Math.toDegrees(a);
+	        a = toDegrees (a);
    	
    	// ** When a=0, 90, 180, 270 should return even number probably
    	
@@ -105,8 +112,8 @@ public final class Math {
    	if(a>90)
    		a = 180 - a;
    	
+	final double[] digit = DIGIT;
    	// ** The core trig calculations to produce Cos & Sin **
-   	final double [] digit = {45.0, 26.56505118, 14.03624347, 7.125016349, 3.576334375, 1.789910608, 0.89517371, 0.447614171, 0.2238105, 0.111905677, 0.055952892, 0.027976453, 0.013988227, 0.006994114, 0.003497057};
 		int N = digit.length - 1;
 		double x = 0.607252935;  // Absolute best accuracy available
 		double y = 0.0;

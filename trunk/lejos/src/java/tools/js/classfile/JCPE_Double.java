@@ -34,7 +34,7 @@ public class JCPE_Double extends JConstantPoolEntry
     //System.out.println ("# pInt1 = " + pInt1);
     int pInt2 = JIO.readU4 (aIn);
     //System.out.println ("# pInt2 = " + pInt2);
-    long pLong = ((long) pInt1 << 32) | pInt2;
+    long pLong = ((long) pInt1 << 32) | (pInt2 & 0xFFFFFFFFL);
     iValue = Double.longBitsToDouble (pLong);
     //System.out.println ("# iValue = " + iValue);
   }
@@ -57,9 +57,11 @@ public class JCPE_Double extends JConstantPoolEntry
   {
     if (aObj instanceof JCPE_Double)
     {
+      if (aObj == this)
+	return true;
       double pOther = ((JCPE_Double) aObj).iValue;
-      return (iValue == pOther ||
-              (Double.isNaN(iValue) && Double.isNaN(pOther)));
+      // Note: NaN is not equal to anything.      
+      return (iValue == pOther);
     }
     return false;
   }

@@ -22,7 +22,7 @@ public class JCPE_Long extends JConstantPoolEntry
   {
     aOut.write (JConstantPoolEntry.CONSTANT_Long); // 1 byte
     JIO.writeU4 (aOut, (int) (iValue >>> 32));
-    JIO.writeU4 (aOut, (int) (iValue &  0x00000000FFFFFFFFL));
+    JIO.writeU4 (aOut, (int) (iValue &  0xFFFFFFFFL));
   }
   
   public void read (InputStream aIn)
@@ -30,7 +30,7 @@ public class JCPE_Long extends JConstantPoolEntry
   {
     // Assume tag already read
     iValue = (JIO.readU4 (aIn) << 32) | 
-              JIO.readU4 (aIn);
+              (JIO.readU4 (aIn) & 0xFFFFFFFFL);
   }
 
   public final void update()

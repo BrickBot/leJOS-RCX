@@ -52,6 +52,9 @@ implements OpCodeConstants, OpCodeInfo, Constants
       Utilities.fatal ("Classfile error: LDC-type instruction " +
                        "does not refer to a suitable constant. ");
     }
+
+    //System.out.println ("constant: " + pEntry + " : " + pEntry.getClass());
+    
     ConstantRecord pRecord = new ConstantRecord ((JConstantPoolEntry) pEntry);
     int pIdx = iBinary.getConstantIndex (pRecord);
     
@@ -246,7 +249,10 @@ implements OpCodeConstants, OpCodeInfo, Constants
     while (i < aCode.length)
     {
       pOutCode[i] =  aCode[i];    
-      int pOpCode = pOutCode[i] & 0xFF;    
+      int pOpCode = pOutCode[i] & 0xFF;
+      
+      //System.out.println (OPCODE_NAME[pOpCode]);
+      
       i++;
       switch (pOpCode)
       {
