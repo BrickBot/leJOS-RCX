@@ -144,7 +144,7 @@ void* __rcx_open(char *tty, bool fast)
 	Port* result = (Port*) malloc(sizeof(Port));
 	__rcx_open_setDevice(result, tty, fast);
 	
-	result->fileHandle = open(tty, O_RDWR);
+	result->fileHandle = open(result->deviceName, O_RDWR);
 	if (result->fileHandle < 0) 
 	{ 
 		if (__comm_debug) printf("Error %lu: Opening %s\n", errno, result->deviceName);
