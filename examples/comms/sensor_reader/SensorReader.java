@@ -27,7 +27,5 @@ public class SensorReader {
       port.close();
     }
   }
-
 }
-
 
