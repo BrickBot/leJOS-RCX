@@ -1,3 +1,9 @@
+leJOS 1.0.0alpha4:
+------------------
+  
+  - Added Brian Bagnall's java.lang.Math class.
+  - Fixed bug in the way the linker was writing doubles.
+
 leJOS 1.0.0alpha3:
 ------------------
   

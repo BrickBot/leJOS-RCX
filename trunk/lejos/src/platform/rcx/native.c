@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "specialsignatures.h"
 #include "specialclasses.h"
+#include "stack.h"
 #include "memory.h"
 #include "threads.h"
 #include "classes.h"
@@ -17,30 +18,26 @@
 
 extern void reset_rcx_serial();
 
+/**
+ * NOTE: The technique is not the same as that used in TinyVM.
+ */
 void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 {
   switch (signature)
   {
     case START_V:
-      if (!init_thread ((Thread *) word2ptr(paramBase[0])))
-	return;
-      break;
+      init_thread ((Thread *) word2ptr(paramBase[0]));
+      return;
     case YIELD_V:
-      // Pop current stack frame
-      do_return (0);
-      // Switch current thread
       switch_thread();
-      // Go back and continue
       return;
     case SLEEP_V:
       sleep_thread (paramBase[1]);
-      do_return (0);
       switch_thread();
       return;
     case CURRENTTIMEMILLIS_J:
-      *(++stackTop) = 0;
-      *(++stackTop) = sys_time;
-      do_return (2);
+      push_word (0);
+      push_word (sys_time);
       return;
 
 #if 0
@@ -74,10 +71,10 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 
     case CALLROM0_V:
       __rcall0 (paramBase[0]);
-      break;      
+      return;      
     case CALLROM1_V:
       __rcall1 (paramBase[0], paramBase[1]);
-      break;      
+      return;      
     case CALLROM2_V:
       #if 0
       trace (-1, (TWOBYTES) paramBase[0], 6);
@@ -85,45 +82,31 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       trace (-1, (TWOBYTES) paramBase[2] - 0xF010, 8);
       #endif
       __rcall2 (paramBase[0], paramBase[1], paramBase[2]);
-      break;      
+      return;      
     case CALLROM3_V:
       __rcall3 (paramBase[0], paramBase[1], paramBase[2], paramBase[3]);
-      break;
+      return;
     case CALLROM4_V:
       __rcall4 (paramBase[0], paramBase[1], paramBase[2], paramBase[3], paramBase[4]);
-      break;
+      return;
     case READMEMORYBYTE_B:
-      #if 0
-      trace (-1, (TWOBYTES) ((byte *) word2ptr(paramBase[0])) - 0xF010, 4);
-      trace (-1, *((byte *) word2ptr(paramBase[0])), 5);
-      #endif
-      *(++stackTop) = (STACKWORD) *((byte *) word2ptr(paramBase[0]));
-      #if 0
-      trace (-1, *stackTop, 5);
-      #endif
-      do_return (1);
+      push_word ((STACKWORD) *((byte *) word2ptr(paramBase[0])));
       return;
     case WRITEMEMORYBYTE_V:
-      #if 0
-      trace (-1, (TWOBYTES) ((byte *) word2ptr(paramBase[0])) - 0xF010, 3);
-      trace (-1, paramBase[1] & 0xFF, 4);
-      #endif
       *((byte *) word2ptr(paramBase[0])) = (byte) (paramBase[1] & 0xFF);
-      break;
+      return;
     case SETMEMORYBIT_V:
       *((byte *)word2ptr(paramBase[0])) =
         ( *((byte *)word2ptr(paramBase[0])) & (~(1<<paramBase[1])) ) | (((paramBase[2] != 0) ? 1 : 0) <<paramBase[1]);
-      break;      
+      return;      
     case GETDATAADDRESS_I:
-      *(++stackTop) = ptr2word (((byte *) word2ptr (paramBase[0])) + HEADER_SIZE);
-      do_return (1);
+      push_word (ptr2word (((byte *) word2ptr (paramBase[0])) + HEADER_SIZE));
       return;
     case RESETSERIAL_V:
       reset_rcx_serial();
-      break;
+      return;
     default:
       throw_exception (noSuchMethodError);
       return;
   }  
-  do_return (0);
 } 
