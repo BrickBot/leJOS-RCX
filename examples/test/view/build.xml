@@ -1,4 +1,4 @@
-<project name="View" default="dist" basedir=".">
+<project name="View" default="download" basedir=".">
     <description>
         View example build file
     </description>
