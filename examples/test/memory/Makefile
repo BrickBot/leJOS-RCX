@@ -27,7 +27,7 @@ run : $(BINARY)
 	$(LEJOSRUN) $(BINARY)
 
 emulate : $(EMUBINARY)
-	$(EMULEJOSRUN) $(EMUBINARY)
+	$(EMULEJOSRUN) -v $(EMUBINARY)
 
 firmdl :
 	$(LEJOSFIRMDL)

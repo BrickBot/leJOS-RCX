@@ -25,6 +25,7 @@ extern STACKWORD get_word(byte *ptr, byte aSize);
 extern void zero_mem (TWOBYTES *ptr, TWOBYTES numWords);
 extern int getHeapSize();
 extern int getHeapFree();
+extern int getRegionAddress();
 
 #if DEBUG_RCX_MEMORY
 extern void scan_memory (TWOBYTES *numNodes, TWOBYTES *biggest, TWOBYTES *freeMem);

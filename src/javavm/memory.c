@@ -572,3 +572,12 @@ int getHeapSize() {
 int getHeapFree() {
   return ((int)memory_free) << 1;
 }
+
+int getRegionAddress()
+{
+#if SEGMENTED_HEAP
+	return 0xf002;
+#else
+	return (int)region;
+#endif
+}
