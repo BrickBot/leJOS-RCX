@@ -32,7 +32,7 @@ export JAVA
 default: check all_ctools core_classes rcx_comm all_jtools tinyvm_emul
 	@echo "====> Installation of leJOS done!"
 
-all: default 
+all: default lejos_bin
 
 release:
 	$(MAKE) $(MFLAGS) clean
