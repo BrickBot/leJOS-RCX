@@ -11,6 +11,8 @@
 #define START_V 4
 #define ARRAYCOPY_V 5
 #define CALLROM0_V 6
-#define CALLROM3_V 7
-#define _TVM_MAIN_METHOD_V 8
+#define CALLROM1_V 7
+#define CALLROM2_V 8
+#define CALLROM3_V 9
+#define _TVM_MAIN_METHOD_V 10
 #endif _SPECIALSIGNATURES_H
