@@ -1,3 +1,6 @@
+/**
+ * Essential core Java APIs.
+ */
 package java.lang;
 
 public class Object

@@ -187,18 +187,18 @@ void switch_thread_hook()
 int main (void)
 {
  LABEL_POWERUP:
+ LABEL_DOWNLOAD:
   // These are necessary RCX initializations.
   init_timer (&timerdata0, &timerdata1[0]);
   init_power();
   init_sensors();
   // If power key pressed, wait until it's released.
   wait_for_power_release();
- LABEL_DOWNLOAD:
+  play_system_sound (SOUND_QUEUED, 1);
   hookCommand = HC_NONE;
   state0 = 0;
   state1 = 0;
   init_serial (&state0, &state1, 1, 1);
-  play_system_sound (SOUND_QUEUED, 1);
   set_data_pointer (MEM_START);
   clear_display();
   set_lcd_number (LCD_UNSIGNED, (short) 0, 3002);
@@ -253,6 +253,8 @@ int main (void)
   }
 
  LABEL_PROGRAM_STARTUP:
+  // Gotta shutdown serial communications
+  shutdown_serial();
   init_memory (mmStart, ((TWOBYTES) MEM_END - (TWOBYTES) mmStart) / 2);
   // Initialize special exceptions
   init_exceptions();

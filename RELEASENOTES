@@ -1,6 +1,14 @@
 
+Version 0.1.2 (latest):
 
-Version 0.1.1 (latest):
+  - Fixed serial comm bug. (If you tried to download
+    a program to the RCX while another program was
+    running, the transferred data could clobber 
+    program memory. TinyVM is now shutting down
+    serial communications right after a program is
+    downloaded).
+
+Version 0.1.1:
 
   - Fixed PUTSTATIC bug. (Setting a static field
     in uninitialized class could produce subsequent

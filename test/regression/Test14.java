@@ -18,8 +18,7 @@ public class Test14
     try {
       recurse();
     } finally {
-      ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, i, ROM.LCD_POINT_DECIMAL_0);
-      ROM.refreshLcd();
+      LCD.showNumber (i);
       for (int k = 0; k < 50000; k++) {}
     }    
   }

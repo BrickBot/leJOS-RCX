@@ -1,7 +1,10 @@
 ----------------- Run of Test04.tvm
-& ROM call 3: 0x1FF2 (12319, 4490, 12291)
-& ROM call 3: 0x1FF2 (12319, 4181, 12291)
-& ROM call 3: 0x1FF2 (12319, 4300, 12291)
+& ROM call 3: 0x1FF2 (12319, 4490, 12290)
+& ROM call 0: 0x27C8
+& ROM call 3: 0x1FF2 (12319, 4181, 12290)
+& ROM call 0: 0x27C8
+& ROM call 3: 0x1FF2 (12319, 4300, 12290)
+& ROM call 0: 0x27C8
 ----------------- Run of Test06.tvm
 & ROM call 3: 0x1A4E (8192, 1, 1)
 & ROM call 3: 0x1A4E (8194, 1, 7)

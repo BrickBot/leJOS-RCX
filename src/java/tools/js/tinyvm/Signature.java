@@ -39,4 +39,9 @@ public class Signature
   {
     return iImage;
   }
+
+  public String toString()
+  {
+    return iImage;
+  }
 }

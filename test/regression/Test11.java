@@ -11,7 +11,7 @@ public class Test11
       public void run() {
         for (int i = 0; i < 5; i++)
 	{
-          ROM.playTone (2000, 20);
+          Sound.playTone (2000, 20);
           for (int k = 0; k < 100; k++) {}
 	}
       }
@@ -21,7 +21,7 @@ public class Test11
       public void run() {
         for (int i = 0; i < 5; i++)
 	{
-          ROM.playTone (200, 20);
+          Sound.playTone (200, 20);
           for (int k = 0; k < 100; k++) {}
 	}
       }
