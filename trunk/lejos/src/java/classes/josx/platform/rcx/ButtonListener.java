@@ -2,8 +2,8 @@ package josx.platform.rcx;
 
 // EXPOSE WHEN READY
 
-interface ButtonListener
+public interface ButtonListener
 {
-  public void buttonPressed();
-  public void buttonReleased();
+  public void buttonPressed (Button b);
+  public void buttonReleased (Button b);
 }
