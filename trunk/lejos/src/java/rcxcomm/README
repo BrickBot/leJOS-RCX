@@ -1,4 +1,4 @@
-josx.rcxcomm is a package for communication between a PC or Mac and the RCX.
+josx.rcxcomm is a package for communication between a PC and the RCX.
 
 It is based on original code created by the LEGO3 Team at DTU-IAU.
 
@@ -48,7 +48,7 @@ serialization are not yet supported.
 There are example programs in the rcxcomm/examples directory.
 
 Both serial and USB towers are supported on Windows. Currently
-only serial towers are supported for Linux and Mac OS X.
+only serial towers are supported for Linux and Mac OSX.
 
 To compile the RCX program, you use lejosc. An extra jar 
 (rcxrcxcomm.jar) is used automatically.
@@ -69,7 +69,7 @@ The port used for the IR Tower can be set in two ways:
   - You can set RCXTTY and call RCXPort with no parameter
   - You can pass the port name on the RCXPort constructor.
 
-For USB the port name is "usb", for a serial tower it is "COM1", "COM2" etc.
+For USB the port name is "USB", for a serial tower it is "COM1", "COM2" etc.
 
 There is an extra class available for the PC and Mac - RCXBean. This 
 provides a Java Bean interface for sending and receiving data from the RCX.
@@ -80,7 +80,28 @@ For serial towers on the PC or Mac, there is an extra method: setListen.
 This is used to keep the serial tower alive for receiving data. Use 
 setListen(true) when you want to receive date and setListen(false) to conserve 
 the serial tower batteries. You don't need to call setListen for USB towers.
+setListen is called automatically by the PC version of getInputStream(). You
+can call setListen(false) if you dont need to listen mmediatel and you want to 
+conserve batteries.
 
-The protocol used by josx.rcxcomm is rather slow, and is not suitable for
-sending large amounts of data.
+With lejos 2.0. low level comms that does not rely on the Lego firmware protocol 
+and opcodes has been added, and RCXPort has been re-implemented using this. This
+makes it faster and reliable. It will continue to try tosend data until it gets 
+through, and ensure hat no data is duplicated. Future versions will be faster 
+still by adding buffering and using larger packet sizes.
+
+With lejos 2.0 there are alternative versionof RCXPort.These are:
+
+RCXF7Port - which uses the Lego F7 opcode in the same way as the lejos 1.0.5 
+            version of RCXPort
+RCXLNPPort - which uses the LegOS Netwrorking Protocol Integrity layer
+RCXLNPAddrPort - which uses the LegOS Netwrorking Protocol Addressing layer
+
+You can also write your own protocol stacks and RCX Ports - see 
+ProtocolStacks.Readme.
+
+There are several example programs that use RCXPort in the rcxcomm/examples directory.
+See the browser example for how to browse the Internet from the RCX using a socket 
+proxy on the PC, and servlet for how to turn he RCX into a Web Server using an Http
+Proxy on the PC.
 
