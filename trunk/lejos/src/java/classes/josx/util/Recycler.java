@@ -8,7 +8,7 @@ package josx.util;
  * Note that the caller is expected to provide
  * thread safety for instances of this class.
  * 
- * @see josx.util.Recyclable.
+ * @see josx.util.Recyclable
  */
 public abstract class Recycler {
     private Recyclable firstInList;

@@ -41,7 +41,7 @@ package java.lang;
      * Returns a new String object representing the specified integer. The 
      * argument is converted to signed decimal representation and returned 
      * as a string, exactly as if the argument and radix <tt>10</tt> were 
-     * given as arguments to the {@link #toString(int, int)} method.
+     * given as arguments to the toString(int, int) method.
      *
      * @param   i   an integer to be converted.
      * @return  a string representation of the argument in base&nbsp;10.

@@ -140,9 +140,9 @@ public final class Math {
 	
 	/**
 	* Natural log function.  Returns log(a) to base E
-	* Replaced wit an algorithm that does not use exponents and so
+	* Replaced with an algorithm that does not use exponents and so
 	* works with large arguments.
-	* @see http://www.geocities.com/zabrodskyvlada/aat/a_contents.html
+	* @see <a href="http://www.geocities.com/zabrodskyvlada/aat/a_contents.html">here</a>
 	*/
 	public static double log(double x)
 	{
