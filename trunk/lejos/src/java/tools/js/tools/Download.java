@@ -110,6 +110,8 @@ public class Download
     byte[] send = new byte[3];
     byte[] recv = new byte[3];
 
+    _progress.operation("download program");
+
     // Send program-download message
     send[0] = 0x12;
     send[1] = (byte) (MAGIC >> 8);
@@ -293,7 +295,7 @@ public class Download
     {
       int numToWrite = Math.min(length - addr, TOWRITEMAX);
 
-      _progress.progress(addr * 100 / length);
+      _progress.progress(addr * 1000 / length);
 
       block = terminate0 && length - addr <= TOWRITEMAX ? 0 : block;
       transferData(opcode, block, data, addr, numToWrite);
@@ -302,7 +304,7 @@ public class Download
       addr += numToWrite;
     };
 
-    _progress.progress(100);
+    _progress.progress(1000);
   }
 
   //

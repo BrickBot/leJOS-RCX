@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 import js.common.AbstractTool;
+import js.common.NullToolProgressListener;
 import js.common.ToolException;
 import js.common.ToolProgressListener;
 
@@ -79,18 +80,33 @@ public class FirmdlTool extends AbstractTool
 
       if (download)
       {
-        Download d = new Download(getProgressListener());
-        try
+        if (fastMode)
         {
-          if (fastMode)
+          getProgressListener().operation("Installing fastmode firmware");
+          Download d = new Download(new NullToolProgressListener());
+          try
           {
-            getProgressListener().operation("Installing fastmode firmware");
             d.open(tty, false);
             d.installFirmware(FastImage.fastdlImage,
                 FastImage.fastdlImage.length, IMAGE_START);
             d.close();
           }
-          getProgressListener().operation("Installing firmware");
+          catch (ToolException e)
+          {
+            throw new FirmdlException(e.getMessage(), e);
+          }
+          finally
+          {
+            if (d.isOpen())
+            {
+              d.close();
+            }
+          }
+        }
+        getProgressListener().operation("Installing firmware");
+        Download d = new Download(getProgressListener());
+        try
+        {
           d.open(tty, fastMode);
           d.installFirmware(image.data, length, image.entry);
           d.close();
@@ -136,6 +152,8 @@ public class FirmdlTool extends AbstractTool
 
     try
     {
+      getProgressListener().operation("read firmware srec");
+
       String record;
       SRec srec = null;
       int segStartAddr = 0;
@@ -253,6 +271,8 @@ public class FirmdlTool extends AbstractTool
       {
         throw new FirmdlException("Image contains no data");
       }
+
+      getProgressListener().progress(1000);
     }
     catch (IOException e)
     {

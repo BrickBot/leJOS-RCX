@@ -55,6 +55,7 @@ public class LejosdlTool extends AbstractTool
 
     try
     {
+      getProgressListener().operation("read binary");
       int read;
       while ((read = program.read(buffer, index, 0x10000 - index)) != -1
           && index < 0x10000)
@@ -71,6 +72,7 @@ public class LejosdlTool extends AbstractTool
         }
         throw new LejosdlException("Huge file: " + index + " bytes");
       }
+      getProgressListener().progress(1000);
     }
     catch (IOException e)
     {
@@ -98,6 +100,7 @@ public class LejosdlTool extends AbstractTool
 
     if (download)
     {
+      getProgressListener().operation("download binary");
       Download d = new Download(getProgressListener());
       try
       {
@@ -116,6 +119,7 @@ public class LejosdlTool extends AbstractTool
           d.close();
         }
       }
+      getProgressListener().progress(1000);
     }
   }
 }

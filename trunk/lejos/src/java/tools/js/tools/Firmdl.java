@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import js.common.ToolProgressListener;
-import js.common.ToolProgressListenerImpl;
+import js.common.CLIToolProgressListenerImpl;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -31,7 +31,7 @@ public class Firmdl extends FirmdlTool
   {
     try
     {
-      Firmdl firmdl = new Firmdl(new ToolProgressListenerImpl());
+      Firmdl firmdl = new Firmdl(new CLIToolProgressListenerImpl());
       firmdl.start(args);
     }
     catch (FirmdlException e)

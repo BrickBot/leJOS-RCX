@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import js.common.ToolProgressListener;
-import js.common.ToolProgressListenerImpl;
+import js.common.CLIToolProgressListenerImpl;
 import js.tools.LejosdlException;
 
 import org.apache.commons.cli.CommandLine;
@@ -32,7 +32,7 @@ public class TinyVM extends TinyVMTool
   {
     try
     {
-      TinyVM tinyVM = new TinyVM(new ToolProgressListenerImpl());
+      TinyVM tinyVM = new TinyVM(new CLIToolProgressListenerImpl());
       tinyVM.start(args);
     }
     catch (TinyVMException e)
@@ -72,7 +72,7 @@ public class TinyVM extends TinyVMTool
     // files
     String[] classes = commandLine.getArgs();
 
-    ((ToolProgressListenerImpl) getProgressListener()).setVerbose(verbose);
+    ((CLIToolProgressListenerImpl) getProgressListener()).setVerbose(verbose);
 
     OutputStream stream = null;
     try
