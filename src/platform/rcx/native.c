@@ -255,12 +255,19 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
     case init_4_5V:
       llc_init();
       return;
-    case write_4B_5V:
-      llc_write((unsigned char) paramBase[0]);
-      return;
     case read_4_5I:
       push_word(llc_read());
       return;
+    case write_4_1BI_5V:
+      llc_writebytes((unsigned char *) (ptr2word (((byte *) 
+        word2ptr (paramBase[0])) + HEADER_SIZE)), paramBase[1]);
+      return;
+    case isSending_4_5Z:
+      push_word(llc_is_sending());
+      return;
+    case isSendError_4_5Z:
+      push_word(llc_send_error());
+      return;   
     default:
       throw_exception (noSuchMethodError);
       return;
