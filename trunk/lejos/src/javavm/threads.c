@@ -199,9 +199,10 @@ void switch_thread()
     case DEAD:
 
       #if REMOVE_DEAD_THREADS
-      free_array ((Object *) word2ptr (currentThread->stackFrameArray));
-      free_array ((Object *) word2ptr (currentThread->stackArray));
+      // This order of deallocation is actually crucial to avoid leaks
       free_array ((Object *) word2ptr (currentThread->isReferenceArray));
+      free_array ((Object *) word2ptr (currentThread->stackArray));
+      free_array ((Object *) word2ptr (currentThread->stackFrameArray));
 
       #ifdef SAFE
       currentThread->stackFrameArray = JNULL;

@@ -172,7 +172,7 @@ void engine()
   // SWITCH BEGINS HERE
   //-----------------------------------------------
 
-  #ifdef DEBUG_BYTECODE
+  #if DEBUG_BYTECODE
   printf ("0x%X: \n", (int) pc);
   printf ("OPCODE (0x%X) %s\n", (int) *pc, OPCODE_NAME[*pc]);
   #endif
@@ -180,8 +180,6 @@ void engine()
   switch (*pc++)
   {
 
-#if 0
-	  
     #include "op_stack.hc"
     #include "op_locals.hc"
     #include "op_arrays.hc"
@@ -193,8 +191,6 @@ void engine()
     #include "op_conversions.hc"
     #include "op_logical.hc"
     #include "op_arithmetic.hc"
-    
-#endif
     
   }
 

@@ -78,9 +78,19 @@ void run(void)
   #endif
   
   #if DEBUG_RUNS
-  for (count = 0; count < 2; count++)
+  for (count = 0; count < 100; count++)
   {
   #endif DEBUG_RUNS
+
+  #if DEBUG_RCX_MEMORY
+  {
+    TWOBYTES numNodes, biggest, freeMem;	
+    scan_memory (&numNodes, &biggest, &freeMem);
+    printf ("nodes = %d\n", (int) numNodes);
+    printf ("biggest = %d\n", (int) biggest);
+    printf ("freeMem = %d\n", (int) freeMem);
+  }
+  #endif
 
   init_threads();
   if (!init_thread (bootThread))

@@ -8,7 +8,11 @@ leJOS 1.0.0alpha3:
   - lejosc and lejosp will work with Java 2 compilers only.
     For JDK 1.1, use lejosc1 and lejosp1. The problem was
     that java.util.Random couldn't be used with Java 2.
-    It was reported by J. Knudsen.
+    Reported by J. Knudsen.
+  - Changed Random(int) to Random(long).
+  - Fixed memory leak. Thread stacks were not getting deallocated
+    properly on program death.
+  - 
   
 leJOS 1.0.0alpha2:
 ------------------

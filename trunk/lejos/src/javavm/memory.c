@@ -324,30 +324,31 @@ void init_memory (void *ptr, TWOBYTES size)
  */
 TWOBYTES *allocate (TWOBYTES size)
 {
-  TWOBYTES *ptr;
-  TWOBYTES auxOffset;
+  register TWOBYTES *ptr;
+  TWOBYTES *anchorOffsetRef;
 
   #if DEBUG_MEMORY
-  if (size > 2)
-    printf ("Allocating %d words (%d, %d).\n", size, (int) freeOffset, (int) startPtr);
+  printf ("Allocating %d words.\n", size);
   #endif
-  auxOffset = freeOffset;
-  while (auxOffset != NULL_OFFSET)
+  anchorOffsetRef = &freeOffset;
+  while (*anchorOffsetRef != NULL_OFFSET)
   { 
-    ptr = startPtr + auxOffset;
+    ptr = startPtr + *anchorOffsetRef;
     if (ptr[0] >= size + 2)
     {
       ptr[0] = ptr[0] - size;
-      #if DEBUG_MEMORY
-      if (size > 2)
-	printf ("Allocated at %d\n", (int) (ptr + ptr[0]));
-      #endif
       return ptr + ptr[0];
     }
-    auxOffset = ptr[1];
+    if (ptr[0] >= size)
+    {
+      // This is necessary or we could run out of memory.
+      *anchorOffsetRef = ptr[1]; 
+      return ptr;     
+    }
+    anchorOffsetRef = &(ptr[1]);
   }
   #if DEBUG_MEMORY
-  printf ("No more memory!\n");
+  printf ("No more memory!");
   #endif
   return null;      
 }
@@ -360,7 +361,30 @@ void deallocate (TWOBYTES *ptr, TWOBYTES size)
   freeOffset = ptr - startPtr;
 }
 
+#if DEBUG_RCX_MEMORY
 
+void scan_memory (TWOBYTES *numNodes, TWOBYTES *biggest, TWOBYTES *freeMem)
+{
+  TWOBYTES offset;
+
+  *numNodes = 0;
+  *biggest = 0;
+  *freeMem = 0;
+  offset = freeOffset;
+  while (offset != NULL_OFFSET)
+  {
+    TWOBYTES *ptr;
+    
+    ptr = startPtr + offset;
+    (*numNodes)++;
+    if (ptr[0] > (*biggest))
+      *biggest = ptr[0];
+    (*freeMem) += ptr[0];
+    offset = ptr[1];
+  }	
+}
+
+#endif DEBUG_RCX_MEMORY
 
 
 

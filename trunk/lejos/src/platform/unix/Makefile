@@ -41,5 +41,5 @@ ${VMEMUL_TARGET}: ${VMEMUL_OBJ}
 	${CC} ${VMEMUL_OBJ} -o ${VMEMUL_TARGET}
 
 clean:
-	rm -rf ${VMSRC}/*.o *.o *.exe core platform_config.h ${DUMP_TARGET} ${VMEMUL_TARGET}
+	rm -rf ${VMSRC}/*.o *.o ../bin/*.exe core platform_config.h ${DUMP_TARGET} ${VMEMUL_TARGET}
 

@@ -89,10 +89,16 @@ set_data_pointer (void *ptr)
 
 void wait_for_power_release()
 {
+  TWOBYTES debouncer = 0;
+  
   do
   {
     get_power_status (POWER_KEY, &status);
-  } while (status == 0);
+    if (status == 0)
+      debouncer = 0;
+    else
+      debouncer++;
+  } while (debouncer < 20);
 }
 
 void trace (short s, short n1, short n2)
@@ -128,8 +134,11 @@ void handle_uncaught_exception (Object *exception,
 void switch_thread_hook()
 {
   get_power_status (POWER_KEY, &status);
-  if (!status)
+  if (status == 0)
   {
+    get_power_status (POWER_KEY, &status);
+    if (status != 0)
+      return;
     // Power button pressed - wait for release
     wait_for_power_release();
     read_buttons (0x3000, &status);
@@ -311,6 +320,17 @@ int main (void)
   }
 
  LABEL_PROGRAM_STARTUP:
+
+  #if DEBUG_RCX_MEMORY
+  {
+    TWOBYTES numNodes, biggest, freeMem;	
+    scan_memory (&numNodes, &biggest, &freeMem);
+    trace (3, numNodes, 3);
+    trace (3, biggest, 4);
+    trace (3, freeMem, 5);
+  }
+  #endif
+  
   // Jump to this point to start executing main().
   // Initialize the threading module.
   init_threads();
