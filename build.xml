@@ -137,6 +137,7 @@
     <jar destfile="${lib}/jtools.jar" basedir="${build}/tools" update="false">
       <fileset dir="${bin}">
         <include name="lejos.srec"/>
+        <include name="fastdl.srec"/>
       </fileset>
     </jar>
   </target>

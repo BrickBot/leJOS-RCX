@@ -42,16 +42,8 @@ public class FirmdlTool extends AbstractTool
    public void start (String tty, boolean download, boolean fastMode)
       throws FirmdlException
    {
-      // get firmware
-      // Find the lejos bin directory
-      // String dir = which("js.tools.Firmdl");
-      // fileName = dir + "bin/lejos.srec";
-      InputStream stream = Firmdl.class.getResourceAsStream("/lejos.srec");
-      if (stream == null)
-      {
-         throw new FirmdlException("Unable to find default lejos.srec");
-      }
-      start(new InputStreamReader(stream), tty, download, fastMode);
+      Image image = getImage("lejos");
+      start(image, tty, download, fastMode);
    }
 
    /**
@@ -66,52 +58,41 @@ public class FirmdlTool extends AbstractTool
    public void start (Reader reader, String tty, boolean download,
       boolean fastMode) throws FirmdlException
    {
-      try
-      {
-         // Load the s-record file
-         Image image = srecLoad(reader, MAX_SEGMENTS, IMAGE_MAXLEN);
-         int length = 0;
-         for (int i = 0; i < image.segments.length; i++)
-         {
-            getProgressMonitor().log(
-               "Segment " + i + ": length = " + image.segments[i].length);
-            length += image.segments[i].length;
-         }
+      Image image = srecLoad(reader, MAX_SEGMENTS, IMAGE_MAXLEN);
+      start(image, tty, download, fastMode);
+   }
 
-         if (download)
+   /**
+    * Execute firmware download.
+    * 
+    * @param image firmware image
+    * @param tty port
+    * @param download download read image?
+    * @param fastMode use fast mode?
+    * @throws FirmdlException
+    */
+   public void start (Image image, String tty, boolean download,
+      boolean fastMode) throws FirmdlException
+   {
+      log(image);
+
+      if (download)
+      {
+         if (fastMode)
          {
-            if (fastMode)
-            {
-               getProgressMonitor().operation("Installing fastmode firmware");
-               Download d = new Download(new NullToolProgressMonitor());
-               try
-               {
-                  d.open(tty, false);
-                  d.installFirmware(FastImage.fastdlImage,
-                     FastImage.fastdlImage.length, IMAGE_START);
-                  d.close();
-               }
-               catch (ToolException e)
-               {
-                  throw new FirmdlException(e.getMessage(), e);
-               }
-               finally
-               {
-                  if (d.isOpen())
-                  {
-                     d.close();
-                  }
-               }
-            }
-            getProgressMonitor().operation("Installing firmware");
-            Download d = new Download(getProgressMonitor());
+            getProgressMonitor().operation("Installing fastmode firmware");
+            Download d = new Download(new NullToolProgressMonitor());
             try
             {
-               d.open(tty, fastMode);
-               d.installFirmware(image.data, length, image.entry);
+               Image fastImage = getImage("fastdl");
+               log(fastImage);
+
+               d.open(tty, false);
+               d.installFirmware(fastImage.data, fastImage.length(),
+                  IMAGE_START);
                d.close();
             }
-            catch (ToolException e)
+            catch (Exception e)
             {
                throw new FirmdlException(e.getMessage(), e);
             }
@@ -123,6 +104,51 @@ public class FirmdlTool extends AbstractTool
                }
             }
          }
+         getProgressMonitor().operation("Installing firmware");
+         Download d = new Download(getProgressMonitor());
+         try
+         {
+            d.open(tty, fastMode);
+            d.installFirmware(image.data, image.length(), image.entry);
+            d.close();
+         }
+         catch (ToolException e)
+         {
+            throw new FirmdlException(e.getMessage(), e);
+         }
+         finally
+         {
+            if (d.isOpen())
+            {
+               d.close();
+            }
+         }
+      }
+   }
+
+   /**
+    * Get builtin firmware image.
+    * 
+    * @param name base name of builtin image
+    * @throws FirmdlException
+    */
+   protected Image getImage (String name) throws FirmdlException
+   {
+      assert name != null: "Precondition: name != null";
+
+      InputStream stream = Firmdl.class.getResourceAsStream("/" + name
+         + ".srec");
+      if (stream == null)
+      {
+         throw new FirmdlException("Unable to find default firmware image "
+            + name + ".srec");
+      }
+      Reader reader = new InputStreamReader(stream);
+
+      Image result;
+      try
+      {
+         result = srecLoad(reader, MAX_SEGMENTS, IMAGE_MAXLEN);
       }
       finally
       {
@@ -132,8 +158,27 @@ public class FirmdlTool extends AbstractTool
          }
          catch (IOException e)
          {
-            // ignore
+            throw new FirmdlException(e.getMessage(), e);
          }
+      }
+
+      assert result != null: "Postcondition: result != null";
+      return result;
+   }
+
+   /**
+    * Log some infos about given image.
+    * 
+    * @param image firmware image
+    */
+   public void log (Image image)
+   {
+      assert image != null: "Preconditon: image != null";
+
+      for (int i = 0; i < image.numSegments(); i++)
+      {
+         getProgressMonitor().log(
+            "Segment " + i + ": length = " + image.segments[i].length);
       }
    }
 
@@ -159,10 +204,10 @@ public class FirmdlTool extends AbstractTool
          int segStartAddr = 0;
          int prevAddr = -SEGMENT_BREAK;
          int prevCount = SEGMENT_BREAK;
-         int segIndex = -1;
          boolean strip = false;
          int imageIndex = -SEGMENT_BREAK;
          int length = 0, i;
+         int segIndex = -1;
 
          /* Read image file */
          int line = 0;
@@ -303,8 +348,50 @@ public class FirmdlTool extends AbstractTool
 
    private static class Image
    {
+      /**
+       * Entry point.
+       */
       public int entry;
+
+      /**
+       * Segments.
+       */
       public Segment[] segments = new Segment[MAX_SEGMENTS];
+
+      /**
+       * Data.
+       */
       public byte[] data = new byte[IMAGE_MAXLEN];
+
+      /**
+       * Number of segments.
+       */
+      public int numSegments ()
+      {
+         int result = 0;
+         for (int i = 0; i < segments.length; i++)
+         {
+            if (segments[i] == null)
+            {
+               break;
+            }
+            result++;
+         }
+
+         return result;
+      }
+
+      /**
+       * Number of data bytes.
+       */
+      public int length ()
+      {
+         int result = 0;
+         for (int i = 0; i < numSegments(); i++)
+         {
+            result += segments[i].length;
+         }
+         return result;
+      }
    }
 }
