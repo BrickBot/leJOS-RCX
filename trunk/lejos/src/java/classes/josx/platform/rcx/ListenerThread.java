@@ -8,7 +8,11 @@ package josx.platform.rcx;
 class ListenerThread extends Thread
 {
   static ListenerThread singleton = new ListenerThread();
-  
+  private static final int MAX_LISTENER_CALLERS = 7;
+  private static int [] masks;
+  private static ListenerCaller [] listenerCallers;
+  private static int numLC = 0;
+
   int mask;
   Poll poller = new Poll();   
 
@@ -18,6 +22,8 @@ class ListenerThread extends Thread
       {
           if (!singleton.isAlive())
           {
+            masks = new int[MAX_LISTENER_CALLERS];
+            listenerCallers = new ListenerCaller[MAX_LISTENER_CALLERS];
             singleton.setDaemon(true);
             singleton.setPriority(Thread.MAX_PRIORITY);
             singleton.start();
@@ -27,24 +33,31 @@ class ListenerThread extends Thread
       return singleton;
   }
 
-  void addToMask(int mask)
+  void addToMask(int mask, ListenerCaller lc)
   {
+     int i;
      this.mask |= mask;
-      
-      // Interrupt the polling thread, not the current one!
+
+     for(i=0;i<numLC;i++) if (listenerCallers[i] == lc) break;
+     if (i == numLC) {
+       masks[numLC] = mask;
+       listenerCallers[numLC++] = lc;
+     }
+       
+     // Interrupt the polling thread, not the current one!
      interrupt();
   }
 
-  void addButtonToMask(int id) {
-      addToMask(id << Poll.BUTTON_MASK_SHIFT);
+  void addButtonToMask(int id, ListenerCaller lc) {
+      addToMask(id << Poll.BUTTON_MASK_SHIFT, lc);
   }
   
-  void addSensorToMask(int id) {
-      addToMask(1 << id);
+  void addSensorToMask(int id, ListenerCaller lc) {
+      addToMask(1 << id, lc);
   }
 
-  void addSerialToMask() {
-      addToMask(1 << Poll.SERIAL_SHIFT);
+  void addSerialToMask(ListenerCaller lc) {
+      addToMask(1 << Poll.SERIAL_SHIFT, lc);
   }
   
   public void run()
@@ -53,20 +66,10 @@ class ListenerThread extends Thread
           try  {
               int changed = poller.poll(mask, 0);
 
-              if ((changed & Poll.SENSOR1_MASK) != 0)
-                  Sensor.S1.callListeners();
-              if ((changed & Poll.SENSOR2_MASK) != 0)
-                  Sensor.S2.callListeners();
-              if ((changed & Poll.SENSOR3_MASK) != 0)
-                  Sensor.S3.callListeners();
-              if ((changed & Poll.RUN_MASK) != 0)
-                  Button.RUN.callListeners();
-              if ((changed & Poll.VIEW_MASK) != 0)
-                  Button.VIEW.callListeners();
-              if ((changed & Poll.PRGM_MASK) != 0)
-                  Button.PRGM.callListeners();
-              if ((changed & Poll.SERIAL_MASK) != 0)
-                  Serial.callListeners();
+              for(int i=0;i<numLC;i++) 
+                if ((changed & masks[i]) != 0) 
+                  listenerCallers[i].callListeners();
+
           } catch (InterruptedException ie) {
           }
       }

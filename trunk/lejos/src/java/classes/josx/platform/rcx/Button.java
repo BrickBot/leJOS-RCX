@@ -8,7 +8,7 @@ package josx.platform.rcx;
  *    Sound.playTone (1000, 1);
  * </pre></code>
  */
-public class Button
+public class Button implements ListenerCaller
 {
   /**
    * The Run button.
@@ -76,7 +76,7 @@ public class Button
       iListeners = new ButtonListener[4];
     }
     iListeners[iNumListeners++] = aListener;
-    ListenerThread.get().addButtonToMask(iCode);
+    ListenerThread.get().addButtonToMask(iCode, this);
   }
 
   /**
@@ -95,7 +95,7 @@ public class Button
     }
   }
 
-  synchronized void callListeners()
+  public synchronized void callListeners()
   {
     for( int i = 0; i < iNumListeners; i++) {
       if( isPressed())
