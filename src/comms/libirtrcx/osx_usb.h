@@ -51,7 +51,10 @@
 
 static io_iterator_t		gRawAddedIter;
 
-void FindDevice(void *refCon, io_iterator_t iterator);
+/*
+ * Locates matching device. Returns resulting device count (zero, 1 or > 1). Only 1 is useful right now.
+ */
+unsigned int FindDevice(void *refCon, io_iterator_t iterator);
 
 /* Get a InterfaceInterface for the usb tower.
    Fast mode currently unsupported, and ignored.

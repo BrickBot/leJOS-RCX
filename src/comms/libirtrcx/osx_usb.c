@@ -46,6 +46,11 @@ int osx_usb_nbread (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int t
 /* Callback for async read */
 void osx_usb_readComplete(void *refCon, IOReturn result, void *arg0);
 
+/*
+ * Locates matching device. Returns resulting device count (zero, 1 or > 1). Only 1 is useful right now.
+ */
+unsigned int FindDevice(void *refCon, io_iterator_t iterator);
+
 IOReturn ConfigureDevice(IOUSBDeviceInterface **dev) {
     UInt8				numConfig;
     IOReturn				result;
@@ -153,7 +158,10 @@ IOReturn FindInterfaces(IOUSBDeviceInterface **dev, IOUSBInterfaceInterface ***i
     return kr;
 }
 
-void FindDevice(void *refCon, io_iterator_t iterator) {
+/*
+ * Returns the number of matching devices found.
+ */
+unsigned int FindDevice(void *refCon, io_iterator_t iterator) {
     kern_return_t		kr;
     io_service_t		usbDevice;
     IOCFPlugInInterface		**plugInInterface = NULL;
@@ -162,7 +170,8 @@ void FindDevice(void *refCon, io_iterator_t iterator) {
     UInt16			vendor;
     UInt16			product;
     UInt16			release;
-
+    unsigned int 		count = 0;
+    
 #ifdef OSX_DEBUG
     printf("Searching Device....\n");
 #endif
@@ -207,7 +216,9 @@ void FindDevice(void *refCon, io_iterator_t iterator) {
 
         // Open the device to change its state
         kr = (*dev)->USBDeviceOpen(dev);
-        if (kr != kIOReturnSuccess) {
+        if (kr == kIOReturnSuccess) {
+            count++;
+        } else {
             printf("Unable to open device: %08x\n", kr);
             (void) (*dev)->Release(dev);
             continue;
@@ -222,6 +233,8 @@ void FindDevice(void *refCon, io_iterator_t iterator) {
         }
         break;
     }
+
+    return count;
 }
 
 IOUSBInterfaceInterface** osx_usb_rcx_init (int is_fast)
@@ -229,7 +242,8 @@ IOUSBInterfaceInterface** osx_usb_rcx_init (int is_fast)
     CFMutableDictionaryRef	matchingDict;
     kern_return_t		result;
     IOUSBInterfaceInterface	**intf = NULL;
-    
+    unsigned int 		device_count = 0;
+        
     // create master handler
     result = IOMasterPort(MACH_PORT_NULL, &gMasterPort);
     if (result || !gMasterPort) {
@@ -255,18 +269,23 @@ IOUSBInterfaceInterface** osx_usb_rcx_init (int is_fast)
     result = IOServiceGetMatchingServices(gMasterPort, matchingDict, &gRawAddedIter);
     matchingDict = 0;			// this was consumed by the above call
 
-    // Iterate over matching devices to access already persent devices
-    FindDevice(NULL, gRawAddedIter);
-
-    result = FindInterfaces(dev, &intf);
-    if (kIOReturnSuccess != result)
-    {
-        printf("unable to find interfaces on device: %08x\n", result);
-        (*dev)->USBDeviceClose(dev);
-        (*dev)->Release(dev);
-        return NULL;
+    // Iterate over matching devices to access already present devices
+    device_count = FindDevice(NULL, gRawAddedIter);
+    if (device_count == 1) {
+        result = FindInterfaces(dev, &intf);
+        if (kIOReturnSuccess != result) {
+            printf("unable to find interfaces on device: %08x\n", result);
+            (*dev)->USBDeviceClose(dev);
+            (*dev)->Release(dev);
+            return NULL;
+        }
+        return intf;
+    } else if (device_count > 1) {
+        printf("too many matching devices (%d) !\n", device_count);
+    } else {
+   	printf("no matching devices found\n");
     }
-    return intf;
+    return NULL;
 }
 
 void osx_usb_rcx_close (IOUSBInterfaceInterface** intf)
