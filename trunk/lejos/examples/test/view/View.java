@@ -23,99 +23,100 @@ import josx.platform.rcx.*;
 
 public class View
 {
-  static final int QUIT_DELAY = 500 /* ms */;
+    static final int QUIT_DELAY = 500 /* ms */;
 
-  static final PortView[] VIEWS =
-    new PortView[] { SensorView.S1, SensorView.S2, SensorView.S3,
-                     MotorView.A, MotorView.B, MotorView.C };
+    static final PortView[] VIEWS =
+	new PortView[] { SensorView.S1, SensorView.S2, SensorView.S3,
+			 MotorView.A, MotorView.B, MotorView.C,
+			 new BatteryView()};
 
-  static int iCurrentView;
+    static int iCurrentView;
   
-  static void viewPressed()
-  {
-    iCurrentView++;
-    if (iCurrentView >= VIEWS.length)
-      iCurrentView = 0;
-  }
-
-  static void prgmPressed()
-  {
-    VIEWS[iCurrentView].prgmPressed();
-  }
-
-  static void runPressed()
-  {
-    VIEWS[iCurrentView].runPressed();
-  }
-
-  static void show()
-  {
-    LCD.clear();
-    for( int i=0; i<VIEWS.length; i++){
-      if( i == iCurrentView){
-        VIEWS[i].showCursor();
-        VIEWS[i].showValues();
-      }
-      VIEWS[i].showPort();
+    static void viewPressed()
+    {
+	iCurrentView++;
+	if (iCurrentView >= VIEWS.length)
+	    iCurrentView = 0;
     }
-    LCD.refresh();
-  }
 
-  public static void main (String[] arg)
-  {
-    boolean quit = false;
+    static void prgmPressed()
+    {
+	VIEWS[iCurrentView].prgmPressed();
+    }
+
+    static void runPressed()
+    {
+	VIEWS[iCurrentView].runPressed();
+    }
+
+    static void show()
+    {
+	LCD.clear();
+	for( int i=0; i<VIEWS.length; i++){
+	    if( i == iCurrentView){
+		VIEWS[i].showCursor();
+		VIEWS[i].showValues();
+	    }
+	    VIEWS[i].showPort();
+	}
+	LCD.refresh();
+    }
+
+    public static void main (String[] arg)
+    {
+	boolean quit = false;
 	Poll poller = new Poll();
 
-    iCurrentView = 0;
-    show();
+	iCurrentView = 0;
+	show();
 	new Monitor().start();
-    long t = 0;
+	long t = 0;
 
-    while( !quit)
-    {
-      int changed = 0;
+	while( !quit)
+	{
+	    int changed = 0;
 
-	  try {
-        changed = poller.poll(Poll.ALL_BUTTONS, 0);
-      } catch (InterruptedException ie) {
-      }
+	    try {
+		changed = poller.poll(Poll.ALL_BUTTONS, 0);
+	    } catch (InterruptedException ie) {
+	    }
 
-      if ((changed & Poll.VIEW_MASK) != 0 && !Button.VIEW.isPressed())
-        viewPressed();
-      if ((changed & Poll.PRGM_MASK) != 0 && !Button.PRGM.isPressed())
-        prgmPressed();
-      if ((changed & Poll.RUN_MASK) != 0)
-      {
-        if (Button.RUN.isPressed())
-          t = System.currentTimeMillis();
-        else
-        {
-          if( (int)System.currentTimeMillis()-(int)t > QUIT_DELAY)
-            quit = true;
-          else
-            runPressed();
-        }
-	  }
+	    if ((changed & Poll.VIEW_MASK) != 0 && !Button.VIEW.isPressed())
+		viewPressed();
+	    if ((changed & Poll.PRGM_MASK) != 0 && !Button.PRGM.isPressed())
+		prgmPressed();
+	    if ((changed & Poll.RUN_MASK) != 0)
+	    {
+		if (Button.RUN.isPressed())
+		    t = System.currentTimeMillis();
+		else
+		{
+		    if( (int)System.currentTimeMillis()-(int)t > QUIT_DELAY)
+			quit = true;
+		    else
+			runPressed();
+		}
+	    }
 
-      show();
+	    show();
+	}
+	for( int i=0; i<VIEWS.length; i++){
+	    VIEWS[i].shutdown();
+	}
     }
-    for( int i=0; i<VIEWS.length; i++){
-      VIEWS[i].shutdown();
-    }
-  }
 
-  static class Monitor extends Thread {
-    public void run() {
-      setDaemon(true);
-      Poll poller = new Poll();
-      while (true)
-      {
-        try {
-          poller.poll(Poll.ALL_SENSORS, 0);
-          show();
-        } catch (InterruptedException ie) {
-        }
-      }
+    static class Monitor extends Thread {
+	public void run() {
+	    setDaemon(true);
+	    Poll poller = new Poll();
+	    while (true)
+	    {
+		try {
+		    poller.poll(Poll.ALL_SENSORS, 0);
+		    show();
+		} catch (InterruptedException ie) {
+		}
+	    }
+	}
     }
-  }
 }

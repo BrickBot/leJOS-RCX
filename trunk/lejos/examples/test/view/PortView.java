@@ -1,24 +1,11 @@
-import josx.platform.rcx.LCD;
+public interface PortView {
 
-public abstract class PortView
-{
-  boolean isMotor;
-  int number;
+    public void runPressed();
+    public void prgmPressed();
 
-  public PortView( boolean m, int n )
-  {
-    isMotor = m;
-    number = n;
-  }
+    public void showCursor();
+    public void showPort();
+    public void showValues();
 
-  public void showCursor()
-  {
-    LCD.setSegment( LCDSegment.view( isMotor, number));
-  }
-
-  public abstract void runPressed();
-  public abstract void prgmPressed();
-  public abstract void showPort();
-  public abstract void showValues();
-  public abstract void shutdown();
+    public void shutdown();
 }

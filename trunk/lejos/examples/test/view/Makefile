@@ -5,16 +5,10 @@ LINK = $(LEJOS_HOME)/bin/lejoslink
 DOWNLOAD = $(LEJOS_HOME)/bin/lejosdl
 FIRMDL = $(LEJOS_HOME)/bin/firmdl
 
-DOWNLOAD_OPTIONS = --tty=/dev/ttyS0
-
 CLASSPATH = .
 
-SOURCES = View.java \
-	LCDNumber.java LCDProgramNumber.java LCDSegment.java \
-	MotorView.java PortView.java SensorView.java
-OBJECTS = View.class \
-	LCDNumber.class LCDProgramNumber.class LCDSegment.class \
-	MotorView.class PortView.class SensorView.class
+SOURCES = View.java MotorView.java SensorView.java BatteryView.java
+OBJECTS = View.class MotorView.class SensorView.class BatteryView.class
 PROGRAMS = View
 BINARY = View.bin
 SIGNATURE = View.sig
@@ -26,7 +20,7 @@ SIGNATURE = View.sig
 default : run
 
 run : $(BINARY)
-	$(DOWNLOAD) $(DOWNLOAD_OPTIONS) $(BINARY)
+	$(DOWNLOAD) $(BINARY)
 
 firmdl :
 	$(FIRMDL)
