@@ -38,6 +38,8 @@ release:
 	$(MAKE) $(MFLAGS) clean
 	rm -rf apidocs pcapidocs
 	$(MAKE) $(MFLAGS) all
+	$(MAKE) $(MFLAGS) vision
+	$(MAKE) $(MFLAGS) visiondoc
 	export TINYVM_VERSION=lejos_`cat VERSION`; $(MAKE) dir_and_zip
 
 dir_and_zip:
