@@ -13,7 +13,8 @@ import js.common.ToolProgressMonitor;
  */
 public class Download extends AbstractTool
 {
-   private static final int TOWRITEMAX = 200;
+   private static final int WRITE_MAX = 256;
+   private static final int MAX_ZEROS = 32;
    private static final int MAGIC = 0xCAF6;
    private Tower _tower;
 
@@ -259,7 +260,7 @@ public class Download extends AbstractTool
       send[4] = 79; // 'O'
       send[5] = (byte) 174; // '®'
 
-      // Use longer timeout so ROM has time to checksum firmware
+      // TODO Use longer timeout so ROM has time to checksum firmware
       try
       {
          int numRead = _tower.sendPacketReceivePacket(send, recv, 10);
@@ -282,7 +283,7 @@ public class Download extends AbstractTool
     * @param opcode opcode
     * @param data data array
     * @param length number of bytes to transfer
-    * @param terminate0 is last block to transfer numebr 0?
+    * @param terminate0 is last block to transfer number 0?
     */
    public void transferData (byte[] data, int length, boolean terminate0)
       throws ToolException
@@ -291,7 +292,7 @@ public class Download extends AbstractTool
       int addr = 0;
       for (int block = 1; addr < length; block++)
       {
-         int numToWrite = Math.min(length - addr, TOWRITEMAX);
+         int numToWrite = maxLength(data, length, addr);
 
          if (getProgressMonitor().isCanceled())
          {
@@ -299,7 +300,7 @@ public class Download extends AbstractTool
          }
          getProgressMonitor().progress(addr * 1000 / length);
 
-         block = terminate0 && length - addr <= TOWRITEMAX? 0 : block;
+         block = terminate0 && length - addr <= WRITE_MAX? 0 : block;
          transferData(opcode, block, data, addr, numToWrite);
 
          opcode ^= 0x08;
@@ -307,6 +308,35 @@ public class Download extends AbstractTool
       };
 
       getProgressMonitor().progress(1000);
+   }
+
+   /**
+    * Get max size of data segment with less than MAX_ZEROS zeros.
+    * 
+    * @param data data buffer
+    * @param length max length
+    * @param addr start index
+    */
+   public int maxLength (byte[] data, int length, int addr)
+   {
+      int result = Math.min(length - addr, WRITE_MAX);
+      for (int i = 0, count = 0; i < result; i++)
+      {
+         if (data[addr + i] == 0)
+         {
+            count++;
+            if (count >= MAX_ZEROS)
+            {
+               return i;
+            }
+         }
+         else
+         {
+            count = 0;
+         }
+      }
+      
+      return result;
    }
 
    //
