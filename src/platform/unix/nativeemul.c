@@ -179,14 +179,14 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       return;
     case interrupted_4_5Z:
       {
-      	JBYTE i = currentThread->interrupted;
-      	currentThread->interrupted = 0;
+      	JBYTE i = currentThread->interruptState != INTERRUPT_CLEARED;
+      	currentThread->interruptState = INTERRUPT_CLEARED;
       	push_word(i);
       }
       return;
-      return;
     case isInterrupted_4_5Z:
-      push_word(((Thread*)word2ptr(paramBase[0]))->interrupted);
+      push_word(((Thread*)word2ptr(paramBase[0]))->interruptState
+                != INTERRUPT_CLEARED);
       return;
     case setDaemon_4Z_5V:
       ((Thread*)word2ptr(paramBase[0]))->daemon = (JBYTE)paramBase[1];
@@ -310,9 +310,6 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
     case totalMemory_4_5J:
       push_word (0);
       push_word (getHeapSize());
-      return;
-    case getRuntime_4_5Ljava_3lang_3Runtime_2:
-      push_ref(ptr2ref(runtime));
       return;
     case assert_4Ljava_3lang_3String_2Z_5V:
       if (!paramBase[1])

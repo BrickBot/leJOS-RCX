@@ -23,21 +23,6 @@
 extern char *OPCODE_NAME[];
 #endif
 
-/**
- * Statically allocate the singleton Runtime. 
- */
-static Runtime _runtime = {
-  // Object instance data
-  {
-    { JAVA_LANG_RUNTIME }, // class index
-    0,                     // monitorCount
-    0                      // threadId
-  }
-  // Nothing else at the moment
-};
-
-Runtime *runtime = &_runtime;
-
 // Interpreter globals:
 
 volatile boolean gMakeRequest;

@@ -8,7 +8,6 @@ public interface SpecialClassConstants {
     "java/lang/Object",
     "java/lang/Thread",
     "java/lang/String",
-    "java/lang/Runtime",
     "java/lang/Throwable",
     "java/lang/Error",
     "java/lang/OutOfMemoryError",
@@ -22,7 +21,6 @@ public interface SpecialClassConstants {
     "java/lang/InterruptedException",
     "java/lang/IllegalStateException",
     "java/lang/IllegalMonitorStateException",
-    "java/lang/ThreadDeath",
-    "josx/util/Test"
+    "java/lang/ThreadDeath"
   };
 }

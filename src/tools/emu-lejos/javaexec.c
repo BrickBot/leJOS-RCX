@@ -38,6 +38,8 @@
 #define TOOLS_JAR "/lib/jtools.jar"
 #define LIB_JAR   "/lib/classes.jar"
 
+#define DEFAULT_CLASSPATH  "."
+
 char *get_classpath (char *program, char *relpath)
 {
   char *dname;
@@ -66,7 +68,7 @@ char *get_classpath (char *program, char *relpath)
   
   oldcpath = getenv ("CLASSPATH");
   if (oldcpath == NULL)
-    oldcpath = "";
+    oldcpath = DEFAULT_CLASSPATH;
   cpath = lejosjar;   
   if (strcmp (oldcpath, "") != 0)
   {
@@ -122,7 +124,7 @@ char *get_loader_classpath (char *libpath)
   
   oldcpath = getenv ("CLASSPATH");
   if (oldcpath == NULL)
-    oldcpath = "";
+    oldcpath = DEFAULT_CLASSPATH;
   cpath = libpath;   
   if (strcmp (oldcpath, "") != 0)
   {

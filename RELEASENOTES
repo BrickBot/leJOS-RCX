@@ -2,9 +2,13 @@
   - MacOSX support
 
   Juergen Stuber has added:
+  - added file TODO
   - Persistent memory
   - writeShort method in Native
-  - documented format of common/signatures.db in doc/hacking/GUIDELINES
+  - moved methods from Native to Memory and ROM,
+    and from ROM to Battery and MinuteTimer
+  - removed Runtime as special class
+  - corrected bug in scheduler that could interrupt wrong thread
   
 leJOS 1.0.4:
 ------------

@@ -54,7 +54,7 @@ typedef struct S_Object
    *  -- bit 14   : Zero (not an array).
    *  -- bit 15   : One (allocated).
    * Arrays:
-   *  -- bits 0-8 : Array length (0-527).
+   *  -- bits 0-8 : Array length (0-511).
    *  -- bits 9-12: Element type.
    *  -- bit 13   : Garbage collection mark.
    *  -- bit 14   : One (is an array).
@@ -111,7 +111,7 @@ typedef struct S_Thread
   JBYTE threadId;            // Unique thread ID
   JBYTE state;               // RUNNING, DEAD, etc.
   JBYTE priority;            // The priority
-  JBYTE interrupted;         // Interrupted
+  JBYTE interruptState;      // INTERRUPT_CLEARED, INTERRUPT_REQUESTED, ...
   JBYTE daemon;              // true == daemon thread
 } Thread;
 

@@ -18,15 +18,10 @@
 #include "sensors.h"
 #include "poll.h"
 
-extern char _bss_start;
 extern char _end;
-extern char _text_end;
-extern char _data_end;
-extern char _text_begin;
-extern char _data_begin;
-
+extern char _romdata1;
 extern char _extraMemory;
-volatile byte *_transmitting = (((byte*)0) + 0xef93);
+extern volatile byte transmitting;
 
 /**
  * bootThread is a special global.
@@ -38,11 +33,8 @@ Thread *bootThread;
 #endif
 
 #define MEM_START      (&_end)
-#define RAM_START_ADDR 0x8000
-#define RAM_SIZE       0x6F00
+#define MEM_END        (&_romdata1) // (char *)0xef00
 
-#define MEM_END_ADDR   (RAM_START_ADDR + RAM_SIZE)
-#define MEM_END        ((char *) MEM_END_ADDR)
 #define BUFSIZE        9
 #define TDATASIZE      100
 #define MAXNEXTBYTEPTR (MEM_END - TDATASIZE)
@@ -353,12 +345,12 @@ LABEL_COMM_LOOP:
         // Indicate that the RCX has a new program in it.
         hasProgram = HP_NOT_STARTED;
         // Make sure memory allocation starts at an even address.
-        mmStart = (((TWOBYTES) nextByte) & 0x0001) ? nextByte + 1 : nextByte;
+        mmStart = (((TWOBYTES) nextByte) + 1) & 0xfffe;
         // Initialize program number shown on LCD.
         set_program_number (0);
         // Wait for last response to be sent before we clobber
         // the serial driver.
-        while (*_transmitting != 0x4f);
+        while (transmitting != 0x4f);
         goto LABEL_RESET_DOWNLOAD;
       }
       if (nextByte >= MAXNEXTBYTEPTR || seqNumber != currentIndex)

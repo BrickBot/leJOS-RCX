@@ -20,7 +20,7 @@
 & ROM call 3: 0x1A4E (8192, 1, 1)
 & ROM call 3: 0x1A4E (8192, 3, 1)
 *** UNCAUGHT EXCEPTION/ERROR: 
---  Exception class   : 9
+--  Exception class   : 8
 --  Thread            : 1
 --  Method signature  : 0
 --  Root method sig.  : 0
@@ -57,12 +57,12 @@
 ----------------- Run of Test13.tvm
 & ROM call 3: 0x1FF2 (12319, 0, 12290)
 & ROM call 0: 0x27C8
-& ROM call 3: 0x1FF2 (12319, 3953, 12290)
+& ROM call 3: 0x1FF2 (12319, 3954, 12290)
 & ROM call 0: 0x27C8
 & ROM call 3: 0x1FF2 (12311, 5, 0)
 & ROM call 0: 0x27C8
 *** UNCAUGHT EXCEPTION/ERROR: 
---  Exception class   : 6
+--  Exception class   : 5
 --  Thread            : 1
 --  Method signature  : 0
 --  Root method sig.  : 0
@@ -71,7 +71,7 @@
 & ROM call 3: 0x1FF2 (12319, 9, 12290)
 & ROM call 0: 0x27C8
 *** UNCAUGHT EXCEPTION/ERROR: 
---  Exception class   : 8
+--  Exception class   : 7
 --  Thread            : 1
 --  Method signature  : 0
 --  Root method sig.  : 0
@@ -614,28 +614,28 @@
 ----------------- Run of TestMonitor.tvm
 : expected 6, got 4
 *** UNCAUGHT EXCEPTION/ERROR: 
---  Exception class   : 5
+--  Exception class   : 4
 --  Thread            : 4
---  Method signature  : 56
+--  Method signature  : 54
 --  Root method sig.  : 1
 --  Bytecode offset   : 18
 : expected 4, got 5
 *** UNCAUGHT EXCEPTION/ERROR: 
---  Exception class   : 5
+--  Exception class   : 4
 --  Thread            : 2
---  Method signature  : 54
+--  Method signature  : 52
 --  Root method sig.  : 1
 --  Bytecode offset   : 62
 : expected 5, got 6
 *** UNCAUGHT EXCEPTION/ERROR: 
---  Exception class   : 5
+--  Exception class   : 4
 --  Thread            : 3
 --  Method signature  : 1
 --  Root method sig.  : 1
 --  Bytecode offset   : 59
 : expected 10, got 9
 *** UNCAUGHT EXCEPTION/ERROR: 
---  Exception class   : 5
+--  Exception class   : 4
 --  Thread            : 5
 --  Method signature  : 1
 --  Root method sig.  : 1
@@ -655,8 +655,8 @@
 & Reading sensor 1, requested value CANONICAL, returned value 2
 & Reading sensor 2, requested value CANONICAL, returned value 2
 & Reading sensor 1, requested value CANONICAL, returned value 3
-& Reading sensor 1, requested value CANONICAL, returned value 4
 & Reading sensor 2, requested value CANONICAL, returned value 3
+& Reading sensor 1, requested value CANONICAL, returned value 4
 & Reading sensor 1, requested value CANONICAL, returned value 5
 & Reading sensor 2, requested value CANONICAL, returned value 4
 & Reading sensor 1, requested value CANONICAL, returned value 6

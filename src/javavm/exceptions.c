@@ -80,7 +80,7 @@ void throw_exception (Object *exception)
   else if (exception == interruptedException)
   {
     // Throwing an interrupted exception clears the flag
-    currentThread->interrupted = 0;
+    currentThread->interruptState = INTERRUPT_CLEARED;
   }
   
   #ifdef VERIFY
@@ -113,7 +113,8 @@ void throw_exception (Object *exception)
 #endif
   while (gNumExceptionHandlers--)
   {
-    if (tempCurrentOffset >= gExceptionRecord->start && tempCurrentOffset <= gExceptionRecord->end)
+    if (gExceptionRecord->start <= tempCurrentOffset /* off by one? < ? */
+        && tempCurrentOffset <= gExceptionRecord->end)
     {
       // Check if exception class applies
       if (instance_of (exception, gExceptionRecord->classIndex))

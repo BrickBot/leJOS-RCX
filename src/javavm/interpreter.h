@@ -10,11 +10,6 @@
 #define REQUEST_SWITCH_THREAD 1
 #define REQUEST_EXIT          2
 
-/**
- * The single instance of Runtime.
- */
-extern Runtime *runtime;
-
 extern volatile boolean gMakeRequest;
 extern byte    gRequestCode;
 

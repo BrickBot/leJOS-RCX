@@ -164,7 +164,6 @@ boolean switch_thread()
 {
   Thread *anchorThread, *previousThread, *candidate;
   Thread **pThreadQ;
-  boolean interruptMe = false;
   boolean nonDaemonRunnable = false;
   StackFrame *stackFrame = null;
   short i;
@@ -196,24 +195,25 @@ boolean switch_thread()
       // Remove thread from queue.
       dequeue_thread(currentThread);
     }
-    else // Save context information
-    	stackFrame = current_stackframe();
-  }
+    else { // Save context information
+      stackFrame = current_stackframe();
 
-  #if DEBUG_THREADS
-  printf ("switchThread: current stack frame: %d\n", (int) stackFrame);
-  #endif
+#if DEBUG_THREADS
+      printf ("switchThread: current stack frame: %d\n", (int) stackFrame);
+#endif
   
-  if (stackFrame != null)
-  {
-    update_stack_frame (stackFrame);
+      if (stackFrame != null) {
+        update_stack_frame (stackFrame);
+      }
+    }
   }
 
   currentThread = null;
   
   // Loop until a frame is found that can be made to run.
-  for (i=MAX_PRIORITY-1, pThreadQ=&threadQ[MAX_PRIORITY-1]; i >= 0; i--, pThreadQ--)
-  {
+  for (i=MAX_PRIORITY-1; i >= 0; i--) {
+    pThreadQ = &threadQ[i];
+
     previousThread = anchorThread = *pThreadQ;
     if (!previousThread)
       continue;
@@ -228,7 +228,7 @@ boolean switch_thread()
       	(int)candidate->threadId,
       	(int)candidate->state,
       	(int)candidate->priority,
-      	(int)candidate->interrupted,
+      	(int)candidate->interruptState,
       	(int)candidate->daemon
              );
       #endif
@@ -246,10 +246,12 @@ boolean switch_thread()
   #endif
               // We will drop through to mon waiting.
             }
-            else if (!candidate->interrupted)
-            	break;
+            else if (candidate->interruptState == INTERRUPT_CLEARED)
+              break;
             else
-            	interruptMe = true;
+              candidate->interruptState = INTERRUPT_GRANTED;
+
+            // candidate->state = MON_WAITING;
             // drop through
           case MON_WAITING:
             {
@@ -277,14 +279,15 @@ boolean switch_thread()
             }
             break;
           case SLEEPING:
-            if (candidate->interrupted || (get_sys_time() >= (FOURBYTES) candidate->sleepUntil))
+            if (candidate->interruptState != INTERRUPT_CLEARED
+                || (get_sys_time() >= (FOURBYTES) candidate->sleepUntil))
             {
         #if DEBUG_THREADS
         printf ("Waking up sleeping thread %d: %d\n", (int) candidate, candidate->threadId);
         #endif
               candidate->state = RUNNING;
-              if (candidate->interrupted)
-                interruptMe = true;
+              if (candidate->interruptState != INTERRUPT_CLEARED)
+            	candidate->interruptState = INTERRUPT_GRANTED;
               #ifdef SAFE
     	    candidate->sleepUntil = JNULL;
               #endif // SAFE
@@ -357,7 +360,8 @@ printf ("Found a non-daemon thread %d: %d(%d)\n", (int) candidate, (int)candidat
 
       // Always use the first running thread as the thread
       // Keep looping: cull dead threads, check there's at least one non-daemon thread
-    } while ((previousThread = candidate) != anchorThread);
+      previousThread = candidate;
+    } while (candidate != anchorThread);
   } // end for
   
 #if DEBUG_THREADS
@@ -391,7 +395,7 @@ printf ("currentThread=%d, ndr=%d\n", (int) currentThread, (int)nonDaemonRunnabl
       printf ("done updating registers\n");
       #endif
     
-      if (interruptMe)
+      if (currentThread->interruptState == INTERRUPT_GRANTED)
         throw_exception(interruptedException);
     }
       
@@ -488,6 +492,10 @@ void monitor_notify_unchecked(Object *obj, const boolean all)
       pThread = word2ptr(pThread->nextThread);
       if (pThread->state == CONDVAR_WAITING && pThread->waitingOn == ptr2word (obj))
       {
+        // might have been interrupted while waiting
+        if (pThread->interruptState != INTERRUPT_CLEARED)
+          pThread->interruptState = INTERRUPT_GRANTED;
+
         pThread->state = MON_WAITING;
         if (!all)
           return;
