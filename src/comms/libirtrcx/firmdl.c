@@ -56,6 +56,7 @@
  *  paul@jools.net
  *  07/14/2001 Added --nodl option to report size only and not actually perform
  *             download.
+ *  09/20/2001 Added USB support and added earlier legOS fix to checksum code
  */
 
 #include <sys/types.h>
@@ -69,6 +70,7 @@
 #include <sys/time.h>
 #include <ctype.h>
 #include <string.h>
+#include <assert.h>
 #include "util.h"
 
 #if defined(_WIN32) || defined(__CYGWIN32__)
@@ -92,7 +94,9 @@
 
 /* Global variables */
 
+extern int __comm_debug;
 char *progname;
+int usb_flag = 0;
 
 #include "fastdl.h"
 
@@ -103,7 +107,7 @@ char *progname;
 #define WAKEUP_TIMEOUT  4000
 
 #define IMAGE_START     0x8000
-#define IMAGE_MAXLEN    0x4c00
+#define IMAGE_MAXLEN    0x7000
 #define TRANSFER_SIZE   200
 
 /* Stripping zeros is not entirely legal if firmware expects trailing zeros */
@@ -216,7 +220,9 @@ void image_dl(FILEDESCR fd, unsigned char *image, int len, unsigned short start,
     int addr, index, size, i;
 
     /* Compute image checksum */
-    for (i = 0; i < len; i++)
+    int cksumlen = (start + len < 0xcc00) ? len : 0xcc00 - start;
+    assert(len > 0);
+    for (i = 0; i < cksumlen; i++)
 	cksum += image[i];
 
     /* Delete firmware */
@@ -329,7 +335,6 @@ int main (int argc, char **argv)
 		break;
 	    }
 	    else if (!strcmp(argv[0], "--debug")) {
-		extern int __comm_debug;
 		__comm_debug = 1;
 	    }
 	    else if (!strcmp(argv[0], "--fast")) {
@@ -409,6 +414,7 @@ int main (int argc, char **argv)
 	    "  -s, --slow       use slow 1x downloading (default)\n"
 	    "  -n, --nodl       do not download image\n"
 	    "      --tty=TTY    assume tower connected to TTY\n"
+	    "      --tty=usb    assume tower connected to usb\n"
 	    "  -h, --help       display this help and exit\n"
 	    ;
 
@@ -434,7 +440,14 @@ int main (int argc, char **argv)
 	tty = DEFAULTTTY;
     }
 
-    if (use_fast) {
+    if ( stricmp( tty , "usb" ) == 0 ) {
+	usb_flag = 1;
+	if ( __comm_debug ) fprintf(stderr, "USB IR Tower mode.\n");
+	tty="\\\\.\\legotower1";
+    }
+    
+    if (use_fast && usb_flag == 0 ) {
+	// usb do not support fast mode.
 	/* Try to wake up the tower in fast mode */
 
 	fd = rcx_init(tty, 0);	// Slow startup seems better with low batteries...
@@ -477,27 +490,30 @@ int main (int argc, char **argv)
 
 	fd = rcx_init(tty, 0);
 
-	if ((status = rcx_wakeup_tower(fd, WAKEUP_TIMEOUT)) < 0) {
-	    fprintf(stderr, "%s: %s\n", progname, rcx_strerror(status));
-	    exit(1);
-	}
-
-	if (!rcx_is_alive(fd, 1)) {
-	    /* See if alive in fast mode */
-
-	    rcx_close(fd);
-	    fd = rcx_init(tty, 1);
-
-	    if (rcx_is_alive(fd, 0)) {
-		fprintf(stderr, "%s: rcx is in fast mode\n", progname);
-		fprintf(stderr, "%s: turn rcx off then back on to "
-			"use slow mode\n", progname);
-		exit(1);
+	if ( usb_flag == 0 ) {
+	    // usb do not need wakeup tower.
+	    if ((status = rcx_wakeup_tower(fd, WAKEUP_TIMEOUT)) < 0) {
+	        fprintf(stderr, "%s: %s\n", progname, rcx_strerror(status));
+	        exit(1);
 	    }
-
-	    fprintf(stderr, "%s: no response from rcx\n", progname);
-	    exit(1);
 	}
+	
+    	if (!rcx_is_alive(fd, 1)) {
+    	    /* See if alive in fast mode */
+    
+    	    rcx_close(fd);
+    	    fd = rcx_init(tty, 1);
+    
+    	    if (rcx_is_alive(fd, 0)) {
+    		fprintf(stderr, "%s: rcx is in fast mode\n", progname);
+    		fprintf(stderr, "%s: turn rcx off then back on to "
+    			"use slow mode\n", progname);
+    		exit(1);
+    	    }
+    
+    	    fprintf(stderr, "%s: no response from rcx\n", progname);
+    	    exit(1);
+    	}
 
 	/* Download image */
 	image_dl(fd, image, image_len, image_start, 1, fileName);

@@ -7,7 +7,7 @@ Summary
 -- Your PATH must contain the JDK's bin directory.
 -- In Unix, type 'make' to finish installation of leJOS.
 -- Add leJOS's bin directory to your PATH.
--- Set RCXTTY to your serial device (e.g. COM1 or /dev/ttyS0).
+-- Set RCXTTY to your 'tower' device (e.g. COM1 or USB or /dev/ttyS0).
 -- Download firmware using lejosfirmdl.
 -- Compile using lejosc (or lejosc1) instead of javac.
 -- Run programs in the RCX using lejos.

@@ -26,6 +26,7 @@ extern char _text_begin;
 extern char _data_begin;
 
 extern char _extraMemory;
+volatile byte *_transmitting = (((byte*)0) + 0xef93);
 
 /**
  * bootThread is a special global.
@@ -47,14 +48,14 @@ Thread *bootThread;
 #define MAXNEXTBYTEPTR (MEM_END - TDATASIZE)
 
 // Hook Commands
-#define HC_NONE            0	// No hook command
-#define HC_SHUTDOWN_POWER  1	// Shut down power
-#define HC_EXIT_PROGRAM    2	// Exit program
+#define HC_NONE            0    // No hook command
+#define HC_SHUTDOWN_POWER  1    // Shut down power
+#define HC_EXIT_PROGRAM    2    // Exit program
 
 // Program Status
-#define HP_NO_PROGRAM      0	// No program at all
-#define HP_INTERRUPTED     1	// Not used
-#define HP_NOT_STARTED     2	// Not started
+#define HP_NO_PROGRAM      0    // No program at all
+#define HP_INTERRUPTED     1    // Not used
+#define HP_NOT_STARTED     2    // Not started
 
 #define BUTTON_VIEW 0x02
 #define BUTTON_PRGM 0x04
@@ -101,7 +102,7 @@ set_data_pointer (void *ptr)
 void delay (unsigned long count)
 {
   unsigned long i;
-	
+        
   for (i = 0; i  < count; i++) { }
 }
 
@@ -139,9 +140,9 @@ void trace (short s, short n1, short n2)
 
 void handle_uncaught_exception (Object *exception,
                                        const Thread *thread,
-				       const MethodRecord *methodRecord,
-				       const MethodRecord *rootMethod,
-				       byte *pc)
+                                       const MethodRecord *methodRecord,
+                                       const MethodRecord *rootMethod,
+                                       byte *pc)
 {
   trace (4, methodRecord->signatureId, get_class_index (exception) % 10);
 }
@@ -201,6 +202,8 @@ void switch_thread_hook()
 
 int main (void)
 {
+  byte lastopcode = 0;
+
 // Main entry point for VM
 LABEL_FIRMWARE_ONE_TIME_INIT:
   // If just downloaded VM, we have no program.
@@ -235,9 +238,6 @@ LABEL_NEW_PROGRAM:
 LABEL_RESET_DOWNLOAD:
   // Initialize serial I/O
   reset_rcx_serial();
-  
-// Initialize download
-LABEL_DOWNLOAD_INIT:
   isReadyToTransfer = false;
   play_system_sound (SOUND_QUEUED, 1);
   clear_display();
@@ -294,27 +294,39 @@ LABEL_COMM_LOOP:
           goto LABEL_EXIT;
         case 0x45:
           // Transfer data
-          seqNumber = ((TWOBYTES) buffer[2] << 8) |  buffer[1]; 
-	  buffer[0] = ~buffer[0];
-	  buffer[1] = (byte) !isReadyToTransfer;
-	  send_data (SERIAL_NO_POINTER, 0, buffer, 2);
-	  if (!isReadyToTransfer)
-	  {
-  	    goto LABEL_RESET_DOWNLOAD;
-	  }
-          break;
-	case 0x12:
-          // Get value -- used by TinyVM to initiate download
-	  if (isReadyToTransfer)
+          seqNumber = ((TWOBYTES) buffer[2] << 8) |  buffer[1];
+             
+          buffer[0] = ~buffer[0];
+          if (buffer[3] != buffer[4])   // Do checksums match?
+            buffer[1] = 3;      // Checksums fail
+          else
+            buffer[1] = (byte) !isReadyToTransfer;
+          send_data (SERIAL_NO_POINTER, 0, buffer, 2);
+          
+          if (buffer[1] != 0)
+          {
             goto LABEL_RESET_DOWNLOAD;
-	  buffer[0] = ~buffer[0];
-	  buffer[1] = (byte) (MAGIC >> 8);
-	  buffer[2] = (byte) (MAGIC & 0xFF);
-	  send_data (SERIAL_NO_POINTER, 0, buffer, 3);
+          }
+          
+          // Handle resends caused by PC receiving bad response          
+          if (lastopcode == buffer[0])
+            continue;   // Ignore it
+            
+          lastopcode = buffer[0];
+          break;
+        case 0x12:
+          // Get value -- used by TinyVM to initiate download
+          lastopcode = buffer[0];
+          if (isReadyToTransfer)
+            goto LABEL_RESET_DOWNLOAD;
+          buffer[0] = ~buffer[0];
+          buffer[1] = (byte) (MAGIC >> 8);
+          buffer[2] = (byte) (MAGIC & 0xFF);
+          send_data (SERIAL_NO_POINTER, 0, buffer, 3);
           set_data_pointer (MEM_START);
           isReadyToTransfer = true;
-	  hasProgram = HP_NO_PROGRAM;
-	  goto LABEL_START_TRANSFER;
+          hasProgram = HP_NO_PROGRAM;
+          goto LABEL_START_TRANSFER;
         default:
           // Other??
           #if 0
@@ -330,9 +342,7 @@ LABEL_COMM_LOOP:
       // Do we have all the data?
       if (currentIndex != 1 && seqNumber == 0)
       {
-        // Reinitialize serial communications
-        reset_rcx_serial();
-	// Set pointer to start of binary image
+        // Set pointer to start of binary image
         install_binary (MEM_START);
         // Check magic number
         if (get_magic_number() != MAGIC)
@@ -340,13 +350,16 @@ LABEL_COMM_LOOP:
           trace (1, MAGIC, 9);
           goto LABEL_RESET_DOWNLOAD;
         }
-	// Indicate that the RCX has a new program in it.
-	hasProgram = HP_NOT_STARTED;
+        // Indicate that the RCX has a new program in it.
+        hasProgram = HP_NOT_STARTED;
         // Make sure memory allocation starts at an even address.
         mmStart = (((TWOBYTES) nextByte) & 0x0001) ? nextByte + 1 : nextByte;
-	// Initialize program number shown on LCD.
-	set_program_number (0);
-        goto LABEL_DOWNLOAD_INIT;
+        // Initialize program number shown on LCD.
+        set_program_number (0);
+        // Wait for last response to be sent before we clobber
+        // the serial driver.
+        while (*_transmitting != 0x4f);
+        goto LABEL_RESET_DOWNLOAD;
       }
       if (nextByte >= MAXNEXTBYTEPTR || seqNumber != currentIndex)
       {
@@ -358,15 +371,15 @@ LABEL_COMM_LOOP:
       }
       currentIndex++;
     }
-    else	// No data to be received
+    else        // No data to be received
     {
       // Should we power off?
       if (sys_time >= powerOffTime)
       {
-	play_system_sound (SOUND_QUEUED, 0);
-	delay (30000);
-	hookCommand = HC_SHUTDOWN_POWER;
-	goto LABEL_SHUTDOWN_POWER;
+        play_system_sound (SOUND_QUEUED, 0);
+        delay (30000);
+        hookCommand = HC_SHUTDOWN_POWER;
+        goto LABEL_SHUTDOWN_POWER;
       }
       
       // Check for button presses
@@ -378,29 +391,29 @@ LABEL_COMM_LOOP:
         
       // Stop program? But then we aren't running it!
       if (hookCommand != HC_NONE)
-	goto LABEL_START_TRANSFER;
-	
+        goto LABEL_START_TRANSFER;
+        
       // If we have a program to run...
       if (hasProgram != HP_NO_PROGRAM)
       {
-      	// Check on a few more buttons
+        // Check on a few more buttons
         read_buttons (0x3000, &status);
         
         // Run the program
-	if (status & BUTTON_RUN)
-	{
+        if (status & BUTTON_RUN)
+        {
           wait_for_release (BUTTON_RUN);
-	  goto LABEL_PROGRAM_STARTUP;
-	}
-	
-	// Run a different program
-	else if (status & BUTTON_PRGM)
-	{
-	  play_system_sound (SOUND_QUEUED, 0);
-	  wait_for_release (BUTTON_PRGM);
-	  inc_program_number();
-	  goto LABEL_SHOW_PROGRAM_NUMBER;
-	}
+          goto LABEL_PROGRAM_STARTUP;
+        }
+        
+        // Run a different program
+        else if (status & BUTTON_PRGM)
+        {
+          play_system_sound (SOUND_QUEUED, 0);
+          wait_for_release (BUTTON_PRGM);
+          inc_program_number();
+          goto LABEL_SHOW_PROGRAM_NUMBER;
+        }
       }
     } // End if(valid)else
   } // End for
@@ -425,7 +438,7 @@ LABEL_PROGRAM_STARTUP:
 
   #if DEBUG_RCX_MEMORY
   {
-    TWOBYTES numNodes, biggest, freeMem;	
+    TWOBYTES numNodes, biggest, freeMem;        
     scan_memory (&numNodes, &biggest, &freeMem);
     trace (3, numNodes, 3);
     trace (3, biggest, 4);
@@ -483,7 +496,7 @@ LABEL_SHUTDOWN_POWER:
   shutdown_sensors();
   shutdown_buttons();
   shutdown_timer();
-  shutdown_power();	// Presumably doesn't return again until power is pressed
+  shutdown_power();     // Presumably doesn't return again until power is pressed
   goto LABEL_POWERUP;
 
 // Erase VM  

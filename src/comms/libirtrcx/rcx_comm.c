@@ -47,6 +47,8 @@
 
 int __comm_debug = 0;
 
+extern int usb_flag;
+
 /* Timer routines */
 
 typedef struct timeval timeval_t;
@@ -88,33 +90,56 @@ static int nbread (FILEDESCR fd, void *buf, int maxlen, int timeout)
     while (len < maxlen) {
 
 #if defined(_WIN32) || defined(__CYGWIN32__)
-	DWORD count;
-	COMMTIMEOUTS CommTimeouts;
+	if ( usb_flag == 1) {
+		DWORD count = 0;
+		struct timeval timebegin ,now;
+		unsigned long elapsed;
 
-	GetCommTimeouts (fd, &CommTimeouts);
+		gettimeofday(&timebegin,0);
+		
+		while ( count == 0 ) {
+		    ReadFile( fd, &bufp[len], maxlen - len, &count, NULL);
+		    gettimeofday(&now,0);
+		    elapsed = (now.tv_sec - timebegin.tv_sec ) + now.tv_usec - timebegin.tv_usec;				
+		    if  ( elapsed > timeout )
+		        break;
+		}
+		if (count == 0) {
+		    if ( __comm_debug  )
+		        printf("usb mode: nbread .. time out break\n");
+		    break;
+		}
+		len += count;
 
-        // Change the COMMTIMEOUTS structure settings.
-        CommTimeouts.ReadIntervalTimeout = MAXDWORD;
-        CommTimeouts.ReadTotalTimeoutMultiplier = 0;
-        CommTimeouts.ReadTotalTimeoutConstant = timeout;
-        CommTimeouts.WriteTotalTimeoutMultiplier = 10;
-        CommTimeouts.WriteTotalTimeoutConstant = 1000;
+	} else {
+	        DWORD count = 0;
+	        COMMTIMEOUTS CommTimeouts;
+        
+	        GetCommTimeouts (fd, &CommTimeouts);
 
-        // Set the time-out parameters for all read and write operations
-        // on the port.
-        SetCommTimeouts(fd, &CommTimeouts);
+                // Change the COMMTIMEOUTS structure settings.
+                CommTimeouts.ReadIntervalTimeout = MAXDWORD;
+                CommTimeouts.ReadTotalTimeoutMultiplier = 0;
+                CommTimeouts.ReadTotalTimeoutConstant = timeout;
+                CommTimeouts.WriteTotalTimeoutMultiplier = 10;
+                CommTimeouts.WriteTotalTimeoutConstant = 1000;
 
-        if (ReadFile(fd, &bufp[len], maxlen - len, &count, NULL) == FALSE) {
-            myperror("ReadFile");
-	    fprintf(stderr, "nb_read - error reading tty: %lu\n", (unsigned long) GetLastError());
-	    exit(1);
-	}
+                // Set the time-out parameters for all read and write operations
+                // on the port.
+                SetCommTimeouts(fd, &CommTimeouts);
 
-        len += count;
+                if (ReadFile(fd, &bufp[len], maxlen - len, &count, NULL) == FALSE) {
+                        myperror("ReadFile");
+	                fprintf(stderr, "nb_read - error reading tty: %lu\n", (unsigned long) GetLastError());
+	                exit(1);
+	        }
 
-        if (count == 0) {
-            //timeout
-	    break;
+                len += count;
+
+                if (count == 0) {
+                        //timeout
+	                break;
+                }
         }
 #else
 	int count;
@@ -184,6 +209,7 @@ FILEDESCR rcx_init(char *tty, int is_fast)
     if (__comm_debug) printf("mode = %s\n", is_fast ? "fast" : "slow");
 
 #if defined(_WIN32) || defined(__CYGWIN32__)
+    if (__comm_debug) printf("Running under cygwin\n");
     if ((fd = CreateFile(tty, GENERIC_READ | GENERIC_WRITE,
                               0, NULL, OPEN_EXISTING,
                               0, NULL)) == INVALID_HANDLE_VALUE) {
@@ -192,28 +218,30 @@ FILEDESCR rcx_init(char *tty, int is_fast)
     }
 
     // Serial settings
-    FillMemory(&dcb, sizeof(dcb), 0);
-    if (!GetCommState(fd, &dcb)) {	// get current DCB
-        // Error in GetCommState
-	myperror("GetCommState");
-        exit(1);
-    } else {
-	dcb.ByteSize = 8;
-	dcb.Parity   = (is_fast ? 0 : 1);	// 0-4=no,odd,even,mark,space
-	dcb.StopBits = 0;			// 0,1,2 = 1, 1.5, 2
-	dcb.fBinary  = TRUE ;
-	dcb.fParity  = (is_fast ? FALSE : TRUE) ;
-	dcb.fAbortOnError = FALSE ;
-	dcb.BaudRate = (is_fast ? CBR_4800 : CBR_2400);	// Update DCB rate.
+    if (usb_flag == 0)
+    {
+        FillMemory(&dcb, sizeof(dcb), 0);
+        if (!GetCommState(fd, &dcb)) {	// get current DCB
+                // Error in GetCommState
+	        myperror("GetCommState");
+                exit(1);
+        } else {
+	        dcb.ByteSize = 8;
+	        dcb.Parity   = (is_fast ? 0 : 1);	// 0-4=no,odd,even,mark,space
+	        dcb.StopBits = 0;			// 0,1,2 = 1, 1.5, 2
+	        dcb.fBinary  = TRUE ;
+	        dcb.fParity  = (is_fast ? FALSE : TRUE) ;
+	        dcb.fAbortOnError = FALSE ;
+	        dcb.BaudRate = (is_fast ? CBR_4800 : CBR_2400);	// Update DCB rate.
 
-	// Set new state.
-	if (!SetCommState(fd, &dcb)) {
-	    // Error in SetCommState. Possibly a problem with the communications
-            // port handle or a problem with the DCB structure itself.
-	    myperror("SetCommState");
-	    exit(1);
+	        // Set new state.
+	        if (!SetCommState(fd, &dcb)) {
+	                // Error in SetCommState. Possibly a problem with the communications
+                        // port handle or a problem with the DCB structure itself.
+	                myperror("SetCommState");
+	                exit(1);
+                }
         }
-
     }
 
 #else
@@ -373,20 +401,22 @@ int rcx_send (FILEDESCR fd, void *buf, int len, int use_comp)
 
     /* Receive echo */
 
-    echolen = nbread(fd, echo, msglen, 100);
+    if ( usb_flag == 0 ) {	// usb ir tower dos not echo!!
+        echolen = nbread(fd, echo, msglen, 100);
 
-    if (__comm_debug) {
-	printf("msglen = %d, echolen = %d\n", msglen, echolen);
-	hexdump("C", echo, echolen);
-    }
+        if (__comm_debug) {
+	    printf("msglen = %d, echolen = %d\n", msglen, echolen);
+	    hexdump("C", echo, echolen);
+        }
 
-    /* Check echo */
-    /* Ignore data, since rcx might send ack even if echo data is wrong */
+        /* Check echo */
+        /* Ignore data, since rcx might send ack even if echo data is wrong */
 
-    if (echolen != msglen /* || memcmp(echo, msg, msglen) */ ) {
-	/* Flush connection if echo is bad */
-	rx_flush(fd);
-	return RCX_BAD_ECHO;
+        if (echolen != msglen /* || memcmp(echo, msg, msglen) */ ) {
+	    /* Flush connection if echo is bad */
+	    rx_flush(fd);
+	    return RCX_BAD_ECHO;
+        }
     }
 
     return len;
