@@ -84,7 +84,7 @@ public class TinyVM extends TinyVMTool
     }
     catch (FileNotFoundException e)
     {
-      throw new TinyVMException(e);
+      throw new TinyVMException(e.getMessage(), e);
     }
     finally
     {

@@ -36,7 +36,7 @@ public class FirmdlTool extends AbstractTool
    * @param tty port
    * @param download download read image?
    * @param fastMode use fast mode?
-   * @throws ToolException
+   * @throws FirmdlException
    */
   public void start (String tty, boolean download, boolean fastMode)
       throws FirmdlException
@@ -60,7 +60,7 @@ public class FirmdlTool extends AbstractTool
    * @param tty port
    * @param download download read image?
    * @param fastMode use fast mode?
-   * @throws ToolException
+   * @throws FirmdlException
    */
   public void start (Reader reader, String tty, boolean download,
       boolean fastMode) throws FirmdlException

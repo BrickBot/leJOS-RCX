@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import js.common.ToolException;
 import js.common.ToolProgressListener;
 import js.common.ToolProgressListenerImpl;
 
@@ -56,7 +55,7 @@ public class Lejosdl extends LejosdlTool
    * Execute program download.
    * 
    * @param args command line
-   * @throws ToolException
+   * @throws LejosdlException
    */
   public void start (String[] args) throws LejosdlException
   {
@@ -84,7 +83,7 @@ public class Lejosdl extends LejosdlTool
     }
     catch (FileNotFoundException e)
     {
-      throw new LejosdlException(e);
+      throw new LejosdlException(e.getMessage(), e);
     }
   }
 

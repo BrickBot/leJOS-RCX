@@ -107,7 +107,7 @@ public class ConstantValue extends WritableDataWithOffset
     }
     catch (IOException e)
     {
-      throw new TinyVMException(e);
+      throw new TinyVMException(e.getMessage(), e);
     }
   }
 
