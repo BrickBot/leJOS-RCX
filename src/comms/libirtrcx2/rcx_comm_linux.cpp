@@ -70,14 +70,17 @@ void __rcx_perror(char* str)
 
 int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 {
-	long len = 0;
-    
 	char *bufp = (char*) buf;
 
 	int count;
 	FILEDESCR fd = ((Port*) port)->fileHandle;
-	fd_set fds;
+	struct fd_set fds;
+
 	struct timeval tv;
+	tv.tv_sec = timeout / 1000;
+	tv.tv_usec = (timeout % 1000) * 1000;
+
+	long len = 0;
 	int retry = 10;
 
 	while (len < maxlen) 
@@ -85,33 +88,26 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 		FD_ZERO(&fds);
 		FD_SET(fd, &fds);
 
-		tv.tv_sec = timeout / 1000;
-		tv.tv_usec = (timeout % 1000) * 1000;
-
-		if (select(fd+1, &fds, NULL, NULL, &tv) < 0) 
+      int selected = select(1, &fds, NULL, NULL, &tv);
+		if (selected > 0)
+		{
+			int read = read(fd, &bufp[len], maxlen - len);
+			if (read < 0) 
+			{
+				perror("read");
+				return RCX_READ_FAIL;
+			}
+			len + = read;
+		}
+		else if (selected == 0 && (len > 0 || retry-- == 0))
+		{
+			break;
+		}
+		else if (selected < 0) 
 		{
 			perror("select");
 			return RCX_READ_FAIL;
 		}
-		if (!FD_ISSET(fd, &fds)) 
-		{
-			if (len > 0 || retry == 0) 
-			{
-				break;
-			} 
-			else 
-			{
-				retry--;
-			}
-		}	
-		
-		if ((count = read(fd, &bufp[len], maxlen - len)) < 0) 
-		{
-			perror("read");
-			return RCX_READ_FAIL;
-		}
-		
-		len += count;
 	}
 	
 	return len;
