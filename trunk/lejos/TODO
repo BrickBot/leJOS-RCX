@@ -1,7 +1,6 @@
 Possible bugs:
 
 - computational overload from light sensor in flickering light?
-- assert reserved word in JDK 1.4 clashes with java.util.Test
 - stack overflow on thread dying from exception?
 - try off by one, catches exception just preceeding the try block?
 
