@@ -58,7 +58,7 @@ dir_and_zip_win:
 	cd ${TEMP}; zip -r ${TINYVM_VERSION}.zip lejos
 	make javadoc
 	rm -f ${TEMP}/${TINYVM_VERSION}.doc.zip
-	cd ..; zip -r ${TEMP}/${TINYVM_VERSION}.doc.zip lejos/apidocs lejos/docs lejos/README lejos/RELEASENOTES lejos/CLICKME.html lejos/LICENSE lejos/ACKNOWLEDGEMENTS
+	cd ..; zip -r ${TEMP}/${TINYVM_VERSION}.doc.zip lejos/apidocs lejos/docs lejos/README lejos/RELEASENOTES lejos/CLICKME.html lejos/LICENSE lejos/ACKNOWLEDGMENTS
 	diff bin/lejos.srec ${TEMP}/lejos/bin/lejos.srec
 
 check:
