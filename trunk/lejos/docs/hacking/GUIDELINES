@@ -2,8 +2,17 @@ Where is rom.h?
 ---------------
 
 If you want to build the rcx_impl directory, you need to
-install Kekoa Proudfoot's librcx, as explained in the
-H8300_X_COMPILER file. 
+install Kekoa Proudfoot's librcx. This can be obtained from
+http://graphics.stanford.edu/~kekoa/rcx/tools.html#Librcx.
+Read the README included with librcx about how to build it.
+
+You should set the environment variable LIBRCX_HOME to the location
+where you installed it.
+
+h8300 Cross Compiler
+--------------------
+You will also need an h8300 cross compiler installed. See the
+file H8300_X_COMPILER for details.
 
 Building
 --------
