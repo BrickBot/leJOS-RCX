@@ -306,11 +306,15 @@ main(int argc, char **argv)
 #ifdef __APPLE__
     if (usb_flag == 0) {
 #endif
-	    fd = rcx_init(tty, 0);
+        fd = rcx_init(tty, 0);
 #ifdef __APPLE__
     }
     else {
-            intf = osx_usb_rcx_init(0);
+        intf = osx_usb_rcx_init(0);
+        if (intf == NULL) {
+            fprintf(stderr, "%s: USB Tower not connected.\n", progname);
+            exit(1);
+        }
     }
 #endif
     
