@@ -31,6 +31,10 @@ static inline void tick_hook()
   }
 }
 
+static inline void idle_hook()
+{
+}
+
 extern void switch_thread_hook();
 
 /**
