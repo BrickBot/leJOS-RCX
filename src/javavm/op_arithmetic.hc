@@ -61,20 +61,20 @@ case OP_DSUB:
   // Fall through!
 case OP_DADD:
   tempStackWord = get_top_word();
-  just_pop_word();
+  pop_words(2);
   just_set_top_word (jfloat2word(word2jfloat(get_top_word()) +
                     word2jfloat(tempStackWord)));
   goto LABEL_ENGINELOOP;
 case OP_DMUL:
   tempStackWord = get_top_word();
-  just_pop_word();
+  pop_words(2);
   just_set_top_word (jfloat2word(word2jfloat(get_top_word()) *
                     word2jfloat(tempStackWord)));
   goto LABEL_ENGINELOOP;
 case OP_DDIV:
   // TBD: no division by zero?
   tempStackWord = get_top_word();
-  just_pop_word();
+  pop_words(2);
   just_set_top_word (jfloat2word(word2jfloat(get_top_word()) /
                     word2jfloat(tempStackWord)));
   goto LABEL_ENGINELOOP;

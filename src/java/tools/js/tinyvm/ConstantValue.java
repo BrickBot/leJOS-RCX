@@ -66,12 +66,13 @@ public class ConstantValue extends WritableDataWithOffset
     {
       float pValue = (float) ((JCPE_Double) iEntry).getValue();
       pDataOut.writeFloat (0);
-      pDataOut.writeFloat (Float.floatToIntBits (pValue));
+      pDataOut.writeFloat (pValue);
     }
     else if (iEntry instanceof JCPE_Float)
     {
       float pValue = (float) ((JCPE_Float) iEntry).getValue();
-      pDataOut.writeFloat (Float.floatToIntBits (pValue));
+      //System.out.println ("$$ " + pValue + ": " + Integer.toHexString ((Float.floatToIntBits (pValue))) + " $offset = " + getOffset());
+      pDataOut.writeFloat (pValue);
     }
     else
     {
