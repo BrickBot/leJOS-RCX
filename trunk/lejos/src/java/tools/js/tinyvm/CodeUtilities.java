@@ -46,15 +46,7 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
 
    public int processConstantIndex (int aPoolIndex) throws TinyVMException
    {
-      Constant pEntry = null;
-      try
-      {
-         pEntry = iCF.getConstantPool().getConstant(aPoolIndex);
-      }
-      catch (Throwable t)
-      {
-         t.printStackTrace();
-      }
+      Constant pEntry = iCF.getConstantPool().getConstant(aPoolIndex); // TODO catch all (runtime) exceptions
       if (!(pEntry instanceof ConstantInteger)
          && !(pEntry instanceof ConstantFloat)
          && !(pEntry instanceof ConstantString)
@@ -80,15 +72,7 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
 
    public int processClassIndex (int aPoolIndex) throws TinyVMException
    {
-      Constant pEntry = null;
-      try
-      {
-         pEntry = iCF.getConstantPool().getConstant(aPoolIndex);
-      }
-      catch (Throwable t)
-      {
-         t.printStackTrace();
-      }
+      Constant pEntry = iCF.getConstantPool().getConstant(aPoolIndex); // TODO catch all (runtime) exceptions
       if (!(pEntry instanceof ConstantClass))
       {
          throw new TinyVMException("Classfile error: Instruction requiring "
@@ -114,15 +98,7 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
 
    public int processMultiArray (int aPoolIndex) throws TinyVMException
    {
-      Constant pEntry = null;
-      try
-      {
-         pEntry = iCF.getConstantPool().getConstant(aPoolIndex);
-      }
-      catch (Throwable t)
-      {
-         t.printStackTrace();
-      }
+      Constant pEntry = iCF.getConstantPool().getConstant(aPoolIndex); // TODO catch all (runtime) exceptions
       if (!(pEntry instanceof ConstantClass))
       {
          throw new TinyVMException("Classfile error: Instruction requiring "
@@ -158,15 +134,7 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
     */
    int processField (int aFieldIndex, boolean aStatic) throws TinyVMException
    {
-      Constant pEntry = null;
-      try
-      {
-         pEntry = iCF.getConstantPool().getConstant(aFieldIndex);
-      }
-      catch (Throwable t)
-      {
-         t.printStackTrace();
-      }
+      Constant pEntry = iCF.getConstantPool().getConstant(aFieldIndex); // TODO catch all (runtime) exceptions
       if (!(pEntry instanceof ConstantFieldref))
       {
          throw new TinyVMException("Classfile error: Instruction requiring "
@@ -218,15 +186,7 @@ public class CodeUtilities implements OpCodeConstants, OpCodeInfo
    int processMethod (int aMethodIndex, boolean aSpecial)
       throws TinyVMException
    {
-      Constant pEntry = null;
-      try
-      {
-         pEntry = iCF.getConstantPool().getConstant(aMethodIndex);
-      }
-      catch (Throwable t)
-      {
-         t.printStackTrace();
-      }
+      Constant pEntry = iCF.getConstantPool().getConstant(aMethodIndex); // TODO catch all (runtime) exceptions
       if (!(pEntry instanceof ConstantCP))
       {
          throw new TinyVMException("Classfile error: Instruction requiring "
