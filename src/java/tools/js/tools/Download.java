@@ -297,11 +297,10 @@ public class Download extends AbstractTool
          {
             throw new ToolException("canceled");
          }
+         getProgressMonitor().progress(addr * 1000 / length);
 
          block = terminate0 && length - addr <= TOWRITEMAX? 0 : block;
          transferData(opcode, block, data, addr, numToWrite);
-
-         getProgressMonitor().progress(addr * 1000 / length);
 
          opcode ^= 0x08;
          addr += numToWrite;
@@ -347,9 +346,24 @@ public class Download extends AbstractTool
       try
       {
          int numRead = _tower.sendPacketReceivePacket(send, response, 10);
-         if (numRead >= 2 && response[1] == 3)
+         if (numRead >= 2)
          {
-            throw new ToolException("Error while downloading: checksum error");
+            if (response[0] != ~opcode)
+            {
+               throw new ToolException("Error while downloading: wrong response");
+            }
+            switch (response[1])
+            {
+               case 0: break;
+               case 3: throw new ToolException("Error while downloading: checksum error");
+               case 4: throw new ToolException("Error while downloading: firmware checksum error");
+               case 6: throw new ToolException("Error while downloading: download not properly started");
+               default: throw new ToolException("Error while downloading: unknown error");
+            }
+         }
+         else
+         {
+            throw new ToolException("Error while downloading: response too short");
          }
       }
       catch (TowerException e)
