@@ -172,10 +172,7 @@ int rcxRead (void* port, void* read, int readMaxLength, int timeout_ms)
 // Returns number of written bytes.
 int rcxWrite(void* port, void* write, int writeLength) 
 {
-	if (__comm_debug) 
-	{
-		hexdump("W", write, writeLength);
-	}
+	if (__comm_debug) hexdump("W", write, writeLength);
 
 	return  __rcx_write(port, write, writeLength);
 }
@@ -185,12 +182,9 @@ int rcxWrite(void* port, void* write, int writeLength)
 int rcxSend (void* port, void* send, int sendLength)
 {
 	char *bufp = (char*) send;
-	char buflen = sendLength;
+	int buflen = sendLength;
 
-	if (__comm_debug) 
-	{
-		hexdump("S", send, sendLength);
-	}
+	if (__comm_debug) hexdump("S", send, sendLength);
 
 	// Encode message
 	char msg[BUFFERSIZE];
@@ -225,6 +219,7 @@ int rcxSend (void* port, void* send, int sendLength)
 	int written = rcxWrite(port, msg, msglen);
 	if (written != msglen) 
 	{
+      if (__comm_debug) printf("wrong number of bytes sent\n");
 		rcxPerror("write");
 		return RCX_WRITE_FAIL;
 	}
@@ -233,6 +228,7 @@ int rcxSend (void* port, void* send, int sendLength)
    // USB tower does not echo!
 	if (!rcxIsUsb(port) && rcxCheckEcho(port) == 0)
 	{
+      if (__comm_debug) printf("wrong echo\n");
 		return RCX_BAD_ECHO;
 	}
 

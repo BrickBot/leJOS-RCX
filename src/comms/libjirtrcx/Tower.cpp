@@ -123,7 +123,7 @@ Java_josx_rcxcomm_Tower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
     hexdump("tower writes", body, n);
 #endif
 
-    size_t result = rcxWrite(port, body, n);
+    int result = rcxWrite(port, body, n);
 
     setError(env, obj, result < 0);
 
@@ -160,7 +160,7 @@ Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr)
     int size = env->GetArrayLength(arr);
     jbyte* body = env->GetByteArrayElements(arr, 0);
 
-    size_t result = rcxRead(port, body, size, TIME_OUT);
+    int result = rcxRead(port, body, size, TIME_OUT);
 
 	 setError(env, obj, result < 0);
 
@@ -197,7 +197,7 @@ Java_josx_rcxcomm_Tower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
     jbyte* body = env->GetByteArrayElements(arr, 0);
 
     // Write the bytes
-    size_t result = rcxSend(port, body, n);
+    int result = rcxSend(port, body, n);
 
     // Flush buffers
 #if defined(_WIN32) || defined(__CYGWIN32__)
@@ -240,7 +240,7 @@ Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
     jbyte* body = env->GetByteArrayElements(arr, 0);
 
     // Receive a packet
-    size_t actual = rcxReceive(port, body, size, TIME_OUT);
+    int actual = rcxReceive(port, body, size, TIME_OUT);
 
     setError(env, obj, actual < 0);
 
