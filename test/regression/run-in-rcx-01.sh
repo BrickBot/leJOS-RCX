@@ -1,7 +1,7 @@
 #!/bin/sh
 
 TEST_CLASSES="Test15"
-TINYVMPATH=.
+export TINYVMPATH=.
 
 for i in $TEST_CLASSES
 do

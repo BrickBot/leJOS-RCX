@@ -10,10 +10,8 @@ public class Test15
     for (int i = 0; i < 200; i++)
     {
       int pValue = Sensor.readSensorValue ((short) 0x1001, (byte) 3, (byte) 0x80);
-      ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, pValue, 
-                        ROM.LCD_POINT_DECIMAL_0);      
-      ROM.setLcdNumber (ROM.LCD_CODE_PROGRAM, (short) (i % 10), (short) 0);
-      ROM.refreshLcd();
+      LCD.showNumber (pValue);
+      LCD.showProgramNumber (i % 10);
       for (int k = 0; k < 500; k++) { }
     }
   }

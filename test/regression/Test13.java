@@ -15,8 +15,8 @@ public class Test13
         new Object();
       }
     } finally {
-      ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, i, ROM.LCD_POINT_DECIMAL_0);
-      ROM.refreshLcd();
+      LCD.showNumber (i);
+      LCD.showProgramNumber (5);
       for (int k = 0; k < 50000; k++) {}
     }    
   }

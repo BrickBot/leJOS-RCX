@@ -240,6 +240,7 @@ mind are:
   - Floating point operations are not supported.
   - Operations on variables of type long are not 
     suported.
+  - Maximum array length is 255.
   - String constants are not used by the VM to
     create String objects (i.e. don't use Strings).
   - The instanceof operation will always be true  

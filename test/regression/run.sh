@@ -2,7 +2,7 @@
 
 TEST_CLASSES="Test04 Test06 Test11 Test12 Test13 Test15 Test16 Test17"
 OUT_FILE=regression.log
-TINYVMPATH=.
+export TINYVMPATH=.
 
 rm $OUT_FILE
 for i in $TEST_CLASSES

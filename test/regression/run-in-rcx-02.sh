@@ -1,7 +1,7 @@
-#!bin/sh
+#!/bin/sh
 
 TEST_CLASSES="Test17"
-TINYVMPATH=.
+export TINYVMPATH=.
 
 for i in $TEST_CLASSES
 do
@@ -11,6 +11,4 @@ do
   tvmld $i -o $i.tvm
   echo ------------------ Running $i
   tvm $i.tvm
-  # give it a few seconds
-  sleep 17
 done

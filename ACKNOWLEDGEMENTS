@@ -14,7 +14,7 @@ Jose's comments (02/28/00):
 - I've read Kekoa's RCX internals page, especially
   the ROM disassembly and the bytecode specification,
   without which I couldn't have written the code necessary
-  to download Java programs into the RCX.
+  to download binaries into the RCX.
 
 - Dave Baum's email dated 29 Aug 1998, with subject
   "RE: Lego Mindstorms Page," describing the packet
@@ -35,6 +35,9 @@ Jose's comments (02/28/00):
 
 - SPECIAL THANKS to my wife, Erika, for putting up 
   with me during the development of this project.
+
+Post-release Notes:
+-------------------
 
 
 

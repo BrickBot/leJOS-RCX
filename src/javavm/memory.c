@@ -343,6 +343,9 @@ TWOBYTES *allocate (TWOBYTES size)
     }
     anchorOffsetRef = &(ptr[1]);
   }
+  #if DEBUG_MEMORY
+  printf ("No more memory!");
+  #endif
   return null;      
 }
 

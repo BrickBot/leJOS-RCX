@@ -3,11 +3,11 @@ package java.lang;
 public class Class
 {
   /**
-   * Throws NoSuchMethodError.
+   * @exception java.lang.ClassNotFoundException Thrown always in TinyVM.
    */
   public static Class forName (String aName)
   throws ClassNotFoundException
   {
-    throw new NoSuchMethodError();
+    throw new ClassNotFoundException();
   }
 }
