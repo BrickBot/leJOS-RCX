@@ -325,6 +325,10 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
         throw_exception(error);
       }
       return;
+    case floatToIntBits_4F_5I: // Fall through
+    case intBitsToFloat_4I_5F:
+      push_word (paramBase[0]);
+      return;
 
     default:
 #ifdef DEBUG_METHODS
