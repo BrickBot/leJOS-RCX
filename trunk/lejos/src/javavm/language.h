@@ -57,11 +57,12 @@ typedef struct S_MethodRecord
   // Offset to table of exception information
   TWOBYTES exceptionTable;
   TWOBYTES codeOffset;
-  // Number of locals, in 32-bit words.
+  // Number of 32-bit locals (long is counted as 2 locals).
   byte numLocals;
   // Maximum size of local operand stack, in 32-bit words.
   byte maxOperands;
   // It should be such that stackTop-numParameters unwinds the stack.
+  // The receiver in non-static methods is counted as one word. 
   byte numParameters;
   // Number of exception handlers
   byte numExceptionHandlers;

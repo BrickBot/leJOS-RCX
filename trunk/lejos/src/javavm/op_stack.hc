@@ -61,8 +61,6 @@ case OP_LDC2_W:
   pc += 2;
   goto LABEL_ENGINELOOP;
 
-#endif
-
 case OP_ACONST_NULL:
   // Stack size: +1
   // Arguments: 0

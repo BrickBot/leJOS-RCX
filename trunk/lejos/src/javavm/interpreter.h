@@ -11,7 +11,8 @@ extern STACKWORD *localsBase;
 
 // Temp globals:
 
-extern byte gByte;
+extern byte tempByte;
+extern STACKWORD tempStackWord;
 
 extern void engine();
 

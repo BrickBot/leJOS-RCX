@@ -1,5 +1,5 @@
 /**
- * The language datastructures.
+ * Runtime data structures for loaded program.
  */
 
 #include "types.h"
@@ -15,12 +15,15 @@
 #include "interpreter.h"
 #include "exceptions.h"
 #include "native.h"
+#include "stack.h"
 
 #ifdef VERIFY
 boolean classesInitialized = false;
 #endif
 
-#define get_stack_object(MREC_)  ((Object *) *(stackTop - (MREC_)->numParameters + 1))
+#if 0
+#define get_stack_object(MREC_)  ((Object *) get_ref_at ((MREC_)->numParameters - 1))
+#endif
 
 // Reliable globals:
 
@@ -31,9 +34,7 @@ void *installedBinary;
 // (Gotta be careful with these; a lot of stuff
 // is not reentrant because of globals like these).
 
-static MethodRecord *gMethodRecord;
-static ClassRecord *gClassRecord;
-static byte gByte2;
+static MethodRecord *tempMethodRecord;
 
 // Methods:
 
@@ -48,16 +49,16 @@ byte get_class_index (Object *obj)
 }
 
 /**
- * @return Method index or -1.
+ * @return Method record or null.
  */
 MethodRecord *find_method (ClassRecord *classRecord, TWOBYTES methodSignature)
 {
   gByte = classRecord->numMethods;
   while (gByte--)
   {
-    gMethodRecord = get_method_record (classRecord, gByte);
-    if (gMethodRecord->signatureId == methodSignature)
-      return gMethodRecord;
+    tempMethodRecord = get_method_record (classRecord, gByte);
+    if (tempMethodRecord->signatureId == methodSignature)
+      return tempMethodRecord;
   }
   return null;
 }
@@ -79,30 +80,33 @@ boolean dispatch_static_initializer (ClassRecord *aRec, byte *retAddr)
 
 void dispatch_virtual (Object *ref, TWOBYTES signature, byte *retAddr)
 {
+  MethodRecord *auxMethodRecord;
+  byte auxByte;
+
   if (ref == JNULL)
   {
     throw_exception (nullPointerException);
     return;
   }
-  gByte2 = get_class_index(ref);
+  auxByte = get_class_index(ref);
  LABEL_METHODLOOKUP:
-  gClassRecord = get_class_record (gByte2);
-  gMethodRecord = find_method (gClassRecord, signature);
-  if (gMethodRecord == null)
+  tempClassRecord = get_class_record (auxByte);
+  auxMethodRecord = find_method (tempClassRecord, signature);
+  if (auxMethodRecord == null)
   {
     #if SAFE
-    if (gByte2 == JAVA_LANG_OBJECT)
+    if (auxByte == JAVA_LANG_OBJECT)
     {
       throw_exception (noSuchMethodError);
       return;
     }
     #endif
-    gByte2 = gClassRecord->parentClass;
+    auxByte = tempClassRecord->parentClass;
     goto LABEL_METHODLOOKUP;
   }
-  if (dispatch_special (gClassRecord, gMethodRecord, retAddr))
+  if (dispatch_special (tempClassRecord, auxMethodRecord, retAddr))
   {
-    if (is_synchronized(gMethodRecord))
+    if (is_synchronized(auxMethodRecord))
     {
       current_stackframe()->monitor = ref;
       enter_monitor (ref);
@@ -141,8 +145,6 @@ void dispatch_special_checked (byte classIndex, byte methodIndex,
 boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord, 
                           byte *retAddr)
 {
- TBD: isReferenceBase needs to be initialized here
-
   #if DEBUG_METHODS
   int debug_ctr;
   #endif
@@ -155,6 +157,7 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   printf ("\n------ dispatch special - %d ------------------\n\n",
           methodRecord->signatureId);
   #endif
+
   #if DEBUG_METHODS
   printf ("dispatch_special: %d, %d, %d\n", 
           (int) classRecord, (int) methodRecord, (int) retAddr);
@@ -162,12 +165,11 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   printf ("-- code offset  = %d\n", methodRecord->codeOffset);
   printf ("-- flags        = %d\n", methodRecord->mflags);
   printf ("-- num params   = %d\n", methodRecord->numParameters);
-  printf ("-- localsBase   = %d\n", (int) localsBase);
-  printf ("-- stackTop     = %d\n", (int) stackTop);
+  printf ("-- stack ptr    = %d\n", (int) get_stack_ptr());
   #endif
 
-  stackTop -= methodRecord->numParameters;
-  paramBase = stackTop + 1;
+  pop_words (methodRecord->numParameters);
+  paramBase = get_stack_ptr() + 1;
  
   newStackFrameIndex = currentThread->stackFrameArraySize;
   if (newStackFrameIndex >= MAX_STACK_FRAMES)
@@ -177,8 +179,8 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   }
   if (newStackFrameIndex == 0)
   {
+    // Assign NEW stack frame
     stackFrame = stackframe_array();
-    stackFrame->localsBase = stack_array();
   }
   else
   {
@@ -187,27 +189,25 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
       printf ("-- param[%d]    = %ld\n", debug_ctr, (long) paramBase[debug_ctr]);  
     #endif
 
-    // Save stackFrame state
+    // Save OLD stackFrame state
     stackFrame = stackframe_array() + (newStackFrameIndex - 1);
-    stackFrame->stackTop = stackTop;
-    stackFrame->pc = retAddr;
+    update_stack_frame (stackFrame);
+    // Push NEW stack frame
     stackFrame++;
-    stackFrame->localsBase = paramBase;
   }
   // Increment size of stack frame array
   currentThread->stackFrameArraySize++;
   // Initialize rest of new stack frame
   stackFrame->methodRecord = methodRecord;
-  // TBD: assigning to stackFrame->pc may not be necessary
-  stackFrame->pc = get_code_ptr(methodRecord);
-  stackFrame->stackTop = stackFrame->localsBase + methodRecord->numLocals - 1;
   stackFrame->monitor = null;
-  // Initialize auxiliary globals
-  pc = stackFrame->pc;
-  localsBase = stackFrame->localsBase;
-  stackTop = stackFrame->stackTop;
+  stackFrame->localsBase = paramBase;
+  stackFrame->isReferenceBase = get_is_ref_ptr() + 1;
+  // Initialize auxiliary global variables (registers)
+  pc = get_code_ptr(methodRecord);
+  init_stack_ptr (stackFrame, methodRecord);
+  update_constant_registers (stackFrame);
   // Check for stack overflow
-  if ((stackTop + methodRecord->maxOperands) >= (stack_array() + STACK_SIZE))
+  if (is_stack_overflow (methodRecord))
   {
     throw_exception (stackOverflowError);
     return false;
@@ -222,10 +222,9 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
 void do_return (byte numWords)
 {
   StackFrame *stackFrame;
-  STACKWORD *sourcePtr;
+  STACKWORD *fromStackPtr;
+  STACKWORD *fromIsRefPtr;
 
-  // Place source ptr below data to be copied up the stack
-  sourcePtr = stackTop - numWords;
   stackFrame = current_stackframe();
 
   #ifdef DEBUG_METHODS
@@ -252,21 +251,24 @@ void do_return (byte numWords)
     switch_thread();
     return;
   }
+
+  // Place source ptr below data to be copied up the stack
+  fromStackPtr = get_stack_ptr_at (numWords);
+  fromIsRefPtr = get_is_ref_ptr_at (numWords);
+  // Pop stack frame
   currentThread->stackFrameArraySize--;
   stackFrame--;
-  pc = stackFrame->pc;
-  stackTop = stackFrame->stackTop;
-  localsBase = stackFrame->localsBase;
+  // Assign registers
+  update_registers (stackFrame);
 
   #if DEBUG_METHODS
   printf ("do_return: stack reset to:\n");
-  printf ("-- localsBase   = %d\n", (int) localsBase);
-  printf ("-- stackTop     = %d\n", (int) stackTop);
+  printf ("-- stack ptr = %d\n", (int) get_stack_ptr());
   #endif
 
   while (numWords--)
   {
-    *(++stackTop) = *(++sourcePtr);
+    push_word_or_ref (*(++fromStackPtr), *(++fromIsRefPtr));
   }  
 }
 

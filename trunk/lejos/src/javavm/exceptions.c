@@ -22,8 +22,8 @@ Object *arrayIndexOutOfBoundsException;
 
 // Temporary globals:
 
-static TWOBYTES gCurrentOffset;
-static MethodRecord *gMethodRecord = null;
+static TWOBYTES tempCurrentOffset;
+static MethodRecord *tempMethodRecord = null;
 static StackFrame *tempStackFrame;
 static ExceptionRecord *gExceptionRecord;
 static byte gNumExceptionHandlers;
@@ -68,7 +68,7 @@ void throw_exception (Object *exception)
     printf ("--  Exception class   : %d\n", (int) get_class_index (exception));
     printf ("--  Thread            : %d\n", (int) currentThread->threadId);
     printf ("--  Method signature  : %d\n", (int) gExcepMethodRec->signatureId);
-    printf ("--  Root method sig.  : %d\n", (int) gMethodRecord->signatureId);
+    printf ("--  Root method sig.  : %d\n", (int) tempMethodRecord->signatureId);
     printf ("--  Bytecode offset   : %d\n", (int) gExceptionPc - 
             (int) get_code_ptr(gExcepMethodRec));
     #else
@@ -79,30 +79,31 @@ void throw_exception (Object *exception)
     return;
   }
   tempStackFrame = current_stackframe();
-  gMethodRecord = tempStackFrame->methodRecord;
+  tempMethodRecord = tempStackFrame->methodRecord;
 
   if (gExcepMethodRec == null)
-    gExcepMethodRec = gMethodRecord;
-  gExceptionRecord = (ExceptionRecord *) (get_binary_base() + gMethodRecord->exceptionTable);
-  gCurrentOffset = ptr2word(pc) - ptr2word(get_binary_base() + gMethodRecord->codeOffset);
+    gExcepMethodRec = tempMethodRecord;
+  gExceptionRecord = (ExceptionRecord *) (get_binary_base() + tempMethodRecord->exceptionTable);
+  tempCurrentOffset = ptr2word(pc) - ptr2word(get_binary_base() + tempMethodRecord->codeOffset);
 
   #if 0
-  trace (-1, gCurrentOffset, 5);
+  trace (-1, tempCurrentOffset, 5);
   #endif
 
-  gNumExceptionHandlers = gMethodRecord->numExceptionHandlers;
+  gNumExceptionHandlers = tempMethodRecord->numExceptionHandlers;
   while (gNumExceptionHandlers--)
   {
-    if (gCurrentOffset >= gExceptionRecord->start && gCurrentOffset <= gExceptionRecord->end)
+    if (tempCurrentOffset >= gExceptionRecord->start && tempCurrentOffset <= gExceptionRecord->end)
     {
       // Check if exception class applies
       if (instance_of (exception, gExceptionRecord->classIndex))
       {
-        // Clear operand stack:
-        init_stack_ptr (tempStackFrame, gMethodRecord);
-        set_top_word (ptr2word (exception));
+        // Clear operand stack
+        init_stack_ptr (tempStackFrame, tempMethodRecord);
+        // Push the exception object
+        push_ref (ptr2word (exception));
         // Jump to handler:
-        pc = get_binary_base() + gMethodRecord->codeOffset + 
+        pc = get_binary_base() + tempMethodRecord->codeOffset + 
              gExceptionRecord->handler;
         return;
       }

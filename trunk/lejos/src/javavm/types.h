@@ -50,7 +50,7 @@ typedef struct
 static inline JINT jlong_compare (JLONG a1, JLONG a2)
 {
   if (a1.hi == a2.hi)
-    return a1.low - a2.low;
+    return a1.lo - a2.lo;
   return a1.hi - a2.hi;
 }
 
