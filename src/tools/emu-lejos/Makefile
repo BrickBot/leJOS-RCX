@@ -10,11 +10,7 @@ UNIXLOADERNAME=emu-lejos
 RCXLOADER=../bin/${RCXLOADERNAME}
 UNIXLOADER=../bin/${UNIXLOADERNAME}
 
-ifneq (,$(findstring $(OSTYPE),darwin))
-CC=cc
-else
-CC=gcc
-endif
+CC=$(shell ../cctest.sh)
 
 CCOPT=-I../vmsrc -Wall -Wno-unused -O2
 LIBS=
