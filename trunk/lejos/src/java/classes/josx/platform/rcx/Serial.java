@@ -50,7 +50,7 @@ public class Serial
 {
   private static final byte[] buffer = new byte[6]; // opcode + at most 5 data 
   private static final byte[] iAuxBuffer = new byte[4];
-  private static final int iAuxBufferAddr = Native.getDataAddress (iAuxBuffer);
+  private static final int iAuxBufferAddr = Memory.getDataAddress (iAuxBuffer);
 
   private static SerialListener[] iListeners = null;
   private static int iNumListeners;
@@ -74,12 +74,12 @@ public class Serial
    */
   public static int readPacket (byte[] aBuffer)
   {
-    synchronized (Native.MEMORY_MONITOR)
+    synchronized (Memory.MONITOR)
     {
       // Receive packet data
       iAuxBuffer[2] = (byte) 0;
-      Native.callRom ((short) 0x33b0, (short) Native.getDataAddress (aBuffer),
-                       (short) aBuffer.length, (short) (iAuxBufferAddr + 2));
+      ROM.call ((short) 0x33b0, (short) Memory.getDataAddress (aBuffer),
+                (short) aBuffer.length, (short) (iAuxBufferAddr + 2));
       return (int) iAuxBuffer[2];
     }
   }
@@ -97,8 +97,8 @@ public class Serial
   public static void setDataBuffer (byte[] aData)
   {
     // Set data pointer
-    Native.callRom ((short) 0x327c, (short) 0x1771, 
-                     (short) Native.getDataAddress (aData), (short) 0);
+    ROM.call ((short) 0x327c, (short) 0x1771, 
+              (short) Memory.getDataAddress (aData), (short) 0);
   }
 
   /**
@@ -107,10 +107,10 @@ public class Serial
    */
   public static boolean isPacketAvailable()
   {
-    synchronized (Native.MEMORY_MONITOR)
+    synchronized (Memory.MONITOR)
     {
       // Check for data
-      Native.callRom ((short) 0x3426, (short) (iAuxBufferAddr + 3), (short) 0);
+      ROM.call ((short) 0x3426, (short) (iAuxBufferAddr + 3), (short) 0);
       return (iAuxBuffer[3] != 0);
     }
   }
@@ -126,9 +126,9 @@ public class Serial
     if (isSending())
         return false;
         
-    Native.callRom ((short) 0x343e, (short) 0x1775, (short) 0, 
-                     (short) (Native.getDataAddress (aBuffer) + aOffset),
-                     (short) aLen);
+    ROM.call ((short) 0x343e, (short) 0x1775, (short) 0, 
+              (short) (Memory.getDataAddress (aBuffer) + aOffset),
+              (short) aLen);
                      
     return true;
   }
@@ -138,7 +138,7 @@ public class Serial
    */
   public static void setRangeLong()
   {
-    Native.callRom ((short) 0x3250, (short) 0x1770);	  
+    ROM.call ((short) 0x3250, (short) 0x1770);	  
   }
 
   /**
@@ -146,7 +146,7 @@ public class Serial
    */
   public static void setRangeShort()
   {
-    Native.callRom ((short) 0x3266, (short) 0x1770);	  
+    ROM.call ((short) 0x3266, (short) 0x1770);	  
   }
   
   /**
@@ -160,7 +160,7 @@ public class Serial
    */
   public static boolean isSending()
   {
-    return Native.readMemoryByte(0xef93) != 0x4f;
+    return Memory.readByte(0xef93) != 0x4f;
   }
 
   /**

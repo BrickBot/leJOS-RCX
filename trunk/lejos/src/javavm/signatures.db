@@ -19,14 +19,13 @@ run()V
 # Native methods
 #--------------------------------------
 
-# Object
+# java.lang.Object
 notify()V
 notifyAll()V
 wait()V
 wait(J)V
-getDataAddress(Ljava/lang/Object;)I
 
-# Thread
+# java.lang.Thread
 start()V
 yield()V
 sleep(J)V
@@ -41,33 +40,43 @@ isDaemon()Z
 join()V
 join(J)V
 
-# System
+# java.lang.System
 #arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V
 currentTimeMillis()J
 exit(I)V
 
-# Runtime
+# java.lang.Runtime
 freeMemory()J
 totalMemory()J
 getRuntime()Ljava/lang/Runtime;
 
-# Throwable
+# java.lang.Throwable
 getMessage()Ljava/lang/String;
 
-callRom(S)V
-callRom(SS)V
-callRom(SSS)V
-callRom(SSSS)V
-callRom(SSSSS)V
-readMemoryByte(I)B
-writeMemoryByte(IB)V
-setMemoryBit(III)V
+# josx.platform.rcx.ROM
+call(S)V
+call(SS)V
+call(SSS)V
+call(SSSS)V
+call(SSSSS)V
+
+# josx.platform.rcx.Memory
+readByte(I)B
+writeByte(IB)V
+setBit(III)V
+getDataAddress(Ljava/lang/Object;)I
+
+# josx.platform.rcx.Serial
 resetSerial()V
+
+# josx.platform.rcx.Sensor
 readSensorValue(II)I
+setSensorValue(III)V
+
+# josx.platform.rcx.Poller
 setPoller()V
 setThrottle(I)V
-setSensorValue(III)V
+
+# java.util.Test
 assert(Ljava/lang/String;Z)V
 assertEQ(Ljava/lang/String;II)V
-
-

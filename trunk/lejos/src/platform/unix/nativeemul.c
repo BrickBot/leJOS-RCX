@@ -207,26 +207,26 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       push_word (0);
       push_word (get_sys_time());
       return;
-    case callRom_4S_5V:
+    case call_4S_5V:
 	if(verbose == 0)
 		printf ("& ROM call 0: 0x%lX\n", paramBase[0]);
 	else
 		printf("> %s\n", get_meaning(paramBase));
 	return;      
-    case callRom_4SS_5V:
+    case call_4SS_5V:
 	if(verbose == 0)
 		printf ("& ROM call 1: 0x%lX (%ld)\n", paramBase[0], paramBase[1]);
 	else
 		printf("> %s\n", get_meaning(paramBase));
 	return;      
-    case callRom_4SSS_5V:
+    case call_4SSS_5V:
 	if(verbose == 0)
 		printf ("& ROM call 2: 0x%lX (%ld, %ld)\n", paramBase[0],
 				paramBase[1], paramBase[2]);
 	else
 		printf("> %s\n", get_meaning(paramBase));
 	return;      
-    case callRom_4SSSS_5V:
+    case call_4SSSS_5V:
 	if(verbose == 0)
 		printf ("& ROM call 3: 0x%lX (%ld, %ld, %ld)\n",
 				paramBase[0], paramBase[1],
@@ -234,7 +234,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 	else
 		printf("> %s\n", get_meaning(paramBase));
 	return;      
-    case callRom_4SSSSS_5V:
+    case call_4SSSSS_5V:
       printf ("& ROM call 4: 0x%lX (%ld, %ld, %ld, %ld)\n", paramBase[0],
                                                      paramBase[1],
                                                      paramBase[2],
@@ -242,14 +242,14 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
                                                      paramBase[4]
              );
       return;      
-    case readMemoryByte_4I_5B:
+    case readByte_4I_5B:
 	if(verbose == 0)
 		printf ("& Attempt to read byte from 0x%lX\n", (paramBase[0] & 0xFFFF));
 	else
 		printf ("> read byte from 0x%lX\n", (paramBase[0] & 0xFFFF));
 	push_word (0);
 	return;
-    case writeMemoryByte_4IB_5V:
+    case writeByte_4IB_5V:
 	if(verbose == 0)
 		printf ("& Attempt to write byte [%lX] at 0x%lX (no effect)\n",
 			paramBase[1] & 0xFF, paramBase[0] & 0xFFFF);
@@ -257,7 +257,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 		printf ("> write byte [%lX] at 0x%lX (no effect)\n",
 			paramBase[1] & 0xFF, paramBase[0] & 0xFFFF);
       return;
-    case setMemoryBit_4III_5V:
+    case setBit_4III_5V:
       printf ("& Attempt to set memory bit [%ld] at 0x%lX (no effect)\n", paramBase[1] & 0xFF, paramBase[0] & 0xFFFF);
       return;      
     case getDataAddress_4Ljava_3lang_3Object_2_5I:
@@ -328,6 +328,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
         throw_exception(error);
       }
       return;
+
     default:
 #ifdef DEBUG_METHODS
       printf("Received bad native method code: %d\n", signature);
@@ -335,5 +336,3 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       throw_exception (noSuchMethodError);
   }
 } 
-
-

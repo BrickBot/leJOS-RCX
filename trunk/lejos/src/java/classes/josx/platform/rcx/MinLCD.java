@@ -18,7 +18,7 @@ public class MinLCD
    */
   public static void setNumber (int aCode, int aValue, int aPoint)
   {
-    Native.callRom ((short) 0x1ff2, (short) aCode, (short) aValue, (short) aPoint);
+    ROM.call ((short) 0x1ff2, (short) aCode, (short) aValue, (short) aPoint);
   } 
 
   /**
@@ -27,7 +27,7 @@ public class MinLCD
    */
   public static void refresh()
   {
-    Native.callRom ((short) 0x27c8);
+    ROM.call ((short) 0x27c8);
   }
 }
 

@@ -124,13 +124,13 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 
 #endif
 
-    case callRom_4S_5V:
+    case call_4S_5V:
       __rcall0 (paramBase[0]);
       return;      
-    case callRom_4SS_5V:
+    case call_4SS_5V:
       __rcall1 (paramBase[0], *paramBase1);
       return;      
-    case callRom_4SSS_5V:
+    case call_4SSS_5V:
       #if 0
       trace (-1, (TWOBYTES) paramBase[0], 6);
       trace (-1, (TWOBYTES) *paramBase1, 7);
@@ -138,19 +138,19 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       #endif
       __rcall2 (paramBase[0], *paramBase1, paramBase[2]);
       return;      
-    case callRom_4SSSS_5V:
+    case call_4SSSS_5V:
       __rcall3 (paramBase[0], *paramBase1, paramBase[2], paramBase[3]);
       return;
-    case callRom_4SSSSS_5V:
+    case call_4SSSSS_5V:
       __rcall4 (paramBase[0], *paramBase1, paramBase[2], paramBase[3], paramBase[4]);
       return;
-    case readMemoryByte_4I_5B:
+    case readByte_4I_5B:
       push_word ((STACKWORD) *((byte *) word2ptr(paramBase[0])));
       return;
-    case writeMemoryByte_4IB_5V:
+    case writeByte_4IB_5V:
       *((byte *) word2ptr(paramBase[0])) = (byte) (*paramBase1 & 0xFF);
       return;
-    case setMemoryBit_4III_5V:
+    case setBit_4III_5V:
       *((byte *)word2ptr(paramBase[0])) =
         ( *((byte *)word2ptr(paramBase[0])) & (~(1<<*paramBase1)) ) | (((paramBase[2] != 0) ? 1 : 0) <<*paramBase1);
       return;      
@@ -248,6 +248,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
         throw_exception(error);
       }
       return;
+
     default:
       throw_exception (noSuchMethodError);
       return;
