@@ -12,7 +12,9 @@ package josx.platform.rcx;
  * or one of the other read methods. There is also a low level method which
  * can be used when maximum performance is required. Another way to
  * monitor sensor values is to add a <code>SensorListener</code>. All sensor events
- * are dispatched to listeners by a single thread.
+ * are dispatched to listeners by a single thread created by this class. The
+ * thread is a daemon thread and so will not prevent termination of an
+ * application if all other threads have exited.
  * <p>
  * Example:<p>
  * <code><pre>
@@ -37,6 +39,8 @@ package josx.platform.rcx;
  */
 public class Sensor
 {
+  static final long SLEEP_TIME = 50;
+  
   private int iSensorId;
   private short iNumListeners = 0;
   private final SensorListener[] iListeners = new SensorListener[8];
@@ -97,10 +101,7 @@ public class Sensor
    * <p>
    * <b>
    * NOTE 1: You can add at most 8 listeners.<br>
-   * NOTE 2: Calling this method may result in the creation of
-   * a non-daemon thread (one for all sensors), i.e. your 
-   * program will not terminate on its own.<br>
-   * NOTE 3: Synchronizing inside listener methods could result
+   * NOTE 2: Synchronizing inside listener methods could result
    * in a deadlock.
    * </b>
    * @see josx.platform.rcx.SensorListener
@@ -111,6 +112,8 @@ public class Sensor
     Native.getDataAddress (null);
     if (!SENSOR_THREAD.isAlive())
     {
+	  SENSOR_THREAD.setDaemon(true);
+      SENSOR_THREAD.setPriority(Thread.MAX_PRIORITY);
       SENSOR_THREAD.start();
       for (int i = 0; i < 3; i++)
       {
@@ -184,6 +187,13 @@ public class Sensor
   private static class SensorThread extends Thread
   {
     int[] iPreviousValue = new int[3];
+	
+	void snooze(long millis) {
+		try {
+			sleep(SLEEP_TIME);
+		} catch (InterruptedException ie) {
+		}
+	}
     
     public void run()
     {
@@ -202,12 +212,12 @@ public class Sensor
               for (int i = 0; i < pNumListeners; i++)
 	      {
                 pSensor.iListeners[i].stateChanged (pSensor, pOldValue, pNewValue);
-		Thread.yield();
+		snooze(SLEEP_TIME);
 	      }
               iPreviousValue[pIdx] = pNewValue;
 	    }
 	  }
-	  Thread.yield();
+	  snooze(SLEEP_TIME);
 	}
       }	    
     }     	  

@@ -51,6 +51,11 @@
  *  Kekoa Proudfoot
  *  kekoa@graphics.stanford.edu
  *  10/3/98, 10/3/99
+ *
+ *  Paul Andrewws
+ *  paul@jools.net
+ *  07/14/2001 Added --nodl option to report size only and not actually perform
+ *             download.
  */
 
 #include <sys/types.h>
@@ -296,6 +301,7 @@ int main (int argc, char **argv)
     char *fileName = NULL;
     char *dname = NULL;
     int use_fast = 0;
+    int no_download = 0;
     int usage = 0;
     FILEDESCR fd;
     int status;
@@ -332,6 +338,9 @@ int main (int argc, char **argv)
 	    else if (!strcmp(argv[0], "--slow")) {
 		use_fast = 0;
 	    }
+	    else if (!strcmp(argv[0], "--nodl")) {
+	    	no_download=1;
+	    }
 	    else if (!strncmp(argv[0], "--tty", 5)) {
 		if (argv[0][5] == '=') {
 		    tty = &argv[0][6];
@@ -364,6 +373,7 @@ int main (int argc, char **argv)
 		switch (*p) {
 		case 'f': use_fast = 1; break;
 		case 's': use_fast = 0; break;
+		case 'n': no_download = 1; break;
 		case 'h': usage = 1; break;
 		default:
 		    fprintf(stderr, "%s: unrecognized option -- %c\n",
@@ -397,6 +407,7 @@ int main (int argc, char **argv)
 	    "      --debug      show debug output, mostly raw bytes\n"
 	    "  -f, --fast       use fast 4x downloading\n"
 	    "  -s, --slow       use slow 1x downloading (default)\n"
+	    "  -n, --nodl       do not download image\n"
 	    "      --tty=TTY    assume tower connected to TTY\n"
 	    "  -h, --help       display this help and exit\n"
 	    ;
@@ -409,6 +420,9 @@ int main (int argc, char **argv)
     /* Load the s-record file */
 
     image_len = srec_load(fileName, image, IMAGE_MAXLEN, &image_start);
+    fprintf(stderr, "Image size=%d (%dk)", image_len, image_len/1024+1);
+    if (no_download)
+    	exit(0);
 
     /* Get the tty name */
 

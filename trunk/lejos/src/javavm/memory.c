@@ -42,6 +42,7 @@ byte typeSize[] = {
 static TWOBYTES *startPtr;
 static TWOBYTES *memoryTop;
 static TWOBYTES *allocPtr;
+static TWOBYTES free;	// Total number of free words in heap
 
 extern void deallocate (TWOBYTES *ptr, TWOBYTES size);
 extern TWOBYTES *allocate (TWOBYTES size);
@@ -112,6 +113,9 @@ Object *new_object_checked (const byte classIndex, byte *btAddr)
   #endif
   if (dispatch_static_initializer (get_class_record(classIndex), btAddr))
   {
+#if DEBUG_MEMORY
+  printf("New object checked returning null\n");
+#endif
     return JNULL;
   }
   return new_object_for_class (classIndex);
@@ -127,10 +131,16 @@ Object *new_object_for_class (const byte classIndex)
   Object *ref;
   TWOBYTES instanceSize;
 
+#if DEBUG_MEMORY
+  printf("New object for class\n");
+#endif
   instanceSize = get_class_record(classIndex)->classSize;
   ref = memcheck_allocate (instanceSize);
   if (ref == null)
   {
+#if DEBUG_MEMORY
+  printf("New object for class returning null\n");
+#endif
     return JNULL;
   }
 
@@ -139,13 +149,16 @@ Object *new_object_for_class (const byte classIndex)
   ref->flags = IS_ALLOCATED_MASK | classIndex;
   initialize_state (ref, instanceSize);
 
-  #if DEBUG_OBJECTS
+  #if DEBUG_OBJECTS || DEBUG_MEMORY
   printf ("new_object_for_class: returning %d\n", (int) ref);
   #endif
 
   return ref;
 }
 
+/**
+ * Return the size in words of an array of the given type
+ */
 TWOBYTES comp_array_size (const byte length, const byte elemType)
 {
   return NORM_OBJ_SIZE + (((TWOBYTES) length * typeSize[elemType]) + 1) / 2;
@@ -153,7 +166,7 @@ TWOBYTES comp_array_size (const byte length, const byte elemType)
 
 /**
  * Allocates an array. The size of the array is NORM_OBJ_SIZE
- * plus the size necessary to allocate <code>length</code> elements
+ * plus the size necessary to contain <code>length</code> elements
  * of the given type.
  */
 Object *new_primitive_array (const byte primitiveType, STACKWORD length)
@@ -271,6 +284,21 @@ void store_word (byte *ptr, byte aSize, STACKWORD aWord)
 }
 
 #else
+/**
+ * Problem here is bigendian v. littleendian. Java has its
+ * words stored bigendian, intel is littleendian.
+ */
+STACKWORD get_word(byte *ptr, byte aSize)
+{
+  STACKWORD aWord = 0;
+  byte ctr = 0;
+  while (aSize--)
+  {
+    aWord = (aWord << 8) | (STACKWORD)(ptr[ctr++]);
+  }
+  
+  return aWord;
+}
 
 void store_word (byte *ptr, byte aSize, STACKWORD aWord)
 {
@@ -355,6 +383,7 @@ void init_memory (void *ptr, TWOBYTES size)
   printf ("Setting start of memory to %d\n", (int) startPtr);
   printf ("Going to reserve %d words\n", size);
   #endif
+  free = 0;
   deallocate (ptr, size);
 }
 
@@ -381,6 +410,9 @@ TWOBYTES *allocate (TWOBYTES size)
         allocPtr = ptr + size;
 	if (size < blockHeader)
           allocPtr[0] = blockHeader - size;
+        if (allocPtr >= memoryTop)
+          allocPtr = startPtr;
+        free -= size;
         return ptr;
       }
       ptr += blockHeader;
@@ -396,6 +428,8 @@ TWOBYTES *allocate (TWOBYTES size)
 }
 
 /**
+ * Doesn't coallesce adjacent free blocks. But then nothing gets freed
+ * anyway.
  * @param size Must be exactly same size used in allocation.
  */
 void deallocate (TWOBYTES *ptr, TWOBYTES size)
@@ -403,7 +437,15 @@ void deallocate (TWOBYTES *ptr, TWOBYTES size)
   #ifdef VERIFY
   assert (size <= (FREE_BLOCK_SIZE_MASK >> FREE_BLOCK_SIZE_SHIFT), MEMORY3);
   #endif
-  
+
+  free += size;  
   ptr[0] = size;
 }
 
+int getHeapSize() {
+  return ((int)(memoryTop - startPtr)) << 1;
+}
+
+int getHeapFree() {
+  return ((int)free) << 1;
+}

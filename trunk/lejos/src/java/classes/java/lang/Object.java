@@ -15,9 +15,25 @@ public class Object
     return getDataAddress (this);
   }
 
-//  public final native void notify() throws InterruptedException;
-//  public final native void notifyAll() throws InterruptedException;
-//  public final native void wait() throws InterruptedException;
+  /**
+   * Not yet implemented.
+   */
+  public final native void notify() throws InterruptedException;
+
+  /**
+   * Not yet implemented.
+   */
+  public final native void notifyAll() throws InterruptedException;
+
+  /**
+   * Not yet implemented.
+   */
+  public final native void wait() throws InterruptedException;
+
+  /**
+   * Not yet implemented.
+   */
+  public final native void wait(long timeout) throws InterruptedException;
   
   /**
    * Returns the empty string. It's here to satisfy javac.

@@ -25,6 +25,10 @@ Object *nullPointerException;
 Object *classCastException;
 Object *arithmeticException;
 Object *arrayIndexOutOfBoundsException;
+Object *illegalArgumentException;
+Object *interruptedException;
+Object *illegalStateException;
+Object *error;
 
 // Temporary globals:
 
@@ -46,6 +50,10 @@ void init_exceptions()
   classCastException = new_object_for_class (JAVA_LANG_CLASSCASTEXCEPTION);
   arithmeticException = new_object_for_class (JAVA_LANG_ARITHMETICEXCEPTION);
   arrayIndexOutOfBoundsException = new_object_for_class (JAVA_LANG_ARRAYINDEXOUTOFBOUNDSEXCEPTION);
+  illegalArgumentException = new_object_for_class (JAVA_LANG_ILLEGALARGUMENTEXCEPTION);
+  interruptedException = new_object_for_class (JAVA_LANG_INTERRUPTEDEXCEPTION);
+  illegalStateException = new_object_for_class (JAVA_LANG_ILLEGALSTATEEXCEPTION);
+  error = new_object_for_class (JAVA_LANG_ERROR);
 }
 
 /**
@@ -59,14 +67,22 @@ void throw_exception (Object *exception)
   assert (exception != null, EXCEPTIONS0);
   #endif VERIFY
 
+#if DEBUG_EXCEPTIONS
+  printf("Throw exception\n");
+#endif
   if (currentThread == null)
   {
     // No threads have started probably
     return;
   }
+  else if (exception == interruptedException)
+  {
+    // Throwing an interrupted exception clears the flag
+    currentThread->interrupted = 0;
+  }
   
   #ifdef VERIFY
-  assert (currentThread->state != DEAD, EXCEPTIONS1);
+  assert (currentThread->state > DEAD, EXCEPTIONS1);
   #endif VERIFY
   
   gExceptionPc = pc;
@@ -90,6 +106,9 @@ void throw_exception (Object *exception)
   #endif
 
   gNumExceptionHandlers = tempMethodRecord->numExceptionHandlers;
+#if DEBUG_EXCEPTIONS
+  printf("Num exception handlers=%d\n",gNumExceptionHandlers);
+#endif
   while (gNumExceptionHandlers--)
   {
     if (tempCurrentOffset >= gExceptionRecord->start && tempCurrentOffset <= gExceptionRecord->end)
@@ -104,6 +123,9 @@ void throw_exception (Object *exception)
         // Jump to handler:
         pc = get_binary_base() + tempMethodRecord->codeOffset + 
              gExceptionRecord->handler;
+#if DEBUG_EXCEPTIONS
+  printf("Found exception handler\n");
+#endif
         return;
       }
     }
@@ -115,8 +137,15 @@ void throw_exception (Object *exception)
   // Note: return takes care of synchronized methods.
   if (auxThread->state == DEAD)
   {
+#if DEBUG_EXCEPTIONS
+  printf("Thread is dead\n");
+#endif
     if (get_class_index(exception) != JAVA_LANG_THREADDEATH)
     {
+#if DEBUG_EXCEPTIONS
+  printf("Handle uncaught exception\n");
+#endif
+
       handle_uncaught_exception (exception, auxThread,
   			         gExcepMethodRec, tempMethodRecord,
 			         gExceptionPc);

@@ -36,10 +36,14 @@
 #define is_array(OBJ_)           (((OBJ_)->flags & IS_ARRAY_MASK) != 0)
 #define is_allocated(OBJ_)       (((OBJ_)->flags & IS_ALLOCATED_MASK) != 0)
 #define get_monitor_count(OBJ_)  ((OBJ_)->syncInfo & COUNT_MASK)
+#define is_gc(OBJ_)              (((OBJ_)->flags & GC_MASK) != 0)
 
 // Double-check these data structures with the 
 // Java declaration of each corresponding class.
 
+/**
+ * Object class native structure
+ */
 typedef struct S_Object
 {
   /**
@@ -71,20 +75,39 @@ typedef struct S_Object
 
 } Object;
 
+/**
+ * Thread class native structure
+ */
 typedef struct S_Thread
 {
-  Object _super;
+  Object _super;	     // Superclass object storage
 
-  REFERENCE nextThread;
-  JINT waitingOn;
-  JINT stackFrameArray;
-  JINT stackArray;
-  JINT isReferenceArray;
-  JBYTE stackFrameArraySize;
-  JBYTE threadId;
-  JBYTE state;
+  REFERENCE nextThread;      // Intrinsic circular list of threads
+  JINT waitingOn;            // Object who's monitor we want
+  JINT stackFrameArray;      // Array of stack frames
+  JINT stackArray;           // The stack itself
+  JINT isReferenceArray;     // Array indicating if a stack entry is a reference or not
+  JBYTE stackFrameArraySize; // Number of stack frames in use.
+  JBYTE threadId;            // Unique thread ID
+  JBYTE state;               // RUNNING, DEAD, etc.
+  JBYTE priority;            // The priority
+  JBYTE interrupted;         // Interrupted
+  JBYTE daemon;              // true == daemon thread
 } Thread;
 
+/**
+ * Runtime class native structure. Doesn't actually contain
+ * any instance data. Maybe it ought to? Like ALL of the leJOS
+ * specific runtime instance data?
+ */
+typedef struct S_Runtime
+{
+  Object _super;
+} Runtime;
+
+/**
+ * String class native structure
+ */
 typedef struct S_String
 {
   Object _super;
@@ -133,6 +156,7 @@ static inline TWOBYTES get_na_class_index (Object *obj)
 #define get_array_length(ARR_)   (((ARR_)->flags & ARRAY_LENGTH_MASK) >> ARRAY_LENGTH_SHIFT)
 #define get_element_type(ARR_)   ((ARR_)->flags & ELEM_TYPE_MASK) >> ELEM_TYPE_SHIFT
 #define get_na_class_index(OBJ_) (((OBJ_)->flags & CLASS_MASK) >> CLASS_SHIFT)
+#define get_free_length(OBJ_)    (((OBJ_)->flags & FREE_BLOCK_SIZE_MASK) >> FREE_BLOCK_SIZE_SHIFT)
 
 #endif WIMPY_MATH
 

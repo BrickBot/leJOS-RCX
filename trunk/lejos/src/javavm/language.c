@@ -71,7 +71,7 @@ boolean dispatch_static_initializer (ClassRecord *aRec, byte *retAddr)
   printf ("dispatch_static_initializer: has clinit: %d, %d\n",
           (int) aRec, (int) retAddr);
   #endif
-  dispatch_special (find_method (aRec, _CLINIT__V), retAddr);
+  dispatch_special (find_method (aRec, _6clinit_7_4_5V), retAddr);
   return true;
 }
 
@@ -208,7 +208,7 @@ boolean dispatch_special (MethodRecord *methodRecord, byte *retAddr)
   // Initialize auxiliary global variables (registers)
   pc = get_code_ptr(methodRecord);
 
-  #ifdef DEBUG_METHODS
+  #if DEBUG_METHODS
   printf ("pc set to 0x%X\n", (int) pc);
   #endif
 
@@ -241,7 +241,7 @@ void do_return (byte numWords)
           stackFrame->methodRecord->signatureId);
   #endif
 
-  #ifdef DEBUG_METHODS
+  #if DEBUG_METHODS
   printf ("do_return: method: %d  #  num. words: %d\n", 
           stackFrame->methodRecord->signatureId, numWords);
   #endif
@@ -252,7 +252,7 @@ void do_return (byte numWords)
   if (stackFrame->monitor != null)
     exit_monitor (stackFrame->monitor);
 
-  #if DEBUG_THREADS
+  #if DEBUG_THREADS || DEBUG_METHODS
   printf ("do_return: stack frame array size: %d\n", currentThread->stackFrameArraySize);
   #endif
 

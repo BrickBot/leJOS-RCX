@@ -15,24 +15,27 @@ public class GenerateConstants
     System.exit(1);
   }
 
+  public static String insert_(String s, String sep) {
+  	StringBuffer sb=new StringBuffer();
+  	StringTokenizer tokens=new StringTokenizer(s, sep, true);
+	while (tokens.hasMoreTokens()) {
+		String token = tokens.nextToken();
+		if(token.length() == 1 && sep.indexOf(token) != -1)
+			sb.append("_");
+		sb.append(token);
+	}
+	return sb.toString();
+  }
+  
   public static String hclassName (String aClassName)
   {
     return aClassName.replace('/', '_').toUpperCase();
   }
 
-  public static String htransform (String aSig)
+  public static String hsignatureName (String aSig)
   {
-    return aSig.replace('[','A').replace(';','0').replace('/','_');
-  }
-
-  public static String hsignatureName (String aSignature)
-  {
-    int pParIdx = aSignature.indexOf ('(');
-    String pName = aSignature.substring (0, pParIdx);
-    String pNormName = pName.replace('<','_').replace('>','_');
-    int pEndIdx = aSignature.lastIndexOf (')');
-    String pRetType = aSignature.substring (pEndIdx+1);
-    return pNormName.toUpperCase() + "_" + htransform(pRetType);
+  	aSig = insert_(aSig.replace('_', '-'), "-[;/()<>");
+    return aSig.replace('-', '0').replace('[','1').replace(';','2').replace('/','3').replace('(', '4').replace(')', '5').replace('<', '6').replace('>', '7');
   }
 
   public static void generateClassConstants (Vector aVec, File aHeaderFile, File aJavaFile)
