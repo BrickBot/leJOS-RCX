@@ -1,7 +1,7 @@
 
 // Stack overflow test
 
-import tinyvm.rcx.*;
+import josx.platform.rcx.*;
 
 public class Test14
 { 

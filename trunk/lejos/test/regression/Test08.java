@@ -1,7 +1,7 @@
 
 // Static initializers
 
-import tinyvm.rcx.ROM;
+import josx.platform.rcx.ROM;
 
 public class Test08
 {

@@ -1,7 +1,7 @@
 
 // Test for virtual methods
 
-import tinyvm.rcx.*;
+import josx.platform.rcx.*;
 
 public class Test07
 {
