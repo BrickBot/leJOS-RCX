@@ -6,6 +6,7 @@ LEJOSRUN = $(LEJOSHOME)/bin/lejosrun
 LEJOSFIRMDL = $(LEJOSHOME)/bin/lejosfirmdl
 
 CLASSPATH = .
+CLASSLIB = $(LEJOSHOME)/lib/classes.jar
 
 SOURCES = PerformanceTest.java
 OBJECTS = PerformanceTest.class
@@ -28,7 +29,7 @@ firmdl :
 $(BINARY) : $(OBJECTS)
 	$(LEJOS) -verbose $(PROGRAMS) -o $(BINARY) > $(SIGNATURE)
 
-$(OBJECTS) : $(SOURCES)
+$(OBJECTS) : $(SOURCES) $(CLASSLIB)
 	$(LEJOSC) $(SOURCES)
 
 clean :
