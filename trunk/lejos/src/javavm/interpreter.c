@@ -36,13 +36,19 @@ int gInt;
  */
 void do_goto (void)
 {
-  pc += (((JSHORT) pc[0] << 8) | pc[1]) - 1;
+  #if DEBUG_BYTECODE
+  printf ("do_goto: %d, %d (= %d)\n", (int) pc[0], (int) pc[1],
+          (JSHORT) ((pc[0] << 8) | pc[1]));
+  #endif
+
+  pc += (JSHORT) ((pc[0] << 8) | pc[1]) - 1;
 }
 
 void do_isub (void)
 {
   stackTop--;
   stackTop[0] = word2jint(stackTop[0]) - word2jint(stackTop[1]);
+  printf ("substraction: %d\n", (int) stackTop[0]);
 }
 
 void do_fcmp (JFLOAT f1, JFLOAT f2)

@@ -118,14 +118,13 @@ boolean dispatch_static_initializer (ClassRecord *aRec, byte *retAddr)
   if (is_initialized (aRec))
     return false;
 
-  #if DEBUG_METHODS
-  printf ("dispatch_special_initializer: %d, %d\n",
-          (int) aRec, (int) retAddr);
-  #endif
-
   set_initialized (aRec);
   if (!has_clinit (aRec))
     return false;
+  #if DEBUG_METHODS
+  printf ("dispatch_static_initializer: has clinit: %d, %d\n",
+          (int) aRec, (int) retAddr);
+  #endif
   dispatch_special (aRec, find_method (aRec, _CLINIT__V), retAddr);
   return true;
 }
@@ -196,6 +195,10 @@ void dispatch_special_checked (byte classIndex, byte methodIndex,
 boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord, 
                           byte *retAddr)
 {
+  #if DEBUG_METHODS
+  int debug_ctr;
+  #endif
+
   STACKWORD *paramBase;
   StackFrame *stackFrame;
   byte newStackFrameIndex;
@@ -206,9 +209,11 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   printf ("-- signature id = %d\n", methodRecord->signatureId);
   printf ("-- code offset  = %d\n", methodRecord->codeOffset);
   printf ("-- flags        = %d\n", methodRecord->mflags);
+  printf ("-- num params   = %d\n", methodRecord->numParameters);
   #endif
 
   paramBase = stackTop - methodRecord->numParameters + 1;
+ 
   newStackFrameIndex = currentThread->stackFrameArraySize;
   if (newStackFrameIndex >= MAX_STACK_FRAMES)
   {
@@ -222,6 +227,11 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   }
   else
   {
+    #if DEBUG_METHODS
+    for (debug_ctr = 0; debug_ctr < methodRecord->numParameters; debug_ctr++)
+      printf ("-- param[%d]    = %ld\n", debug_ctr, (long) paramBase[debug_ctr]);  
+    #endif
+
     // Save stackFrame state
     stackFrame = stackframe_array() + (newStackFrameIndex - 1);
     stackFrame->stackTop = stackTop;
@@ -261,6 +271,10 @@ void do_return (byte numWords)
 {
   StackFrame *stackFrame;
   STACKWORD *sourcePtr;
+
+  #ifdef DEBUG_METHODS
+  printf ("do_return: %d\n", numWords);
+  #endif
 
   // Place source ptr below data to be copied up the stack
   sourcePtr = stackTop - numWords;

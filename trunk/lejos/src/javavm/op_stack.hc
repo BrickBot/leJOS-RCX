@@ -11,6 +11,9 @@ case OP_BIPUSH:
 case OP_SIPUSH:
   // Stack size: +1
   // Arguments: 2
+  #if DEBUG_BYTECODE
+  printf ("  OP_SIPUSH args: %d, %d (%d)\n", (int) pc[0], (int) pc[1], (int) pc[2]);
+  #endif
   *(++stackTop) = (STACKWORD) (short) (((TWOBYTES) pc[0] << 8) | pc[1]);
   pc += 2;
   goto LABEL_ENGINELOOP;
@@ -57,9 +60,6 @@ case OP_ICONST_4:
 case OP_ICONST_5:
   // Stack size: +1
   // Arguments: 0
-
-  // TBD: check negative
-
   *(++stackTop) = *(pc-1) - OP_ICONST_0;
   goto LABEL_ENGINELOOP;
 case OP_LCONST_0:
