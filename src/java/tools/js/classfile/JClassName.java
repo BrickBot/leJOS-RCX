@@ -3,6 +3,7 @@ package js.classfile;
 import java.util.*;
 
 public class JClassName
+implements IConstants
 {
   public static String getQualifiedName (String aClassName)
   {
@@ -136,7 +137,7 @@ public class JClassName
     return "Z";
   }
 
-  public static String[] parseParameters (JCPE_Utf8 aMethodDesc)
+  public static String[] parseMethodParameters (JCPE_Utf8 aMethodDesc)
   {
     String pDesc = aMethodDesc.toString();
     int pIdx = pDesc.indexOf (')');
@@ -187,6 +188,47 @@ public class JClassName
     pVec.copyInto (pArgs);
     return pArgs;
   }
+
+  public static int[] getTypeAndDimensions (String aMultiArrayDesc)
+  {
+    int i = 0;
+    while (aMultiArrayDesc.charAt (i) == '[')
+      i++;
+    return new int[] { 
+      descriptorToType (aMultiArrayDesc.substring(i)),
+      i 
+    };
+  }
+
+  public static int descriptorToType (String aDesc)
+  {
+    switch (aDesc.charAt (0))
+    {
+      case 'B':
+        return T_BYTE;
+      case 'C':
+        return T_CHAR;
+      case 'D':
+        return T_DOUBLE;
+      case 'F':
+        return T_FLOAT;
+      case 'I':
+        return T_INT;
+      case 'J':
+        return T_LONG;
+      case 'S':
+        return T_SHORT;
+      case 'Z':
+        return T_BOOLEAN;
+      case 'L':
+      case '[':
+        return T_REFERENCE;
+      default:
+        throw new Error ("Bug IFR-2: " + aDesc);  
+    }
+  }
+
+
 }
   
 
