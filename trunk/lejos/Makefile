@@ -185,7 +185,7 @@ clean:
 	rm -f `find . -name '*.bak'`
 	rm -f `find . -name '*.stackdump'`
 	rm -f `find . -name '*.backtrace'`
-	-rm -rf apidocs/. pcapidocs/. visionapidocs/.
+	-rm -rf ./apidocs ./pcapidocs ./visionapidocs
 
 distclean: clean
 	rm -rf `find . -name 'CVS'`
@@ -199,9 +199,12 @@ distclean: clean
 
 distclean_src: distclean
 	rm -f bin/lejos bin/emu-dump bin/emu-lejos bin/emu-lejosrun
-	rm -f $(PLAT_UNIX_SRC)/dump_config
+	rm -f src/java/tools/js/tinyvm/SpecialClassConstants.java src/java/tools/js/tinyvm/SpecialSignatureConstants.java src/javavm/specialclasses.h src/javavm/specialsignatures.h
+	rm -f $(PLAT_UNIX_SRC)/dump_config $(PLAT_UNIX_SRC)/platform_config.h
 	rm -f $(EMU_SRC)/mkimg
+	rm -f `find . -name '*.so' -o -name '*.dylib' -o -name '*.jnilib' -o -name '*.dll'`
 	rm -f bin/cygwin.dll
+	rm -f `find . -name '.DS_Store'`	# Mac OS X Finder droppings
 	rm -f `find . -name '*.exe'`
 	rm -f `find . -name '*.jar'`
 

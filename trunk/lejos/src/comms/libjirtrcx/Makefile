@@ -8,8 +8,6 @@ ifeq ($(OSTYPE),linux-gnu)
 OS=linux
 endif
 
-OSX_USB=
-
 IRTRCX_H=$(LEJOS_HOME)/src/comms/libirtrcx/rcx_comm.h
 IRTRCX_INCL=$(LEJOS_HOME)/src/comms/libirtrcx
 
@@ -28,11 +26,12 @@ ifneq (,$(findstring darwin,$(OSTYPE)))
       # Jaguar onwards supports plain dylib JNI libraries
       JNILIB_TYPE = -dynamiclib
     endif
+    LFLAGS = $(JNILIB_TYPE) -framework IOKit -framework CoreFoundation
+    LFLAGS += -L$(LEJOS_HOME)/bin -lirtrcx
     # Mac OS X compiles PIC by default
-    CCOPT = -g -O ${JNILIB_TYPE} -I$(COMM_INCL) -framework IOKit -framework CoreFoundation -I/System/Library/Frameworks/JavaVM.framework/Headers
-    IRTOWER=$(LEJOS_HOME)/bin/libirtower.jnilib 
-
-    OSX_USB=osx_usb.o
+    CFLAGS = -g -O -I$(IRTRCX_INCL) -I/System/Library/Frameworks/JavaVM.framework/Headers 
+    CCOPT = $(CFLAGS) $(LFLAGS)
+    IRTOWER=$(LEJOS_HOME)/bin/libjirtrcx.jnilib 
   else
     # Linux/Solaris/FreeBSD/other unices.
     IRTOWER=$(LEJOS_HOME)/bin/libjirtrcx.so
@@ -44,8 +43,9 @@ endif
 .EXPORT_ALL_VARIABLES :
 
 # Use CXX to get correct linkage (need C++ libraries)
-${IRTOWER}: irtower.cpp josx_rcxcomm_Tower.h $(OSX_USB)
+${IRTOWER}: irtower.cpp josx_rcxcomm_Tower.h
 	$(CXX) $(CCOPT) $(COMM_OBJ) -o $@ *.cpp
+
 clean:
 	rm -rf *.o *~ core
 	rm -f ${IRTOWER}

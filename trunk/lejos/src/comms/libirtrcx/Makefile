@@ -24,43 +24,54 @@
 CC=$(shell $(LEJOS_HOME)/cctest.sh)
 
 CFLAGS = -O2 
+# For debugging:
+#CFLAGS = -O0
 
 ifndef OSTYPE
 	OSTYPE=$(MSDOS)
 endif
 
-ifneq (,$findstring $(OSTYPE), linux LINUX linux-gnu)
-        CFLAGS=-O2 -I$(LEJOS_HOME)/src/tools/linux/legousbtower -shared -fpic	
+ifneq (,$(findstring $(OSTYPE), linux LINUX linux-gnu))
 	RCXCOMM_OS_C=rcx_comm_linux.c
 	RCXCOMM_OS_H=rcx_comm_linux.h
-	RCXCOMM_OS_OBJ=rcx_comm_linux.o
+	CFLAGS+=-I$(LEJOS_HOME)/src/tools/linux/legousbtower -shared -fpic	
 	LIBIRTRCX=$(LEJOS_HOME)/bin/libirtrcx.so
+	LFLAGS=-shared
 endif
 
 ifneq (,$(findstring $(OSTYPE),cygwin32 cygwin_nt-5.0 cygwin_nt-5.1 CYGWIN_NT-4.0 WindowsNT Windows_NT))
+	RCXCOMM_OS_C=rcx_comm_win.c
+	RCXCOMM_OS_H=rcx_comm_win.h
 	EXT=.exe
 	LIBIRTRCX=$(LEJOS_HOME)/bin/irtrcx.dll
         CFLAGS=-mno-cygwin -Wl,--add-stdcall-alias -shared -D__CYGWIN32__
-	RCXCOMM_OS_C=rcx_comm_win.c
-	RCXCOMM_OS_H=rcx_comm_win.h
-	RCXCOMM_OS_OBJ=rcx_comm_win.o
-endif
-ifneq (,$(findstring darwin,$(OSTYPE)))
-	RCXCOMM_OS_C=osx_usb.c
-	RCXCOMM_OS_H=osx_usb.h
-	RCXCOMM_OS=osx_usb
-	LIBS += -framework IOKit -framework CoreFoundation
-        CFLAGS += -g
-else
-	OSX_USB=
+	LFLAGS=-shared
 endif
 
-all: *.o 
+ifneq (,$(findstring $(OSTYPE), darwin))
+	RCXCOMM_OS_C=rcx_comm_osx.c osx_usb.c
+	RCXCOMM_OS_H=rcx_comm_osx.h osx_usb.h
+        CFLAGS += -g
+	LIBS += -framework IOKit -framework CoreFoundation
+	LFLAGS = -dynamiclib
+	LIBIRTRCX=$(LEJOS_HOME)/bin/libirtrcx.dylib
+endif
+
+SRCS = $(RCXCOMM_OS_C) rcx_comm.c
+OBJS = $(addsuffix .o, $(basename $(SRCS)))
+
+all: $(LIBIRTRCX)
+	@echo Built $(LIBIRTRCX)
+
+$(LIBIRTRCX): $(OBJS)
+	$(CC) -o $(LIBIRTRCX) $(OBJS) $(LFLAGS) $(LIBS)
+
+$(OBJS): $(SRCS) $(RCXCOMM_OS_H)
+
+%.o: %.c
+	$(CC) -c -o $@ $(CFLAGS) "$<"
 
 .SUFFIXES: .c .o
 
-*.o:
-	$(CC) $(RCXCOMM_OS_C) rcx_comm.c $(CFLAGS) -o $(LIBIRTRCX)
-
 clean:
-	rm -f *.o *~ *.bak *.a
+	rm -f *.o *~ *.bak *.a $(LIBIRTRCX)

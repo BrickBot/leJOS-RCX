@@ -206,26 +206,3 @@ void __rcx_close(FILEDESCR fd)
 {
 	close(fd);
 }
-
-int __rcx_is_alive (FILEDESCR fd, int use_comp)
-{
-	return RCX_NOT_IMPL;
-}
-
-int __rcx_send(FILEDESCR fd, void *buf, int len, int use_comp)
-{
-	return RCX_NOT_IMPL;
-}
-
-int __rcx_recv(FILEDESCR fd, void *buf, int maxlen, int timeout, int use_comp)
-{
-	return RCX_NOT_IMPL;
-}
-
-int __rcx_sendrecv (FILEDESCR fd, void *send, int slen, void *recv, int rlen, int timeout, int retries, int use_comp)
-{
-  return RCX_NOT_IMPL;
-}
-
-
-

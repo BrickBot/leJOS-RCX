@@ -54,6 +54,11 @@
 #if defined(LINUX) || defined(linux)
 #define TOWER_NAME "/dev/lego0"
 #define DEFAULTTTY   "usb"       /* Linux - USB */
+/*
+ * Programming note (aB.)
+ * Shouldn't we use strcmp() which is a POSIX standard API (and works on Linux, Mac and any other Unix),
+ * and special-case Windows ?
+ */
 #define stricmp(x, y) strcmp(x, y)
 #define strnicmp(x, y, n) strncmp(x, y, n)
 #elif defined(_WIN32) || defined(__CYGWIN32__)
@@ -63,6 +68,8 @@
 #define DEFAULTTTY   "/dev/ttya"  /* Solaris - first serial port - untested */
 #elif defined (__APPLE__)
 #define DEFAULTTTY   "usb"	  /* Default to USB on MAC */
+#define stricmp(x, y) strcmp(x, y)
+#define strnicmp(x, y, n) strncmp(x, y, n)
 #define TOWER_NAME ""
 #else
 #define DEFAULTTTY   "/dev/ttyd2" /* IRIX - second serial port */
@@ -273,12 +280,6 @@ int rcx_send (FILEDESCR fd, void *buf, int len, int use_comp)
 	int sum;
 	int result = 0;
 
-	// MAC OSX implements this itself
-
-	if ((result = __rcx_send(fd, buf, len, use_comp)) != RCX_NOT_IMPL) {
-	  return result;
-	}
-
 	/* Encode message */
 
 	msglen = 0;
@@ -345,11 +346,6 @@ int rcx_recv (FILEDESCR fd, void *buf, int maxlen, int timeout, int use_comp)
 	int len;
 	int expected;
 	int result = 0;
-
-	if ((result = __rcx_recv(fd, buf, maxlen, timeout, use_comp)) != RCX_NOT_IMPL) {
-	  return result;
-	}
-	
 
 	/* Receive message */
 
@@ -487,13 +483,6 @@ int rcx_is_alive (FILEDESCR fd, int use_comp)
 {
 	unsigned char send[1] = { 0x10 };
 	unsigned char recv[1];
-	int result = 0;
-
-	// Mac OSX implements this itself
-
-	if ((result = __rcx_sendrecv(fd, send, 1, recv, 1, 50, 5, use_comp)) != RCX_NOT_IMPL) {
-	  return result;
-	}
 
 	return (rcx_sendrecv(fd, send, 1, recv, 1, 50, 5, use_comp) == 1);
 }

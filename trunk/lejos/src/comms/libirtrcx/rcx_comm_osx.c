@@ -52,10 +52,6 @@
 #include <IOKit/usb/USBSpec.h>
 
 #include "osx_usb.h"
-#endif /* __APPLE__ */
-
-#include <asm/ioctl.h>
-#include "legousbtower.h"
 
 
 /* Defines */
@@ -77,10 +73,10 @@ void __rcx_perror(char * str)
 
 int __rcx_read (FILEDESCR fd, void *buf, int maxlen, int timeout)
 {
-	long len = 0;
-    
+	int len = 0;
+
 	if (usb_flag == 1) {
-		actual = osx_usb_nbread((IOUSBInterfaceInterface **)fh, body, jsize, TIME_OUT);
+		len = osx_usb_nbread((IOUSBInterfaceInterface **)fd, buf, maxlen, timeout);
 	} else {
 
 		char *bufp = (char *)buf;
@@ -122,12 +118,13 @@ void __rcx_flush(FILEDESCR fd)
 {
 	char echo[BUFFERSIZE];
 	__rcx_read(fd, echo, BUFFERSIZE, 200);
+        // Perhaps we should unstall the USB channel here ?
 }
 
 int __rcx_write(FILEDESCR fd, const void *buf, size_t len) 
 {
     if (rcx_is_usb()) {
-	    actual = osx_usb_write((IOUSBInterfaceInterface **)fd, buf, len);
+	    return osx_usb_write((IOUSBInterfaceInterface **)fd, buf, len);
     } else {
 	return write(fd, buf, len);
     }
@@ -139,22 +136,22 @@ int __rcx_write(FILEDESCR fd, const void *buf, size_t len)
 FILEDESCR __rcx_init(char *tty, int is_fast)
 {
 	FILEDESCR fd;
-
 	struct termios ios;
 
 	if (__comm_debug) printf("mode = %s\n", is_fast ? "fast" : "slow");
 	if (__comm_debug) printf("tty= %s\n", tty);
 
-
 	if (rcx_is_usb()) {
-		fd = (FILEDESCR) osx_usb_rcx_init(0);
+            fd = (FILEDESCR) osx_usb_rcx_init(0);
+            if (fd == NULL) {
+                return BADFILE;
+            }
 	} else {
 
 		if ((fd = open(tty, O_RDWR)) < 0) { 
 			perror(tty);
 			exit(1);
 		}
-		
 		
 		if (usb_flag == 1) {
 			if (is_fast) {
@@ -192,53 +189,14 @@ FILEDESCR __rcx_init(char *tty, int is_fast)
 	return fd;
 }
 
-int __rcx_sendrecv (FILEDESCR fd, void *send, int slen, void *recv, int rlen, int timeout, int retries, int use_comp)
-{
-  if (rcx_is_usb()) {
-    return osx_usb_rcx_sendrecv((IOUSBInterface **) fd, send, slen, recv, rlen, timeout, retries, use_comp);
-  } 
-  
-  return RCX_NOT_IMPL;
-}
-
-int __rcx_send(FILEDESCR fd, void *buf, int len, int use_comp)
-{
-  if (rcx_is_usb()) {
-    return osx_usb_rcx_send((IOUSBInterface **) fd, buf, len, use_comp);
-  } 
-  
-  return RCX_NOT_IMPL;
-
-}
-
-int __rcx_recv(FILEDESCR fd, void *buf, int maxlen, int timeout, int use_comp)
-{
-  if (rcx_is_usb()) {
-    return osx_usb_rcx_recv((IOUSBInterface **) fd, buf, maxlen, timeout, use_comp);
-  } 
-
-  return RCX_NOT_IMPL;
-}
-
 
 void __rcx_close(FILEDESCR fd)
 {
-
 	if (rcx_is_usb()) {
-		osx_usb_rcx_close((IOUSBInterfaceInterface**) fh);
+		osx_usb_rcx_close((IOUSBInterfaceInterface**) fd);
 	} else {
 		close(fd);
 	}
-}
-
-int __rcx_is_alive (FILEDESCR fd, int use_comp)
-{
-  if (rcx_is_usb()) {
-    osx_usb_is_alive((IOUSBInterfaceInterface**) fd, use_comp);
-  }
-   
-  return RCX_NOT_IMPL;
-  
 }
 
 

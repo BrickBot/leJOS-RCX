@@ -27,6 +27,7 @@
 #ifndef osx_usb_h
 #define osx_usb_h
 
+#include <AvailabilityMacros.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <unistd.h>
 #include <sys/time.h>
@@ -41,7 +42,6 @@
 #define LEGO_SEND_PIPE 2
 #define LEGO_RECV_PIPE 1
 
-#define OSX_USB_BUFFERSIZE 4096
 #ifndef RCX_COMM_H_INCLUDED
 #include "rcx_comm.h"
 #endif
@@ -54,6 +54,12 @@ extern "C" {
 #endif
 static io_iterator_t		gRawAddedIter;
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_0
+    // On 10.1 and later use a more complete USB interface,
+    #define IOUSBDeviceInterface IOUSBDeviceInterface182
+    #define IOUSBInterfaceInterface IOUSBInterfaceInterface182
+#endif
+    
 /* Get a InterfaceInterface for the usb tower.
    Fast mode currently unsupported, and ignored.
    The first matching device is used for communication.
@@ -73,7 +79,7 @@ int osx_usb_rcx_send(IOUSBInterfaceInterface **intf, void *buf, int len, int use
 
 int osx_usb_nbread (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int timeout);
 
-int osx_usb_write(IOUSBInterfaceInterface **intf, void *msg, int msglen);
+int osx_usb_write(IOUSBInterfaceInterface **intf, const void *msg, int msglen);
 
 #if defined(__cplusplus)
 }

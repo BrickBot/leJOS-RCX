@@ -33,10 +33,6 @@ extern void __rcx_close (FILEDESCR fd);
 extern int __rcx_write(FILEDESCR fd, const void *buf, size_t len);
 extern int __rcx_read(FILEDESCR fd, void *buf, int maxlen, int timeout);
 extern void __rcx_flush(FILEDESCR fd);
-extern int __rcx_send(FILEDESCR fd, void *buf, int len, int use_comp);
-extern int __rcx_recv(FILEDESCR fd, void *buf, int maxlen, int timeout, int use_comp);
-extern int __rcx_is_alive (FILEDESCR fd, int use_comp);
-extern int __rcx_sendrecv (FILEDESCR fd, void *send, int slen, void *recv, int rlen, int timeout, int retries, int use_comp);
 
 #define usleep(x) Sleep(x/1000)
 
