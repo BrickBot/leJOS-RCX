@@ -113,7 +113,7 @@ public class Gameboydl implements Constants
       }
       catch (ParseException e)
       {
-        throw new TinyVMException(e.getMessage());
+        throw new TinyVMException(e.getMessage(), e);
       }
 
       if (result.getArgs().length == 0)
