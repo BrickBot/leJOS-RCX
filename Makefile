@@ -108,7 +108,7 @@ rcx_comm:
 
 javadoc:
 	if [ ! -d apidocs ]; then mkdir apidocs; fi
-	${JAVADOC} -windowtitle "leJOS API documentation" -author -d apidocs -sourcepath $(JAVADOC_SOURCE) java.io java.lang java.util josx.platform.rcx josx.util josx.robotics josx.rcxcomm java.net
+	${JAVADOC} -windowtitle "leJOS API documentation" -author -d apidocs -sourcepath $(JAVADOC_SOURCE) java.io java.lang java.util josx.platform.rcx josx.util josx.robotics josx.rcxcomm java.net javax.servlet.http
 
 clean:
 	rm -f `find . -name '*.class'`
