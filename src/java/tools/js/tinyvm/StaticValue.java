@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import js.tinyvm.io.IByteWriter;
 
-import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.Field;
 
 public class StaticValue extends WritableDataWithOffset
@@ -30,31 +29,31 @@ public class StaticValue extends WritableDataWithOffset
          // Static values must be dumped in Big Endian order
          switch (iType)
          {
-            case Constants.T_BOOLEAN:
+            case TinyVMConstants.T_BOOLEAN:
                writer.writeBoolean(false);
                break;
-            case Constants.T_BYTE:
+            case TinyVMConstants.T_BYTE:
                writer.writeByte(0);
                break;
-            case Constants.T_CHAR:
+            case TinyVMConstants.T_CHAR:
                writer.writeChar(0);
                break;
-            case Constants.T_SHORT:
+            case TinyVMConstants.T_SHORT:
                writer.writeShort(0);
                break;
-            case Constants.T_ARRAY: // TODO correct?
+            // case TinyVMConstants.T_ARRAY:
+            // case TinyVMConstants.T_OBJECT:
             case TinyVMConstants.T_REFERENCE:
-            case Constants.T_OBJECT:
-            case Constants.T_INT:
+            case TinyVMConstants.T_INT:
                writer.writeInt(0);
                break;
-            case Constants.T_FLOAT:
+            case TinyVMConstants.T_FLOAT:
                writer.writeFloat((float) 0.0);
                break;
-            case Constants.T_LONG:
+            case TinyVMConstants.T_LONG:
                writer.writeLong(0L);
                break;
-            case Constants.T_DOUBLE:
+            case TinyVMConstants.T_DOUBLE:
                writer.writeInt(0);
                writer.writeFloat((float) 0.0);
                break;

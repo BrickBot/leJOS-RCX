@@ -48,6 +48,9 @@ public class TinyVMConstants
    public static final byte T_INT = Constants.T_INT;
    public static final byte T_LONG = Constants.T_LONG;
 
+   public static final byte T_ARRAY = T_REFERENCE;
+   public static final byte T_OBJECT = T_REFERENCE;
+
    public static byte tinyVMType (byte type)
    {
       switch (type)

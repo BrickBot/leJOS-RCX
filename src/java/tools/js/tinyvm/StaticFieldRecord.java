@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import js.tinyvm.io.IByteWriter;
 
-import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.Field;
 
 public class StaticFieldRecord implements WritableData
@@ -31,8 +30,7 @@ public class StaticFieldRecord implements WritableData
    public void dump (IByteWriter aOut) throws TinyVMException
    {
       byte pType = TinyVMConstants.tinyVMType(iField.getType().getType());
-      if (pType == Constants.T_ARRAY)
-         assert pType >= 0 && pType <= 0xF: "Check: valid type";
+      assert pType >= 0 && pType <= 0xF: "Check: valid type";
       int pOffset = iClassRecord.getStaticFieldOffset(iField.getName());
       assert pOffset >= 0 && pOffset <= 0x0FFF: "Check offset in range";
 

@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 
 import js.tinyvm.io.IByteWriter;
 
-import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.Constant;
 import org.apache.bcel.classfile.ConstantDouble;
 import org.apache.bcel.classfile.ConstantFloat;
@@ -58,23 +57,23 @@ public class ConstantValue extends WritableDataWithOffset
       if (_value instanceof Double)
       {
          // TODO map long to double correct?
-         return Constants.T_LONG;
+         return TinyVMConstants.T_LONG;
       }
       else if (_value instanceof Float)
       {
-         return Constants.T_FLOAT;
+         return TinyVMConstants.T_FLOAT;
       }
       else if (_value instanceof Integer)
       {
-         return Constants.T_INT;
+         return TinyVMConstants.T_INT;
       }
       else if (_value instanceof Long)
       {
-         return Constants.T_LONG;
+         return TinyVMConstants.T_LONG;
       }
       else if (_value instanceof String)
       {
-         return TinyVMConstants.tinyVMType(Constants.T_OBJECT);
+         return TinyVMConstants.T_OBJECT;
       }
       else
       {
@@ -142,8 +141,8 @@ public class ConstantValue extends WritableDataWithOffset
          }
          else if (_value instanceof Float)
          {
-            writer.writeInt(Float.floatToIntBits(((Float) _value)
-               .floatValue()));
+            writer
+               .writeInt(Float.floatToIntBits(((Float) _value).floatValue()));
          }
          else if (_value instanceof Integer)
          {
