@@ -119,14 +119,13 @@ int __rcx_write(void* port, void* buf, int len)
 
 void __rcx_purge(void* port)
 {
-	// TODO purge
+	char echo[BUFFERSIZE];
+	__rcx_read(port, echo, BUFFERSIZE, 1);
 }
 
 void __rcx_flush(void* port)
 {
-	// TODO check
-	char echo[BUFFERSIZE];
-	__rcx_read(port, echo, BUFFERSIZE, 200);
+	fsync(((Port*) port)->fileHandle);
 }
 
 void* __rcx_open(char *tty, bool fast)
@@ -139,6 +138,9 @@ void* __rcx_open(char *tty, bool fast)
 	Port* result = (Port*) malloc(sizeof(Port));
 	__rcx_open_setDevice(result, tty, fast);
 	
+   if (__comm_debug) printf("device = %s\n", result->deviceName);
+	if (__comm_debug) printf("port type = %s\n", result->usb? "usb" : "serial");
+
 	result->fileHandle = open(result->deviceName, O_RDWR);
 	if (result->fileHandle < 0) 
 	{ 
@@ -154,20 +156,15 @@ void* __rcx_open(char *tty, bool fast)
 
 	if (!success)
 	{
-		if (result->fileHandle > 0)
+		if (result->fileHandle >= 0)
 		{
 			close(result->fileHandle);
 		}
 		free(result);
 		return NULL;
 	}
-	else
-	{
-		if (__comm_debug) printf("device = %s\n", result->deviceName);
-		if (__comm_debug) printf("port type = %s\n", result->usb? "usb" : "serial");
 	
-		return result;
-	}		
+	return result;
 }
 
 void __rcx_open_setDevice (Port* port, char* symbolicName, bool fast)
