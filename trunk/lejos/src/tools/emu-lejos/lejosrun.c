@@ -23,6 +23,17 @@
 
 #include "firmdl/rcx_comm.h"
 
+#ifdef __APPLE__
+#include <CoreFoundation/CoreFoundation.h>
+
+#include <IOKit/IOKitLib.h>
+#include <IOKit/IOCFPlugIn.h>
+#include <IOKit/usb/IOUSBLib.h>
+#include <IOKit/usb/USBSpec.h>
+
+#include "firmdl/osx_usb.h"
+#endif /* __APPLE__ */
+
 typedef unsigned char byte;
 
 // This is for CygWin:
@@ -37,6 +48,8 @@ typedef unsigned char byte;
 #define DEFAULTTTY   "com1"       /* Cygwin - COM1 */
 #elif defined (sun)
 #define DEFAULTTTY   "/dev/ttya"  /* Solaris - first serial port - untested */
+#elif defined (__APPLE__)
+#define DEFAULTTTY   "usb"	  /* Default to USB on MAC */
 #else
 #define DEFAULTTTY   "/dev/ttyd2" /* IRIX - second serial port */
 #endif
@@ -96,6 +109,51 @@ long transfer_data (FILEDESCR fd, byte opcode, ushort index, byte *buffer, long 
   return r;
 }
 
+#ifdef __APPLE__
+long osx_usb_transfer_data (IOUSBInterfaceInterface** intf, byte opcode, ushort index, byte *buffer, long length)
+{
+    byte *actualBuffer;
+    byte checkSum;
+    byte response[RESPONSE_LENGTH];
+    int retries = RETRIES;
+    long  actualLength;
+    long  r = 0, i;
+
+    actualLength = length + 6;
+    actualBuffer = (byte *) malloc (actualLength);
+    actualBuffer[0] = opcode;
+    actualBuffer[1] = (byte) ((index >> 0) & 0xFF);
+    actualBuffer[2] = (byte) ((index >> 8) & 0xFF);
+    actualBuffer[3] = (byte) ((length >> 0) & 0xFF);
+    actualBuffer[4] = (byte) ((length >> 8) & 0xFF);
+    checkSum = 0;
+    // Don't include opcode in this checksum!
+    for (i = 0; i < length; i++)
+    {
+        checkSum += buffer[i];
+        actualBuffer[5 + i] = buffer[i];
+    }
+    actualBuffer[5 + i] = checkSum;
+    r = osx_usb_rcx_sendrecv(
+                             intf,             // USBInterfaceInterface
+                             actualBuffer,   // send buffer
+                             actualLength,   // send length
+                             response,       // receive buffer
+                             2,              // receive length
+                             length == TOWRITEMAX ? 100 : 200,             // receive timeout ms
+                             RETRIES,        // num tries
+                             1               // use complements
+                             );
+    if (r >=0 && response[1] == 3)
+    {
+        printf("Checksum failed\n");
+        r = -3;
+    }
+    free (actualBuffer);
+    return r;
+}
+#endif
+
 int
 main(int argc, char **argv)
 {
@@ -110,7 +168,10 @@ main(int argc, char **argv)
     int use_fast= 0;
     int usage = 0;
     char *tty = 0;
-    FILEDESCR fd;
+#ifdef __APPLE__
+    IOUSBInterfaceInterface **intf = NULL;
+#endif
+    FILEDESCR fd = 0;
     long pDesc, pLength, pTotal;
     long r, index, rest, numToWrite, offset;
 
@@ -226,9 +287,27 @@ main(int argc, char **argv)
     }
 #endif
 
+    /* FIXME: Check for tty or usb here */
+#ifdef __APPLE__
+    if ( strcmp( tty , "usb" ) == 0 ) {
+        usb_flag = 1;
+        if ( __comm_debug) fprintf(stderr, "USB IR Tower mode.\n");
+    }
+#endif
     /* Wake up the tower */
-    fd = rcx_init(tty, 0);
-
+#ifdef __APPLE__
+    if (usb_flag == 0)
+    {
+#endif
+        fd = rcx_init(tty, 0);
+#ifdef __APPLE__
+    }
+    else
+    {
+        intf = osx_usb_rcx_init(0);
+    }
+#endif
+    
     if (usb_flag == 0)
     {
         // usb do not need wakeup tower.
@@ -238,6 +317,10 @@ main(int argc, char **argv)
 	}
     }
 
+#ifdef __APPLE__
+    if (usb_flag == 0) {
+#endif
+        
 	if (!rcx_is_alive(fd, 1)) {
 	    /* See if alive in fast mode */
 
@@ -254,7 +337,19 @@ main(int argc, char **argv)
 	    fprintf(stderr, "%s: no response from rcx\n", progname);
 	    exit(1);
 	}
-
+#ifdef __APPLE__
+    }
+    else
+    {
+        if (!osx_usb_rcx_is_alive(intf, 1))
+        {
+            osx_usb_rcx_close(intf);
+            fprintf(stderr, "%s: no response from rcx\n", progname);
+            exit(1);
+        }
+    }
+#endif
+    
     // Read in file
     pLength = lseek (pDesc, 0, SEEK_END);
     if (pLength > 0xFFFF)
@@ -286,6 +381,10 @@ main(int argc, char **argv)
     send[0] = 0x12;
     send[1] = (byte) (MAGIC >> 8);
     send[2] = (byte) (MAGIC & 0xFF);
+#ifdef __APPLE__
+    if (usb_flag == 0)
+    {
+#endif        
     numRead = rcx_sendrecv(
         fd,             // FD
         send,           // send buffer
@@ -296,6 +395,22 @@ main(int argc, char **argv)
         1,              // num tries
         1               // use complements
     );
+#ifdef __APPLE__
+    }
+    else
+    {
+        numRead = osx_usb_rcx_sendrecv(
+                                       intf,             // FD
+                                       send,           // send buffer
+                                       3,              // send length
+                                       response,       // receive buffer
+                                       3,              // receive length
+                                       100,             // timeout ms
+                                       1,              // num tries
+                                       1               // use complements
+                                       );
+    }
+#endif
     if (numRead != 3)
     {
       printf (numRead == -1 ? "No response from RCX. " : "Bad response from RCX. ");
@@ -322,16 +437,43 @@ main(int argc, char **argv)
       numToWrite = (rest > TOWRITEMAX) ? TOWRITEMAX : rest;
       index = (rest > TOWRITEMAX) ? index + 1 : 0;
       fprintf(stderr, "\r%3ld%%        \r",(100*offset)/pLength);
-      if ((status = transfer_data (fd, opcode, index, pBinary + offset, numToWrite)) < 0)
+#ifdef __APPLE__
+      if (usb_flag == 0)
+      {
+#endif
+          if ((status = transfer_data (fd, opcode, index, pBinary + offset, numToWrite)) < 0)
       {
           printf("Unexpected response from RCX whilst downloading: %ld\n", status);
           exit(1);
       }
+#ifdef __APPLE__
+      }
+      else
+      {
+          if ((status = osx_usb_transfer_data (intf, opcode, index, pBinary + offset, numToWrite)) < 0)
+          {
+              printf("Unexpected response from RCX whilst downloading: %ld\n", status);
+              osx_usb_rcx_close(intf);
+              exit(1);
+          }
+      }
+#endif /* __APPLE__ */
       opcode ^= 0x08;
       rest -= numToWrite;
       offset += numToWrite;
-    } while (index != 0);   
-    rcx_close(fd);
+    } while (index != 0);
+#ifdef __APPLE__
+    if (usb_flag == 0)
+    {
+#endif
+        rcx_close(fd);
+#ifdef __APPLE__
+    }
+    else
+    {
+        osx_usb_rcx_close(intf);
+    }
+#endif
     fprintf(stderr, "\r100%%        \r");
     exit(0);
 }
