@@ -1,0 +1,40 @@
+To run do
+
+If necessary prepare tower
+% setenv RCXTTY ...
+
+If necessary download firmware
+% make firmdl
+
+Compile and load program on RCX
+% make
+
+Connect a sensor to sensor port 2 (best is touch sensor).
+
+Start the program on the RCX.
+
+Compile and run the host program
+% make host_run
+
+Watch the numbers change when you press the sensor.
+
+Watch the communication stop and resume when you temporarily block
+IR communications or move out of range.
+
+
+Explanation:
+
+This example demonstrates the reliability of the RCXPort LLC
+default protocol. It uses the same RCX program - SensorReader -
+as the sensor_reader and the f7_sensor_reader examples.
+
+The host program ReadSensor communicates with SensorReader to
+request 20 sensor readings.  Move the IR tower in and out of view
+of the RCX and you will send how communication starts again
+with no data loss when the tower comes back into view.
+
+The program on the RCX receives the number of the sensor to read
+from the host as one byte and sends back the raw value in 0..1023
+as a two-byte short.  Sensors are numbered 0..2, so the 1 sent
+corresponds to sensor port 2.
+
