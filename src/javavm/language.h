@@ -144,7 +144,6 @@ extern void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStat
 #define get_static_fields_base()    (get_binary_base() + get_master_record()->staticFieldsOffset)
 #define get_static_state_base()     (get_binary_base() + get_master_record()->staticStateOffset)
 #define get_static_field_offset(R_) ((R_) & 0x0FFF)
-#define get_static_field_size(R_)   (((R_) >> 12) + 1)
 
 #endif
 

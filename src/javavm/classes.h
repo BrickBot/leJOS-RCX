@@ -53,9 +53,9 @@ typedef struct S_Thread
   REFERENCE stackFrameArray;
   REFERENCE stackArray;
   REFERENCE isReferenceArray;
-  byte stackFrameArraySize;
-  byte threadId;
-  byte state;
+  JBYTE stackFrameArraySize;
+  JBYTE threadId;
+  JBYTE state;
 } Thread;
 
 typedef struct S_String

@@ -17,6 +17,7 @@ case OP_ILOAD_2:
 case OP_ILOAD_3:
   // Arguments: 0
   // Stack: +1
+
   push_word (get_local_word(*(pc-1)-OP_ILOAD_0));
   goto LABEL_ENGINELOOP;
 case OP_FLOAD_0:
@@ -33,6 +34,9 @@ case OP_ALOAD_2:
 case OP_ALOAD_3:
   // Arguments: 0
   // Stack: +1
+
+  //printf ("### aload_x: %d\n", (int) get_local_word(*(pc-1)-OP_ILOAD_0));
+
   push_ref (get_local_ref(*(pc-1)-OP_ALOAD_0));
   goto LABEL_ENGINELOOP;
 case OP_LLOAD:
@@ -73,6 +77,7 @@ case OP_FSTORE:
 case OP_ASTORE:
   // Arguments: 1
   // Stack: -1
+
   set_local_ref(*pc++, pop_word());
   goto LABEL_ENGINELOOP;
 case OP_ISTORE_0:
@@ -97,6 +102,9 @@ case OP_ASTORE_2:
 case OP_ASTORE_3:
   // Arguments: 0
   // Stack: -1
+
+  //printf ("### astore_x: %d\n", (int) get_top_word());
+
   set_local_ref(*(pc-1)-OP_ASTORE_0, pop_word());
   goto LABEL_ENGINELOOP;
 case OP_LSTORE:

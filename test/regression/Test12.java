@@ -11,6 +11,7 @@ public class Test12
   public void plainMethod()
   {
     int p = iCounter;
+    for (int k = 0; k < 10; k++) { }
     iCounter = p + 1;
   }
 

@@ -1,0 +1,17 @@
+#!/bin/sh
+
+if [ "${TINYVM_HOME}" != "" ]; 
+then
+  echo Warning: TINYVM_HOME is no longer needed.
+fi
+
+if [ "${JAVAP}" = "" ];
+then
+  JAVAP=javap
+fi
+
+TINYVM_HOME="`dirname $0`/.."
+JCCP="${TINYVMPATH}:${TINYVM_HOME}/lib/classes.jar:${CLASSPATH}"
+${JAVAP} -classpath ${JCCP} $@
+
+

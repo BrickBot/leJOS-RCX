@@ -1,0 +1,10 @@
+#!/bin/sh
+
+TINYVM_HOME="`dirname $0`/.."
+TINYVMOPTIONS="-Dtinyvm.write.order=BE ${TINYVMOPTIONS}"
+TINYVMOPTIONS="-Dtinyvm.loader=lejosrun ${TINYVMOPTIONS}"
+
+export TINYVMOPTIONS
+export TINYVM_HOME
+
+${TINYVM_HOME}/bin/aux-linker $@

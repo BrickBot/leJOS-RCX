@@ -191,6 +191,7 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
     #endif
 
     // Save OLD stackFrame state
+    pc = retAddr;
     stackFrame = stackframe_array() + (newStackFrameIndex - 1);
     update_stack_frame (stackFrame);
     // Push NEW stack frame
@@ -205,6 +206,11 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   stackFrame->isReferenceBase = get_is_ref_ptr() + 1;
   // Initialize auxiliary global variables (registers)
   pc = get_code_ptr(methodRecord);
+
+  #ifdef DEBUG_METHODS
+  printf ("pc set to 0x%X\n", (int) pc);
+  #endif
+
   init_stack_ptr (stackFrame, methodRecord);
   update_constant_registers (stackFrame);
   // Check for stack overflow
@@ -227,6 +233,11 @@ void do_return (byte numWords)
   boolean *fromIsRefPtr;
 
   stackFrame = current_stackframe();
+
+  #if DEBUG_BYTECODE
+  printf ("\n------ return ----- %d ------------------\n\n",
+          stackFrame->methodRecord->signatureId);
+  #endif
 
   #ifdef DEBUG_METHODS
   printf ("do_return: method: %d  #  num. words: %d\n", 

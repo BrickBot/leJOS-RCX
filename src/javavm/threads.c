@@ -81,6 +81,7 @@ void init_thread (Thread *thread)
     currentThread = thread;
     #if DEBUG_THREADS
     printf ("First-time init of currentThread: %d\n", (int) currentThread);
+    printf ("currentThread->state: %d\n", (int) currentThread->state);
     #endif
   }
   else
@@ -103,7 +104,7 @@ void switch_thread()
   boolean liveThreadExists;
 
   #if DEBUG_THREADS || DEBUG_BYTECODE
-  printf ("\n$$$--- switch_thread: currentThread at %d\n", (int) currentThread);
+  printf ("------ switch_thread: currentThread at %d\n", (int) currentThread);
   #endif
 
   #ifdef VERIFY
@@ -209,6 +210,10 @@ void switch_thread()
       set_top_ref (ptr2word (currentThread));
       dispatch_virtual ((Object *) currentThread, RUN_V, null);
     }
+    // The following is needed because the current stack frame
+    // was just created
+    stackFrame = current_stackframe();
+    update_stack_frame (stackFrame);
   }
 
   #if DEBUG_THREADS
@@ -218,8 +223,22 @@ void switch_thread()
 
   if (currentThread->state != RUNNING)
     goto LABEL_TASKLOOP;
+
+  #if DEBUG_THREADS
+  printf ("getting current stack frame...\n");
+  #endif
+
   stackFrame = current_stackframe();
+
+  #if DEBUG_THREADS
+  printf ("updading registers...\n");
+  #endif
+
   update_registers (stackFrame);
+
+  #if DEBUG_THREADS
+  printf ("done updading registers\n");
+  #endif
 }
 
 /**
