@@ -145,7 +145,7 @@ int rcxReceive (void* port, void* buf, int maxlen, int timeout_ms);
 // Returns number of received bytes or an error code.
 int rcxSendReceive (void* port, void* send, int slen, void* recv, int rlen, int timeout, int retries);
 		  
-// Purge input buffers.
+// Clear input and output buffers.
 // port: port handle
 void rcxPurge(void* port);
 

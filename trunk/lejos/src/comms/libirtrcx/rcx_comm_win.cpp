@@ -201,7 +201,7 @@ int __rcx_write(void* port, void* buf, int len)
 
 void __rcx_purge(void* port)
 {
-	PurgeComm(((Port*) port)->fileHandle, PURGE_RXABORT | PURGE_RXCLEAR);
+	PurgeComm(((Port*) port)->fileHandle, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXABORT | PURGE_TXCLEAR);
 }
 
 void __rcx_flush(void* port)
