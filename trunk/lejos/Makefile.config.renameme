@@ -4,10 +4,8 @@
 
 BINDIR = /bin
 BINPREFIX = h8300-hms-
-LIBRCX_HOME = /usr/local/librcx
 JAVA = java
 
 export BINDIR
 export BINPREFIX
-export LIBRCX_HOME
 export CLASSPATH

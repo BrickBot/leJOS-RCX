@@ -1,0 +1,86 @@
+Librcx and associated programs (May 27 1999 release)
+Written by Kekoa Proudfoot
+Released February 9, 1999
+
+INTRODUCTION
+
+Librcx is intended to be a lowest-level driver for the Lego RCX.  It
+provides an interface between your C code and the ROM.  The intent is to
+allow you to explore and write programs using the ROM interface, and to
+provide a framework in which to start writing code that interacts with the
+RCX at even lower levels.  It is therefore possible to use this code as a
+starting point for writing something sophisticated, perhaps along the lines
+of LegOS (http://www.multimania.com/legos/).
+
+Librcx is slowly evolving into a more generally useful library for writing
+C code to drive the RCX.  As a first step toward this goal, floating point
+support was added in the third release of this code.
+
+Librcx is distributed under the Mozilla Public License.  Please see the
+file ./LICENSE for details.
+
+You can find Librcx at:
+
+http://graphics.stanford.edu/~kekoa/rcx/tools.html#Librcx
+
+COMPILING
+
+I assume you have the GNU H8 cross development environment installed
+somewhere, plus the GNU make utility, and maybe a few other tools.
+
+Edit ./Config before compiling.
+
+Type make, and everything should compile.
+
+WRITING CODE
+
+The code in ./progs shows some examples of how to use the routines I
+provide; for the most part, you will want to interface with the RCX using
+the routines defined and described in ./lib/rom.h.  These routines are
+documented to some degree at: http://graphics.stanford.edu/~kekoa/rcx/#Rom.
+Bug me enough and maybe I will finish up the ROM spec, which I have put
+aside for the time being.
+
+DOWNLOADING CODE
+
+To download a .srec file to the RCX, compile ./tools/firmdl.c.  See the
+comments at the top of that file for compilation and usage details.
+
+NOTES
+
+This program is not sponsored, authorized, or even endorsed by the LEGO
+Group.  Do not associate this code with the LEGO Group, there is no such
+association.
+
+Librcx does not support C++, but it wouldn't be hard to modify
+./lib/rcx.lds to put .ctors and .dtors somewhere and modify ./lib/init.c to
+call them at startup/shutdown.  I think you'll also need a lib that
+implements the C++ specific routines; I believe this lib is included with
+the GCC distribution.
+
+If you find problems with Librcx, of course I'd like to know about them;
+however, I may or may not have the time to address any issues brought to my 
+attention.  My apologies in advance.
+
+VERSION HISTORY
+
+Feb 9 1999
+
+- initial release
+
+Feb 22 1999
+
+- changed rom.h documentation on read_sensor
+- added defines for sensor modes and types
+- added test4.c as a short demonstration of how to write sensor code
+
+May 27 1999
+
+- more rom.h header updates
+- fixed bug in malloc (user got header address, not data address)
+- added floating point support
+
+Dec 16 2000
+
+- updated floating point routines
+- added firmdl3 to tools directory
