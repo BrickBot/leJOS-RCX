@@ -2,8 +2,13 @@ package josx.util;
 
 /**
  * An abstract object recycler. This class should
- * be extended to define the createInstance
- * method for a particular kind of Recyclable.
+ * be extended to define the <code>createInstance</code>
+ * method for a particular kind of <code>Recyclable</code>.
+ * On concrete recycler instances, invoke
+ * <code>allocate()</code> to create objects
+ * and <code>recycle()</code> to release them.
+ * It is the programmer's responsibility to
+ * avoid using objects that have been recycled.
  * <p>
  * Note that the caller is expected to provide
  * thread safety for instances of this class.
