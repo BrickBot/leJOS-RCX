@@ -1,0 +1,25 @@
+To run the servlet examples, make sure that your CLASSPATH contains pcrcxcomm.jar,
+and your library path contains the irtower shared library. On Linux/Unix, do
+export LD_LIBRARY_PATH=$LEJOSHOME/bin.
+
+Run the HttpProxy by:
+
+java josx.rcxcomm.HttpProxy -port <port>
+
+Compile and run the RCX servlets, e.g.
+
+lejosc SensorServlet.java
+lejos SensorServlet
+
+Start a Web Browser and send a command to the RCX. E.g. if you ran the proxy
+on port 8080, type in the following URL:
+
+http://localhost:8080/activiate?Sensor=S2
+
+and after about 10 seconds, A Web page will be displayed saying:
+
+S2: activated
+
+See the documentation at the start of the examples to see what other commands 
+you can send them.
+
