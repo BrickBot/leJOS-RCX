@@ -113,12 +113,13 @@ SECTIONS
     .romdata1 : {
         __romdata1 = . ;
         _angle_state = 0x00 ; /* 0xef32 */
+        _serial_output_buffer = 0x20; /* 0xef52[64] */
         _transmitting = 0x61 ; /* 0xef93 */
     } > romdata1
 
     .romdata2 : {
-      _rom_port4_ddr = 0x03 ; 
-      _rom_port5_ddr = 0x04 ; 
+        _rom_port4_ddr = 0x03 ; 
+        _rom_port5_ddr = 0x04 ; 
     } > romdata2 
 
     /* Interrupt vectors */
