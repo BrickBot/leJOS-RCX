@@ -1,8 +1,5 @@
 package js.tinyvm;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Hashtable;
@@ -18,16 +15,6 @@ import js.tinyvm.util.HashVector;
  */
 public class Binary
 {
-   /**
-    * the stringwriter for signature writing.
-    */
-   private StringWriter stringWriter;
-
-   /**
-    * the signature writer.
-    */
-   private PrintWriter signatureWriter;
-
    // State that is written to the binary:
    final RecordTable iEntireBinary = new Sequence();
 
@@ -39,7 +26,7 @@ public class Binary
    final RecordTable iMethodTables = new Sequence();
    final RecordTable iInstanceFieldTables = new Sequence();
    final RecordTable iStaticFields = new Sequence();
-   final RecordTable iExceptionTables = new EnumerableSet();
+   final EnumerableSet iExceptionTables = new EnumerableSet();
    final RecordTable iStaticState = new Sequence(true);
    final RecordTable iCodeSequences = new Sequence();
    final RecordTable iConstantValues = new Sequence();
@@ -50,15 +37,10 @@ public class Binary
    final HashVector iSignatures = new HashVector();
 
    /**
-    * Default constructor, initializes some internal writer.
+    * Constructor.
     */
    public Binary ()
    {
-      this.stringWriter = new StringWriter();
-
-      // TODO remove this
-      // this.signatureWriter = new PrintWriter(this.stringWriter);
-      this.signatureWriter = new PrintWriter(System.out);
    }
 
    /**
@@ -193,30 +175,29 @@ public class Binary
     * Create closure.
     * 
     * @param entryClassNames names of entry class with '/'
-    * @param aClassPath class path
-    * @param aAll do not filter classes?
+    * @param classPath class path
+    * @param all do not filter classes?
     */
    public static Binary createFromClosureOf (String[] entryClassNames,
-      ClassPath aClassPath, boolean aAll) throws TinyVMException
+      ClassPath classPath, boolean all) throws TinyVMException
    {
-      Binary pBin = new Binary();
+      Binary result = new Binary();
       // From special classes and entry class, store closure
-      pBin.processClasses(entryClassNames, aClassPath);
+      result.processClasses(entryClassNames, classPath);
       // Store special signatures
-      pBin.processSpecialSignatures();
-      pBin.processConstants();
-      pBin.processMethods(aAll);
-      pBin.processFields();
+      result.processSpecialSignatures();
+      result.processConstants();
+      result.processMethods(all);
+      result.processFields();
       // Copy code as is (first pass)
-      pBin.processCode(false);
-      pBin.storeComponents();
-      pBin.initOffsets();
+      result.processCode(false);
+      result.storeComponents();
+      result.initOffsets();
       // Post-process code after offsets are set (second pass)
-      pBin.processCode(true);
-      // Do -verbose reporting
-      pBin.report();
+      result.processCode(true);
 
-      return pBin;
+      assert result != null: "Postconditon: result != null";
+      return result;
    }
 
    public void processClasses (String[] entryClassNames, ClassPath classPath)
@@ -237,7 +218,7 @@ public class Binary
          ClassRecord classRecord = ClassRecord.getClassRecord(className,
             classPath, this);
          addClassRecord(className, classRecord);
-         // pRec.useAllMethods();
+         // classRecord.useAllMethods();
       }
 
       // Now add entry classes
@@ -246,10 +227,10 @@ public class Binary
       for (int i = 0; i < entryClassNames.length; i++)
       {
          String className = entryClassNames[i];
-         ClassRecord pRec = ClassRecord.getClassRecord(className, classPath,
+         ClassRecord classRecord = ClassRecord.getClassRecord(className, classPath,
             this);
-         addClassRecord(className, pRec);
-         pRec.useAllMethods();
+         addClassRecord(className, classRecord);
+         classRecord.useAllMethods();
          // Update table of indices to entry classes
          iEntryClassIndices.add(new EntryClassIndex(this, className));
       }
@@ -260,22 +241,23 @@ public class Binary
       // Yes, call iClassTable.size() in every pass of the loop.
       for (int pIndex = 0; pIndex < iClassTable.size(); pIndex++)
       {
-         ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
-         _logger.log(Level.INFO, "Class " + pIndex + ": " + pRec.iName);
-         appendSignature("Class " + pIndex + ": " + pRec.iName);
-         pRec.storeReferredClasses(iClasses, iClassTable, classPath,
+         ClassRecord classRecord = (ClassRecord) iClassTable.elementAt(pIndex);
+         classRecord.storeReferredClasses(iClasses, iClassTable, classPath,
             pInterfaceMethods);
       }
+
       // Initialize indices and flags
       int pSize = iClassTable.size();
       for (int pIndex = 0; pIndex < pSize; pIndex++)
       {
-         ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
+         ClassRecord classRecord = (ClassRecord) iClassTable.elementAt(pIndex);
          for (int i = 0; i < pInterfaceMethods.size(); i++)
-            pRec.addUsedMethod((String) pInterfaceMethods.elementAt(i));
-         pRec.iIndex = pIndex;
-         pRec.initFlags();
-         pRec.initParent();
+         {
+            classRecord.addUsedMethod((String) pInterfaceMethods.elementAt(i));
+         }
+         classRecord.iIndex = pIndex;
+         classRecord.initFlags();
+         classRecord.initParent();
       }
    }
 
@@ -315,9 +297,8 @@ public class Binary
       int pSize = iClassTable.size();
       for (int pIndex = 0; pIndex < pSize; pIndex++)
       {
-         ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
-         pRec.storeMethods(iMethodTables, iExceptionTables, iSignatures, iAll,
-            this.signatureWriter);
+         ClassRecord classRecord = (ClassRecord) iClassTable.elementAt(pIndex);
+         classRecord.storeMethods(iMethodTables, iExceptionTables, iSignatures, iAll);
       }
    }
 
@@ -388,80 +369,6 @@ public class Binary
          pTotal += ((RecordTable) iInstanceFieldTables.elementAt(i)).size();
       }
       return pTotal;
-   }
-
-   //
-   // reporting
-   //
-
-   public void report () throws TinyVMException
-   {
-      int pSize = iSignatures.size();
-      for (int i = 0; i < pSize; i++)
-      {
-         Signature pSig = (Signature) iSignatures.elementAt(i);
-         _logger.log(Level.INFO, "Signature " + i + ": " + pSig.getImage());
-         appendSignature("Signature " + i + ": " + pSig.getImage());
-      }
-      _logger.log(Level.INFO, "Master record : " + iMasterRecord.getLength()
-         + " bytes.");
-      appendSignature("Master record : " + iMasterRecord.getLength()
-         + " bytes.");
-      _logger.log(Level.INFO, "Class records : " + iClassTable.size() + " ("
-         + iClassTable.getLength() + " bytes).");
-      appendSignature("Class records : " + iClassTable.size() + " ("
-         + iClassTable.getLength() + " bytes).");
-      _logger.log(Level.INFO, "Field records : " + getTotalNumInstanceFields()
-         + " (" + iInstanceFieldTables.getLength() + " bytes).");
-      appendSignature("Field records : " + getTotalNumInstanceFields() + " ("
-         + iInstanceFieldTables.getLength() + " bytes).");
-      _logger.log(Level.INFO, "Method records: " + getTotalNumMethods() + " ("
-         + iMethodTables.getLength() + " bytes).");
-      appendSignature("Method records: " + getTotalNumMethods() + " ("
-         + iMethodTables.getLength() + " bytes).");
-      _logger.log(Level.INFO, "Code          : " + iCodeSequences.size() + " ("
-         + iCodeSequences.getLength() + " bytes).");
-      appendSignature("Code          : " + iCodeSequences.size() + " ("
-         + iCodeSequences.getLength() + " bytes).");
-
-      _logger.log(Level.INFO, "Class table offset   : "
-         + iClassTable.getOffset());
-      appendSignature("Class table offset   : " + iClassTable.getOffset());
-      _logger.log(Level.INFO, "Constant table offset: "
-         + iConstantTable.getOffset());
-      appendSignature("Constant table offset: " + iConstantTable.getOffset());
-      _logger.log(Level.INFO, "Method tables offset : "
-         + iMethodTables.getOffset());
-      appendSignature("Method tables offset : " + iMethodTables.getOffset());
-      _logger.log(Level.INFO, "Excep tables offset  : "
-         + iExceptionTables.getOffset());
-      appendSignature("Excep tables offset  : " + iExceptionTables.getOffset());
-   }
-
-   /**
-    * append a signature to internal writers.
-    * 
-    * @param msg the message
-    */
-   public void appendSignature (String msg)
-   {
-      this.signatureWriter.println(msg);
-      // TODO remove this
-      this.signatureWriter.flush();
-   }
-
-   /**
-    * Flush all signature information into a file.
-    * 
-    * @param aFile the file to flush for
-    * @throws FileNotFoundException will be raised, if file cannot be opened
-    */
-   public void flushSignatureFile (File aFile) throws FileNotFoundException
-   {
-      PrintWriter pw = new PrintWriter(new FileOutputStream(aFile));
-      pw.print(this.stringWriter.toString());
-      pw.flush();
-      pw.close();
    }
 
    private static final Logger _logger = Logger.getLogger("TinyVM");
