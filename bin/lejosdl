@@ -11,7 +11,7 @@ if [ -z "$LEJOS_HOME" ]; then
 fi
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LEJOS_HOME/bin
-export LD_PRELOAD=$LEJOS_HOME/bin/libirtrcx.so
+export LD_PRELOAD=$LEJOS_HOME/bin/libirtrcx.so:$LEJOS_HOME/bin/libjirtrcx.so
 
 if [ $OSTYPE == "cygwin" ]; then
     SEP=";"
