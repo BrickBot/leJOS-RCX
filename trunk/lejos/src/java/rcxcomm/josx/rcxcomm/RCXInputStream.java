@@ -66,7 +66,7 @@ public class RCXInputStream extends InputStream {
   /** Setter for timeout
    * @param timeout the timeout
    */
-  public void setTimeout(int timeout) {
+  public void setTimeOut(int timeout) {
     this.timeout = timeout;
   }
 
