@@ -96,6 +96,7 @@ scripts:
 	chmod 775 $(LEJOS_HOME)/bin/lejosjc
 	chmod 775 $(LEJOS_HOME)/bin/lejoslink
 	chmod 775 $(LEJOS_HOME)/bin/lejosdl
+	chmod 775 $(LEJOS_HOME)/bin/firmdl
 
 emulator:
 	@echo ""
