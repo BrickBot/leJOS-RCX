@@ -3,8 +3,11 @@ Summary
 -------
 
 TINYVM_HOME=<installation directory>
-RCXTTY=<serial device>
+
+Type 'make' to install.
+
 PATH=$PATH:$TINYVM_HOME/bin:$JAVA_HOME/bin
+RCXTTY=<serial device>
 
 Use TINYVMPATH instead of CLASSPATH.
 
@@ -27,15 +30,24 @@ What is TinyVM?
 ---------------
 
 TinyVM is a virtual machine that can execute 
-post-processed Java class files inside the Lego
-RCX. It's yet another firmware replacement for
-the RCX.
+linked Java code inside the Lego Mindstorms RCX. 
+It supports several of the most useful features of 
+the Java language, such as:
+
+  - Multi-threading.
+  - Synchronization.
+  - Exceptions.
+  - Inner, local and anonymous classes.
+
+It also has a wide range of APIs for controlling
+the RCX. The APIs are evolving considerably from 
+version to version.
 
 Requirements
 ------------
 
 - JDK1.1.X or JDK1.2.X, available from http://java.sun.com.
-  (The JDK is used for compilation, and to run some tools
+  (The JDK is used during installation, and to run some tools
   provided with TinyVM, e.g. the linker).
 
 - If you're planning to change the source code and

@@ -16,7 +16,7 @@ export CLASSPATH
 default: check all_jtools all_ctools core_classes tinyvm_emul
 	@echo ------ TinyVM installed successfully.
 	@echo ------ Please check the README file for
-	@echo ------ information about running a example.
+	@echo ------ information about running an example.
 
 all: default tinyvm_bin
 
@@ -40,6 +40,9 @@ check:
 	@if [ -f ${TINYVM_HOME} ]; then \
 	  echo "Error: TINYVM_HOME undefined. Please check the README file"; \
 	  exit 1; \
+	fi;
+	@if [ "${TINYVM_HOME}" != "`pwd`" ]; then \
+	  echo "Warning: TINYVM_HOME (${TINYVM_HOME}) is not equal to `pwd`."; \
 	fi;
 
 check_release:
