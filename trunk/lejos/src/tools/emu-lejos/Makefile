@@ -13,8 +13,13 @@ UNIXLOADER=../bin/${UNIXLOADERNAME}
 TVM_OBJ=lejosrun.o firmdl/rcx_comm.o
 CC=$(shell ../cctest.sh)
 
-CCOPT=-I../vmsrc -Wall -Wno-unused -O2
+OS=$(shell echo $$OSTYPE)
 
+ifeq ($(OS),linux-gnu)
+CCOPT=-I../vmsrc -Wall -Wno-unused -O2 -DLINUX
+else
+CCOPT=-I../vmsrc -Wall -Wno-unused -O2
+endif
 
 LIBS=
 ifneq (,$(findstring darwin,$(OSTYPE)))

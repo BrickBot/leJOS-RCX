@@ -98,14 +98,8 @@ Environment:
     the commands.
 
 Building the Tools (UNIX ONLY):
-  If you are building the tools for Linux, take the following
-  steps:
-
-  [1] Edit the Makefile in lejos/tools and add -DLINUX to the CCOPT.
-  [2] Edit the Makefile in lejos/tools/firmdl and add -DLINUX to the CFLAGS.
-
-  Then, go to the installation directory and
-  type 'make'. 
+  If you are building the tools for Linux, go to the installation 
+  directory and type 'make'. 
 
   Note: if you are using USB on Linux, there is a USB driver for
 	the Lego IR tower in tools/linux/legousbtower. See the 
