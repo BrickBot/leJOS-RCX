@@ -14,7 +14,7 @@ public class F7DeliveryHandler extends PacketHandler {
     super(handler);
   }
 
-  /** Send a packet, checking for returned ack
+  /** Send a packet, checking for returned ack.
    * @param packet the bytes to send
    * @param len the number of bytes to send
    * @return true if the send was successful, else false
@@ -38,7 +38,7 @@ public class F7DeliveryHandler extends PacketHandler {
 
   /** Receive a packet, and send an ack.
    * @param buffer the buffer to receive the packet into
-   * @return the number of bytes rceived
+   * @return the number of bytes received
    */
   public int receivePacket(byte [] buffer) {
     synchronized (this) {

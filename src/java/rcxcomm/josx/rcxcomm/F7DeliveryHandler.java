@@ -14,7 +14,7 @@ public class F7DeliveryHandler extends PacketHandler {
     super(handler);
   }
 
-  /** Send a packet.
+  /** Send a packet, checking for returned ack.
    * @param packet the bytes to send
    * @param len the number of bytes to send
    * @return true if the send was successful, else false
@@ -29,19 +29,18 @@ public class F7DeliveryHandler extends PacketHandler {
         } while ((!lowerHandler.isPacketAvailable()) && 
                  (int)System.currentTimeMillis() < sendTime+500);
         if (lowerHandler.isPacketAvailable()) {
-          lowerHandler.receivePacket(inPacket);
-          return true;
+          return (lowerHandler.receivePacket(inPacket) == 2);
         }
       }
       return false;
     }
   }
 
-  /** Receive a packet.
+  /** Receive a packet, and send an ack.
    * @param buffer the buffer to receive the packet into
-   * @return the number of bytes to send
+   * @return the number of bytes received
    */
-   public int receivePacket(byte [] buffer) {
+  public int receivePacket(byte [] buffer) {
     synchronized (this) {
       lowerHandler.receivePacket(inPacket);
       byte b = inPacket[1];
@@ -52,6 +51,10 @@ public class F7DeliveryHandler extends PacketHandler {
     }
   }
 
+  /**
+   * Check if a packet is available
+   * @return true if a Packet is available, else false
+   */
   public boolean isPacketAvailable() {
     synchronized (this) {
        return lowerHandler.isPacketAvailable();
