@@ -23,8 +23,6 @@ case OP_IREM:
   if (gInt == 0)
   {
     throw_exception (arithmeticException);
-    if (gMustExit)
-      return;
     goto LABEL_ENGINELOOP;
   }
   stackTop--;

@@ -18,8 +18,6 @@ static boolean memoryInitialized = false;
 
 #define NULL_OFFSET 0xFFFF
 
-// Size of object header in 2-byte words
-#define NORM_OBJ_SIZE ((HEADER_SIZE + 1) / 2)
 // Size of stack frame in 2-byte words
 #define NORM_SF_SIZE ((sizeof(StackFrame) + 1) / 2)
 
@@ -128,7 +126,7 @@ void initialize_state (Object *objRef, TWOBYTES numWords)
 
 TWOBYTES get_array_size (byte length, byte elemSize)
 {
-  return NORM_OBJ_SIZE + ((TWOBYTES) length * elemSize) / 2;
+  return NORM_OBJ_SIZE + (((TWOBYTES) length * elemSize) + 1) / 2;
 }
 
 /**
@@ -197,7 +195,8 @@ Object *new_multi_array (byte elemType, byte totalDimensions,
   while (--numElements >= 0)
   {
     ref2 = new_multi_array (elemType, totalDimensions - 1, reqDimensions - 1);
-    set_array_word ((byte *) ref, 4, numElements, ptr2word (ref2));
+    ref_array(ref)[numElements] = ptr2word (ref2);
+    //set_array_word ((byte *) ref, 4, numElements, ptr2word (ref2));
   }
   return ref;
 }

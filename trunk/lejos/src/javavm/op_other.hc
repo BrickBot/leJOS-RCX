@@ -4,8 +4,6 @@
 
 case OP_ATHROW:
   throw_exception_checked (word2obj(*stackTop--));
-  if (gMustExit)
-    return;
   goto LABEL_ENGINELOOP;
 case OP_MONITORENTER:
   enter_monitor (word2obj(*stackTop--));

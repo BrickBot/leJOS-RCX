@@ -7,8 +7,6 @@ case OP_NEW:
   // Arguments: 2
   // Hi byte unused
   gStackWord = obj2word (new_object_checked (pc[1], pc - 1));
-  if (gMustExit)
-    return;
   if (gStackWord)
   {
     *(++stackTop) = gStackWord;
@@ -23,8 +21,6 @@ case OP_PUTFIELD:
   // Arguments: 2
   pc--;
   handle_field (pc[1], pc[2], (pc[0] & 0x01), (pc[0] < OP_GETFIELD), pc);
-  if (gMustExit)
-    return;
   pc += 3;
   goto LABEL_ENGINELOOP;
 case OP_INSTANCEOF:
@@ -40,11 +36,7 @@ case OP_CHECKCAST:
   // Ignore hi byte
   pc++;
   if (!instance_of (word2obj (*stackTop--), *pc++))
-  {
     throw_exception (classCastException);
-    if (gMustExit)
-      return;
-  }
   goto LABEL_ENGINELOOP;
 
 /*end*/

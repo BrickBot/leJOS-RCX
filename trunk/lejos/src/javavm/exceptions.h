@@ -11,6 +11,7 @@ extern Object *stackOverflowError;
 extern Object *nullPointerException;
 extern Object *classCastException;
 extern Object *arithmeticException;
+extern Object *arrayIndexOutOfBoundsException;
 
 extern void init_exceptions();
 extern void throw_exception (Object *throwable);

@@ -14,6 +14,7 @@ public interface SpecialClassConstants {
     "java/lang/StackOverflowError",
     "java/lang/NullPointerException",
     "java/lang/ClassCastException",
-    "java/lang/ArithmeticException"
+    "java/lang/ArithmeticException",
+    "java/lang/ArrayIndexOutOfBoundsException"
   };
 }
