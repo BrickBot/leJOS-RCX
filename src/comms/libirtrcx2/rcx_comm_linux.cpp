@@ -126,7 +126,7 @@ void __rcx_flush(void* port)
 {
 	// TODO check
 	char echo[BUFFERSIZE];
-	__rcx_read(((Port*) port)->fileHandle, echo, BUFFERSIZE, 200);
+	__rcx_read(port, echo, BUFFERSIZE, 200);
 }
 
 void* __rcx_open(char *tty, bool is_fast)
