@@ -24,7 +24,12 @@
 
 #include ../Makefile.common
 
-CC = gcc
+ifneq (,$(findstring $(OSTYPE),darwin))
+CC=cc
+else
+CC=gcc
+endif
+
 CFLAGS = -O2
 
 ifndef OSTYPE

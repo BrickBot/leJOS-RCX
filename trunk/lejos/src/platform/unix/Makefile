@@ -1,7 +1,12 @@
 
 VMSRC=../vmsrc
 LD=ld
+
+ifneq (,$(findstring $(OSTYPE),darwin))
+CC=cc
+else
 CC=gcc
+endif
 
 # No -O2 option below because gcc 2.95.2 crashes!
 #CFLAGS=-I../vmsrc -I. -Wall -Wno-unused -DDEBUG_BYTECODE=1

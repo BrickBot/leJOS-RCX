@@ -9,7 +9,13 @@ RCXLOADERNAME=lejos
 UNIXLOADERNAME=emu-lejos
 RCXLOADER=../bin/${RCXLOADERNAME}
 UNIXLOADER=../bin/${UNIXLOADERNAME}
+
+ifneq (,$(findstring $(OSTYPE),darwin))
+CC=cc
+else
 CC=gcc
+endif
+
 CCOPT=-I../vmsrc -Wall -Wno-unused -O2
 LIBS=
 TVMFIRMDL_OBJ=tvm_firmdl3.o util.o
