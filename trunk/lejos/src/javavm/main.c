@@ -105,9 +105,6 @@ int main (void)
   init_timer (&timerdata0, &timerdata1[0]);
   init_power();
   init_sensors();
-  set_sensor_active (0x1000);
-  set_sensor_active (0x1001);
-  set_sensor_active (0x1002);
   init_serial (&state0, &state1, 1, 1);
  LABEL_DOWNLOAD:
   play_system_sound (SOUND_QUEUED, 1);

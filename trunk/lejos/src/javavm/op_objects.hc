@@ -18,10 +18,47 @@ case OP_NEW:
     pc += 2;
   }
   goto LABEL_ENGINELOOP;
+
+
+// Temporary hack here:
+// (Work-around for bug)
+
 case OP_GETSTATIC:
-case OP_PUTSTATIC:
+  {
+    byte *fieldBase;
+    STATICFIELD fieldRecord;
+    byte fieldSize;
+    byte numWordsMinus1;
+
+    #if DEBUG_FIELDS
+    printf ("  OP_GETSTATIC: %d, %d, %d, %d\n", (int) pc[0], (int) pc[1], 
+            (int) doPut, (int) aStatic);
+    #endif
+
+    if (dispatch_static_initializer (get_class_record (pc[0]), pc - 1))
+      goto LABEL_ENGINELOOP;
+    fieldRecord = ((STATICFIELD *) get_static_fields_base())[pc[1]];
+    fieldSize = ((fieldRecord >> 12) & 0x03) + 1;
+    numWordsMinus1 = fieldRecord >> 14;
+    fieldBase = get_static_state_base() + get_static_field_offset (fieldRecord);
+
+    #if DEBUG_FIELDS
+    printf ("-- fieldSize  = %d\n", (int) fieldSize);
+    printf ("-- fieldBase  = %d\n", (int) fieldBase);
+    #endif
+
+    make_word (fieldBase, fieldSize, ++stackTop);
+    if (numWordsMinus1)
+      make_word (fieldBase + 4, fieldSize, ++stackTop);
+    pc += 2;
+  }
+  goto LABEL_ENGINELOOP;
+
+
+
 case OP_GETFIELD:
 case OP_PUTFIELD:
+case OP_PUTSTATIC:
   // Stack: (see method)
   // Arguments: 2
   pc--;
