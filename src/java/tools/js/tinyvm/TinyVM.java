@@ -2,16 +2,19 @@ package js.tinyvm;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import js.common.ToolProgressListener;
 import js.common.ToolProgressListenerImpl;
+import js.tools.LejosdlException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -55,24 +58,9 @@ public class TinyVM extends TinyVMTool
    */
   public void start (String[] args) throws TinyVMException
   {
-    Options options = new Options();
-    options.addOption("v", "verbose", false,
-        "print class and signature information");
-    options.addOption("cp", "classpath", true, "classpath");
-    options.addOption("o", "output", true, "dump binary into path");
-    options.addOption("a", "all", false, "do not filter classes");
-    options.addOption("wo", "writeorder", true, "write order (BE or LE)");
+    assert args != null : "Precondition: args != null";
 
-    CommandLine commandLine;
-    try
-    {
-      commandLine = new GnuParser().parse(options, args);
-      checkParameters(commandLine, options);
-    }
-    catch (ParseException e)
-    {
-      throw new TinyVMException(e);
-    }
+    CommandLine commandLine = parse(args);
 
     // options
     boolean verbose = commandLine.hasOption("v");
@@ -86,9 +74,10 @@ public class TinyVM extends TinyVMTool
 
     ((ToolProgressListenerImpl) getProgressListener()).setVerbose(verbose);
 
+    OutputStream stream = null;
     try
     {
-      OutputStream stream = output == null
+      stream = output == null
           ? (OutputStream) System.out
           : (OutputStream) new FileOutputStream(output);
       link(classpath, classes, all, stream, bigEndian);
@@ -97,38 +86,81 @@ public class TinyVM extends TinyVMTool
     {
       throw new TinyVMException(e);
     }
+    finally
+    {
+      if (stream instanceof OutputStream)
+      {
+        try
+        {
+          stream.close();
+        }
+        catch (IOException e)
+        {
+          throw new TinyVMException(e);
+        }
+      }
+    }
   }
 
   /**
-   * Check parameters.
+   * Parse commandline.
    * 
-   * @param classpath
-   * @param classes
-   * @param all
-   * @return @throws TinyVMException
-   * @throws TinyVMException
+   * @param args command line
+   * @throws LejosdlException
    */
-  protected void checkParameters (CommandLine commandLine, Options options)
-      throws TinyVMException
+  protected CommandLine parse (String[] args) throws TinyVMException
   {
+    assert args != null : "Precondition: args != null";
+
+    Options options = new Options();
+    options.addOption("v", "verbose", false,
+        "print class and signature information");
+    options.addOption("h", "help", false, "help");
+    Option classpathOption = new Option("cp", "classpath", true, "classpath");
+    classpathOption.setArgName("classpath");
+    options.addOption(classpathOption);
+    Option outputOption = new Option("o", "output", true, "dump binary to file");
+    outputOption.setArgName("binary");
+    options.addOption(outputOption);
+    options.addOption("a", "all", false, "do not filter classes");
+    Option writerOrderOption = new Option("wo", "writeorder", true,
+        "write order (BE or LE)");
+    writerOrderOption.setArgName("write order");
+    options.addOption(writerOrderOption);
+
+    CommandLine result;
     try
     {
-      if (!commandLine.hasOption("cp"))
+      try
+      {
+        result = new GnuParser().parse(options, args);
+      }
+      catch (ParseException e)
+      {
+        throw new TinyVMException(e.getMessage());
+      }
+
+      if (result.hasOption("h"))
+      {
+        throw new TinyVMException("Help:");
+      }
+
+      if (!result.hasOption("cp"))
       {
         throw new TinyVMException("No classpath defined");
       }
 
-      if (!commandLine.hasOption("wo"))
+      if (!result.hasOption("wo"))
       {
         throw new TinyVMException("No write order specified");
       }
-      String writeOrder = commandLine.getOptionValue("wo").toLowerCase();
+      String writeOrder = result.getOptionValue("wo").toLowerCase();
       if (!"be".equals(writeOrder) && !"le".equals(writeOrder))
       {
         throw new TinyVMException("Wrong write order: " + writeOrder);
       }
 
-      if (commandLine.getArgs().length == 0)
+      if (result.getArgs().length == 0)
       {
         throw new TinyVMException("No classes specified");
       }
@@ -139,12 +171,15 @@ public class TinyVM extends TinyVMTool
       PrintWriter printWriter = new PrintWriter(writer);
       printWriter.println(e.getMessage());
 
-      String usage = getClass().getName() + " [options] class1[,class2,...]\n";
+      String usage = getClass().getName() + " [options] class1[,class2,...]";
       // TODO check format parameters
       new HelpFormatter().printHelp(printWriter, 80, usage.toString(), null,
           options, 0, 2, null);
 
       throw new TinyVMException(writer.toString());
     }
+
+    assert result != null : "Postconditon: result != null";
+    return result;
   }
 }

@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.util.Vector;
 
+import js.common.AbstractTool;
 import js.common.ToolProgressListener;
 import js.tinyvm.io.BEDataOutputStream;
 import js.tinyvm.io.ByteWriter;
@@ -12,18 +13,14 @@ import js.tinyvm.io.LEDataOutputStream;
 /**
  * Tiny VM.
  */
-public class TinyVMTool
+public class TinyVMTool extends AbstractTool
 {
-  private ToolProgressListener _progress;
-
   /**
    * Constructor.
    */
   public TinyVMTool(ToolProgressListener listener)
   {
-    assert listener != null : "Precondition: listener != null";
-
-    _progress = listener;
+    super(listener);
   }
 
   /**
@@ -125,18 +122,5 @@ public class TinyVMTool
       // TODO make other classes throw TinyVMExceptions too
       throw new TinyVMException(e);
     }
-  }
-  
-  //
-  // protected interface
-  //
-  
-  /**
-   * Progress listener.
-   */
-  public ToolProgressListener getProgressListener ()
-  {
-    assert _progress != null : "Postconditon: result != null";
-    return _progress;
   }
 }
