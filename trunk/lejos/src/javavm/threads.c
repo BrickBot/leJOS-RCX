@@ -18,7 +18,7 @@
 /**
  * Thread currently being executed by engine().
  */
-Thread* currentThread = null;
+Thread* currentThread;
 
 StackFrame *current_stackframe()
 {

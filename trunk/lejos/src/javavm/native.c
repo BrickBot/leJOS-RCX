@@ -20,11 +20,6 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 
   switch (signature)
   {
-    //    case _TVM_MAIN_METHOD_V:
-    //  classRecord = get_class_record (ENTRY_CLASS);
-    //  dispatch_special (classRecord, find_method (classRecord, MAIN_V),
-    //                    retAddr);
-    //  return;
     case START_V:
       init_thread ((Thread *) word2ptr(paramBase[0]));
       return;
@@ -38,7 +33,13 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       __rcall2 (paramBase[0], paramBase[1], paramBase[2]);
       break;      
     case CALLROM3_V:
+      #if DEBUG_RCX
+      debug (-1, paramBase[2], 9);
+      #endif
       __rcall3 (paramBase[0], paramBase[1], paramBase[2], paramBase[3]);
+      #if DEBUG_RCX
+      debug (-1, paramBase[3], 8);
+      #endif
       break;      
   }  
 } 

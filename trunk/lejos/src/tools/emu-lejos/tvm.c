@@ -88,7 +88,7 @@ typedef unsigned char byte;
 #define DEFAULTTTY   "/dev/ttyd2" /* IRIX - second serial port */
 #endif
 
-#define DEBUG 2
+#define DEBUG 1
 #define ERR_NOECHO  -1
 #define ERR_BADECHO -2
 

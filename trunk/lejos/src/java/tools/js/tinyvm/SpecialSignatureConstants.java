@@ -14,7 +14,6 @@ public interface SpecialSignatureConstants {
     "callRom0(S)V",
     "callRom1(SS)V",
     "callRom2(SSS)V",
-    "callRom3(SSSS)V",
-    "_TVM_main_method()V"
+    "callRom3(SSSS)V"
   };
 }
