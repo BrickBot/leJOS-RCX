@@ -10,6 +10,11 @@ package josx.rcxcomm;
  */
 public class Tower {
 
+  /** Set fast mode
+   * @param fast - 0 = slow mode, 1 = fast mode
+   */
+  public native int setFast (int fast);
+
   /** Open the tower
    * @param port port to use, e.g. usb or COM1
    */
