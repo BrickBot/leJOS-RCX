@@ -61,16 +61,20 @@
  */
 #define stricmp(x, y) strcmp(x, y)
 #define strnicmp(x, y, n) strncmp(x, y, n)
+
 #elif defined(_WIN32) || defined(__CYGWIN32__)
-#define DEFAULTTTY   "usb"       /* Cygwin - USB */
 #define TOWER_NAME "\\\\.\\LEGOTOWER1"
+#define DEFAULTTTY   "usb"       /* Cygwin - USB */
+
 #elif defined (sun)
 #define DEFAULTTTY   "/dev/ttya"  /* Solaris - first serial port - untested */
+
 #elif defined (__APPLE__)
+#define TOWER_NAME ""
 #define DEFAULTTTY   "usb"	  /* Default to USB on MAC */
 #define stricmp(x, y) strcmp(x, y)
 #define strnicmp(x, y, n) strncmp(x, y, n)
-#define TOWER_NAME ""
+
 #else
 #define DEFAULTTTY   "/dev/ttyd2" /* IRIX - second serial port */
 #endif
