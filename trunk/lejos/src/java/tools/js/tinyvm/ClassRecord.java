@@ -222,12 +222,12 @@ public class ClassRecord implements WritableData, Constants
         pClassRec.addUsedMethod(((JCPE_Methodref) pEntry).getNameAndType().getName()+":"+((JCPE_Methodref) pEntry).getNameAndType().getDescriptor());
       } else if (pEntry instanceof JCPE_InterfaceMethodref) {
         // System.out.println(iName + " calls interface method " + pEntry);
-        aInterfaceMethods.add (((JCPE_InterfaceMethodref) pEntry).getNameAndType().getName()+":"+((JCPE_InterfaceMethodref) pEntry).getNameAndType().getDescriptor());
+        aInterfaceMethods.addElement (((JCPE_InterfaceMethodref) pEntry).getNameAndType().getName()+":"+((JCPE_InterfaceMethodref) pEntry).getNameAndType().getDescriptor());
       } else if (pEntry instanceof JCPE_NameAndType) {
         if (((JCPE_NameAndType) pEntry).getDescriptor().substring(0,1).equals("(")) {
           if (!((JCPE_NameAndType) pEntry).getName().substring(0,1).equals("<")) {
             // System.out.println("Method by variable: " + ((JCPE_NameAndType) pEntry).getName()+":"+((JCPE_NameAndType) pEntry).getDescriptor());
-            aInterfaceMethods.add (((JCPE_NameAndType) pEntry).getName()+":"+((JCPE_NameAndType) pEntry).getDescriptor());
+            aInterfaceMethods.addElement (((JCPE_NameAndType) pEntry).getName()+":"+((JCPE_NameAndType) pEntry).getDescriptor());
           }  
         }
       }
@@ -235,7 +235,7 @@ public class ClassRecord implements WritableData, Constants
   }
 
   public void addUsedMethod(String aRef) {
-    iUsedMethods.add(aRef);
+    iUsedMethods.addElement(aRef);
   }
 
   public static String cpEntryId (JConstantPoolEntry aEntry)
