@@ -15,6 +15,7 @@ public class irTower {
 
   private int err;
   long fh;
+  private int usbFlag;
 
   public String strerror(int errno) {
     switch (errno) {
@@ -41,6 +42,10 @@ public class irTower {
 
   public int getError() {
     return err;
+  }
+
+  public int getUsbFlag() {
+    return usbFlag;
   }
 
   public void setError(int e) {
