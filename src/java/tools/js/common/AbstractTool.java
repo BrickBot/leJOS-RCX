@@ -5,28 +5,28 @@ package js.common;
  */
 public class AbstractTool
 {
-  private ToolProgressListener _progress;
+   private ToolProgressMonitor _progress;
 
-  /**
-   * Constructor.
-   * 
-   * @param listener tool progress listener
-   */
-  public AbstractTool(ToolProgressListener listener)
-  {
-    _progress = listener;
-  }
+   /**
+    * Constructor.
+    * 
+    * @param listener tool progress listener
+    */
+   public AbstractTool (ToolProgressMonitor listener)
+   {
+      _progress = listener;
+   }
 
-  //
-  // protected interface
-  //
-  
-  /**
-   * Progress listener.
-   */
-  protected ToolProgressListener getProgressListener ()
-  {
-    assert _progress != null : "Postconditon: result != null";
-    return _progress;
-  }
+   //
+   // protected interface
+   //
+
+   /**
+    * Progress listener.
+    */
+   protected ToolProgressMonitor getProgressMonitor ()
+   {
+      assert _progress != null: "Postconditon: result != null";
+      return _progress;
+   }
 }

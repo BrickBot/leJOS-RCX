@@ -7,9 +7,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 import js.common.AbstractTool;
-import js.common.NullToolProgressListener;
+import js.common.NullToolProgressMonitor;
 import js.common.ToolException;
-import js.common.ToolProgressListener;
+import js.common.ToolProgressMonitor;
 
 /**
  * Java RCX firmware downloader - replaces lejosfirmdl
@@ -26,9 +26,9 @@ public class FirmdlTool extends AbstractTool
   /**
    * Constructor.
    */
-  public FirmdlTool(ToolProgressListener listener)
+  public FirmdlTool(ToolProgressMonitor monitor)
   {
-    super(listener);
+    super(monitor);
   }
 
   /**
@@ -73,7 +73,7 @@ public class FirmdlTool extends AbstractTool
       int length = 0;
       for (int i = 0; i < image.segments.length; i++)
       {
-        getProgressListener().log(
+        getProgressMonitor().log(
             "Segment " + i + ": length = " + image.segments[i].length);
         length += image.segments[i].length;
       }
@@ -82,8 +82,8 @@ public class FirmdlTool extends AbstractTool
       {
         if (fastMode)
         {
-          getProgressListener().operation("Installing fastmode firmware");
-          Download d = new Download(new NullToolProgressListener());
+          getProgressMonitor().operation("Installing fastmode firmware");
+          Download d = new Download(new NullToolProgressMonitor());
           try
           {
             d.open(tty, false);
@@ -103,8 +103,8 @@ public class FirmdlTool extends AbstractTool
             }
           }
         }
-        getProgressListener().operation("Installing firmware");
-        Download d = new Download(getProgressListener());
+        getProgressMonitor().operation("Installing firmware");
+        Download d = new Download(getProgressMonitor());
         try
         {
           d.open(tty, fastMode);
@@ -152,7 +152,7 @@ public class FirmdlTool extends AbstractTool
 
     try
     {
-      getProgressListener().operation("read firmware srec");
+      getProgressMonitor().operation("read firmware srec");
 
       String record;
       SRec srec = null;
@@ -195,7 +195,7 @@ public class FirmdlTool extends AbstractTool
           /* Detect Firm0309.lgo header, set strip if found */
           if ((new String(srec.data)).equals("?LIB_VERSION_L00"))
           {
-            getProgressListener().log("Setting strip");
+            getProgressMonitor().log("Setting strip");
             strip = true;
           }
         }
@@ -255,7 +255,7 @@ public class FirmdlTool extends AbstractTool
       if (strip)
       {
         int pos;
-        getProgressListener().log("Stripping");
+        getProgressMonitor().log("Stripping");
         for (pos = IMAGE_MAXLEN - 1; pos >= 0 && image.data[pos] == 0; pos--)
         {
           image.segments[segIndex].length--;
@@ -272,7 +272,7 @@ public class FirmdlTool extends AbstractTool
         throw new FirmdlException("Image contains no data");
       }
 
-      getProgressListener().progress(1000);
+      getProgressMonitor().progress(1000);
     }
     catch (IOException e)
     {

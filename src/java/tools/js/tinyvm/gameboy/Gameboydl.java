@@ -6,8 +6,8 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import js.common.ToolProgressListener;
-import js.common.CLIToolProgressListenerImpl;
+import js.common.ToolProgressMonitor;
+import js.common.CLIToolProgressMonitor;
 import js.tinyvm.Constants;
 import js.tinyvm.TinyVMException;
 import js.tools.FirmdlException;
@@ -24,144 +24,145 @@ import org.apache.commons.cli.ParseException;
  */
 public class Gameboydl implements Constants
 {
-  private ToolProgressListener _progress = null;
+   private ToolProgressMonitor _progress = null;
 
-  private boolean _verbose = false;
+   private boolean _verbose = false;
 
-  /**
-   * Main entry point for command line usage.
-   * 
-   * @param args command line
-   */
-  public static void main (String[] args)
-  {
-    try
-    {
-      Gameboydl tinyVM = new Gameboydl(new CLIToolProgressListenerImpl());
-      tinyVM.start(args);
-    }
-    catch (TinyVMException e)
-    {
-      System.err.println(e.getMessage());
-      System.exit(1);
-    }
-  }
-
-  /**
-   * Constructor.
-   */
-  public Gameboydl(ToolProgressListener listener)
-  {
-    assert listener != null : "Precondition: listener != null";
-
-    _progress = listener;
-  }
-
-  /**
-   * Execute tiny vm.
-   * 
-   * @param args command line
-   * @throws TinyVMException
-   */
-  public void start (String[] args) throws TinyVMException
-  {
-    CommandLine commandLine = parse(args);
-
-    // options
-    _verbose = commandLine.hasOption("v");
-    String input = commandLine.getOptionValue("i");
-
-    // files
-    String[] classes = commandLine.getArgs();
-
-    try
-    {
-      InputStream stream = input == null
-          ? (InputStream) System.in
-          : (InputStream) new FileInputStream(input);
-      download(stream, classes[0]);
-    }
-    catch (FileNotFoundException e)
-    {
-      throw new TinyVMException(e.getMessage(), e);
-    }
-  }
-
-  /**
-   * Parse commandline.
-   * 
-   * @param args command line
-   * @throws FirmdlException
-   */
-  protected CommandLine parse (String[] args) throws TinyVMException
-  {
-    assert args != null : "Precondition: args != null";
-
-    Options options = new Options();
-    options.addOption("v", "verbose", false,
-        "print class and signature information");
-    Option inputOption = new Option("i", "input", true, "binary to download");
-    inputOption.setArgName("binary");
-    options.addOption(inputOption);
-
-    CommandLine result;
-    try
-    {
+   /**
+    * Main entry point for command line usage.
+    * 
+    * @param args command line
+    */
+   public static void main (String[] args)
+   {
       try
       {
-        result = new GnuParser().parse(options, args);
+         Gameboydl tinyVM = new Gameboydl(new CLIToolProgressMonitor());
+         tinyVM.start(args);
       }
-      catch (ParseException e)
+      catch (TinyVMException e)
       {
-        throw new TinyVMException(e.getMessage(), e);
+         System.err.println(e.getMessage());
+         System.exit(1);
       }
+   }
 
-      if (result.getArgs().length == 0)
+   /**
+    * Constructor.
+    */
+   public Gameboydl (ToolProgressMonitor monitor)
+   {
+      assert monitor != null: "Precondition: monitor != null";
+
+      _progress = monitor;
+   }
+
+   /**
+    * Execute tiny vm.
+    * 
+    * @param args command line
+    * @throws TinyVMException
+    */
+   public void start (String[] args) throws TinyVMException
+   {
+      CommandLine commandLine = parse(args);
+
+      // options
+      _verbose = commandLine.hasOption("v");
+      String input = commandLine.getOptionValue("i");
+
+      // files
+      String[] classes = commandLine.getArgs();
+
+      try
       {
-        throw new TinyVMException("No class specified");
+         InputStream stream = input == null
+            ? (InputStream) System.in
+            : (InputStream) new FileInputStream(input);
+         download(stream, classes[0]);
       }
-
-      if (result.getArgs().length > 1)
+      catch (FileNotFoundException e)
       {
-        throw new TinyVMException("More than one class specified");
+         throw new TinyVMException(e.getMessage(), e);
       }
-    }
-    catch (TinyVMException e)
-    {
-      StringWriter writer = new StringWriter();
-      PrintWriter printWriter = new PrintWriter(writer);
-      printWriter.println(e.getMessage());
+   }
 
-      String usage = getClass().getName() + " [options] class";
-      // TODO check format parameters
-      new HelpFormatter().printHelp(printWriter, 80, usage, null, options, 0,
-          2, null);
+   /**
+    * Parse commandline.
+    * 
+    * @param args command line
+    * @throws FirmdlException
+    */
+   protected CommandLine parse (String[] args) throws TinyVMException
+   {
+      assert args != null: "Precondition: args != null";
 
-      throw new TinyVMException(writer.toString());
-    }
+      Options options = new Options();
+      options.addOption("v", "verbose", false,
+         "print class and signature information");
+      Option inputOption = new Option("i", "input", true, "binary to download");
+      inputOption.setArgName("binary");
+      options.addOption(inputOption);
 
-    assert result != null : "Postconditon: result != null";
-    return result;
-  }
+      CommandLine result;
+      try
+      {
+         try
+         {
+            result = new GnuParser().parse(options, args);
+         }
+         catch (ParseException e)
+         {
+            throw new TinyVMException(e.getMessage(), e);
+         }
 
-  /**
-   * Download to gameboy.
-   * 
-   * @param aEntryClasses
-   * @throws Exception
-   */
-  public void download (InputStream stream, String mainClass)
+         if (result.getArgs().length == 0)
+         {
+            throw new TinyVMException("No class specified");
+         }
+
+         if (result.getArgs().length > 1)
+         {
+            throw new TinyVMException("More than one class specified");
+         }
+      }
+      catch (TinyVMException e)
+      {
+         StringWriter writer = new StringWriter();
+         PrintWriter printWriter = new PrintWriter(writer);
+         printWriter.println(e.getMessage());
+
+         String usage = getClass().getName() + " [options] class";
+         // TODO check format parameters
+         new HelpFormatter().printHelp(printWriter, 80, usage, null, options,
+            0, 2, null);
+
+         throw new TinyVMException(writer.toString());
+      }
+
+      assert result != null: "Postconditon: result != null";
+      return result;
+   }
+
+   /**
+    * Download to gameboy.
+    * 
+    * @param aEntryClasses
+    * @throws Exception
+    */
+   public void download (InputStream stream, String mainClass)
       throws TinyVMException
-  {
-    try
-    {
-      GameboyMerger merger = new GameboyMerger(System.getProperty("temp.dir"));
-      merger.dumpRom(stream, mainClass);
-    }
-    catch (Exception e)
-    {
-      // TODO make other classes throw TinyVMExceptions too
-      throw new TinyVMException(e.getMessage(), e);
-    }
-  }
+   {
+      try
+      {
+         GameboyMerger merger = new GameboyMerger(System
+            .getProperty("temp.dir"));
+         merger.dumpRom(stream, mainClass);
+      }
+      catch (Exception e)
+      {
+         // TODO make other classes throw TinyVMExceptions too
+         throw new TinyVMException(e.getMessage(), e);
+      }
+   }
 }
