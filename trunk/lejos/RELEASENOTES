@@ -8,6 +8,8 @@
   - Experimental support for USB on MAC OS X
 
   Lawrie Griffiths has added:
+  - Decoupling of ListenerThread from Sensor, Button and Serial, so that these
+    classes are not included when they are not used.
   - Low level comms (LLC) that allows single bytes to be sent and received
     over IR, without being limited to the Lego firmware protocol and opcodes
   - A re-implementation of josx.rcxcomm.RCXPort using LLC which is faster 
