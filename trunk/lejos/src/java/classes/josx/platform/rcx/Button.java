@@ -53,12 +53,13 @@ public class Button
     return (readButtons() & iCode) != 0;
   }
 
+  static Poll poller = new Poll();
+
   /**
    * Wait until the button is released.
    */
   public final void waitForPressAndRelease() throws InterruptedException
   {
-    Poll poller = new Poll();
     do {
         poller.poll(iCode << Poll.BUTTON_MASK_SHIFT, 0);
     } while (isPressed());
