@@ -1,4 +1,7 @@
 package java.util;
+/*
+* $Log$
+*/
 
 /**
  * A dynamic array.
@@ -275,7 +278,47 @@ public class Vector
 
   }
 
+	/////////////////////////////////////////////////////
+  	/**
+	* delivers the index of the last occurrence of the object
+	* @param Object the object 
+	* @return the index of the last occurrence of the object
+	* or -1, if object is not found
+	*/
+	public synchronized int lastIndexOf(Object anObject) {
+		return lastIndexOf(anObject,elementCount-1);
+	} // lastIndexOf()
 
+	/////////////////////////////////////////////////////
+	/**
+	* delivers the index of the last occurrence of the object
+	* starting from some index
+	* @param Object the object
+	* @param int the starting index 
+	* @return the index of the last occurrence of the object
+	* or -1, if object is not found
+	* @throws ArrayIndexOutOfBoundsException
+	*/
+	public synchronized int lastIndexOf(Object anObject, 
+		int anIndex) throws ArrayIndexOutOfBoundsException {
+		// valid index?
+		if(anIndex>=elementCount)
+			throw new ArrayIndexOutOfBoundsException();
+		// null object?
+		if(anObject==null) {
+			// find last null object
+			for(int i=anIndex;i>=0;i--)
+				if(elementData[i]==null)
+					return i;
+		} else {
+			// find last equal object
+		for (int i=anIndex;i>=0;i--)
+			if(anObject.equals(elementData[i]))
+				return i;
+		} // else
+		// not found
+		return -1;
+	} // lastIndexOf()
 
 
 
