@@ -41,6 +41,10 @@ typedef UINT32 FOURBYTES;
 
 #undef VERIFY
 
+// hardware polling (none here)
+
+static inline void poll_hardware(){}
+
 #endif _PLATFORM_CONFIG_H
 
 
