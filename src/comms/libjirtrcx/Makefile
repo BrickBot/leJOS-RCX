@@ -7,6 +7,8 @@ ifeq ($(OSTYPE),linux-gnu)
 OS=linux
 endif
 
+OSX_USB=
+
 ifneq (,$(findstring cygwin,$(OSTYPE)))
   # Windows with CygWin installed
 IRTOWER=../../bin/irtower.dll
@@ -25,9 +27,10 @@ ifneq (,$(findstring darwin,$(OSTYPE)))
       JNILIB_TYPE = -dynamiclib
     endif
     # Mac OS X compiles PIC by default
-    CCOPT = -g -O ${JNILIB_TYPE} -I/System/Library/Frameworks/JavaVM.framework/Headers
-IRTOWER=../../bin/libirtower.jnilib
+    CCOPT = -g -O ${JNILIB_TYPE} -framework IOKit -framework CoreFoundation -I/System/Library/Frameworks/JavaVM.framework/Headers
+IRTOWER=../../bin/libirtower.jnilib 
     # CXX set by default on Mac OS X.
+    OSX_USB=osx_usb.o
   else
     # Linux/Solaris/FreeBSD/other unices.
     IRTOWER=../../bin/libirtower.so
@@ -39,8 +42,11 @@ endif
 .EXPORT_ALL_VARIABLES :
 
 # Use CXX to get correct linkage (need C++ libraries)
-${IRTOWER}: irtower.cpp rcx_comm.cpp rcx_comm.h josx_rcxcomm_Tower.h
-	$(CXX) $(CCOPT) -o $@ *.cpp
-
+${IRTOWER}: irtower.cpp rcx_comm.cpp rcx_comm.h josx_rcxcomm_Tower.h $(OSX_USB)
+	$(CXX) $(CCOPT) $(OSX_USB) -o $@ *.cpp
+osx_usb.o: osx_usb.c
+	$(CC) -c -framework IOKit -framework CoreFoundation -I/System/Library/Frameworks/JavaVM.framework/Headers osx_usb.c
 clean:
 	rm -rf *.o *~ core
+	rm -f ${IRTOWER}
+        
