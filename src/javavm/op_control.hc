@@ -75,6 +75,9 @@ case OP_RET:
   // Arguments: 1
   // Stack: +0
   pc = word2ptr (localsBase[pc[0]]);
+  #if DEBUG_BYTECODE
+  printf ("\n  OP_RET: returning to %d\n", (int) pc);
+  #endif
   // No pc increment!
   goto LABEL_ENGINELOOP;
 

@@ -6,6 +6,10 @@ Version 0.1.1 (latest):
     in uninitialized class could produce subsequent
     erroneous behavior).
 
+  - Fixed exceptions bug. (Very critical bug:
+    exceptions were not pushed on the stack before
+    they were caught).
+
   - Changed RCX API so that its style conforms
     a bit more with other Java APIs. Namely, 
     depracted routines in ROM, and split them up
@@ -15,8 +19,7 @@ Version 0.1.1 (latest):
     now contains native APIs. ROM contains certain
     unclassified APIs.
 
-  - Added a few classes: LCD, Sound, MinLCD, MinSound,
-    Button. 
+  - Added buttons API.
 
   - Improved the usability of the firmware a bit.
     Basically, you can now press the On/Off button
@@ -28,7 +31,8 @@ Version 0.1.1 (latest):
   - TinyVM has been ported to JDK1.2. This required
     a couple of fixes under jtools.
 
-
+  - Footprint: Test13 can create 4338 empty objects
+    (17352 bytes of allocation space).
 
 
 

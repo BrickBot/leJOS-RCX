@@ -1,7 +1,8 @@
 #!/bin/sh
 
-TEST_CLASSES="Test04 Test06 Test11 Test12 Test13 Test15 Test16 Test17"
+TEST_CLASSES="Test04 Test06 Test11 Test12 Test13 Test14 Test15 Test17"
 OUT_FILE=regression.log
+GOLD_FILE=regression.gold
 export TINYVMPATH=.
 
 rm $OUT_FILE
@@ -15,3 +16,13 @@ do
   echo "----------------- Run of $i.tvm" >> $OUT_FILE
   tvm-emul $i.tvm >> $OUT_FILE
 done
+
+if [ ! -f $GOLD_FILE ]; 
+then
+  echo "##### CREATED GOLD FILE #####"
+  cp $OUT_FILE $GOLD_FILE
+else
+  echo "##### BEGIN REGRESSION DIFF #####"
+  diff $OUT_FILE $GOLD_FILE
+  echo "#####  END REGRESSION DIFF  #####"
+fi

@@ -189,6 +189,14 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
   {
     if (Utilities.getVerboseLevel() == 0)
       return;
+    int pSize = iSignatures.size();
+    for (int i = 0; i < pSize; i++)
+    {
+      Signature pSig = (Signature) iSignatures.elementAt (i);
+      System.out.println ("Signature " + i + ": " + pSig.getImage());
+    }
+    if (Utilities.getVerboseLevel() <= 1)
+      return;
     System.out.println ("Master record : " + iMasterRecord.getLength() + 
                         " bytes.");
     System.out.println ("Class records : " + iClassTable.size() + " (" +

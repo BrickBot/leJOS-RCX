@@ -3,9 +3,10 @@ Summary
 -------
 
 TINYVM_HOME=<installation directory>
-TINYVMPATH=<like classpath>
 RCXTTY=<serial device>
 PATH=$PATH:$TINYVM_HOME/bin
+
+Use TINYVMPATH instead of CLASSPATH.
 
 Tools      : cd $TINYVM_HOME; make
 Firmware   : tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
@@ -13,14 +14,14 @@ Compiling  : tvmc <class>.java
 Linking    : tvmld <class> -o <class>.tvm
 Running    : tvm <class>.tvm
 
-Deleting the TinyVM firmware: Hold Prgm & Run, and press On/Off,
-                              while in program-download mode.
+Deleting TinyVM's firmware: 
+  Hold Prgm & Run, and press On/Off,
+  while in program-download mode.
 
-Exceptions                  : [XXXX Y], XXXX = method sig.; 
-                              Y = exception class index % 10.
-                              Press View to continue.
-
-(More details in Setup section below)
+Exceptions: 
+  [XXXX Y], XXXX = method signature; 
+            Y    = exception class index % 10.
+  Press On/Off to continue.
 
 What is TinyVM?
 ---------------
@@ -30,12 +31,11 @@ post-processed Java class files inside the Lego
 RCX. It's yet another firmware replacement for
 the RCX.
 
-TinyVM probably cannot be called a Java virtual 
-machine because of certain limitations, lack of 
-APIs, and other non-compliance issues. However,
-TinyVM supports most of the Java *language*
-and comes with a set of APIs for controlling
-the RCX.
+Legally speaking, TinyVM probably cannot be called 
+a Java Virtual Machine (JVM) because of certain 
+limitations, lack of APIs, and other non-compliance 
+issues. However, TinyVM supports most of the Java 
+*language*.
 
 Technical Information
 ---------------------
@@ -72,8 +72,9 @@ clearly not JNI compliant, but it suffices.
 Requirements
 ------------
 
-- JDK1.1.7B, available from http://java.sun.com.
-  Other VMs should work but they haven't been tested.
+- JDK1.1.X or JDK1.2.X, available from http://java.sun.com.
+  (The JDK is used for compilation, and to run some tools
+  provided with TinyVM, e.g. the linker).
 
 - If you're planning to change the source code and
   rebuild it, you should get Kekoa's librcx package,
@@ -92,11 +93,8 @@ Environment:
     your PATH.
   - RCXTTY must be defined to point to the
     IR device file. For example, in my system
-    it's /dev/ttyS1. I suspect that in most
-    Linux systems you have to define it as
-    /dev/ttyS0. In Windows (assuming TinyVM
-    has been ported) it would be COM1, COM2,
-    etc.
+    it's /dev/ttyS1. In Windows (assuming TinyVM
+    has been ported) it would be COM1, COM2, etc.
   - Before linking, TINYVMPATH should contain
     entries for locating class files, jar files
     or zip files. It works pretty much like
@@ -118,8 +116,8 @@ Deleting the Firmware:
   by holding both the Prgm and Run buttons down
   while you press the On-Off button. 
 
-Running a Example
------------------
+Running an Example
+------------------
 
   1. Go to the example directory.
 
@@ -161,20 +159,27 @@ Running a Example
  
      If the RCX is in range, the LCD will show 
      the download count as  the number of bytes 
-     divided by 100. (As of this writing, tvm
-     does not report communication errors. If TinyVM
-     receives bad data, you'll hear beeps, meaning that 
-     the firmware is returning to program-download state).
+     divided by 100. (If nothing happens, make
+     sure the RCX is in range. Is the TinyVM
+     firmware there? If the RCX begins to beep,
+     kill tvm, turn off the RCX, wait until the
+     IR tower light is off, power up the RCX,
+     and try again).
+
      TinyVM will execute the program, as soon as
      the download has been completed. When 
      all non-daemon threads are finished, 
      the firmware will return to program-download 
      state. (Note that any pending queued tones 
      will not be heard).
+
+     You can kill the Java process by turning
+     off the RCX.
     
      As you may have guessed, you can only 
      download programs when the firmware is in
      program-download state.
+     
 
 Exceptions
 ----------
@@ -197,8 +202,13 @@ When you link a program with tvmld -verbose, you will
 get a list of class indices and (hopefully by the 
 time this is released) one for method signatures.
 
-NOTE: You must press View to continue after you see
-an exception trace.
+Traces that are a bit more informative can be obtained
+with tvm-emul (see Emulation). If you have a portion of
+code that doesn't depend on TinyVM APIs, I suggest
+you try it with the JDK.
+
+IMPORTANT: You must press On/Off to continue after you 
+see an exception trace.
 
 Footprint
 ---------
@@ -246,24 +256,17 @@ mind are:
   - The instanceof operation will always be true  
     for interfaces. In bytecode, CHECKCAST succeeds
     on all interface classes (which is a bit unsafe).
-  - All threads are non-deamon threads. (If you have
-    an infinite loop in one thread, the firmware will
-    not go back to program-download state).
+  - All threads are non-deamon threads. 
   - There are no objects of type java.lang.Class, 
     which means that the ".class" construct won't
-    work. Class.forName() throws NoSuchMethorError.
+    work. Class.forName() throws ClassNotFoundException.
   - Most JDK APIs are unavailable.
 
 Known Bugs
 ----------
 
-  - A StackOverflowError will crash the VM.
-  - Finally blocks are not executed if OutOfMemoryErrors
-    are thrown.
-  - System.arraycopy is currently unimplemented.
-    Hence, operations on StringBuffers will
-    misbehave.
-  - Unknown native methods are not reported.
+  - Unknown native methods are not executed. Neither
+    the linker nor the VM complain about them.
 
 Documentation
 -------------
