@@ -112,7 +112,7 @@ clean:
 	rm -f `find . -name '*.bak'`
 	rm -f `find . -name '*.stackdump'`
 	rm -f `find . -name '*.backtrace'`
-	-rm -r apidocs
+	-rm -rf apidocs
 
 distclean: clean
 	rm -rf `find . -name 'CVS'`
