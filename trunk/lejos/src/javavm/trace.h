@@ -25,6 +25,19 @@
 #define THREADS2       22
 #define THREADS3       23
 
+#define MEMORY0        30
+#define MEMORY1        31
+#define MEMORY2        32
+#define MEMORY3        33
+#define MEMORY4        34
+#define MEMORY5        35
+#define MEMORY6        36
+#define MEMORY7        37
+#define MEMORY8        38
+
+#define EXCEPTIONS0    40
+#define EXCEPTIONS1    41
+
 inline void assert (boolean aCond, int aCode)
 {
   #ifdef EMULATE

@@ -6,10 +6,14 @@ case OP_NEW:
   // Stack: +1
   // Arguments: 2
   // Hi byte unused
-  *(++stackTop) = (STACKWORD) new_object_for_class (pc[1]);
+  gStackWord = (STACKWORD) new_object_checked (pc[1], pc - 1);
   if (gMustExit)
     return;
-  pc += 2;
+  if (!gStackWord)
+  {
+    *(++stackTop) = gStackWord;
+    pc += 2;
+  }
   goto LABEL_ENGINELOOP;
 case OP_GETSTATIC:
 case OP_PUTSTATIC:
