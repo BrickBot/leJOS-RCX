@@ -265,7 +265,7 @@ void do_return (byte numWords)
     printf ("do_return: thread is done: %d\n", (int) currentThread);
     #endif
     currentThread->state = DEAD;
-    switch_thread();
+    schedule_request (REQUEST_SWITCH_THREAD);
     return;
   }
 

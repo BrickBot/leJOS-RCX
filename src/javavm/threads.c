@@ -23,7 +23,6 @@
  */
 Thread* currentThread;
 byte gThreadCounter;
-boolean gRequestSuicide;
 
 StackFrame *current_stackframe()
 {
@@ -117,7 +116,7 @@ boolean init_thread (Thread *thread)
  * @return false iff there are no live threads
  *         to switch to.
  */
-void switch_thread()
+boolean switch_thread()
 {
   Thread *anchorThread;
   Thread *previousThread;
@@ -157,13 +156,8 @@ void switch_thread()
   printf ("Calling switch_thread_hook\n");
   #endif
   switch_thread_hook();
-  if (gMustExit)
-  {
-    #if DEBUG_THREADS
-    printf ("Exiting engine on switch_thread\n");
-    #endif
-    return;
-  }
+  if (gMakeRequest && gRequestCode == REQUEST_EXIT)
+    return false;
   previousThread = currentThread;
   currentThread = (Thread *) word2ptr (currentThread->nextThread);
   #if DEBUG_THREADS
@@ -219,8 +213,7 @@ void switch_thread()
           printf ("switch_thread: all threads are dead: %d\n", (int) currentThread);
           #endif
 	  currentThread = null;
-          gMustExit = true;
-          return;
+          return false;
 	}
 	/* anchorThread should always point somewhere in the circular list */
 	anchorThread = previousThread;
@@ -289,8 +282,10 @@ void switch_thread()
   printf ("done updading registers\n");
   #endif
   
-  if (gRequestSuicide)
-    throw_exception (threadDeath);
+//  if (gRequestSuicide)
+//    throw_exception (threadDeath);
+
+  return true;
 }
 
 /**
@@ -315,7 +310,7 @@ void enter_monitor (Object* obj)
     currentThread->state = MON_WAITING;
     currentThread->waitingOn = ptr2word (obj);
     // Gotta yield
-    switch_thread();    
+    schedule_request (REQUEST_SWITCH_THREAD);    
     return;
   }
   set_thread_id (obj, tid);

@@ -4,7 +4,7 @@
 
 include ../Makefile.config
 
-CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -I. -O2 -Wall -Wno-unused
+CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -I. -O2 -Wall
 LFLAGS += -L${LIBRCX_HOME}/lib -L${LIBRCX_HOME}/float
 
 LIBS = -lrcx -lfloat
