@@ -120,7 +120,7 @@ boolean init_thread (Thread *thread)
 void switch_thread()
 {
   Thread *anchorThread;
-  Thread *nextThread;
+  Thread *previousThread;
   StackFrame *stackFrame;
   boolean liveThreadExists;
 
@@ -153,10 +153,22 @@ void switch_thread()
 
   // Loop until a RUNNING frame is found
  LABEL_TASKLOOP:
+  #if DEBUG_THREADS
+  printf ("Calling switch_thread_hook\n");
+  #endif
   switch_thread_hook();
   if (gMustExit)
+  {
+    #if DEBUG_THREADS
+    printf ("Exiting engine on switch_thread\n");
+    #endif
     return;
+  }
+  previousThread = currentThread;
   currentThread = (Thread *) word2ptr (currentThread->nextThread);
+  #if DEBUG_THREADS
+  printf ("Checking state of thread %d: %d\n", (int) currentThread, (int) currentThread->state);
+  #endif
   switch (currentThread->state)
   {
     case WAITING:
@@ -187,7 +199,8 @@ void switch_thread()
           gMustExit = true;
           return;
 	}
-	anchorThread = (Thread *) ref2ptr(currentThread->nextThread);
+	/* anchorThread should always point somewhere in the circular list */
+	anchorThread = previousThread;
       }
       #if REMOVE_DEAD_THREADS
       free_array ((Object *) word2ptr (currentThread->stackFrameArray));
@@ -200,8 +213,11 @@ void switch_thread()
       currentThread->isReferenceArray = JNULL;
       #endif SAFE
 
-      nextThread = (Thread *) word2ptr (currentThread->nextThread);
-      currentThread->nextThread = ptr2word (nextThread);
+      /* Remove currentThread from circular list */
+      
+      previousThread->nextThread = ptr2word (currentThread->nextThread);
+      currentThread = previousThread;
+      
       #endif REMOVE_DEAD_THREADS
       break;
     case STARTED:      
@@ -234,7 +250,7 @@ void switch_thread()
       break;
   }
   #if DEBUG_THREADS
-  printf ("switch_thread: considered thread %d: %d\n", (int) currentThread,
+  printf ("switch_thread: done processing thread %d: %d\n", (int) currentThread,
           (int) (currentThread->state == RUNNING));
   #endif
 

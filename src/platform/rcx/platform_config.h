@@ -10,6 +10,10 @@
 
 #define LITTLE_ENDIAN 0
 
+// Floating point arithmetic supported?
+
+#define FP_ARITHMETIC 1
+
 // Are we using the timer IRQ to switch threads? Not yet.
 
 #define PLATFORM_HANDLES_SWITCH_THREAD 0

@@ -21,8 +21,16 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
   switch (signature)
   {
     case START_V:
-      init_thread ((Thread *) word2ptr(paramBase[0]));
+      if (!init_thread ((Thread *) word2ptr(paramBase[0])))
+	return;
       break;
+    case YIELD_V:
+      // Pop current stack frame
+      do_return (0);
+      // Switch current thread
+      switch_thread();
+      // Go back and continue
+      return;
     case CALLROM0_V:
       __rcall0 (paramBase[0]);
       break;      
@@ -61,6 +69,10 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       #endif
       *((byte *) word2ptr(paramBase[0])) = (byte) (paramBase[1] & 0xFF);
       break;
+    case SETMEMORYBIT_V:
+      *((byte *)word2ptr(paramBase[0])) =
+        ( *((byte *)word2ptr(paramBase[0])) & (~(1<<paramBase[1])) ) | (((paramBase[2] != 0) ? 1 : 0) <<paramBase[1]);
+      break;      
     case GETDATAADDRESS_I:
       *(++stackTop) = ptr2word (((byte *) word2ptr (paramBase[0])) + HEADER_SIZE);
       do_return (1);
@@ -68,6 +80,9 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
     case RESETRCX_V:
       reset_rcx_serial();
       break;
+    default:
+      throw_exception (noSuchMethodError);
+      return;
   }  
   do_return (0);
 } 

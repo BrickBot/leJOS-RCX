@@ -25,8 +25,16 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
   switch (signature)
   {
     case START_V:
-      init_thread ((Thread *) paramBase[0]);
+      if (!init_thread ((Thread *) word2ptr(paramBase[0])))
+	return;
       break;
+    case YIELD_V:
+      // Pop current stack frame
+      do_return (0);
+      // Switch current thread
+      switch_thread();
+      // Go back and continue
+      return;
     case CALLROM0_V:
       printf ("& ROM call 0: 0x%lX\n", paramBase[0]);
       break;      
@@ -68,6 +76,9 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
     case WRITEMEMORYBYTE_V:
       printf ("& Attempt to write byte [%lX] at 0x%lX (no effect)\n", paramBase[1] & 0xFF, paramBase[0] & 0xFFFF);
       break;
+    case SETMEMORYBIT_V:
+       printf ("& Attempt to set memory bit [%ld] at 0x%lX (no effect)\n", paramBase[1] & 0xFF, paramBase[0] & 0xFFFF);
+      break;      
     case GETDATAADDRESS_I:
       *(++stackTop) = ptr2word (((byte *) word2ptr (paramBase[0])) + HEADER_SIZE);
       do_return (1);
@@ -75,10 +86,8 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
     case RESETRCX_V:
       printf ("& Call to resetRcx");
       break;
-    #ifdef VERIFY
     default:
-      assert (false, 2000 + signature);
-    #endif VERIFY
+      throw_exception (noSuchMethodError);
   }
   do_return (0);
 } 

@@ -10,6 +10,7 @@ public interface SpecialSignatureConstants {
     "<init>()V",
     "<clinit>()V",
     "start()V",
+    "yield()V",
     "arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V",
     "callRom0(S)V",
     "callRom1(SS)V",
@@ -19,6 +20,8 @@ public interface SpecialSignatureConstants {
     "resetRcx()V",
     "readMemoryByte(I)B",
     "writeMemoryByte(IB)V",
-    "getDataAddress(Ljava/lang/Object;)I"
+    "getDataAddress(Ljava/lang/Object;)I",
+    "setMemoryBit(III)V",
+    "currentTimeMillis()J"
   };
 }

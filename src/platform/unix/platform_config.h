@@ -2,9 +2,11 @@
 #ifndef _PLATFORM_CONFIG_H
 #define _PLATFORM_CONFIG_H
 
+#include <stdio.h>
 #define ptr2word(PTR_) ((STACKWORD) (PTR_))
 #define word2ptr(WRD_) ((void *) (WRD_))
 #define LITTLE_ENDIAN 1
+#define FP_ARITHMETIC 1
 #define PLATFORM_HANDLES_SWITCH_THREAD 0
 #define OPCODES_PER_TIME_SLICE 148
 #define VERIFY

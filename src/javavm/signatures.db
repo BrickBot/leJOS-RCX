@@ -20,6 +20,7 @@ run()V
 #--------------------------------------
 
 start()V
+yield()V
 arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V
 
 callRom0(S)V
@@ -31,5 +32,7 @@ resetRcx()V
 readMemoryByte(I)B
 writeMemoryByte(IB)V
 getDataAddress(Ljava/lang/Object;)I
+setMemoryBit(III)V
+currentTimeMillis()J
 
 

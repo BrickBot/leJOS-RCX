@@ -46,12 +46,8 @@ case OP_IF_ICMPGT:
 case OP_IFGT:
   do_goto (pop_jint() > 0);
   goto LABEL_ENGINELOOP;
-case OP_FCMPL:
-case OP_FCMPG:
-  // TBD: no distinction between opcodes
-  tempStackWord = pop_word();
-  do_fcmp (word2jfloat(pop_word()), word2jfloat(tempStackWord), 0);
-  goto LABEL_ENGINELOOP;
+
+
 case OP_DCMPL:
 case OP_DCMPG:
   // TBD: no distinction between opcodes
@@ -66,19 +62,6 @@ case OP_DCMPG:
     do_fcmp (word2jfloat(wrd1), word2jfloat (wrd2), 0);
   }
   goto LABEL_ENGINELOOP;
-case OP_LCMP:
-  // Arguments: 0
-  // Stack: -4 + 1
-  {
-    JLONG l1, l2;
-    JINT c;
-
-    pop_jlong (&l2);
-    pop_jlong (&l1);
-    c = jlong_compare (l1, l2);
-    push_word ((c == 0) ? 0 : ((c < 0) ? -1 : +1));
-  }
-  goto LABEL_ENGINELOOP;    
 case OP_JSR:
   // Arguments: 2
   // Stack: +1
@@ -100,9 +83,37 @@ case OP_RET:
   // No pc increment!
   goto LABEL_ENGINELOOP;
 
+#if FP_ARITHMETIC
+
+case OP_FCMPL:
+case OP_FCMPG:
+  // TBD: no distinction between opcodes
+  tempStackWord = pop_word();
+  do_fcmp (word2jfloat(pop_word()), word2jfloat(tempStackWord), 0);
+  goto LABEL_ENGINELOOP;
+  
+#endif FP_ARITHMETIC
+
+#if 0
+  
+case OP_LCMP:
+  // Arguments: 0
+  // Stack: -4 + 1
+  {
+    JLONG l1, l2;
+    JINT c;
+
+    pop_jlong (&l2);
+    pop_jlong (&l1);
+    c = jlong_compare (l1, l2);
+    push_word ((c == 0) ? 0 : ((c < 0) ? -1 : +1));
+  }
+  goto LABEL_ENGINELOOP;    
+
+#endif 0
 
 // Notes:
-// - Not supported: TABLESWITCH, LOOKUPSWITCH, GOTO_W, JSR_W
+// - Not supported: TABLESWITCH, LOOKUPSWITCH, GOTO_W, JSR_W, LCMP
 
 /*end*/
 
