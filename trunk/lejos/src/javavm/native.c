@@ -31,6 +31,12 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
     case CALLROM0_V:
       __rcall0 (paramBase[0]);
       break;      
+    case CALLROM1_V:
+      __rcall1 (paramBase[0], paramBase[1]);
+      break;      
+    case CALLROM2_V:
+      __rcall2 (paramBase[0], paramBase[1], paramBase[2]);
+      break;      
     case CALLROM3_V:
       __rcall3 (paramBase[0], paramBase[1], paramBase[2], paramBase[3]);
       break;      

@@ -11,7 +11,9 @@ JAVA=java
 
 export CLASSPATH
 
-all: check all_jtools tinyvm_bin
+default: check all_jtools all_ctools core_classes
+
+all: default tinyvm_bin
 
 check:
 	@if [ -f ${TINYVM_HOME} ]; then \
@@ -33,8 +35,16 @@ java_loader:
 	@echo Making loader
 	${JAVAC} ${JTOOLS}/js/tinyvm/*.java
 
+all_ctools:
+	cd tools; make
+
 tinyvm_bin:
 	@echo Making TinyVM binary
+	cd vmsrc; make
+
+tinyvm_emul:
+	@echo Making TinyVM binary for emulation
+	cd vmtest; make
 
 core_classes:
 	${JAVAC} -classpath ${CLASSES_DIR} `find ${CLASSES_DIR} -name '*.java' -printf "%h/%f " `
@@ -46,7 +56,8 @@ clean:
 	rm -rf `find . -name '*.o' -printf "%h/%f "`
 	rm -rf `find . -name '*~' -printf "%h/%f "`
 
-
+cleaner: clean
+	rm -rf `find . -name '*.srec'`
 
 
 

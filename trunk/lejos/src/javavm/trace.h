@@ -60,6 +60,7 @@ extern void assert (boolean aCond, int aCode);
 #define DEBUG_BYTECODE 1
 #define DEBUG_FIELDS   1
 #define DEBUG_OBJECTS  1
+#define DEBUG_RCX      1
 
 #endif
 

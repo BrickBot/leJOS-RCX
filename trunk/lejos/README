@@ -1,0 +1,122 @@
+
+Summary
+-------
+
+TINYVM_HOME=<installation directory>
+TINYVMPATH=<like classpath>
+PATH=$PATH:$TINYVM_HOME/bin
+Build      : cd $TINYVM_HOME; make
+Firmware   : tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
+Compilation: tvmc <class>.java
+Linking    : tvmld <class> -o <class>.tvm
+Loading    : tvm <class>.tvm
+
+What is TinyVM?
+---------------
+
+TinyVM is a virtual machine that can execute 
+post-processed Java class files inside the Lego
+RCX. TinyVM cannot be called a Java virtual 
+machine because of certain limitations, lack of 
+APIs, and other non-compliance issues. However,
+TinyVM supports most of the Java *language*
+and comes with a set of APIs for controlling
+the RCX.
+
+How does it work?
+-----------------
+
+The virtual machine (tinyvm.srec) contains all
+the code necessary to execute (post-processed)
+Java bytecodes. This is essentially a firmware
+replacement program.
+
+To keep the VM's footprint as small as possible,
+no class-loading code was included in it. Instead,
+classes are linked together into a compact and
+resolved binary format, which is downloaded into
+the RCX for execution.
+
+Limitations
+-----------
+
+Due to size constraints, some language features
+have been omitted. Others haven't been implemented 
+yet. The limitations that come to mind are:
+
+  - Garbage collection is not performed.
+    (The number of objects in your program
+    should be bounded).
+  - Switch statements are not supported.
+  - Floating point operations are not supported.
+  - Operations on variables of type long are not 
+    suported.
+  - Strings aren't totally supported.
+  - Most JDK APIs are unavailable, of course.
+
+Requirements
+------------
+
+- JDK1.1.7B, available from http://java.sun.com.
+  Other VMs should work but they haven't been tested.
+
+- If you're planning to change the source code and
+  rebuild it, you should get Kekoa's librcx package,
+  build it, and set LIBRCX_HOME to its installation 
+  directory.
+
+Setup
+-----
+
+Environment:
+  - TINYVM_HOME should point to the TinyVM
+    installation directory.
+  - Your PATH is assumed to point to the 
+    JDK's bin directory.
+  - You should adjust your PATH so that the 
+    scripts under $TINYVM_HOME/bin can be
+    easily executed.
+  - Before linking, TINYVMPATH should contain
+    entries for locating class files, jar files
+    or zip files. It works pretty much like
+    CLASSPATH does for the JDK.
+
+Building the Tools:
+  - If the setup is right, simply typing 'make'
+    while at $TINYVM_HOME, should build all the
+    tools necessary to start using TinyVM.
+
+Downloading the Firmware:
+  - Simply run:
+    tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
+
+Running a Example
+-----------------
+
+  1. Go to the example directory.
+
+     cd $TINYVM_HOME/examples/hello
+
+  2. Set the TINYVMPATH variable.
+ 
+     export TINYVMPATH=.
+
+  3. Compile the program.
+
+     javac *.java
+
+  4. Link the program.
+
+     tvmld HelloRCX -o HelloRCX.tvm
+
+  5. Download firmware, if necessary.
+
+     tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
+
+  6. Download the program.
+
+     tvm HelloRCX.tvm
+
+
+
+

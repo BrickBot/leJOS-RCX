@@ -44,8 +44,8 @@ void do_goto (boolean aCond)
 
   if (aCond)
   {
-    pc--;
     pc += (JSHORT) (((TWOBYTES) pc[0] << 8) | pc[1]);
+    pc--;
   }
   else
   {
