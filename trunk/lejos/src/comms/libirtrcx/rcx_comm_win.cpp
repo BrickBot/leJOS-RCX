@@ -77,7 +77,7 @@ extern bool __comm_debug;
 
 void __rcx_perror(char *str) 
 {
-	if (__comm_debug) fprintf(stderr, "Error %lu: %s\n", (unsigned long) GetLastError(), str);
+	if (__comm_debug) printf("Error %lu: %s\n", (unsigned long) GetLastError(), str);
 }
 
 int __rcx_read (void* port, void *buf, int maxlen, int timeout)
@@ -93,8 +93,8 @@ bool __rcx_read_isTimedOut (timeval* begin, int timeout_ms)
    gettimeofday(&now, 0);
 
    int elapsed_ms = (now.tv_sec - begin->tv_sec) * 1000 + (now.tv_usec - begin->tv_usec) / 1000;
-	if (__comm_debug) fprintf(stderr, "elapsed = %d\n", elapsed_ms);
-	if (__comm_debug) fprintf(stderr, "timeout = %d\n", timeout_ms);
+	if (__comm_debug) printf("elapsed = %d\n", elapsed_ms);
+	if (__comm_debug) printf("timeout = %d\n", timeout_ms);
    return elapsed_ms >= timeout_ms;
 }
 
@@ -113,11 +113,11 @@ int __rcx_read_usb (void* port, void* buf, int maxlen, int timeout_ms)
       count = 0;
 		if (ReadFile(((Port*) port)->fileHandle, bufp, maxlen, &count, NULL) == FALSE)
 		{
-			if (__comm_debug) fprintf(stderr, "usb mode: read error %lu\n", (unsigned long) GetLastError());
+			if (__comm_debug) printf("usb mode: read error %lu\n", (unsigned long) GetLastError());
 			__rcx_perror("ReadFile");
 			return RCX_READ_FAIL;
 		}
-      if (__comm_debug) fprintf(stderr, "usb mode: read %d\n", count);
+      if (__comm_debug) printf("usb mode: read %d\n", count);
 		len = count;
 	}
 	while (count == 0 && !__rcx_read_isTimedOut(&timebegin, timeout_ms));
@@ -136,11 +136,11 @@ int __rcx_read_usb (void* port, void* buf, int maxlen, int timeout_ms)
 			count = 0;
 			if (ReadFile(((Port*) port)->fileHandle, &bufp[len], maxlen-len, &count, NULL) == FALSE)
 			{
-				if (__comm_debug) fprintf(stderr, "usb mode: read error %lu\n", (unsigned long) GetLastError());
+				if (__comm_debug) printf("usb mode: read error %lu\n", (unsigned long) GetLastError());
 				__rcx_perror("ReadFile");
 				return RCX_READ_FAIL;
 			}
-	      if (__comm_debug) fprintf(stderr, "usb mode: read %d\n", count);
+	      if (__comm_debug) printf("usb mode: read %d\n", count);
 			
 			len += count;
 		}
@@ -170,11 +170,11 @@ int __rcx_read_serial (void* port, void* buf, int maxlen, int timeout_ms)
 		DWORD count = 0;
 		if (ReadFile(((Port*) port)->fileHandle, &bufp[len], maxlen - len, &count, NULL) == FALSE) 
 		{
-			fprintf(stderr, "serial mode: read error %lu\n", (unsigned long) GetLastError());
+			if (__comm_debug) printf("serial mode: read error %lu\n", (unsigned long) GetLastError());
 			__rcx_perror("ReadFile");
 			return RCX_READ_FAIL;
 		}
-      if (__comm_debug) fprintf(stderr, "serial mode: read %d\n", count);
+      if (__comm_debug) printf("serial mode: read %d\n", count);
 
 		if (count == 0) 
 		{
