@@ -1,8 +1,14 @@
-LEJOS_HOME=../../..
-VMSRC=$(LEJOS_HOME)/src/javavm
-
 # Makefile
 # Adapted from config.mk in librcx by Kekoa Proudfoot.
+
+ifeq (,$(findstring cygwin,$(OSTYPE)))
+  LEJOS_HOME_NATIVE=$(shell cygpath -m $(LEJOS_HOME))
+else
+  LEJOS_HOME_NATIVE=$(LEJOS_HOME)
+endif
+
+LIBRCX_HOME=$(shell realpath ./librcx)
+VMSRC=$(LEJOS_HOME)/src/javavm
 
 include $(LEJOS_HOME)/Makefile.config
 
@@ -58,15 +64,28 @@ all: ${PROGS}
 	@echo Done building TinyVM srec
 
 rcx.map: rcx.lds $(OBJS)
+	@echo ""
+	@echo "====> Building lejos.srec"
+	@echo ""
 	$(LD) $(LFLAGS) -Trcx.lds -Map rcx.map -o ${TINYVMBINARY} $(OBJS) $(LIBS)
-	$(OC)  ${TINYVMBINARY}
+	$(OC) ${TINYVMBINARY}
 
 rcx_gen.lds: rcx.map
-	${JAVA} -classpath $(LEJOS_HOME)/lib/jtools.jar js.tools.CodePacker rcx.lds rcx.map rcx_gen.lds
+	@echo ""
+	@echo "====> Packing lejos.srec"
+	@echo ""
+	${JAVA} -classpath "$(LEJOS_HOME_NATIVE)/lib/jtools.jar" js.tools.CodePacker rcx.lds rcx.map rcx_gen.lds
 
+lib:
+	@echo ""
+	@echo "====> Making librcx"
+	@echo ""
+	cd $(LIBRCX_HOME); $(MAKE)
+	
 clean:
-	rm -f core $(LEJOS_HOME)/bin/*.srec *.o *~ *.bak rcx.map rcx_gen.lds
+	rm -f core ${TINYVMBINARY} *.o *~ *.bak rcx.map rcx_gen.lds
+	cd $(LIBRCX_HOME); $(MAKE) clean
 
-${TINYVMBINARY}: rcx_gen.lds
+${TINYVMBINARY}: lib rcx_gen.lds
 	$(LD) $(LFLAGS) -Trcx_gen.lds -o ${TINYVMBINARY} $(OBJS) $(LIBS)
-	$(OC)  ${TINYVMBINARY}
+	$(OC) ${TINYVMBINARY}
