@@ -12,6 +12,9 @@
  *   08/24/00 -- Sending delete-firmware twice, like Lego's
  *               GUI. Added sleep_us(), which is called in between
  *               data transfers. 
+ *   09/15/00 -- Made sure calls to nbread use exact lengths, as
+ *               a workaround for a bug in the select system call
+ *               in the latest CygWin version.
  */
 
 /*
@@ -89,6 +92,7 @@
 #include <sys/time.h>
 #include <ctype.h>
 #include <string.h>
+#include "util.h"
 
 /* Machine-dependent defines */
 
@@ -114,7 +118,7 @@
 #define RCX_NO_RESPONSE   -4
 #define RCX_BAD_RESPONSE  -5
 
-#define DEFAULT_FIRMWARE "tinyvm.srec"
+#define DEFAULT_FIRMWARE "lejos.srec"
 
 /* Get a file descriptor for the named tty, exits with message on error */
 extern int rcx_init (char *tty, int is_fast);
@@ -163,7 +167,14 @@ extern char *rcx_strerror(int error);
 
 /* Defines */
 
-#define BUFFERSIZE  4096
+#define BUFFERSIZE  1024
+
+
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
+#define TRACE 0
 
 /* Globals */
 
@@ -202,9 +213,17 @@ static void sleep_us (unsigned long us)
 {
   struct timeval tval;
 
+  #if TRACE
+  printf ("sleeping\n");
+  #endif
+
   tval.tv_sec = us / 1000000;
   tval.tv_usec = us % 1000000;
   select (0, NULL, NULL, NULL, &tval);	
+
+  #if TRACE
+  printf ("done sleeping\n");
+  #endif
 }
 
 static void
@@ -239,28 +258,64 @@ nbread (int fd, void *buf, int maxlen, int timeout)
 
     while (len < maxlen) {
 	fd_set fds;
+	fd_set fdexcep;
 	struct timeval tv;
 	int count;
+	int numReady;
 
 	FD_ZERO(&fds);
+	FD_ZERO(&fdexcep);
 	FD_SET(fd, &fds);
+	FD_SET(fd, &fdexcep);
 
 	tv.tv_sec = timeout / 1000;
 	tv.tv_usec = (timeout % 1000) * 1000;
 
-	if (select(FD_SETSIZE, &fds, NULL, NULL, &tv) < 0) {
+	#if TRACE
+	printf ("select %ld:%ld\n", (long) tv.tv_sec, (long) tv.tv_usec);
+	#endif
+	
+	if ((numReady = select(FD_SETSIZE, &fds, NULL, &fdexcep, &tv)) < 0) {
 	    perror("select");
 	    exit(1);
 	}
-
+	
+	#if TRACE
+	printf ("select returned %d\n", (int) numReady);
+	#endif
+	
+        if (numReady == 0)
+	{
+	  #if TRACE
+	  printf ("select timeout\n");
+	  #endif
+          return len;
+	}
+	
 	if (!FD_ISSET(fd, &fds))
 	    break;
-
-	if ((count = read(fd, &bufp[len], maxlen - len)) < 0) {
+ 
+        if (FD_ISSET(fd, &fdexcep))
+	{
+	  #if TRACE
+	  printf ("Exception condition\n");
+	  #endif
+	  return len;
+	}
+	
+	#if TRACE
+	printf ("reading %d\n", (int) (maxlen - len));
+	#endif
+	
+	if ((count = read(fd, &(bufp[len]), maxlen - len)) < 0) {
 	    perror("read");
 	    exit(1);
 	}
 
+	#if TRACE
+	printf ("read %d\n", (int) count);
+	#endif
+	
 	len += count;
     }
 
@@ -277,7 +332,7 @@ rcx_init(char *tty, int is_fast)
 
     if (__comm_debug) printf("mode = %s\n", is_fast ? "fast" : "slow");
 
-    if ((fd = open(tty, O_RDWR)) < 0) {
+    if ((fd = open(tty, O_RDWR | O_BINARY)) < 0) {
 	perror(tty);
 	exit(1);
     }
@@ -324,14 +379,33 @@ rcx_wakeup_tower (int fd, int timeout)
     int count = 0;
     int len;
 
+    #if TRACE
+    printf ("Resetting timer\n");
+    #endif
+    
     timer_reset(&timer);
 
     do {
+	#if TRACE
+	printf ("Writing message of size %d\n", (int) sizeof(msg));
+	#endif
+	
 	if (write(fd, msg, sizeof(msg)) != sizeof(msg)) {
 	    perror("write");
 	    exit(1);
 	}
-	count += len = nbread(fd, buf, BUFFERSIZE, 50);
+	
+	#if TRACE
+	printf ("Back from write\n");
+	#endif
+	
+	//count += (len = nbread(fd, buf, BUFFERSIZE, 50));
+	count += (len = nbread(fd, buf, sizeof(msg), 50));
+	
+	#if TRACE
+	printf ("Response length = %d\n", (int) len);
+	#endif
+	
 	if (len == sizeof(msg) && !memcmp(buf, msg, sizeof(msg)))
 	    return RCX_OK; /* success */
     } while (timer_read(&timer) < (float)timeout / 1000.0f);
@@ -401,7 +475,7 @@ rcx_send (int fd, void *buf, int len, int use_comp)
 
 	/* Flush connection if echo is bad */
 
-	echolen = nbread(fd, echo, BUFFERSIZE, 200);
+	//echolen = nbread(fd, echo, BUFFERSIZE, 200);
 
 	return RCX_BAD_ECHO;
     }
@@ -418,10 +492,16 @@ rcx_recv (int fd, void *buf, int maxlen, int timeout, int use_comp)
     int sum;
     int pos;
     int len;
+    int expectedLen;
 
     /* Receive message */
 
-    msglen = nbread(fd, msg, BUFFERSIZE, timeout);
+    #if TRACE
+    printf ("rcx_recv maxlen=%d\n", (int) maxlen);
+    #endif
+    
+    expectedLen = use_comp ? (maxlen + 2) * 2 + 1 : BUFFERSIZE;
+    msglen = nbread(fd, msg, expectedLen, timeout);
 
     if (__comm_debug) {
 	printf("recvlen = %d\n", msglen);
@@ -505,6 +585,11 @@ rcx_sendrecv (int fd, void *send, int slen, void *recv, int rlen,
 {
     int status = 0;
 
+    #if TRACE
+    printf ("rcx_sendrecv: slen=%d, rlen=%d, use_comp=%d\n",
+            (int) slen, (int) rlen, use_comp); 
+    #endif
+    
     if (__comm_debug) printf("sendrecv %d:\n", slen);
 
     while (retries--) {
@@ -767,9 +852,8 @@ char *progname;
 
 /* Defines */
 
-#define BUFFERSIZE      4096
 #define RETRIES         5
-#define WAKEUP_TIMEOUT  10000
+#define WAKEUP_TIMEOUT  1000
 
 #define IMAGE_START     0x8000
 #define IMAGE_MAXLEN    0x4c00
@@ -974,14 +1058,33 @@ main (int argc, char **argv)
     unsigned int image_len;
     char *tty = NULL;
     char *fileName = NULL;
+    char *dname = NULL;
     int use_fast = 0;
     int usage = 0;
     int fd;
     int status;
 
     progname = argv[0];
+    dname = dirname (progname);
+    if (strcmp (dname, "") == 0)
+    {
+      progname = which (progname);
+      if (progname == NULL)
+      {
+	fprintf (stderr, "Unexpected: %s not in PATH.\n", argv[0]);
+	exit (1);
+      }
+      dname = dirname (progname);
+    }
 
+    //printf ("program = %s\n", progname);
+    //printf ("dirname = %s\n", dname);
+     
     /* Parse command line */
+
+    #if TRACE
+    printf ("Parsing command line\n");
+    #endif
 
     argv++; argc--;
     while (argc && argv[0][0] == '-') {
@@ -1049,16 +1152,13 @@ main (int argc, char **argv)
     if (argc == 0) {
       char *tinyvmHome;
 
-      if ((tinyvmHome = getenv("TINYVM_HOME")) == NULL) {
-	fprintf(stderr, "TINYVM_HOME undefined; running old-tvmfirmdl directly?\n");
-	exit (1);
-      }
+      tinyvmHome = append (dname, "/..");
       fileName = (char *) malloc (strlen (tinyvmHome) + 32);
       strcpy (fileName, tinyvmHome);
       strcat (fileName, "/bin/lejos.srec");
-      printf ("Default file: %s.\n", fileName);
       if (!usage)
-        printf ("(Use --help for options)\n");
+        printf ("Use --help for options.\n");
+      printf ("Downloading default file: %s ...\n", fileName);
     } else if (argc == 1) {
       fileName = argv[0];
     } else {
@@ -1081,6 +1181,10 @@ main (int argc, char **argv)
 
     /* Load the s-record file */
 
+    #if TRACE
+    printf ("Loading srec file\n");
+    #endif
+
     image_len = srec_load(fileName, image, IMAGE_MAXLEN, &image_start);
 
     /* Get the tty name */
@@ -1097,14 +1201,26 @@ main (int argc, char **argv)
 
 	fd = rcx_init(tty, 1);
 	
+	#if TRACE
+	printf ("Waking up tower in fast mode\n");
+	#endif
+	
 	if ((status = rcx_wakeup_tower(fd, WAKEUP_TIMEOUT)) < 0) {
 	    fprintf(stderr, "%s: %s\n", progname, rcx_strerror(status));
 	    exit(1);
 	}
 
+	#if TRACE
+	printf ("Checking if RCX is alive\n");
+	#endif
+	
 	/* Check if already alive in fast mode */
 	if (!rcx_is_alive(fd, 0)) {
 	    /* Not alive in fast mode, download fastdl in slow mode */
+	    
+            #if TRACE
+	    printf ("RCX not alive\n");
+	    #endif
 	    
 	    close(fd);
 	    fd = rcx_init(tty, 0);
@@ -1121,6 +1237,10 @@ main (int argc, char **argv)
 	    fd = rcx_init(tty, 1);
 	}
 	
+	#if TRACE
+	printf ("Transfering image\n");
+	#endif
+	
 	/* Download image in fast mode */
 	
 	image_dl(fd, image, image_len, image_start, 0);
@@ -1129,12 +1249,24 @@ main (int argc, char **argv)
     else {
 	/* Try to wake up the tower in slow mode */
 
+        #if TRACE
+        printf ("Opening tty\n");
+        #endif
+
 	fd = rcx_init(tty, 0);
-    
+       
+        #if TRACE
+        printf ("Opening tower in slow mode\n");
+        #endif
+
 	if ((status = rcx_wakeup_tower(fd, WAKEUP_TIMEOUT)) < 0) {
 	    fprintf(stderr, "%s: %s\n", progname, rcx_strerror(status));
 	    exit(1);
 	}
+
+        #if TRACE
+        printf ("Checking if RCX is alive\n");
+        #endif
 
 	if (!rcx_is_alive(fd, 1)) {
 	    /* See if alive in fast mode */
@@ -1153,6 +1285,10 @@ main (int argc, char **argv)
 	    exit(1);
 	}
 	
+        #if TRACE
+        printf ("Downloading image\n");
+        #endif
+
 	/* Download image */
 	image_dl(fd, image, image_len, image_start, 1);
 	
