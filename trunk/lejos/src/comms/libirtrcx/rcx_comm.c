@@ -36,7 +36,6 @@
 #include <unistd.h>
 #include <termios.h>
 #include <sys/time.h>
-#include <asm/ioctl.h>
 #endif
 
 #include <stdio.h>
@@ -51,6 +50,7 @@
 #include "rcx_comm.h"
 
 #if defined(LINUX) || defined(linux)
+#include <asm/ioctl.h>
 #include "legousbtower.h"
 #endif
 
@@ -683,14 +683,4 @@ char *rcx_strerror (int error)
 	default: return "unknown error";
 	}
 }
-
-#if defined(_WIN32)
-void gettimeofday(timeval *tv, void *tzp) {
-	SYSTEMTIME st;
-	GetSystemTime(&st);
-	tv->tv_sec = (st.wHour) * 3600 + (st.wMinute) * 60 + st.wSecond;
-	tv->tv_usec = st.wMilliseconds * 1024;
-}
-#endif
-
 

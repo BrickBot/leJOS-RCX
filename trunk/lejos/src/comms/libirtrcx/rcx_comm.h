@@ -91,8 +91,6 @@ extern int mywrite(FILEDESCR fd, const void *buf, size_t len);
 extern int nbread(FILEDESCR fd, void *buf, int maxlen, int timeout);
 
 #if defined(_WIN32)
-void gettimeofday(timeval *tv, void *tzp);
-
 #define usleep(x) Sleep(x/1000)
 #endif
 
