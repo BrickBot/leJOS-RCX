@@ -43,7 +43,7 @@
 #include <errno.h>
 #include <string.h>
 
-#define USB_TOWER_NAME "/dev/usb/legousbtower0"
+#define USB_TOWER_NAME "/dev/usb/lego0"
 
 #include "rcx_comm_linux.h"
 #include "rcx_comm.cpp"
