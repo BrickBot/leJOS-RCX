@@ -66,7 +66,7 @@
 --  Thread            : 1
 --  Method signature  : 0
 --  Root method sig.  : 0
---  Bytecode offset   : 24
+--  Bytecode offset   : 29
 ----------------- Run of Test14.tvm
 & ROM call 3: 0x1FF2 (12319, 9, 12290)
 & ROM call 0: 0x27C8
@@ -612,20 +612,13 @@
 ----------------- Run of TestDaemon.tvm
 ----------------- Run of TestThreadState.tvm
 ----------------- Run of TestMonitor.tvm
-: expected 6, got 4
+: expected 6, got 5
 *** UNCAUGHT EXCEPTION/ERROR: 
 --  Exception class   : 5
 --  Thread            : 4
---  Method signature  : 59
+--  Method signature  : 54
 --  Root method sig.  : 1
 --  Bytecode offset   : 18
-: expected 4, got 5
-*** UNCAUGHT EXCEPTION/ERROR: 
---  Exception class   : 5
---  Thread            : 2
---  Method signature  : 56
---  Root method sig.  : 1
---  Bytecode offset   : 60
 : expected 5, got 6
 *** UNCAUGHT EXCEPTION/ERROR: 
 --  Exception class   : 5
@@ -655,8 +648,8 @@
 & Reading sensor 1, requested value CANONICAL, returned value 2
 & Reading sensor 2, requested value CANONICAL, returned value 2
 & Reading sensor 1, requested value CANONICAL, returned value 3
-& Reading sensor 2, requested value CANONICAL, returned value 3
 & Reading sensor 1, requested value CANONICAL, returned value 4
+& Reading sensor 2, requested value CANONICAL, returned value 3
 & Reading sensor 1, requested value CANONICAL, returned value 5
 & Reading sensor 2, requested value CANONICAL, returned value 4
 & Reading sensor 1, requested value CANONICAL, returned value 6
@@ -667,16 +660,31 @@
 & Reading sensor 1, requested value CANONICAL, returned value 9
 & Reading sensor 2, requested value CANONICAL, returned value 7
 & Reading sensor 1, requested value CANONICAL, returned value 10
-& Reading sensor 1, requested value CANONICAL, returned value 11
 & Reading sensor 2, requested value CANONICAL, returned value 8
+& Reading sensor 1, requested value CANONICAL, returned value 11
 & Reading sensor 1, requested value CANONICAL, returned value 12
 & Reading sensor 2, requested value CANONICAL, returned value 9
 & Reading sensor 1, requested value CANONICAL, returned value 13
-& Reading sensor 1, requested value CANONICAL, returned value 14
 & Reading sensor 2, requested value CANONICAL, returned value 10
+& Reading sensor 1, requested value CANONICAL, returned value 14
 & Reading sensor 1, requested value CANONICAL, returned value 15
 & Reading sensor 1, requested value CANONICAL, returned value 16
 & Reading sensor 1, requested value CANONICAL, returned value 17
 & Reading sensor 1, requested value CANONICAL, returned value 18
 & Reading sensor 1, requested value CANONICAL, returned value 19
 & Reading sensor 1, requested value CANONICAL, returned value 20
+----------------- Run of TestStringBuffer.tvm
+& ROM call 3: 0x1FF2 (12319, 1, 12290)
+& ROM call 0: 0x27C8
+& ROM call 3: 0x1FF2 (12319, 2, 12290)
+& ROM call 0: 0x27C8
+& ROM call 3: 0x1FF2 (12319, 3, 12290)
+& ROM call 0: 0x27C8
+& ROM call 3: 0x1FF2 (12319, 4, 12290)
+& ROM call 0: 0x27C8
+& ROM call 3: 0x1FF2 (12319, 5, 12290)
+& ROM call 0: 0x27C8
+& ROM call 3: 0x1FF2 (12319, 6, 12290)
+& ROM call 0: 0x27C8
+& ROM call 3: 0x1FF2 (12319, 7, 12290)
+& ROM call 0: 0x27C8
