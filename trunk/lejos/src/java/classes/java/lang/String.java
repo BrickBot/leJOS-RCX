@@ -1,7 +1,7 @@
 package java.lang;
 
 /**
- * <b>Class String is not yet supported.</b>
+ * An immutable string of characters.
  */
 public class String
 {
@@ -29,6 +29,9 @@ public class String
     return aObj.toString();
   }
 
+  /**
+   * Returns itself.
+   */
   public String toString()
   {
     return this;

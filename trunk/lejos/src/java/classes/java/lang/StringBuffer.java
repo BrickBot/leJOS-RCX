@@ -1,5 +1,8 @@
 package java.lang;
 
+/**
+ * An expandable string of characters.
+ */
 public class StringBuffer
 {
   char[] characters;

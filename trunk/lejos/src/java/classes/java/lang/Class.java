@@ -1,5 +1,8 @@
 package java.lang;
 
+/**
+ * Not functional. It's here to satisfy javac and jikes.
+ */
 public class Class
 {
   /**

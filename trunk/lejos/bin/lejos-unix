@@ -3,7 +3,7 @@
 if [ "${OSTYPE}" = "cygwin32" ];
 then
   TINYVM_HOME="`dirname $0`/.."
-  TINYVM_HOME="`cygpath -w ${TINYVM_HOME}`"
+  TINYVM_HOME=`cygpath -w "${TINYVM_HOME}"`
 else
   TINYVM_HOME="`dirname $0`/.."
 fi

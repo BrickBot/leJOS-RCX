@@ -1,5 +1,8 @@
 package java.lang;
 
+/**
+ * A thread of execution (or task).
+ */
 public abstract class Thread
 {
   // Note 1: This class cannot have a static initializer.
@@ -22,6 +25,11 @@ public abstract class Thread
   
   private String name;
 
+  public final boolean isAlive()
+  {
+    return _TVM_state != 0;
+  }    
+	  
   public Thread()
   {
     this ("");
@@ -31,9 +39,11 @@ public abstract class Thread
   {
     this.name = name;
   }
-  
-  public native void start();
+
   public abstract void run();
+  public final native void start();
+  public static native void yield();
+  public static native void sleep (long aMilliseconds) throws InterruptedException;
 }
 
 

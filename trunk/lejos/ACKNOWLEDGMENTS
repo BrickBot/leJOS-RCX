@@ -43,6 +43,13 @@ After 0.1beta1:
 
 - Carlos Solorzano (my brother) helped me port
   TinyVM to JDK1.2 over the phone.
+  
+After leJOS fork, before first leJOS release:
+---------------------------------------------
+
+- Copied a lot of code from TinyVM, including Ryan
+  VanderBijl's code. Refer to TinyVM acknowledgments 
+  for 0.1.3 and up.
 
 
 

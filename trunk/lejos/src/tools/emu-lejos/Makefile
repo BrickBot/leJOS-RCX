@@ -11,8 +11,8 @@ programs: ${TVMFIRMDL} ${TVM}
 %.o: %.c
 	${CC} ${CCOPT} -c $*.c
 
-${TVMFIRMDL}: tvmfirmdl.o
-	${CC} tvmfirmdl.o -o ${TVMFIRMDL}
+${TVMFIRMDL}: tvm_firmdl3.o
+	${CC} tvm_firmdl3.o -o ${TVMFIRMDL}
 
 ${TVM}: tvm.o
 	${CC} tvm.o -o ${TVM}
