@@ -34,21 +34,23 @@ int gInt;
 /**
  * Assumes pc points to 2-byte offset, and jumps.
  */
-void do_goto (void)
+void do_goto (boolean aCond)
 {
   #if DEBUG_BYTECODE
   printf ("do_goto: %d, %d (= %d)\n", (int) pc[0], (int) pc[1],
           (JSHORT) ((pc[0] << 8) | pc[1]));
   #endif
 
-  pc += (JSHORT) ((pc[0] << 8) | pc[1]) - 1;
+  if (aCond)
+    pc += (JSHORT) ((pc[0] << 8) | pc[1]) - 1;
+  else
+    pc += 2;
 }
 
 void do_isub (void)
 {
   stackTop--;
   stackTop[0] = word2jint(stackTop[0]) - word2jint(stackTop[1]);
-  printf ("substraction: %d\n", (int) stackTop[0]);
 }
 
 void do_fcmp (JFLOAT f1, JFLOAT f2)
@@ -88,6 +90,9 @@ void engine()
  LABEL_ENGINELOOP: 
   if (!(--numOpcodes))
   {
+    #if DEBUG_THREADS
+    printf ("switching threads: %d\n", (int) numOpcodes);
+    #endif
     switch_thread();
     numOpcodes = OPCODES_PER_TIME_SLICE;
   }

@@ -65,7 +65,7 @@ typedef struct S_MethodRecord
   byte numLocals;
   // Maximum size of local operand stack, in 32-bit words.
   byte maxOperands;
-  // Number of parameter words, including receiver.
+  // It should be such that stackTop-numParameters unwinds the stack.
   byte numParameters;
   // Number of exception handlers
   byte numExceptionHandlers;
@@ -137,6 +137,7 @@ extern void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStat
 
 #define is_synchronized(MREC_)      ((MREC_)->mflags & M_SYNCHRONIZED)
 #define is_native(MREC_)            ((MREC_)->mflags & M_NATIVE)
+#define get_code_ptr(MREC_)         (get_binary_base() + (MREC_)->codeOffset)
 
 #define get_static_fields_base()    (get_binary_base() + get_master_record()->staticFieldsOffset)
 #define get_static_state_base()     (get_binary_base() + get_master_record()->staticStateOffset)
