@@ -381,7 +381,7 @@ main(int argc, char **argv)
     while (pTotal < pLength)
     {
       r = read (pDesc, pBinary + pTotal, pLength - pTotal);
-      if (r == -1)
+      if (r == -1 || r == 0)
       {
         printf ("Unexpected EOF in %s. Read only %ld bytes.\n", argv[1], pTotal);
         exit (1);

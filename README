@@ -2,14 +2,10 @@
 Summary
 -------
 
-TINYVM_HOME=<installation directory>
-
 Type 'make' to install.
 
 PATH=$PATH:$TINYVM_HOME/bin:$JAVA_HOME/bin
 RCXTTY=<serial device>
-
-Use TINYVMPATH instead of CLASSPATH.
 
 Tools      : cd $TINYVM_HOME; make
 Firmware   : tvmfirmdl
@@ -21,7 +17,8 @@ Or simply  : tvmld <class> -d
 Exceptions: 
   [XXXX Y], XXXX = method signature; 
             Y    = exception class index % 10.
-  Press On/Off to continue.
+  Use tvmld -verbose to get class & signature
+  indices. Press On/Off to continue.
 
 A User's Guide is now available at 
 http://www.crazyrobots.com/tinyvmsite. 
@@ -40,8 +37,7 @@ the Java language, such as:
   - Inner, local and anonymous classes.
 
 It also has a wide range of APIs for controlling
-the RCX. The APIs are evolving considerably from 
-version to version.
+the RCX. 
 
 Requirements
 ------------
@@ -59,8 +55,6 @@ Setup
 -----
 
 Environment:
-  - TINYVM_HOME should point to the TinyVM
-    installation directory.
   - Your PATH is assumed to point to the 
     JDK's bin directory.
   - You should also add $TINYVM_HOME/bin to
@@ -69,20 +63,21 @@ Environment:
     IR device file. For example, in my system
     it's /dev/ttyS1. In Windows (assuming TinyVM
     has been ported) it would be COM1, COM2, etc.
-  - Before linking, TINYVMPATH should contain
-    entries for locating class files, jar files
-    or zip files. It works pretty much like
-    CLASSPATH does for the JDK.
+  - The TINYVMPATH can be used in addition to
+    CLASSPATH to allow the linker to locate
+    your class files.
+
 
 Building the Tools:
-  If you have set TINYVM_HOME correctly, and the JDK's
-  bin directory is in your PATH setting, you are ready
-  to install TinyVM. Simply go to $TINYVM_HOME and
+  Simply go to installation directory and
   type 'make'. At this point all of the tools necessary
   to run TinyVM should be available under bin.
 
 Downloading the Firmware:
-  Run the tvmfirmdl utility.
+  Run the tvmfirmdl utility. When the firmware
+  starts, the LCD shows the power level (a number
+  in the 200s or 300s), and you should hear a 
+  double beep.
 
 Example
 -------
@@ -91,9 +86,9 @@ Example
 
      cd $TINYVM_HOME/examples/hello
 
-  2. Set the TINYVMPATH variable.
+  2. Set the CLASSPATH variable.
  
-     export TINYVMPATH=.
+     export CLASSPATH=.
 
   3. Compile the program.
 
@@ -103,16 +98,17 @@ Example
 
      javac -classpath .:$TINYVM_HOME/lib/classes.jar *.java 
 
-     Do NOT add classes.jar to your CLASSPATH setting.
-
   4. Download firmware, if necessary.
 
      tvmfirmdl
 
      This may take a couple of minutes. When the
      firmware is done getting downloaded, you
-     should hear two beeps, and the LCD should 
-     look pretty much like this: [0000 0].
+     should hear two beeps, and the LCD 
+     will show the RCX's power level, e.g.
+
+                    [0312 0]
+
      TinyVM is in program-download mode at 
      this point.
 
@@ -154,11 +150,6 @@ Example
      download programs when the firmware is in
      program-download state.
      
-Exceptions
-----------
-
-(See User's Guide at http://www.crazyrobots.com/tinyvmsite).
-
 Footprint
 ---------
 
@@ -200,6 +191,9 @@ mind are:
   - The instanceof operation will always be true  
     for interfaces. In bytecode, CHECKCAST succeeds
     on all interface classes (which is a bit unsafe).
+  - The instanceof and checkcast operations are
+    rejected by the linker when they are performed
+    on array classes (e.g. b instanceof byte[]).
   - All threads are non-daemon threads. 
   - There are no objects of type java.lang.Class, 
     which means that the ".class" construct won't
