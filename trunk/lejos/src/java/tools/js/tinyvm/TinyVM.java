@@ -13,6 +13,7 @@ implements Constants
   static final String TINYVM_LOADER = System.getProperty ("tinyvm.loader");
   static final String TEMP_DIR = System.getProperty ("temp.dir");
   static final String TEMP_FILE = "__tinyvm__temp.tvm__";
+  static final String TOOL_NAME = System.getProperty ("tinyvm.linker");
   static String iClassPath = System.getProperty (CP_PROPERTY);
   static String iWriteOrder = System.getProperty (WO_PROPERTY);
   static String iOutputFile;
