@@ -31,11 +31,7 @@ JIRTRCX_LIB_SRC="src/comms/libjirtrcx"
 
 export JAVA
 
-x: emulator all_java tinyvm_emul
-	@echo ""
-	@echo "====> Installation of leJOS done!"
-
-default: emulator irtrcx_libs all_java tinyvm_emul
+default: emulator irtrcx_libs all_java scripts tinyvm_emul
 	@echo ""
 	@echo "====> Installation of leJOS done!"
 
@@ -95,6 +91,11 @@ check_release:
 
 all_java:
 	${ANT} all
+
+scripts:
+	chmod 775 $(LEJOS_HOME)/bin/lejosjc
+	chmod 775 $(LEJOS_HOME)/bin/lejoslink
+	chmod 775 $(LEJOS_HOME)/bin/lejosdl
 
 emulator:
 	@echo ""
