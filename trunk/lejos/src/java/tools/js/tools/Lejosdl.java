@@ -139,7 +139,7 @@ public class Lejosdl extends LejosdlTool
          PrintWriter printWriter = new PrintWriter(writer);
          printWriter.println(e.getMessage());
 
-         String usage = getClass().getName() + " [options] class";
+         String usage = getClass().getName() + " [options] binary";
          // TODO check format parameters
          new HelpFormatter().printHelp(printWriter, 80, usage, null, options,
             0, 2, null);
