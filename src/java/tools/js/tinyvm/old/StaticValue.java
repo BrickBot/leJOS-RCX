@@ -1,6 +1,5 @@
 package js.tinyvm.old;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 import js.tinyvm.io.IByteWriter;
@@ -21,39 +20,38 @@ public class StaticValue extends WritableDataWithOffset implements Constants
       return InstanceFieldRecord.getTypeSize(iType);
    }
 
-   public void dump (IByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter writer) throws TinyVMException
    {
       try
       {
          // Static values must be dumped in Big Endian order
-         DataOutputStream pDataOut = (DataOutputStream) aOut;
          switch (iType)
          {
             case T_BOOLEAN:
-               pDataOut.writeBoolean(false);
+               writer.writeBoolean(false);
                break;
             case T_BYTE:
-               pDataOut.writeByte(0);
+               writer.writeByte(0);
                break;
             case T_CHAR:
-               pDataOut.writeChar(0);
+               writer.writeChar(0);
                break;
             case T_SHORT:
-               pDataOut.writeShort(0);
+               writer.writeShort(0);
                break;
             case T_REFERENCE:
             case T_INT:
-               pDataOut.writeInt(0);
+               writer.writeInt(0);
                break;
             case T_FLOAT:
-               pDataOut.writeFloat((float) 0.0);
+               writer.writeFloat((float) 0.0);
                break;
             case T_LONG:
-               pDataOut.writeLong(0L);
+               writer.writeLong(0L);
                break;
             case T_DOUBLE:
-               pDataOut.writeInt(0);
-               pDataOut.writeFloat((float) 0.0);
+               writer.writeInt(0);
+               writer.writeFloat((float) 0.0);
                break;
             default:
                assert false: "Check: valid type";
