@@ -230,6 +230,7 @@ int rcxSend (void* port, void* send, int sendLength)
 	}
 
 	// Send message
+	rcxPurge(port);
 	int written = rcxWrite(port, msg, msglen);
 	if (written != msglen) 
 	{
@@ -238,10 +239,9 @@ int rcxSend (void* port, void* send, int sendLength)
 		return RCX_WRITE_FAIL;
 	}
 
-   rcxFlush(port);
-
 	// Check echo
    // USB tower does not echo!
+   rcxFlush(port);
 	if (!rcxIsUsb(port) && !rcxCheckEcho(port, msg, msglen))
 	{
       if (__comm_debug) printf("wrong echo\n");
