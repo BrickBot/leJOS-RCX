@@ -24,11 +24,7 @@
 
 #include ../Makefile.common
 
-ifneq (,$(findstring $(OSTYPE),darwin))
-CC=cc
-else
-CC=gcc
-endif
+CC=$(shell ../../cctest.sh)
 
 CFLAGS = -O2
 
