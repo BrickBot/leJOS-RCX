@@ -1,5 +1,8 @@
 /*
 * $Log$
+* Revision 1.1  2002/09/28 10:29:34  mpscholz
+* initial version for the test example of the remotecontrol package
+*
 */
 
 import josx.platform.rcx.*;
@@ -29,6 +32,7 @@ public class RemoteControlTest implements RemoteControlListener {
     private static final char[] PROGRAM5 = {'P','R','O','G','5'};
     private static final char[] STOP = {'S','T','O','P'};
     private static final char[] SOUND = {'S','O','U','N','D'};
+    private static final char[] READY = {'R','E','A','D','Y'};
     
     ////////////////////////////////////////////
     // fields
@@ -49,6 +53,8 @@ public class RemoteControlTest implements RemoteControlListener {
     public RemoteControlTest() {
         // reset to initial state
         reset();
+        // display "ready"
+        TextLCD.print(READY);		
     } // RemoteControlTest()
     
     ////////////////////////////////////////////
@@ -279,8 +285,6 @@ public class RemoteControlTest implements RemoteControlListener {
         Sensor.S3.passivate();
         for(int i=0;i<fSensorState.length;i++)
             fSensorState[i] = false;
-        // display "stop"
-        TextLCD.print(STOP);		
     } // reset()
 
     ////////////////////////////////////////////
