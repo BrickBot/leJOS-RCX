@@ -12,8 +12,8 @@ else
 fi
 
 if [ -z "$LEJOS_HOME" ]; then
-  LEJOS_HOME="$(dirname $0)/.."
+  LEJOS_HOME="$(dirname $(dirname $0))"
 fi
 
-javac -target 1.1 -source 1.2 -bootclasspath "$LEJOS_HOME/lib/classes.jar$SEP$LEJOS_HOME/lib/rcxrcxcomm.jar$SEP$CLASSPATH" "$@"
+javac -target 1.1 -source 1.2 -bootclasspath "$LEJOS_HOME/lib/classes.jar$SEP$LEJOS_HOME/lib/rcxrcxcomm.jar$SEP${CLASSPATH:-.}" "$@"
 
