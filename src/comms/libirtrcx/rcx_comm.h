@@ -25,6 +25,12 @@
 #ifndef RCX_COMM_H_INCLUDED
 #define RCX_COMM_H_INCLUDED
 
+#define BUFFERSIZE  4096
+
+//
+// Error codes
+//
+
 #define RCX_OK             0
 #define RCX_NO_TOWER      -1
 #define RCX_BAD_LINK      -2
@@ -42,62 +48,142 @@
 
 #define RCX_NOT_IMPL -256
 
+//
+// OS specific types
+//
+
 #if defined(_WIN32) || defined(__CYGWIN32__)
-  #define FILEDESCR	HANDLE
-  #define BADFILE	NULL
+  #include "rcx_comm_win.h"
 #elif defined(__APPLE__)
-  /* Mac OS X defines in the platform-specific header file */
   #include "rcx_comm_osx.h"
 #else
-  #define FILEDESCR	int
-  #define BADFILE	-1
+  #include "rcx_comm_linux.h"
 #endif
 
-// getter functions for the globals
-extern int rcx_is_debug();
-extern void rcx_set_debug(int debug);
-extern void rcx_set_usb(int usb);
-extern int rcx_is_usb();
-extern void rcx_set_fast(int fast);
-extern int rcx_is_fast();
+//
+// Structures
+//
+
+typedef struct
+{
+	char symbolicName[32];
+	char deviceName[32];
+	FILEDESCR fileHandle;
+	int usb;
+	int fast;
+} Port;
+
+//
+// interface
+//
 
 /* Get a file descriptor for the named tty, exits with message on error */
-extern FILEDESCR rcx_init (char *tty, int is_fast);
+// extern FILEDESCR rcx_init (char *tty, int is_fast);
 
 /* Close a file descriptor allocated by rcx_init */
-extern void rcx_close (FILEDESCR fd);
+// extern void rcx_close (FILEDESCR fd);
 
 /* Try to wakeup the tower for timeout ms, returns error code */
-extern int rcx_wakeup_tower (FILEDESCR fd, int timeout);
+// extern int rcx_wakeup_tower (FILEDESCR fd, int timeout);
 
 /* Try to send a message, returns error code */
 /* Set use_comp=1 to send complements, use_comp=0 to suppress them */
-extern int rcx_send (FILEDESCR fd, void *buf, int len, int use_comp);
+// extern int rcx_send (FILEDESCR fd, void *buf, int len, int use_comp);
 
 /* Try to receive a message, returns error code */
 /* Set use_comp=1 to expect complements */
 /* Waits for timeout ms before detecting end of response */
-extern int rcx_recv (FILEDESCR fd, void *buf, int maxlen, int timeout, int use_comp);
+// extern int rcx_recv (FILEDESCR fd, void *buf, int maxlen, int timeout, int use_comp);
 
 /* Try to send a message and receive its response, returns error code */
 /* Set use_comp=1 to send and receive complements, use_comp=0 otherwise */
 /* Waits for timeout ms before detecting end of response */
-extern int rcx_sendrecv (FILEDESCR fd, void *send, int slen, void *recv, int rlen, int timeout, int retries, int use_comp);
+// extern int rcx_sendrecv (FILEDESCR fd, void *send, int slen, void *recv, int rlen, int timeout, int retries, int use_comp);
 
 /* Test whether or not the rcx is alive, returns 1=yes, 0=no */
 /* Set use_comp=1 to send complements, use_comp=0 to suppress them */
-extern int rcx_is_alive (FILEDESCR fd, int use_comp);
-
-extern int rcx_read (FILEDESCR fd, void *buf, int maxlen, int timeout);
-
-extern int rcx_write(FILEDESCR fd, const void *buf, size_t len);
-
-/* Convert an error code to a string */
-extern char *rcx_strerror(int error);
-
-/* Hexdump routine */
-extern void hexdump(char *prefix, void *buf, int len);
+// extern int rcx_is_alive (FILEDESCR fd, int use_comp);
 
 
 #endif /* RCX_COMM_H_INCLUDED */
 
+//
+// getter functions
+//
+
+// Is tower attached to an usb port?
+int rcxIsUsb(void* port);
+
+// Is tower set to fast mode?
+int rcxIsFast(void* port);
+
+//
+// RCX functions
+//
+
+// Open tower on specific port.
+// Returns port handle.
+void* rcxOpen(char* port, int isFast);
+
+// Close tower.
+void rcxClose(void* port);
+
+// Wake up tower / RCX.
+// Returns error code.
+int rcxWakeupTower (void* port, int timeout);
+
+// Read bytes.
+// Returns number of read bytes.
+int rcxRead (void* port, void *buf, int maxlen, int timeout);
+
+// Write bytes.
+// Returns number of written bytes.
+int rcxWrite(void* port, void* buf, int len);
+
+// Send packet.
+// Returns number of sent bytes or an error code.
+int rcxSend (void* port, void *buf, int len);
+
+// Receive packet.
+// Returns number of read bytes or an error code.
+int rcxReceive (void* port, void *buf, int maxlen, int timeout);
+
+// Receive packet in fast mode.
+// Returns number of read bytes or an error code.
+int rcxReceiveFast (void* port, void *buf, int maxlen, int timeout);
+
+// Receive packet.
+// Returns number of read bytes or an error code.
+int rcxReceiveSlow (void* port, void *buf, int maxlen, int timeout);
+
+// Send a packet an receive a response.
+int rcxSendReceive (void* port, void* send, int slen, void *recv, int rlen, int timeout, int retries);
+		  
+// Is RCX alive?
+int rcxIsAlive (void* port);
+
+// Flush buffers.
+void rcxFlush(void* port);
+
+// ???
+void rcxPerror(char *str) ;
+
+//
+// error handling
+//
+
+// Get string representation for error code.
+char* rcxStrerror (int error);
+
+//
+// debug stuff
+//
+
+// Set debug mode.
+void rcxSetDebug(int debug);
+
+// Is librcx in debug mode?
+int rcIsDebug();
+
+// Hexdump routine.
+void hexdump(char *prefix, void *buf, int len);
