@@ -1,0 +1,61 @@
+josx.rcxcomm capabilities
+                                                     lejos apps
+                      Web Server                   e.g. View Example
+                       or other                          |
+                     TCP/IP Socket                josx.platform.rcx, etc.
+                      Applications     Web Browser   lejos method    
+                         |||              |||           stubs      JSP Example  
+                         |||              |||            |             |
+                     SocketProxy        HttpProxy    RCXRemote      RCXBean
+                          |                |             |             |LNPAddrReadSensor LNPReadSensor
+                          |                |             |             |    example         example
+                          ------------------------------------------------     |               |
+                                     |                                         |               |
+                                     |                                 RCXLNPAddrPort     RCXLNPPort
+                                  RCXPort                                    |                 |
+                                     |                               LNPAddressingHandler      |
+                                     |                                       |-----------------
+           F7ReadSensor       LLCReliableHandler                    LNPIntegrityHandler   
+             example                 |                                       |
+                |                    |                                       |
+            RCXF7Port            LLCHandler   TowerTest                  LNPHandler
+                |                    |         example                       |
+                |                    |            |                          |
+                --------------------------------------------------------------
+                            |
+                            |
+     Other tools like     Tower              Lego Remote
+PC   nqc or RCX Java API   |||                 Control
+---    |||                 |||                  |||
+RCX    ---------------------------------------------
+               |||                  |||      
+               |||                  |||
+             Serial                 LLC
+    ------------|                    |-----------------------------------------
+    |           |                    |             |                          |
+ Serial    F7PacketHandler        LLCHandler    TestLLC                       |
+ Example        |                    |          Example                   LNPHandler
+                |                    |                                        |   
+      F7DeliveryPacketHandler  LLCReliableHandler                             |
+                |                        |                            LNPIntegrityHandler
+                |                    ----------------------------             |-----------------
+                |                    |         |                |    LNPAddressingHandler       |  
+                |                    |         |                |             |                 |
+            RCXF7Port             RCXPort  RCXInputStream   RCXOutputStream   |             RCXLNPPort          
+                |                    |         |                |             |                 |
+           F7SensorReader            |      instream         outstream   RCXLNPAddrPort         |
+             example                 |     Read example     Write example        |         LNPSensorReader
+                        ---------------------------------------------------      |            example
+                        |                    |              |             | LNPAddrSensorReader
+                        |                    |              |             |     example
+            java.net.Socket        javax.servlet.http.      |        SensorReader
+                        |                HttpServlet    Activator      Example
+                        |                    |           Example
+                        |             SensorServlet         |
+          java.net.URLConnection          Example      lejos methods and
+                        |              (dynamic Web    user methods
+                        |                 Server)
+                  java.net.URL
+                        |
+                        |
+                  Browser Example
