@@ -1,7 +1,7 @@
 package josx.util;
 
 /**
- * An abstract array recycler. 
+ * An array recycler. 
  * <p>
  * Note that the caller is expected to provide
  * thread safety for instances of this class.
