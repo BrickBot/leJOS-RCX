@@ -16,11 +16,23 @@ public class LNPHandler extends PacketHandler {
   private byte [] trash = new byte [1];
   private byte [] keepAlive = {(byte) 0xff};
   private long sendTime;
+  private boolean isAddressing;
 
+  /**
+   * Creates an LNP packet handler and opens the tower
+   **/
   public LNPHandler() {
     tower = new Tower();
     tower.open();
     usbFlag = tower.getUsbFlag();
+  }
+
+  /**
+   * Test if last received packet is addressing (or integrity)
+   * @return true if an addressing packet, false if an integrity packet
+   **/
+  public boolean isAddressing() {
+    return isAddressing;
   }
 
   /**
@@ -106,6 +118,7 @@ public class LNPHandler extends PacketHandler {
       if (op == (byte) 0xf0 || op == (byte) 0xf1) {
         // if (debug) System.out.println("Got packet");
         gotPacket = true;
+        isAddressing = (op == (byte) 0xf1);
         inPacket[0] = op;
         r = tower.read(b);
         int extra = b[0] + 1;
