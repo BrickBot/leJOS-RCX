@@ -28,12 +28,11 @@ public class ClassRecord implements WritableData, Constants
     return IOUtilities.adjustedSize (
 				       2 + // class size
                                        2 + // method table offset
-                                       2 + // static state offset
                                        2 + // instance field table offset
+                                       1 + // number of fields
 				       1 + // number of methods
 				       1 + // parent class
-				       1 + // array element type
-				       1, // flags
+				       1,  // flags
            2);
   }
 
@@ -60,7 +59,7 @@ public class ClassRecord implements WritableData, Constants
     }
     aOut.writeU1 (pNumMethods);
     aOut.writeU1 (iParentClassIndex);
-    aOut.writeU1 (iArrayElementType);
+    //aOut.writeU1 (iArrayElementType);
     aOut.writeU1 (iFlags);
     IOUtilities.writePadding (aOut, 2);
   }

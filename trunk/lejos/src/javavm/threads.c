@@ -175,12 +175,17 @@ void switch_thread()
   currentThread = nextThread;
   if (currentThread->state == STARTED)
   {
+    // Put stackTop at the beginning of the stack so we can push arguments
+    // to entry methods.
+    stackTop = stack_array();
     currentThread->state = RUNNING;
     if (currentThread == bootThread)
     {
       ClassRecord *classRecord;
 
       classRecord = get_class_record (ENTRY_CLASS);
+      // Push fake parameter:
+      *stackTop = JNULL;
       // Push stack frame for main method:
       dispatch_special (classRecord, find_method (classRecord, MAIN_V), null);
       // Push another if necessary for the static initializer:
@@ -188,6 +193,7 @@ void switch_thread()
     }
     else
     {
+      *stackTop = ptr2word (currentThread);
       dispatch_virtual ((Object *) currentThread, RUN_V, null);
     }
   }
