@@ -1,6 +1,13 @@
 #!/bin/sh
 
-TINYVM_HOME="`dirname $0`/.."
+if [ "${OSTYPE}" = "cygwin32" ];
+then
+  TINYVM_HOME="`dirname $0`/.."
+  TINYVM_HOME="`cygpath -w ${TINYVM_HOME}`"
+else
+  TINYVM_HOME="`dirname $0`/.."
+fi
+
 TINYVMOPTIONS="-Dtinyvm.write.order=LE ${TINYVMOPTIONS}"
 TINYVMOPTIONS="-Dtinyvm.loader=lejosrun-unix ${TINYVMOPTIONS}"
 

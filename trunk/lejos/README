@@ -2,17 +2,19 @@
 Summary
 -------
 
-Type 'make' to install.
-
-PATH=$PATH:$LEJOS_HOME/bin:$JAVA_HOME/bin
-RCXTTY=<serial device>
-
-Exceptions: 
-  [XXXX Y], XXXX = method signature; 
-            Y    = exception class index % 10.
-  Use tvmld -verbose to get class & signature
-  indices. Press On/Off to continue.
-
+-- You must have JDK1.1 or JDK1.2.
+-- Your PATH must contain the JDK's bin directory.
+-- Type 'make' to finish installation of leJOS.
+-- Add leJOS's bin directory to your PATH.
+-- Set RCXTTY to your serial device (e.g. com1).
+-- Compile using lejosc instead of javac.
+-- Run programs in the RCX using lejos.
+-- Run programs in the host using lejos-emul.
+-- Exceptions: Use lejos -verbose. Exceptions
+   are shown in the RCX as [XXXX Y], where 
+   XXXX = method_signature, and 
+   Y = exception_class_index MOD 10.
+	     
 What is leJOS?
 --------------
 
@@ -34,9 +36,6 @@ offered by leJOS:
 The above are also provided by TinyVM. But in addition
 to these, leJOS also offers:
 
-- Better loader in firmware: you can run a program as
-  many times as you want without downloading it every
-  time.
 - More APIs.
 - Floating point operations.
 - String constants.
@@ -46,7 +45,12 @@ to these, leJOS also offers:
 
 TinyVM is still around simply as a low-footprint alternative
 to leJOS. The RAM difference between the two is about
-??? Kb.
+5 Kb in the RCX.
+
+How do you pronounce leJOS?
+---------------------------
+
+I pronounce it like the Spanish word "lejos" (far).
 
 Requirements
 ------------
@@ -63,16 +67,15 @@ Setup
 Environment:
   - Your PATH is assumed to point to the 
     JDK's bin directory.
-  - You should also add $leJOS_HOME/bin to
+  - You should also add $LEJOS_HOME/bin to
     your PATH.
   - RCXTTY must be defined to point to the
-    IR device file. For example, in my system
-    it's /dev/ttyS1. In Windows (assuming leJOS
-    has been ported) it would be COM1, COM2, etc.
-  - The leJOSPATH can be used in addition to
+    IR device file. For example, in my Linux
+    partition, it's /dev/ttyS1, which corresponds
+    to COM2 under Windows.
+  - TINYVMPATH can be used in addition to
     CLASSPATH to allow the linker to locate
     your class files.
-
 
 Building the Tools:
   Simply go to installation directory and
@@ -80,7 +83,7 @@ Building the Tools:
   to run leJOS should be available under bin.
 
 Downloading the Firmware:
-  Run the tvmfirmdl utility. When the firmware
+  Run the lejosfirmdl utility. When the firmware
   starts, the LCD shows the power level (a number
   in the 200s or 300s), and you should hear a 
   double beep.
@@ -88,91 +91,21 @@ Downloading the Firmware:
 Example
 -------
 
-  1. Go to the example directory.
-
-     cd $leJOS_HOME/examples/hello
-
-  2. Set the CLASSPATH variable.
- 
-     export CLASSPATH=.
-
-  3. Compile the program.
-
-     tvmc *.java
-
-     Note that this is equivalent to
-
-     javac -classpath .:$leJOS_HOME/lib/classes.jar *.java 
-
-  4. Download firmware, if necessary.
-
-     tvmfirmdl
-
-     This may take a couple of minutes. When the
-     firmware is done getting downloaded, you
-     should hear two beeps, and the LCD 
-     will show the RCX's power level, e.g.
-
-                    [0312 0]
-
-     leJOS is in program-download mode at 
-     this point.
-
-     (Note that tvmfirmdl is essentially the same
-     as Kekoa Proudfoot's firmdl program, except 
-     that tvmfirmdl has been tweaked to allow for
-     longer lines in the srec file).
-
-  5. Link & load the program.
-
-     tvmld HelloRCX -d
-
-     This will create a temporary file in the current
-     directory, which will be downloaded to the RCX
-     using the tvm utility. (This can also be done
-     in two steps: tvmld HelloRCX -o HelloRCX.tvm;
-     tvm HelloRCX.tvm).
-
-     If the RCX is in range, the LCD will show 
-     the download count as  the number of bytes 
-     divided by 100. (If nothing happens, make
-     sure the RCX is in range. Is the leJOS
-     firmware there? If the RCX begins to beep,
-     kill tvm, turn off the RCX, wait until the
-     IR tower light is off, power up the RCX,
-     and try again).
-
-     leJOS will execute the program as soon as
-     the download has been completed. When 
-     all non-daemon threads are finished, 
-     the firmware will return to program-download 
-     state. (Note that any pending queued tones 
-     will not be heard).
-
-     You can kill any Java program running under
-     leJOS by pressing On/Off.
-    
-     As you may have guessed, you can only 
-     download programs when the firmware is in
-     program-download state.
+[...]
      
 Footprint
 ---------
 
-Even though leJOS.srec is about 25 Kb (03/19/00), it
-occupies only about 10 Kb in RAM. There's about 18 Kb
-of space left for your programs and objects, which is
-a very good amount. Run regression/Test13.java if you want
-to find out how many empty objects a program can create
-before running out of memory.
+[...]
 
 Emulation
 ---------
 
 You should be able to run linked programs in the 
 development machine. All you need to do is use
-tvmld-emul instead of tvmld, and tvm-emul instead
-of tvm. In some cases it might be easier to debug
+lejos-emul instead of lejos.
+
+In some cases it might be easier to debug
 programs with the emulated VM, and you'll also 
 get slightly more detailed exception information.
 
@@ -184,16 +117,14 @@ have been omitted. Others just haven't been
 implemented yet. The limitations that come to 
 mind are:
 
-  - Garbage collection is not performed.
+  - Garbage collection is not performed yet.
     (The number of objects in your program
     should be bounded).
   - Switch statements are not supported.
-  - Floating point operations are not supported.
-  - Operations on variables of type long are not 
-    supported.
+  - Arithmetic operations on variables of type 
+    long are not supported, although you can
+    cast ints to longs and vice versa.
   - Maximum array length is 255.
-  - String constants are not used by the VM to
-    create String objects (i.e. don't use Strings).
   - The instanceof operation will always be true  
     for interfaces. In bytecode, CHECKCAST succeeds
     on all interface classes (which is a bit unsafe).
@@ -218,43 +149,34 @@ Known Bugs
 
   - Initializers (static or otherwise) are not
     implicitly synchronized. This could lead to race
-    conditions. (As an example, consider the hack 
-    in classes/leJOS/rcx/Sensor.java:addListener. If Native
-    were not forced to get initialized, the listener
-    thread may eventually try to use Native.MEMORY_MONITOR,
-    which could be null if some other thread is in
-    the middle of trying to initialize Native). All this 
-    means is that you have to be more careful with 
-    initializers and multi-threading than you normally 
-    would in a conventional JVM implementation.
-
+    conditions. 
+    
   - Unknown native methods are not executed. Neither
     the linker nor the VM complain about them.
 
 Documentation
 -------------
 
-A User's Guide is now available at 
-  
-  http://www.crazyrobots.com/leJOSsite
+[...]
 
-You should also be able to get the API documentation from
-that site, but you can always create your own copy by
-running
-
-  cd $leJOS_HOME; make javadoc
+Typing 'make javadoc' is all that is currently available.
 
 About the License
 -----------------
 
 I'm releasing under the Mozilla Public License (see LICENSE)
-for now, since librcx is under that same license, and leJOS 
-is linked against -lrcx. 
+for now, since Kekoa Proudfoot's librcx is under that same 
+license, and leJOS is linked against -lrcx and -lfloat.
+No changes have been made to those libraries, so they haven't
+been redistributed. They are only needed if you are planning
+to modify the native C source code. 
 
 Questions/Problems
 ------------------
 
-Please direct feedback to jhsolorz@yahoo.com.
+Please direct feedback to jhsolorz@yahoo.com. You can also
+subscribe to the tinyvm-discussion mailing list. Follow
+the relevant links at http://sourceforge.net/projects/tinyvm.
 
 
 

@@ -100,6 +100,10 @@ char *progname;
 #define TOWRITEMAX   100
 #define RETRIES      5
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 long receive_packet (long fd, byte *buffer, long length);
 
 long
@@ -356,7 +360,7 @@ main(int argc, char **argv)
 	exit(1);
     }
 
-    if ((pDesc = open(argv[1], O_RDONLY)) == -1) {
+    if ((pDesc = open(argv[1], O_RDONLY | O_BINARY)) == -1) {
 	fprintf(stderr, "%s: failed to open\n", argv[1]);
 	exit(1);
     }

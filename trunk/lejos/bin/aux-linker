@@ -3,8 +3,16 @@
 JAVAVM=java
 TINYVMOPTIONS="${TINYVMOPTIONS} -Dtinyvm.home=${TINYVM_HOME}"
 
-TINYVMPATH="${TINYVMPATH}:${TINYVM_HOME}/lib/classes.jar:${CLASSPATH}"
-export CLASSPATH="${TINYVM_HOME}/lib/jtools.jar"
+if [ "${OSTYPE}" = "cygwin32" ];
+then
+  TINYVMPATH="${TINYVMPATH};${TINYVM_HOME}\\lib\\classes.jar;${CLASSPATH}"
+  CLASSPATH="${TINYVM_HOME}\\lib\\jtools.jar"
+else
+  TINYVMPATH="${TINYVMPATH}:${TINYVM_HOME}/lib/classes.jar:${CLASSPATH}"
+  CLASSPATH="${TINYVM_HOME}/lib/jtools.jar"
+fi
+
+export CLASSPATH
 
 ${JAVAVM} ${TINYVMOPTIONS} js.tinyvm.TinyVM -classpath "${TINYVMPATH}" $@
 

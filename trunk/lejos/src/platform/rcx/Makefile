@@ -3,7 +3,6 @@
 # Adapted from config.mk in librcx by Kekoa Proudfoot.
 
 include ../Makefile.config
-include ../Makefile.common
 
 CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -O2 -Wall -Wno-unused
 LFLAGS += -L${LIBRCX_HOME}/lib -L${LIBRCX_HOME}/float
