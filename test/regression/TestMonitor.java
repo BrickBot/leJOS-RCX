@@ -6,21 +6,21 @@ public class TestMonitor {
 	// Test basic wait/notify	
 	public void callWait1() {
 		synchronized (this) {
-			Test.assertEQ("", 1, ++i);
+			Assertion.testEQ("", 1, ++i);
 			try  {
 				wait();
 			} catch (InterruptedException ie) {
-				Test.assert("Bad 1", false);
+				Assertion.test("Bad 1", false);
 			}
-			Test.assertEQ("", 4, ++i);
+			Assertion.testEQ("", 4, ++i);
 		}
 	}
 
 	public void callNotify1() {
 		synchronized (this)  {
-			Test.assertEQ("", 2, ++i);
+			Assertion.testEQ("", 2, ++i);
 			notify();
-			Test.assertEQ("", 3, ++i);
+			Assertion.testEQ("", 3, ++i);
 		}
 	}
 
@@ -35,28 +35,28 @@ public class TestMonitor {
 			try  {
 				sleep(1000); 
 			} catch (InterruptedException ie) {
-				Test.assert("Bad 2", false);
+				Assertion.test("Bad 2", false);
 			}
 			callNotify1();
 			try  {
 				sleep(1000); 
 			} catch (InterruptedException ie) {
-				Test.assert("Bad 3", false);
+				Assertion.test("Bad 3", false);
 			}
-			Test.assertEQ("", 5, ++i);
+			Assertion.testEQ("", 5, ++i);
 		}
 	}
 
 	// Test a wait that has a monitor count > 1	
 	public synchronized void callWait2() {
-		Test.assertEQ("", 6, ++i);
+		Assertion.testEQ("", 6, ++i);
 		try  {
 			// Should drop monitor_count to zero.
 			wait();
 		} catch (InterruptedException ie) {
-			Test.assert("Bad 4", false);
+			Assertion.test("Bad 4", false);
 		}
-		Test.assertEQ("", 9, ++i);
+		Assertion.testEQ("", 9, ++i);
 	}
 
 	public synchronized void m1() {
@@ -64,9 +64,9 @@ public class TestMonitor {
 	}
 			
 	public synchronized void callNotify2() {
-		Test.assertEQ("", 7, ++i);
+		Assertion.testEQ("", 7, ++i);
 		notify();
-		Test.assertEQ("", 8, ++i);
+		Assertion.testEQ("", 8, ++i);
 	}
 	
 	class T3 extends Thread  {
@@ -80,28 +80,28 @@ public class TestMonitor {
 			try  {
 				sleep(1000); 
 			} catch (InterruptedException ie) {
-				Test.assert("Bad 5", false);
+				Assertion.test("Bad 5", false);
 			}
 			callNotify2();
 			try  {
 				sleep(1000); 
 			} catch (InterruptedException ie) {
-				Test.assert("Bad 6", false);
+				Assertion.test("Bad 6", false);
 			}
-			Test.assertEQ("", 10, ++i);
+			Assertion.testEQ("", 10, ++i);
 		}
 	}
 
 	// Test an interrupted wait	
 	public void callWait3() {
 		synchronized (this) {
-			Test.assertEQ("", 15, ++i);
+			Assertion.testEQ("", 15, ++i);
 			try  {
 				wait();
 			} catch (InterruptedException ie) {
-				Test.assertEQ("", 16, ++i);
+				Assertion.testEQ("", 16, ++i);
 			}
-			Test.assertEQ("", 17, ++i);
+			Assertion.testEQ("", 17, ++i);
 		}
 	}
 
@@ -114,33 +114,33 @@ public class TestMonitor {
 	// Test notify all	
 	public void callWait6() {
 		synchronized (this) {
-			Test.assertEQ("", 21, ++i);
+			Assertion.testEQ("", 21, ++i);
 			try  {
 				wait();
 			} catch (InterruptedException ie) {
-				Test.assert("Bad T6.1", false);
+				Assertion.test("Bad T6.1", false);
 			}
-			Test.assertEQ("", 26, ++i);
+			Assertion.testEQ("", 26, ++i);
 		}
 	}
 
 	public void callWait7() {
 		synchronized (this) {
-			Test.assertEQ("", 22, ++i);
+			Assertion.testEQ("", 22, ++i);
 			try  {
 				wait();
 			} catch (InterruptedException ie) {
-				Test.assert("Bad T7", false);
+				Assertion.test("Bad T7", false);
 			}
-			Test.assertEQ("", 25, ++i);
+			Assertion.testEQ("", 25, ++i);
 		}
 	}
 
 	public void callNotify8() {
 		synchronized (this)  {
-			Test.assertEQ("", 23, ++i);
+			Assertion.testEQ("", 23, ++i);
 			notifyAll();
-			Test.assertEQ("", 24, ++i);
+			Assertion.testEQ("", 24, ++i);
 		}
 	}
 
@@ -162,28 +162,28 @@ public class TestMonitor {
 			try  {
 				sleep(1000); 
 			} catch (InterruptedException ie) {
-				Test.assert("Bad T8.1", false);
+				Assertion.test("Bad T8.1", false);
 			}
 			callNotify8();
 			try  {
 				sleep(1000); 
 			} catch (InterruptedException ie) {
-				Test.assert("Bad T8.2", false);
+				Assertion.test("Bad T8.2", false);
 			}
-			Test.assertEQ("", 27, ++i);
+			Assertion.testEQ("", 27, ++i);
 		}
 	}
 
 	// Test wait with timeout	
 	public void callWait9() {
 		synchronized (this) {
-			Test.assertEQ("", 29, ++i);
+			Assertion.testEQ("", 29, ++i);
 			try  {
 				wait(500);
 			} catch (InterruptedException ie) {
-				Test.assert("Bad 1", false);
+				Assertion.test("Bad 1", false);
 			}
-			Test.assertEQ("", 30, ++i);
+			Assertion.testEQ("", 30, ++i);
 		}
 	}
 
@@ -196,33 +196,33 @@ public class TestMonitor {
 	// Test that notify() only wakes one thread	
 	public void callWait10() {
 		synchronized (this) {
-			Test.assertEQ("", 32, ++i);
+			Assertion.testEQ("", 32, ++i);
 			try  {
 				wait();
 			} catch (InterruptedException ie) {
-				Test.assert("Bad T10.1", false);
+				Assertion.test("Bad T10.1", false);
 			}
-			Test.assert("Bad T10.2", false);
+			Assertion.test("Bad T10.2", false);
 		}
 	}
 
 	public void callWait11() {
 		synchronized (this) {
-			Test.assertEQ("", 33, ++i);
+			Assertion.testEQ("", 33, ++i);
 			try  {
 				wait();
 			} catch (InterruptedException ie) {
-				Test.assert("Bad T11", false);
+				Assertion.test("Bad T11", false);
 			}
-			Test.assertEQ("", 36, ++i);
+			Assertion.testEQ("", 36, ++i);
 		}
 	}
 
 	public void callNotify12() {
 		synchronized (this)  {
-			Test.assertEQ("", 34, ++i);
+			Assertion.testEQ("", 34, ++i);
 			notify();
-			Test.assertEQ("", 35, ++i);
+			Assertion.testEQ("", 35, ++i);
 		}
 	}
 
@@ -244,15 +244,15 @@ public class TestMonitor {
 			try  {
 				sleep(1000); 
 			} catch (InterruptedException ie) {
-				Test.assert("Bad T12.1", false);
+				Assertion.test("Bad T12.1", false);
 			}
 			callNotify12();
 			try  {
 				sleep(1000); 
 			} catch (InterruptedException ie) {
-				Test.assert("Bad T12.2", false);
+				Assertion.test("Bad T12.2", false);
 			}
-			Test.assertEQ("", 37, ++i);
+			Assertion.testEQ("", 37, ++i);
 		}
 	}
 
@@ -265,7 +265,7 @@ public class TestMonitor {
 		try {
 			Thread.sleep(3000);
 		} catch (InterruptedException ie) {
-			Test.assert("Bad 7", false);	
+			Assertion.test("Bad 7", false);	
 		}
 		Thread t3 = new T3();
 		Thread t4 = new T4();
@@ -276,28 +276,28 @@ public class TestMonitor {
 		try {
 			Thread.sleep(3000);
 		} catch (InterruptedException ie) {
-			Test.assert("Badone", false);	
+			Assertion.test("Badone", false);	
 		}
 		
 		synchronized(this) {
 			try {
 				t1.wait();
 			} catch (InterruptedException ie) {
-				Test.assert("Bad 8", false);
+				Assertion.test("Bad 8", false);
 			} catch (IllegalMonitorStateException e) {
-				Test.assertEQ("", 11, ++i);
+				Assertion.testEQ("", 11, ++i);
 			}
 		}
-		Test.assertEQ("", 12, ++i);
+		Assertion.testEQ("", 12, ++i);
 		
 		synchronized(this) {
 			try {
 				t1.notify();
 			} catch (IllegalMonitorStateException e) {
-				Test.assertEQ("", 13, ++i);
+				Assertion.testEQ("", 13, ++i);
 			}
 		}
-		Test.assertEQ("", 14, ++i);
+		Assertion.testEQ("", 14, ++i);
 		
 		Thread t5 = new T5();
 		t5.setDaemon(true);
@@ -305,19 +305,19 @@ public class TestMonitor {
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException ie) {
-			Test.assert("Bad 10", false);	
+			Assertion.test("Bad 10", false);	
 		}
 		t5.interrupt();
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException ie) {
-			Test.assert("Bad 11", false);	
+			Assertion.test("Bad 11", false);	
 		}
-		Test.assertEQ("", 18, ++i);
+		Assertion.testEQ("", 18, ++i);
 		synchronized(this)  {
-			Test.assertEQ("", 19, ++i);
+			Assertion.testEQ("", 19, ++i);
 			notify();
-			Test.assertEQ("", 20, ++i);
+			Assertion.testEQ("", 20, ++i);
 		}
 		
 		Thread t6 = new T6();
@@ -328,7 +328,7 @@ public class TestMonitor {
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException ie) {
-			Test.assert("Bad T6", false);	
+			Assertion.test("Bad T6", false);	
 		}
 		t7.setDaemon(true);
 		t7.start();
@@ -336,9 +336,9 @@ public class TestMonitor {
 		try {
 			Thread.sleep(3000);
 		} catch (InterruptedException ie) {
-			Test.assert("Bad T8.3", false);	
+			Assertion.test("Bad T8.3", false);	
 		}
-		Test.assertEQ("", 28, ++i);
+		Assertion.testEQ("", 28, ++i);
 		
 		Thread t9 = new T9();
 		t9.setDaemon(true);
@@ -346,9 +346,9 @@ public class TestMonitor {
 		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException ie) {
-			Test.assert("Bad 7", false);	
+			Assertion.test("Bad 7", false);	
 		}
-		Test.assertEQ("", 31, ++i);
+		Assertion.testEQ("", 31, ++i);
 			
 		Thread t10 = new T10();
 		Thread t11 = new T11();
@@ -358,7 +358,7 @@ public class TestMonitor {
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException ie) {
-			Test.assert("Bad T10", false);	
+			Assertion.test("Bad T10", false);	
 		}
 		t11.setDaemon(true);
 		t11.start();
@@ -366,9 +366,9 @@ public class TestMonitor {
 		try {
 			Thread.sleep(3000);
 		} catch (InterruptedException ie) {
-			Test.assert("Bad T12.3", false);	
+			Assertion.test("Bad T12.3", false);	
 		}
-		Test.assertEQ("", 38, ++i);
+		Assertion.testEQ("", 38, ++i);
 	}
 	
 	public static void main(String[] args) {

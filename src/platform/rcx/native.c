@@ -235,13 +235,13 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       push_word (0);
       push_word (getHeapSize());
       return;
-    case assert_4Ljava_3lang_3String_2Z_5V:
+    case test_4Ljava_3lang_3String_2Z_5V:
       if (!*paramBase1)
       {
         throw_exception(error);
       }
       return;
-    case assertEQ_4Ljava_3lang_3String_2II_5V:
+    case testEQ_4Ljava_3lang_3String_2II_5V:
       if (*paramBase1 != *paramBase2)
       {
         throw_exception(error);

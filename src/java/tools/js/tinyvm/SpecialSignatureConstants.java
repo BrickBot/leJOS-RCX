@@ -45,7 +45,7 @@ public interface SpecialSignatureConstants {
     "setSensorValue(III)V",
     "setPoller()V",
     "setThrottle(I)V",
-    "assert(Ljava/lang/String;Z)V",
-    "assertEQ(Ljava/lang/String;II)V"
+    "test(Ljava/lang/String;Z)V",
+    "testEQ(Ljava/lang/String;II)V"
   };
 }

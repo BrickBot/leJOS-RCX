@@ -1,5 +1,5 @@
 import josx.platform.rcx.*;
-import josx.util.Test;
+import josx.util.Assertion;
 
 public class TestNat
 {
@@ -14,11 +14,11 @@ public class TestNat
 				try {
 					int changed = poller.poll(Poll.SENSOR3_MASK, 0);
 					int newValue = Sensor.S3.readValue();
-					Test.assert("Values are equal!", oldValue != newValue);
-					Test.assert("Mask is invalid!", changed == Poll.SENSOR3_MASK);
+					Assertion.test("Values are equal!", oldValue != newValue);
+					Assertion.test("Mask is invalid!", changed == Poll.SENSOR3_MASK);
 					oldValue = newValue;
 				} catch (InterruptedException ie) {
-					Test.assert("Thread interrupted", false);
+					Assertion.test("Thread interrupted", false);
 				}
 			}
 		}
@@ -35,11 +35,11 @@ public class TestNat
 				try {
 					int changed = poller.poll(Poll.SENSOR2_MASK, 0);
 					int newValue = Sensor.S2.readValue();
-					Test.assert("Values are equal!", oldValue != newValue);
-					Test.assert("Mask is invalid!", changed == Poll.SENSOR2_MASK);
+					Assertion.test("Values are equal!", oldValue != newValue);
+					Assertion.test("Mask is invalid!", changed == Poll.SENSOR2_MASK);
 					oldValue = newValue;
 				} catch (InterruptedException ie) {
-					Test.assert("Thread interrupted", false);
+					Assertion.test("Thread interrupted", false);
 				}
 			}
 		}

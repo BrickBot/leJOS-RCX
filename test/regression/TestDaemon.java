@@ -1,4 +1,4 @@
-import josx.util.Test;
+import josx.util.Assertion;
 
 public class TestDaemon {
 	static class NormalThread extends Thread {
@@ -17,7 +17,7 @@ public class TestDaemon {
 				sleep(10000);
 			} catch (InterruptedException ie) {
 			}
-			Test.assert("Daemon thread woke up", false);			
+			Assertion.test("Daemon thread woke up", false);			
 		}
 	}
 	

@@ -9,6 +9,8 @@
     and from ROM to Battery and MinuteTimer
   - removed Runtime as special class
   - corrected bug in scheduler that could interrupt wrong thread
+  - renamed class josx.util.Test to Assertion, method assert to test etc.
+    to avoid name class with JDK 1.4 reserved word assert
   
 leJOS 1.0.4:
 ------------

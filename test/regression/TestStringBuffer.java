@@ -1,4 +1,4 @@
-import josx.util.Test;
+import josx.util.Assertion;
 import josx.platform.rcx.*;
 
 public class TestStringBuffer
@@ -10,7 +10,7 @@ public class TestStringBuffer
         s1.append("2^10=");
         s1.append(1024);
         s1.append("!");
-        Test.assert(s1.toString(), "2^10=1024!".equals(s1.toString()));
+        Assertion.test(s1.toString(), "2^10=1024!".equals(s1.toString()));
 
         LCD.showNumber(1);
                 
@@ -18,7 +18,7 @@ public class TestStringBuffer
         s1.append("one=");
         s1.append(1.0);
         s1.append("!!");
-        Test.assert(s1.toString(), "one=1.0!!".equals(s1.toString()));
+        Assertion.test(s1.toString(), "one=1.0!!".equals(s1.toString()));
         
         LCD.showNumber(2);
                 
@@ -26,7 +26,7 @@ public class TestStringBuffer
         s1.append("pi=");
         s1.append(3.1415927);
         s1.append("!");
-        Test.assert(s1.toString(), "pi=3.1415927!".equals(s1.toString()));
+        Assertion.test(s1.toString(), "pi=3.1415927!".equals(s1.toString()));
         
         LCD.showNumber(3);
                 
@@ -34,7 +34,7 @@ public class TestStringBuffer
         s1.append("pi!=");
         s1.append(-3.1415927);
         s1.append("!");
-        Test.assert(s1.toString(), "pi!=-3.1415927!".equals(s1.toString()));
+        Assertion.test(s1.toString(), "pi!=-3.1415927!".equals(s1.toString()));
         
         LCD.showNumber(4);
                 
@@ -42,7 +42,7 @@ public class TestStringBuffer
         s1.append("pi!=");
         s1.append(3.1415927e30);
         s1.append("!");
-        Test.assert(s1.toString(), "pi!=3.1415927E30!".equals(s1.toString()));
+        Assertion.test(s1.toString(), "pi!=3.1415927E30!".equals(s1.toString()));
         
         LCD.showNumber(5);
                 
@@ -50,7 +50,7 @@ public class TestStringBuffer
         s1.append("pi!=");
         s1.append(3.1415927e-30);
         s1.append("!");
-        Test.assert(s1.toString(), "pi!=3.1415925E-30!".equals(s1.toString()));
+        Assertion.test(s1.toString(), "pi!=3.1415925E-30!".equals(s1.toString()));
         
         LCD.showNumber(6);
                 
@@ -58,7 +58,7 @@ public class TestStringBuffer
         s1.append("pi!=");
         s1.append(-3.1415927e30);
         s1.append("!");
-        Test.assert(s1.toString(), "pi!=-3.1415927E30!".equals(s1.toString()));
+        Assertion.test(s1.toString(), "pi!=-3.1415927E30!".equals(s1.toString()));
         
         LCD.showNumber(7);
                 
@@ -66,6 +66,6 @@ public class TestStringBuffer
         s1.append("pi!=");
         s1.append(-3.1415927e-30);
         s1.append("!");
-        Test.assert(s1.toString(), "pi!=-3.1415925E-30!".equals(s1.toString()));        
+        Assertion.test(s1.toString(), "pi!=-3.1415925E-30!".equals(s1.toString()));        
     }
 }
