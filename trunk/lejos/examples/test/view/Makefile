@@ -1,9 +1,11 @@
-LEJOSHOME = ../..
+LEJOS_HOME = ../../..
 
-LEJOSC = $(LEJOSHOME)/bin/lejosc
-LEJOS = $(LEJOSHOME)/bin/lejos
-LEJOSRUN = $(LEJOSHOME)/bin/lejosrun
-LEJOSFIRMDL = $(LEJOSHOME)/bin/lejosfirmdl
+COMPILE = $(LEJOS_HOME)/bin/lejosjc
+LINK = $(LEJOS_HOME)/bin/lejoslink
+DOWNLOAD = $(LEJOS_HOME)/bin/lejosdl
+FIRMDL = $(LEJOS_HOME)/bin/firmdl
+
+DOWNLOAD_OPTIONS = --tty=/dev/ttyS0
 
 CLASSPATH = .
 
@@ -24,16 +26,16 @@ SIGNATURE = View.sig
 default : run
 
 run : $(BINARY)
-	$(LEJOSRUN) $(BINARY)
+	$(DOWNLOAD) $(DOWNLOAD_OPTIONS) $(BINARY)
 
 firmdl :
-	$(LEJOSFIRMDL)
+	$(FIRMDL)
 
 $(BINARY) : $(OBJECTS)
-	$(LEJOS) -verbose $(PROGRAMS) -o $(BINARY) > $(SIGNATURE)
+	$(LINK) -verbose $(PROGRAMS) -o $(BINARY) > $(SIGNATURE)
 
 $(OBJECTS) : $(SOURCES)
-	$(LEJOSC) $(SOURCES)
+	$(COMPILE) $(SOURCES)
 
 clean :
 	rm -f $(BINARY) $(SIGNATURE) *.class *~ core
