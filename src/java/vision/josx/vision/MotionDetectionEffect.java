@@ -42,7 +42,8 @@ import java.io.*;
  *
  * <br><br>
  * @author: Konrad Rzeszutek <konrad@darnok.org>
- *
+ * 
+ * Modified by Lawrie Griffiths to fit in with lejos vision system.
  */
 public class MotionDetectionEffect extends VisionEffect {
   
@@ -97,7 +98,7 @@ public class MotionDetectionEffect extends VisionEffect {
   public boolean debug = false;
 
   /**
-   * Initialize the effect plugin.
+   * Initialize the Motion effect plugin.
    */
   public MotionDetectionEffect() {
     super();
@@ -105,18 +106,24 @@ public class MotionDetectionEffect extends VisionEffect {
 
   /**
    * Process the image, detecting motion in the regions
+   * @param inBuffer the input Buffer
+   * @param outBuffer the output Buffer
+   * @result BUFFER_PROCESSED_OK or BUFFER_PROCESSED_FAILED
    */
   public int process(Buffer inBuffer, Buffer outBuffer) {
     /*
-       optimization ideas:
-       first scale down the image.
-       convert the image to an int[][] array (instead of using byte[][])
+       Optimization ideas:
+   
+       - first scale down the image.
+       - convert the image to an int[][] array (instead of using byte[][])
 
-       then do all the calculation on int[][] array instead of
-       masking the bit.
+       - then do all the calculation on int[][] array instead of
+         masking the bits.
 
-       furthermore, only do the comparison every 5 frames instead of every frame.
+       Furthermore, only do the comparison every 5 frames instead of every frame.
     */
+
+    // Validate and create the necessary buffers
 
     int outputDataLength = ((VideoFormat)outputFormat).getMaxDataLength();
 
@@ -126,18 +133,28 @@ public class MotionDetectionEffect extends VisionEffect {
     outBuffer.setFormat(outputFormat);
     outBuffer.setFlags(inBuffer.getFlags());
 
+    // Get the data portion of the buffers
+
     byte [] inData = (byte[]) inBuffer.getData();
     byte [] outData = (byte[]) outBuffer.getData();
 
+    // Get the input format
+
     RGBFormat vfIn = (RGBFormat) inBuffer.getFormat();
     Dimension sizeIn = vfIn.getSize();
+
+    // Get the stride lengths
 
     int pixStrideIn = vfIn.getPixelStride();
     int lineStrideIn = vfIn.getLineStride();
 
     int y, x;
+
+    // Get the input demensions
+
     int width = sizeIn.width;
     int height = sizeIn.height;
+
     int r,g,b;
     int ip, op;
     byte result;
@@ -146,14 +163,20 @@ public class MotionDetectionEffect extends VisionEffect {
     int inDataInt = 0;
     int correction;
 
+    // If a snapshot has been requested, write the JPEG image to the selected file
+
     if (Vision.takeSnapshot()) {
       try {
         Vision.writeImage(Vision.snapshotFilename, inData, Vision.imageWidth, Vision.imageHeight);
-        Vision.setSnapshot(false);
       } catch (Exception e) {
         System.out.println("Failed to take snapshot");
+      } finally {
+        Vision.setSnapshot(false);
       }
     } 
+
+    // If we have no reference data, create it, copy input to output
+    // and don't attempt to detect motion
 
     if (refData == null) {
       refData = new byte[outputDataLength];
@@ -170,30 +193,41 @@ public class MotionDetectionEffect extends VisionEffect {
       return BUFFER_PROCESSED_OK;
     }
 
+    // Check the output buffer
+
     if ( outData.length < sizeIn.width*sizeIn.height*3 ) {
       System.out.println("the buffer is not full");
       return BUFFER_PROCESSED_FAILED;
     }
+
+    // Calculate the average intensity
 
     for (ip  = 0; ip < outputDataLength; ip++) {
       avg += (int) (inData[ip] & 0xFF);
     }
 
     avg_img_intensity = avg / outputDataLength;
+
+    // Calculate the correction factor as the absolute value of
+    // the difference between the image and the reference integrity
+
     correction = (avg_ref_intensity < avg_img_intensity) ?
-    avg_img_intensity - avg_ref_intensity :
-    avg_ref_intensity - avg_img_intensity;
+                    avg_img_intensity - avg_ref_intensity :
+                    avg_ref_intensity - avg_img_intensity;
+
 //      System.out.println(avg_ref_intensity + "; "+avg_img_intensity+" = "+correction);
 //
+
     avg_ref_intensity = avg_img_intensity;
     ip = op = 0;
 
     /**
-     * This is comparng the last frame with the new frame.
-     * We lit up only the pixels which changed, the rest is discarded (on our
-     * b/w image - used for determing the motion
+     * Compare the reference frame with the new frame.
+     * We lite up only the pixels which changed, the rest are discarded (on the
+     * b/w image - used for determing the motion)
      *
      */
+
     for (int ii=0; ii< outputDataLength/pixStrideIn; ii++) {
 
       refDataInt = (int) refData[ip] & 0xFF;
@@ -209,6 +243,7 @@ public class MotionDetectionEffect extends VisionEffect {
       b =  (refDataInt > inDataInt) ? refDataInt - inDataInt : inDataInt - refDataInt;
 
       // intensity normalization
+
       r -= (r < correction) ? r : correction;
       g -= (g < correction) ? g : correction;
       b -= (b < correction) ? b : correction;
@@ -228,12 +263,15 @@ public class MotionDetectionEffect extends VisionEffect {
       }
     }
 
+    // Now eliminate insignificant blobs and count how many 
+    // there are in each region
+
     Region [] regions = Vision.getRegions();
 
     for(int i=0;i<regions.length;i++) blobCount[i] = 0; 
-    //System.out.println("Region " + i + " not null"); 
 
     // blob elimination
+
     for (op = lineStrideIn + 3; op < outputDataLength - lineStrideIn-3; op+=3) {
       for (int i=0; i<1; i++) {
         if (((int)bwData[op+2] & 0xFF) < 255) break;
@@ -258,9 +296,9 @@ public class MotionDetectionEffect extends VisionEffect {
       }
     }
 
-    // System.out.println("Line stride in = " + lineStrideIn);
+    // Call Motion Listeners for regions whose blob count
+    // exceeds the current threshold
 
-    // when we are finished with comparison we do this.
     for (int i=0;i<Region.MAX_REGIONS && regions[i] != null;i++) {
       // System.out.println("Region " + i + ", count = " + blobCount[i]);
 
@@ -268,43 +306,66 @@ public class MotionDetectionEffect extends VisionEffect {
 
         // System.out.println("Motion detected in region " + i);
 
+        // Call the motion listeners for this region
+
         MotionListener [] ml = regions[i].getMotionListeners();
 
         for(int j=0;j<ml.length;j++) ml[j].motionDetected(i+1);
-          if (debug) {
-            sample_down(inData,outData, 0, 0,sizeIn.width, sizeIn.height,
-            lineStrideIn, pixStrideIn);
-     	    Font.println("original picture", Font.FONT_8x8, 0, 0,
-            (byte)255,(byte)255,(byte)255, outBuffer);
-     	    sample_down(refData,outData, 0, sizeIn.height/2,sizeIn.width,
+
+        // If in debug mode split the screen into 4 and show the original
+        // picture, the reference picture and the blobs detected
+
+        if (debug) {
+          sample_down(inData,outData, 0, 0,sizeIn.width, sizeIn.height,
+          lineStrideIn, pixStrideIn);
+          Font.println("original picture", Font.FONT_8x8, 0, 0,
+                       (byte)255,(byte)255,(byte)255, outBuffer);
+     	  sample_down(refData,outData, 0, sizeIn.height/2,sizeIn.width,
                         sizeIn.height, lineStrideIn, pixStrideIn);
-     	    Font.println("reference picture", Font.FONT_8x8, 0,
+     	  Font.println("reference picture", Font.FONT_8x8, 0,
                          sizeIn.height , (byte)255,(byte)255,(byte)255, outBuffer);
-            sample_down(bwData,outData, sizeIn.width/2, 0,sizeIn.width,
+          sample_down(bwData,outData, sizeIn.width/2, 0,sizeIn.width,
                         sizeIn.height, lineStrideIn, pixStrideIn);
-     	    Font.println("motion detection pic", Font.FONT_8x8,
+     	  Font.println("motion detection pic", Font.FONT_8x8,
                          sizeIn.width/2, 0 , (byte)255,(byte)255,(byte)255, outBuffer);
-	  } else System.arraycopy(inData,0,outData,0,inData.length);
+	} else { 
+          
+          // Otherwise copy the input to the output 
+                    
+          System.arraycopy(inData,0,outData,0,inData.length);
+        }
+
+        // Whether debug or not make the current picture the new reference picture
 
         System.arraycopy(inData,0,refData,0,inData.length);
 
         return BUFFER_PROCESSED_OK;
       }
     }
+
+    // If no motion detected, just copy the input to the output
     
     System.arraycopy(inData,0,outData,0,inData.length);
-    // return BUFFER_PROCESSED_FAILED;
     
     return BUFFER_PROCESSED_OK;
   }
 
   // methods for interface PlugIn
+
+  /**
+   * get the name of the effect
+   * @return "Motion Detection Effect"
+   **/
   public String getName() {
     return "Motion Detection Effect";
   }
 
   private Control[] controls;
 
+  /**
+   * Getter for array on one control for adjusing motion threshold and setting debug.
+   * @return an array of one MotionDetectionControl
+   */
   public Object[] getControls() {
     if (controls == null) {
       controls = new Control[1];
@@ -315,22 +376,20 @@ public class MotionDetectionEffect extends VisionEffect {
 
   // Utility methods.
 
+  /**
+   * Reduce the data to one quarter size
+   **/
   void sample_down(byte[] inData, byte[] outData, int X, int Y, int width,
                    int height, int lineStrideIn, int pixStrideIn) {
     int p1, p2, p3, p4, op,x,y;
 
     for ( y = 0; y < (height/2); y++) {
       p1 = (y * 2) * lineStrideIn ; // upper left cell
-      p2 = p1 + pixStrideIn;                    // upper right cell
-      p3 = p1 + lineStrideIn;         // lower left cell
-      p4 = p3 + pixStrideIn;                    // lower right cell
+      p2 = p1 + pixStrideIn;        // upper right cell
+      p3 = p1 + lineStrideIn;       // lower left cell
+      p4 = p3 + pixStrideIn;        // lower right cell
       op = lineStrideIn * y + (lineStrideIn*Y) + (X*pixStrideIn);
       for ( int i =0; i< (width /2 );i++) {
-/*
-        outData[op++] = (byte)((inData[p1++] + inData[p2++] + inData[p3++] + inData[p4++])/4); // blue cells avg
-        outData[op++] = (byte)((inData[p1++] + inData[p2++] + inData[p3++] + inData[p4++])/4); // green cells avg
-        outData[op++] = (byte)((inData[p1++] + inData[p2++] + inData[p3++] + inData[p4++])/4); // red cells avg
-*/
         outData[op++] = (byte)(((int)(inData[p1++] & 0xFF) +
                                ((int)inData[p2++] & 0xFF)+ ((int)inData[p3++] & 0xFF) +
                                 ((int)inData[p4++] & 0xFF))/4); // blue cells avg

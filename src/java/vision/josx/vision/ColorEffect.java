@@ -1,21 +1,38 @@
 package josx.vision;
 
-/*
- * Supports detecting colored objects in regions
- */
-
 import javax.media.*;
 import javax.media.format.*;
 import java.awt.*;
 
+/*
+ * Supports detecting colors and light level in regions
+ * @author Lawrie Griffiths
+ */
 public class ColorEffect extends VisionEffect {
-  private static final int PIXEL_THRESHOLD = 32;
+  private static final int INIT_PIXEL_THRESHOLD = 16;
   private static final int LIGHT_THRESHOLD = 192;
+  public static final int MAX_PIXEL_THRESHOLD = 40;
+  public static final int MIN_PIXEL_THRESHOLD = 0;
+  public static final int PIXEL_THRESHOLD_INC = 4;
+  
+  public int [] averageRed = new int[Region.MAX_REGIONS];
+  public int [] averageGreen = new int[Region.MAX_REGIONS];
+  public int [] averageBlue = new int[Region.MAX_REGIONS];
 
+  public static int pixelThreshold = INIT_PIXEL_THRESHOLD;
+
+  /*
+   * Detect colors and light in regions
+   */
   public ColorEffect() {
     super();
   }
 
+  /*
+   * Look for colors in regions, and if found, call the associated color listener.
+   * Also looks for overall light value and calls associated Light Listener.
+   * Copies into to output.
+   */
   public int process(Buffer inBuffer, Buffer outBuffer) {
     int outputDataLength = ((VideoFormat)outputFormat).getMaxDataLength();
     validateByteArraySize(outBuffer, outputDataLength);
@@ -43,20 +60,36 @@ public class ColorEffect extends VisionEffect {
     // Find the regions
 
     Region [] regions = Vision.getRegions();
-
+ 
     // Look for color listeners
+
+    // Examine each non-null region
 
     for(int i=0;i<regions.length;i++) {
       if (regions[i] != null) {
+
+        // Find the color listeners for this region
+
         ColorListener [] cl = regions[i].getColorListeners();
         int [] colors = regions[i].getColors();
+
+        // Continue if no listeners
+
+        if (cl.length == 0) continue;
+
+        // Get region size
 
         int rx = regions[i].getX();
         int ry = regions[i].getY();
         int width = regions[i].getWidth();
         int height = regions[i].getHeight();
 
+        // Look for the color associated with each listener
+
         for(int j=0;j<cl.length;j++) {
+
+          // Separate R, G, B values
+
           int r = (colors[j] >> 16) & 0xFF;
           int g = (colors[j] >> 8) & 0xFF;
           int b = colors[j] & 0xFF;
@@ -66,6 +99,8 @@ public class ColorEffect extends VisionEffect {
           int pixCount = 0, totalPixs = 0;
           int aR = 0, aG = 0, aB = 0;
 
+          // Examine each pixel in the region
+
           for(int ii=ry; ii<ry+height; ii++) {
             for(int jj=rx; jj<rx+width; jj++) {
               int pos = ii*lineStrideIn + jj*pixStrideIn;
@@ -74,45 +109,69 @@ public class ColorEffect extends VisionEffect {
               int tg = inData[pos+1] & 0xFF;
               int tb = inData[pos] & 0xFF;
 
+              // Keep running totals for average values for R, G, and B for the region
+
               aR += tr;
               aG += tg;
               aB += tb;
 
               totalPixs++;
 
-              if (Math.abs(tr - r) <= PIXEL_THRESHOLD &&
-                  Math.abs(tg - g) <= PIXEL_THRESHOLD &&
-                  Math.abs(tb - b) <= PIXEL_THRESHOLD) {
+              // Count the pixel if it is within the threshold for R, G, and B values
+
+              if (Math.abs(tr - r) <= pixelThreshold &&
+                  Math.abs(tg - g) <= pixelThreshold &&
+                  Math.abs(tb - b) <= pixelThreshold) {
                 pixCount++;
               }
             }       
           }
           // System.out.println("Matched " + pixCount + " out of " + totalPixs);
           
+          // Calucate the average R, G and B values for the region
+
+          averageRed[i] = aR/totalPixs;
+          averageGreen[i] = aG/totalPixs;
+          averageBlue[i] = aB/totalPixs;
+
           if (Vision.captureColor) 
             System.out.println("Color = " + aR/totalPixs + " , " + aG/totalPixs + " , " + aB/totalPixs);
 
+          // If sufficient pixels match, call the Color Listener
+
           if (pixCount > totalPixs/3) cl[j].colorDetected(i+1, colors[j]);
-            
+           
         }
       }
     }
 
     // Look for light listeners
 
+    // Examine each non-null region
+
     for(int i=0;i<regions.length;i++) {
       if (regions[i] != null) {
+
+        // Get the light listeners
+
         LightListener [] ll = regions[i].getLightListeners();
+
+        // If no light listeners, continue
+
+        if (ll.length == 0) continue;
+
+        // Get the region dimensions
 
         int rx = regions[i].getX();
         int ry = regions[i].getY();
         int width = regions[i].getWidth();
         int height = regions[i].getHeight();
 
+        // Examine each pixel
+
         for(int j=0;j<ll.length;j++) {
          
           int pixCount = 0, totalPixs = 0;
-          int aR = 0, aG = 0, aB = 0;
 
           for(int ii=ry; ii<ry+height; ii++) {
             for(int jj=rx; jj<rx+width; jj++) {
@@ -122,11 +181,9 @@ public class ColorEffect extends VisionEffect {
               int tg = inData[pos+1] & 0xFF;
               int tb = inData[pos] & 0xFF;
 
-              aR += tr;
-              aG += tg;
-              aB += tb;
-
               totalPixs++;
+
+              // Count the pixel if each of R, G and B is above the threshold
 
               if (tr >= LIGHT_THRESHOLD &&
                   tg >= LIGHT_THRESHOLD &&
@@ -135,11 +192,12 @@ public class ColorEffect extends VisionEffect {
               }
             }       
           }
-          // System.out.println("Matched " + pixCount + " out of " + totalPixs);
-          // System.out.println("Average = " + aR/totalPixs + " , " + aG/totalPixs + " , " + aB/totalPixs);
 
-          if (pixCount > totalPixs/3) ll[j].lightDetected(i+1);
-            
+          // System.out.println("Matched " + pixCount + " out of " + totalPixs);
+
+          // Call the light listener for the region if sufficient pixels match
+
+          if (pixCount > totalPixs/3) ll[j].lightDetected(i+1);           
         }
       }
     }
@@ -147,8 +205,26 @@ public class ColorEffect extends VisionEffect {
     return BUFFER_PROCESSED_OK;
   }
 
-  // methods for interface PlugIn
+  /*
+   * Get the name of the Effect
+   * @return "Color Effect"
+   */
   public String getName() {
     return "Color Effect";
   }
+
+  private Control[] controls;
+
+  /**
+   * Getter for array on one control for adjusing motion threshold and setting debug.
+   * @return an array of one ColorDetectionControl
+   */
+  public Object[] getControls() {
+    if (controls == null) {
+      controls = new Control[1];
+      controls[0] = new ColorDetectionControl(this);
+    }
+    return (Object[])controls;
+  }
+
 }

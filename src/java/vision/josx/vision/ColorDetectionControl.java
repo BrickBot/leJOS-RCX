@@ -8,22 +8,23 @@ import javax.media.Control;
 
 /**
  * Title: Lejos Vision System
- * Description: Motion Detection Control
- * @author Konrad Rzeszutek
- * Modified bty Lawrie Griffiths for lejos vision system
+ * Description: Color Detection Control
+ * @author Lawrie Griffiths
  */
-public class MotionDetectionControl implements Control, ActionListener, ChangeListener  {
+public class ColorDetectionControl implements Control, ActionListener, ChangeListener  {
   private Component component;
   private JButton button;
   private JSlider threshold;
   private JLabel label;
-  private MotionDetectionEffect motion;
+  private ColorEffect effect;
+  private boolean debug;
+  private int thresholdValue;
 
   /**
    * Create the Motion Detection Control
    */  
-  public MotionDetectionControl(MotionDetectionEffect motion) {
-    this.motion = motion;
+  public ColorDetectionControl(ColorEffect effect) {
+    this.effect = effect;
   }
 
   /**
@@ -32,18 +33,18 @@ public class MotionDetectionControl implements Control, ActionListener, ChangeLi
    **/
   public Component getControlComponent () {
     if (component == null) {
-      label = new JLabel("Set Motion threshold:");
-      button = new JButton("Motion Debug");
+      label = new JLabel("Set Color threshold:");
+      button = new JButton("Color Debug");
       button.addActionListener(this);
 
       button.setToolTipText("Click to turn debugging mode on/off");
 
       threshold = new JSlider(JSlider.HORIZONTAL,
                                0,
-                               motion.THRESHOLD_MAX / 1000,
-                               motion.THRESHOLD_INIT / 1000);
+                               effect.MAX_PIXEL_THRESHOLD / 4,
+                               effect.pixelThreshold / 4);
 
-      threshold.setMajorTickSpacing(motion.THRESHOLD_INC / 1000);
+      threshold.setMajorTickSpacing(1);
       threshold.setPaintLabels(true);
       threshold.addChangeListener(this);
 
@@ -65,8 +66,7 @@ public class MotionDetectionControl implements Control, ActionListener, ChangeLi
   public void actionPerformed(ActionEvent e) {
     Object o = e.getSource();
     if (o == button) {
-      if (motion.debug == false) motion.debug = true;
-      else motion.debug = false;
+      debug = !debug;
     }
   }
 
@@ -77,7 +77,7 @@ public class MotionDetectionControl implements Control, ActionListener, ChangeLi
   public void stateChanged(ChangeEvent e) {
     Object o = e.getSource();
     if (o == threshold) {
-      motion.blob_threshold = threshold.getValue()*1000;
+      effect.pixelThreshold = threshold.getValue()*4;
     }
   }
 }
