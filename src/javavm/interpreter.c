@@ -1,11 +1,15 @@
 
 #include "trace.h"
-#include "classes.h"
 #include "types.h"
+#include "constants.h"
+#include "classes.h"
 #include "threads.h"
 #include "opcodes.h"
 #include "configure.h"
 
+// Interpreter globals:
+
+boolean gMustExit;
 byte *pc = null;
 STACKWORD *localsBase = null;
 STACKWORD *stackTop = null;
@@ -14,18 +18,19 @@ STACKWORD *stackTop = null;
 
 byte gByte;
 ConstantRecord *gConstRec;
+STACKWORD gStackWord;
 
-byte *current_code_base()
-{
-  return get_binary_base() + current_method()->codeOffset;
-}
+/* byte *current_code_base() */
+/* { */
+/*   return get_binary_base() + current_method()->codeOffset; */
+/* } */
 
 /**
- * Assumes pc points to offset, and jumps.
+ * Assumes pc points to 2-byte offset, and jumps.
  */
 void do_goto()
 {
-  pc += (((STACKWORD) pc[0] << 8) | pc[1]) - 1;
+  pc += (((JSHORT) pc[0] << 8) | pc[1]) - 1;
 }
 
 void do_isub()
@@ -60,8 +65,11 @@ void engine()
   assert (currentThread != null, INTERPRETER1);
   #endif
 
+  gMustExit = false;
   switch_thread();
-
+  #ifdef VERIFY
+  assert (gMustExit == false, INTERPRETER2);
+  #endif VERIFY
   numOpcodes = 1;
  LABEL_ENGINELOOP: 
   if (!(--numOpcodes))

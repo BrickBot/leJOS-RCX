@@ -5,15 +5,15 @@
 #include "types.h"
 #include "language.h"
 
-#define GC_MASK 0x0001
-#define GC_SHIFT 0x0001
-#define THREAD_MASK 0x003F
-#define THREAD_SHIFT 0x0002
-#define CLASS_MASK 0x00FF
-#define CLASS_SHIFT 0x0008
-#define ALLOCATED_BLOCK_0 0x0001
+#define THREAD_MASK    0x003F
+#define THREAD_SHIFT   0x0002
+#define CLASS_MASK     0x00FF
+#define ELEM_SIZE_MASK 0x00FF
+#define ARRAY_MASK     0x4000
 
-#define mk_pobject(WORD_) ((Object *)(WORD_))
+#define is_array(OBJ_)         ((OBJ_)->flags & ARRAY_MASK)
+#define get_class_index(OBJ_)  ((OBJ_)->flags & CLASS_MASK)
+#define get_element_size(ARR_) ((ARR_)->flags & ELEM_SIZE_MASK)
 
 // Double-check these data structures
 // with the Java declaration of each.
@@ -21,23 +21,18 @@
 typedef struct S_Object
 {
   /**
-   * The flags field is the only one not declared
-   * or initialized:
-   *
-   * bit 0: (0 == free block, 1 == allocated block)
-   * if (free block)
-   * {
-   *   bit 1-15: size in 2-byte words.
-   * }
-   * else
-   * {
-   *   bit 1: Garbage collection mark.
-   *   bit 8-15: Class index.
-   * }
+   * Object flags.
+   * bit 15: reserved for GC.
+   * bit 14: is primitive array
+   * Primitive arrays:
+   *   bits 0-7: Element size.
+   * Other:
+   *   bits 0-7: Class index.
    */
   TWOBYTES flags;
 
   /**
+   * Synchronization state.
    * bit 0-7: monitor count.
    * bit 8-15: Thread index.
    */
@@ -66,19 +61,9 @@ inline byte get_thread_id (Object *obj)
   return (byte) ((obj->syncInfo >> THREAD_SHIFT) & THREAD_MASK);
 }
 
-inline byte get_class_index (Object *obj)
-{
-  return (byte) ((obj->flags >> CLASS_SHIFT) & CLASS_MASK);
-}
-
-inline TWOBYTES get_size (Object *obj)
-{
-  return get_class_record(get_class_index(obj))->classSize;
-}
-
 inline void set_class (Object *obj, byte classIndex)
 {
-  obj->flags = ALLOCATED_BLOCK_0 | ((TWOBYTES) classIndex << CLASS_SHIFT);
+  obj->flags = classIndex;
 }
 
 #endif _CLASSES_H

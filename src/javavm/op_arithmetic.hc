@@ -18,14 +18,18 @@ case OP_IMUL:
   *stackTop = word2jint(*stackTop) * word2jint(*(stackTop+1));
   goto LABEL_ENGINELOOP;
 case OP_IDIV:
-  // TBD: division by zero
-  stackTop--;
-  *stackTop = word2jint(*stackTop) / word2jint(*(stackTop+1));
-  goto LABEL_ENGINELOOP;
 case OP_IREM:
-  // TBD: division by zero
+  gInt = word2jint(stackTop[0]);
+  if (gInt == 0)
+  {
+    throw_exception (arithmeticException);
+    if (gMustExit)
+      return;
+    goto LABEL_ENGINELOOP;
+  }
   stackTop--;
-  *stackTop = word2jint(*stackTop) % word2jint(*(stackTop+1));
+  stackTop[0] = (*(pc-1) == OP_IDIV) ? word2jint(stackTop[0]) / gInt :
+                                       word2jint(stackTop[0]) % gInt;
   goto LABEL_ENGINELOOP;
 case OP_INEG:
   *stackTop = -word2jint(*stackTop);

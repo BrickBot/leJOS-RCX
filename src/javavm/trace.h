@@ -20,6 +20,11 @@
 #define INTERPRETER3   13
 #define INTERPRETER4   14
 
+#define THREADS0       20
+#define THREADS1       21
+#define THREADS2       22
+#define THREADS3       23
+
 inline void assert (boolean aCond, int aCode)
 {
   #ifdef EMULATE

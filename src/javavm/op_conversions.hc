@@ -16,7 +16,7 @@ case OP_I2D:
 case OP_F2I:
   // Arguments: 0
   // Stack: -1 +1
-  stackTop[0] = (int) word2jfloat(stackTop[0]);
+  stackTop[0] = (JINT) word2jfloat(stackTop[0]);
   goto LABEL_ENGINELOOP;
 case OP_F2D:
   // Arguments: 0
@@ -28,7 +28,7 @@ case OP_D2I:
   // Arguments: 0
   // Stack: -2 +1
   stackTop--;
-  stackTop[0] = (int) word2jfloat(stackTop[1]);
+  stackTop[0] = (JINT) word2jfloat(stackTop[1]);
   goto LABEL_ENGINELOOP;
 case OP_D2F:
   // Arguments: 0
@@ -39,10 +39,8 @@ case OP_D2F:
 case OP_I2B:
   stackTop[0] = (JBYTE) word2jint(stackTop[0]);
   goto LABEL_ENGINELOOP;
-case OP_I2C:
-  stackTop[0] = (JCHAR) word2jint(stackTop[0]);
-  goto LABEL_ENGINELOOP; 
 case OP_I2S:
+case OP_I2C:
   stackTop[0] = (JSHORT) word2jint(stackTop[0]);
   goto LABEL_ENGINELOOP;   
 
