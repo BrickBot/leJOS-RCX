@@ -1,6 +1,9 @@
-package josx.platform.rcx.remotecontrol;
+package josx.rcxcomm.remotecontrol;
 /*
  * $Log$
+ * Revision 1.1  2003/05/01 12:00:06  mpscholz
+ * a messenger which sends LEGO remote control messages
+ *
  */
 import josx.rcxcomm.*;
 import java.io.*;

@@ -1,11 +1,14 @@
 /*
  * $Log$
+ * Revision 1.2  2002/11/01 16:03:35  mpscholz
+ * support of LEGO F7 protocol
+ *
  * Revision 1.1  2002/09/28 10:32:28  mpscholz
  * initial version of the remotecontrol package
  *
  */
 
-package josx.platform.rcx.remotecontrol;
+package josx.rcxcomm.remotecontrol;
 
 import java.io.*;
 import java.util.*;
