@@ -516,7 +516,7 @@ main(int argc, char **argv)
     /* Open the serial port */
 
     if ((tty = getenv("RCXTTY")) == NULL) {
-	fprintf(stderr, "Your RCXTTY variable is undefined.\n");
+	fprintf(stderr, "Your RCXTTY variable is undefined. It must be defined as the IR device (e.g. /dev/ttyS1, com1, etc.)\n");
 	exit(1);
     }
 
@@ -584,7 +584,7 @@ main(int argc, char **argv)
 		break;
 	}
 	if (i == 5) {
-	    fprintf(stderr, "%s: Transfer data failed. Check range of IR tower.\n", progname);
+	    fprintf(stderr, "%s: Transfer data failed. Check range of IR tower or batteries.\n", progname);
 	    exit(1);
 	}
     }

@@ -1,6 +1,37 @@
 
-Version 0.1.2 (latest):
------------------------
+Version 0.1.3:
+--------------
+
+  - Found that the hello example did not compile in
+    the last version. Fixed it.
+
+  - Decided to make the firmware show battery power 
+    whenever it enters program-download mode.
+
+  - Fixed virtual method linker bug. (The linker was
+    unable to find certain virtual methods in classfiles
+    compiled with JDK1.2.x).
+
+  - Apparently fixed On/Off bug. (The LCD is not cleared 
+    by shutdown_buttons in some RCXs).
+
+  - Got rid of TINYVM_HOME.
+
+  - TINYVMPATH is no longer necessary. CLASSPATH is
+    used.
+
+  - More appropriate message for linker failure when
+    instanceof or checkcast of array classes is 
+    encountered.
+
+  - Multi-dimensional array allocation was broken.
+    Fixed it.
+
+  - Fixed checkcast bug. (It was not allowing casts of
+    null).
+
+Version 0.1.2:
+--------------
 
   - Fixed serial comm bug. (If you tried to download
     a program to the RCX while another program was

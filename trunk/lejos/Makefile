@@ -1,10 +1,6 @@
 
 SHELL=/bin/sh
-JTOOLS=${TINYVM_HOME}/jtools
-CLASSPATH=${JTOOLS}
-COMMON_FOLDER=${TINYVM_HOME}/common
-CLASSES_DIR=${TINYVM_HOME}/classes
-LIB_DIR=${TINYVM_HOME}/lib
+CLASSPATH=jtools
 
 JAVAC=javac
 JAVADOC=javadoc
@@ -21,10 +17,13 @@ default: check all_jtools all_ctools core_classes tinyvm_emul
 all: default tinyvm_bin
 
 release:
-	make clean
-	make all
 	cvs commit
 	cvs tag RELEASE_`cat VERSION`
+	make release_no_tag
+
+release_no_tag:
+	make clean
+	make all
 	rm -rf ${TEMP}/tinyvm_*
 	export TINYVM_VERSION=tinyvm_`cat VERSION`; make dir_and_zip
 
@@ -37,12 +36,9 @@ dir_and_zip:
 	rm -rf ${TEMP}/${TINYVM_VERSION}
 
 check:
-	@if [ -f ${TINYVM_HOME} ]; then \
-	  echo "Error: TINYVM_HOME undefined. Please check the README file"; \
+	@if [ "${TINYVM_HOME}" != "" ]; then \
+	  echo "Note: The TINYVM_HOME variable is no longer needed"; \
 	  exit 1; \
-	fi;
-	@if [ "${TINYVM_HOME}" != "`pwd`" ]; then \
-	  echo "Warning: TINYVM_HOME (${TINYVM_HOME}) is not equal to `pwd`."; \
 	fi;
 
 check_release:
@@ -54,18 +50,18 @@ check_release:
 	cd regression; ./run.sh
 
 all_jtools: java_tools generated_files java_loader
-	cd ${JTOOLS}; jar cf ${LIB_DIR}/jtools.jar `find . -name '*.class' -printf "%h/%f " `
+	cd jtools; jar cf ../lib/jtools.jar `find . -name '*.class' -printf "%h/%f " `
 
 java_tools:
 	@echo Making tools
-	${JAVAC} ${JTOOLS}/js/tools/*.java
+	${JAVAC} jtools/js/tools/*.java
 
-generated_files: ${COMMON_FOLDER}/classes.db ${COMMON_FOLDER}/signatures.db
-	${JAVA} -Dtinyvm.home=${TINYVM_HOME} js.tools.GenerateConstants
+generated_files: common/classes.db common/signatures.db
+	${JAVA} -Dtinyvm.home="." js.tools.GenerateConstants
 
 java_loader:
 	@echo Making loader
-	${JAVAC} ${JTOOLS}/js/tinyvm/*.java
+	${JAVAC} jtools/js/tinyvm/*.java
 
 all_ctools:
 	cd tools; make
@@ -79,18 +75,18 @@ tinyvm_emul:
 	cd vmtest; make
 
 core_classes:
-	${JAVAC} -classpath "${CLASSES_DIR}" `find ${CLASSES_DIR} -name '*.java' -printf "%h/%f " `
-	cd ${CLASSES_DIR}; jar cf ${LIB_DIR}/classes.jar `find . -name '*.class' -printf "%h/%f " `
+	${JAVAC} -classpath classes `find classes -name '*.java'`
+	cd classes; jar cf ../lib/classes.jar `find . -name '*.class'`
 
 javadoc:
 	if [ ! -d apidocs ]; then mkdir apidocs; fi
-	${JAVADOC} -d apidocs -sourcepath "${CLASSES_DIR}" java.lang tinyvm.rcx
+	${JAVADOC} -d apidocs -sourcepath classes java.lang tinyvm.rcx
 
 clean:
-	rm -rf `find . -name '*.class' -printf "%h/%f "`
-	rm -rf `find . -name 'core' -printf "%h/%f "`
-	rm -rf `find . -name '*.o' -printf "%h/%f "`
-	rm -rf `find . -name '*~' -printf "%h/%f "`
+	rm -rf `find . -name '*.class'`
+	rm -rf `find . -name 'core'`
+	rm -rf `find . -name '*.o'`
+	rm -rf `find . -name '*~'`
 
 cleaner: clean
 	rm -rf `find . -name '*.srec'`

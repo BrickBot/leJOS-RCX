@@ -90,7 +90,14 @@ implements OpCodeConstants, OpCodeInfo, Constants
                        pEntry.getClass().getName()));
     }
     JCPE_Class pClassEntry = (JCPE_Class) pEntry;
-    int pIdx = iBinary.getClassIndex (pClassEntry.getName());
+    String pClassName = pClassEntry.getName();
+    if (pClassName.startsWith ("["))
+    {
+      Utilities.fatal ("In " + iFullName + ": Operations instanceof or " +
+                       "checkcast on array classes (" + pClassName + 
+                       " in this case) are not yet supported by TinyVM.");
+    }
+    int pIdx = iBinary.getClassIndex (pClassName);
     if (pIdx == -1)
     {
       Utilities.fatal ("Bug CU-3: Didn't find class " + pEntry + 
@@ -198,7 +205,8 @@ implements OpCodeConstants, OpCodeInfo, Constants
     }
     JCPE_RefEntry pMethodEntry = (JCPE_RefEntry) pEntry;
     JCPE_Class pClass = pMethodEntry.getClassEntry();
-    ClassRecord pClassRecord = iBinary.getClassRecord (pClass.getName());
+    String pClassName = pClass.getName();
+    ClassRecord pClassRecord = iBinary.getClassRecord (pClassName);
     if (pClassRecord == null)
     {
       Utilities.fatal ("Bug CU-4: Didn't find class " + pClass + 
@@ -206,14 +214,15 @@ implements OpCodeConstants, OpCodeInfo, Constants
     }
     JCPE_NameAndType pNT = pMethodEntry.getNameAndType();
     Signature pSig = new Signature (pNT.getName(), pNT.getDescriptor());
-    MethodRecord pMethod = pClassRecord.getMethodRecord (pSig);
+    MethodRecord pMethod = pClassRecord.getVirtualMethodRecord (pSig);
     if (pMethod == null)
       Utilities.fatal ("Method " + pSig + " not found  in " + pClass);
+    ClassRecord pTopClass = pMethod.getClassRecord();
     if (aSpecial)
     {
-      int pClassIndex = iBinary.getClassIndex (pClassRecord);
+      int pClassIndex = iBinary.getClassIndex (pTopClass);
       Utilities.assert (pClassIndex != -1 && pClassIndex < MAX_CLASSES);
-      int pMethodIndex = pClassRecord.getMethodIndex (pMethod);
+      int pMethodIndex = pTopClass.getMethodIndex (pMethod);
       Utilities.assert (pMethodIndex != -1 && pMethodIndex < MAX_METHODS);
       Utilities.trace ("processMethod: special: " + pClassIndex + ", " +
                        pMethodIndex);
@@ -264,6 +273,7 @@ implements OpCodeConstants, OpCodeInfo, Constants
           // Write total number of dimensions
           pOutCode[i++] = (byte) (pIdx2 & 0xFF);
           // Skip requested dimensions for allocation
+          pOutCode[i] = aCode[i];
           i++;
           break;           
         case OP_NEW:

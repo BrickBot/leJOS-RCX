@@ -7,6 +7,7 @@ import js.classfile.*;
 public class MethodRecord implements WritableData, Constants
 {
   JMethod iMethod;
+  ClassRecord iClassRecord;
   RecordTable iExceptionTable = null;
   CodeSequence iCodeSequence = null;
 
@@ -18,11 +19,12 @@ public class MethodRecord implements WritableData, Constants
   int iFlags;                // DONE
 
   public MethodRecord (JMethod aEntry, Signature aSignature,
-                       JClassFile aClassFile,
+                       ClassRecord aClassRec,
                        Binary aBinary,
                        RecordTable aExceptionTables, 
                        HashVector aSignatures)
   {
+    iClassRecord = aClassRec;
     iMethod = aEntry;
     JCodeAttribute pCodeAttrib = iMethod.getCode();
     boolean pNoBody = iMethod.isAbstract() || iMethod.isNative();
@@ -38,7 +40,7 @@ public class MethodRecord implements WritableData, Constants
     iNumLocals = pCodeAttrib == null ? 0 : pCodeAttrib.getMaxLocals();
     if (iNumLocals > MAX_LOCALS)
     {
-      Utilities.fatal ("Method " + aClassFile.getName() + "." +
+      Utilities.fatal ("Method " + aClassRec.getName() + "." +
                        iMethod.getName() + " has " + iNumLocals + 
                        " local words. Only " + MAX_LOCALS + 
                        " are allowed.");
@@ -46,7 +48,7 @@ public class MethodRecord implements WritableData, Constants
     iNumOperands = pCodeAttrib == null ? 0 : pCodeAttrib.getMaxStack();
     if (iNumOperands > MAX_OPERANDS)
     {
-      Utilities.fatal ("Method " + aClassFile.getName() + "." +
+      Utilities.fatal ("Method " + aClassRec.getName() + "." +
                        iMethod.getName() + " has an operand stack " + 
                        " whose potential size is " + iNumOperands + ". " +
                        "Only " + MAX_OPERANDS + " are allowed.");
@@ -56,11 +58,18 @@ public class MethodRecord implements WritableData, Constants
     iNumParameters = getNumParamWords (iMethod, pParams);
     if (iNumParameters > MAX_PARAMETER_WORDS)
     {
-      Utilities.fatal ("Method " + aClassFile.getName() + "." +
+      Utilities.fatal ("Method " + aClassRec.getName() + "." +
                        iMethod.getName() + " has " + iNumParameters + 
                        " parameter words. Only " + MAX_PARAMETER_WORDS + 
                        " are allowed.");
     }
+    if (iMethod.isNative() && !aBinary.isSpecialSignature (aSignature))
+    {
+      System.out.println ("Warning: Native method signature " +
+        aSignature + " unrecognized. You are probably using JDK APIs " +
+        " or something similar that cannot be run under TinyVM.");
+    }
+
     if (pCodeAttrib != null)
     {
       iExceptionTable = new Sequence();
@@ -68,15 +77,20 @@ public class MethodRecord implements WritableData, Constants
       iNumExceptionHandlers = pExcepTable.size();
       if (iNumExceptionHandlers > MAX_EXCEPTION_HANDLERS)
       {
-        Utilities.fatal ("Method " + aClassFile.getName() + "." +
+        Utilities.fatal ("Method " + aClassRec.getName() + "." +
                          iMethod.getName() + " has " + iNumExceptionHandlers + 
                          " exception handlers. Only " + MAX_EXCEPTION_HANDLERS +
                          " are allowed.");
       }
-      storeExceptionTable (pExcepTable, aBinary, aClassFile);
+      storeExceptionTable (pExcepTable, aBinary, aClassRec.iCF);
       aExceptionTables.add (iExceptionTable);
     }
     initFlags();
+  }
+
+  public ClassRecord getClassRecord()
+  {
+    return iClassRecord;
   }
 
   public void initFlags()

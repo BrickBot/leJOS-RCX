@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TEST_CLASSES="Test04 Test06 Test11 Test12 Test13 Test14 Test15 Test17"
+TEST_CLASSES="Test04 Test06 Test07 Test11 Test12 Test13 Test14 Test26 Test28"
 OUT_FILE=regression.log
 GOLD_FILE=regression.gold
 export TINYVMPATH=.

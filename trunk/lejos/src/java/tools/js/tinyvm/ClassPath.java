@@ -12,7 +12,7 @@ public class ClassPath
   throws Exception
   {
     Vector pTokens = new Vector();
-    StringTokenizer pTok = new StringTokenizer (aEntries, ":"); 
+    StringTokenizer pTok = new StringTokenizer (aEntries, File.pathSeparator); 
     while (pTok.hasMoreTokens())
     {
       pTokens.addElement (pTok.nextToken());
@@ -22,7 +22,9 @@ public class ClassPath
     {
       String pEntry = (String) pTokens.elementAt(i);
       if (pEntry.endsWith (".zip") || pEntry.endsWith (".jar"))
+      {
         iEntries[i] = new ZipFile (pEntry);
+      }
       else
       {
         iEntries[i] = new File (pEntry);
@@ -58,6 +60,21 @@ public class ClassPath
       }
     }
     return null;
+  }
+
+  public String toString()
+  {
+    StringBuffer pBuf = new StringBuffer();
+    for (int i = 0; i < iEntries.length; i++)
+    {
+      if (iEntries[i] instanceof ZipFile)
+        pBuf.append (((ZipFile) iEntries[i]).getName());
+      else
+        pBuf.append (iEntries[i]);
+      if (i < iEntries.length - 1)
+        pBuf.append (File.pathSeparator);
+    }
+    return pBuf.toString();
   }
 }
 
