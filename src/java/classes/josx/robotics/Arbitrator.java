@@ -1,7 +1,5 @@
 package josx.robotics;
 
-// ** use Behavior currentBehavior !!!!
-
 /**
 * Arbitrator controls which behavior should currently be active in 
 * a behavior control system. Make sure to call start() after the 
@@ -13,8 +11,9 @@ package josx.robotics;
 public class Arbitrator {
    
    private Behavior [] behavior;
-   //private Behavior currentBehavior;
-   private int currentBehavior = 99;
+   private final int NONE = 99;
+   private int currentBehavior;
+   private BehaviorAction actionThread;
    
    /**
    * Allocates an Arbitrator object and initializes it with an array of
@@ -28,6 +27,9 @@ public class Arbitrator {
    */
    public Arbitrator(Behavior [] behaviors) {
       this.behavior = behaviors;
+      currentBehavior = NONE;
+      actionThread = new BehaviorAction();
+      actionThread.start();      
    }
    
    /**
@@ -38,6 +40,7 @@ public class Arbitrator {
    */
    public void start() {
       int totalBehaviors = behavior.length - 1;
+
       while(true) {
          // Check through all behavior.takeControl() starting at highest level behavior
          for(int i = totalBehaviors;i>=0;--i) {
@@ -45,19 +48,44 @@ public class Arbitrator {
                // As soon as takeControl() is true, execute the currentBehavior.suppress()
                //if(behavior[i] != currentBehavior) {
                if(i != currentBehavior) { // Prevents program from running same action over and over again
-                  if (currentBehavior != 99)
+                  if (currentBehavior != NONE) {
+                     if(currentBehavior >= i) // If higher level thread, wait to complete..
+                        while(!actionThread.done) {Thread.yield();}
                      behavior[currentBehavior].suppress();
+                  }
                   // Make currentBehavior this one
-                  //currentBehavior = behavior[i];
                   currentBehavior = i;
-                  // ** I'm confused.. keep running this over and over?
-                  // ** Or run currentBehavior in its own thread?
+
                   // Run the currentBehavior.behaviorAction()
-                  behavior[currentBehavior].action();
-                  break; // Breaks out of for(;;) loop
-               }
+                  actionThread.execute(i);
+               }  
+               break; // Breaks out of for() loop
             }
          }
+      }
+   }
+
+   /**
+   * This class handles the action() methods of the Behaviors.
+   */
+   private class BehaviorAction extends Thread {
+      public boolean done = true;
+      int current = NONE;
+      
+      public void run() {
+         while(true) {
+            if(current != NONE) {
+               done = false;
+               behavior[current].action();
+               current = NONE;
+               done = true;
+            }
+            Thread.yield();
+         }
+      }
+      
+      public void execute(int index) {
+         current = index;
       }
    }
 }
