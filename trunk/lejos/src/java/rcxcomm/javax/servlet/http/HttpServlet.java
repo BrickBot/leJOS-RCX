@@ -61,6 +61,8 @@ import java.io.*;
       queryStringLength = 0;
       int i;
 
+      port.reset(); // reset sequence numbers 
+
       // Skip the get 
 
       for (i= 0;i<4;i++) is.read();
