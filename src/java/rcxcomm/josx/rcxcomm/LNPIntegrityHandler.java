@@ -8,7 +8,7 @@ public class LNPIntegrityHandler extends PacketHandler {
   private byte [] inPacket = new byte[259];
   private byte [] outPacket = new byte[259];
   private int inPacketLength = 0;
-  byte op;
+  private byte op;
 
   public LNPIntegrityHandler(PacketHandler handler, byte op) {
     super(handler);
@@ -22,7 +22,7 @@ public class LNPIntegrityHandler extends PacketHandler {
    */
   public boolean sendPacket(byte [] packet, int len) {
     int sum = op + len - 1;
-    outPacket[0] = (byte) op;
+    outPacket[0] = op;
     outPacket[1] = (byte) len;
     for(int i=0; i<len; i++) {
       sum += packet[i];
@@ -43,8 +43,6 @@ public class LNPIntegrityHandler extends PacketHandler {
     return temp;
   }
 
-  private int error = 0;
-
   /**
    * Check if a packet is available
    * @return true if a Packet is available, else false
@@ -58,9 +56,7 @@ public class LNPIntegrityHandler extends PacketHandler {
       if ((byte) sum == inPacket[len-1]) {
         inPacketLength = len;
         return true;
-      } else {
-        error++;
-      }
+      } 
     }
     return false;
   }
