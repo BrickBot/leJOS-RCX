@@ -34,6 +34,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <errno.h>
+
 #include <windows.h>
 
 #define USB_TOWER_NAME "\\\\.\\LEGOTOWER1"
@@ -225,10 +226,15 @@ void* __rcx_open(char* tty, bool fast)
 	{
       // Setup serial port
 		success = __rcx_open_setSerialPortParameters(result);
+		if (__comm_debug && !success) printf("Error %lu: Setting serial port parameters for %s\n", (unsigned long) GetLastError(), result->deviceName);
 	}
 	
 	if (!success)
 	{
+		if (result->fileHandle > 0)
+		{
+		   CloseHandle(result->fileHandle);
+		}
 		free(result);
 	}
 
