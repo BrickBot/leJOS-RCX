@@ -1,6 +1,7 @@
   Juergen Stuber has added:
   - Persistent memory
   - writeShort method in Native
+  - documented format of common/signatures.db in doc/hacking/GUIDELINES
   
 leJOS 1.0.4:
 ------------
