@@ -75,7 +75,7 @@ static inline void set_array (Object *obj, const byte elemType, const TWOBYTES l
   #endif
 }
 
-inline Object *memcheck_allocate (const TWOBYTES size)
+Object *memcheck_allocate (const TWOBYTES size)
 {
   Object *ref;
   ref = (Object *) allocate (size);

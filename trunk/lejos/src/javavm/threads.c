@@ -49,6 +49,24 @@ StackFrame *current_stackframe()
   return stackframe_array() + (arraySize - 1);
 }
 
+void update_stack_frame (StackFrame *stackFrame)
+{
+  stackFrame->stackTop = stackTop;
+  stackFrame->isReference = isReference;
+  stackFrame->pc = pc;
+}  
+
+void update_registers (StackFrame *stackFrame)
+{
+  pc = stackFrame->pc;
+  stackTop = stackFrame->stackTop;
+  localsBase = stackFrame->localsBase;
+  isReference = stackFrame->isReference;
+  isReferenceBase = stackFrame->isReferenceBase;
+}
+
+
+
 inline byte get_thread_id (Object *obj)
 {
   return obj->threadId;

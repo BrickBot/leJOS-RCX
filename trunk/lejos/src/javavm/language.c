@@ -35,7 +35,7 @@ static MethodRecord *tempMethodRecord;
 
 // Methods:
 
-inline byte get_class_index (Object *obj)
+byte get_class_index (Object *obj)
 {
   byte f;
 
