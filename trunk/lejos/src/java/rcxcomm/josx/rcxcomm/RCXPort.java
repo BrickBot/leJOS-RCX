@@ -23,14 +23,14 @@ public class RCXPort {
     *  Parameterless constructor for the RCXPort.
     *  Opens the port.
     */
-   public RCXPort() {
+   public RCXPort() throws IOException {
       open();
    }
 
    /**
     *  The port name is ignored in the RCX version.
     */
-   public RCXPort(String port) {
+   public RCXPort(String port) throws IOException {
       open();
    }   
 
