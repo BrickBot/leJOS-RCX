@@ -45,8 +45,6 @@ Not all data types are available in the RCX implementation of
 DataInputStream and DataOutputStream. Object streams and 
 serialization are not yet supported.
 
-There are example programs in the rcxcomm/examples directory.
-
 Both serial and USB towers are supported on Windows. Currently
 only serial towers are supported for Linux and Mac OSX.
 
@@ -81,16 +79,16 @@ This is used to keep the serial tower alive for receiving data. Use
 setListen(true) when you want to receive date and setListen(false) to conserve 
 the serial tower batteries. You don't need to call setListen for USB towers.
 setListen is called automatically by the PC version of getInputStream(). You
-can call setListen(false) if you dont need to listen mmediatel and you want to 
+can call setListen(false) if you dont need to listen immediately and you want to 
 conserve batteries.
 
 With lejos 2.0. low level comms that does not rely on the Lego firmware protocol 
 and opcodes has been added, and RCXPort has been re-implemented using this. This
-makes it faster and reliable. It will continue to try tosend data until it gets 
+makes it faster and reliable. It will continue to try to send data until it gets 
 through, and ensure hat no data is duplicated. Future versions will be faster 
 still by adding buffering and using larger packet sizes.
 
-With lejos 2.0 there are alternative versionof RCXPort.These are:
+With lejos 2.0 there are alternative versions of RCXPort. These are:
 
 RCXF7Port - which uses the Lego F7 opcode in the same way as the lejos 1.0.5 
             version of RCXPort
