@@ -37,9 +37,9 @@ public abstract class RCXAbstractPort {
    }
 
    /**
-    * Constructor for a named port (e.g. com1 or usb).
-    * The port name is ignored on he RCX.
-    * @param port the port name, e.g com1 or usb
+    * Constructor for a named port (eg com1 or usb).
+    * The port name is ignored on the RCX.
+    * @param port the port name, eg com1 or usb
     * @param handler, the packet handler
     */
    public RCXAbstractPort(String port, PacketHandler handler) throws IOException {
