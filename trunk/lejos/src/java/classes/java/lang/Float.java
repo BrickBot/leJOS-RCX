@@ -7,6 +7,9 @@ package java.lang;
  * @author Lawrie Griffiths
  */
   public final class Float {
+
+    private Float() {
+    }
   
     /**
      * Returns the bit represention of a single-float value.
