@@ -40,7 +40,7 @@ public class GbMerger
     PrintWriter out = new PrintWriter (new BufferedWriter (new FileWriter (outputFile), 4096));
     out.println ("/* Machine generated temp file */");
     out.println();
-    out.println ("#include <sys/types.h>");
+    out.println ("#include <asm/types.h>");
     out.println();
     // The name "lejos_code" also appears in main.c
     out.println ("UINT8 lejos_code[] = {");
@@ -54,7 +54,7 @@ public class GbMerger
     int i = 0;
     for (;;)
     {
-       out.print ("0x" + Integer.toHexString (bytes[i]));
+       out.print ("0x" + Integer.toHexString (bytes[i] & 0xFF));
        i++;
        if (i >= bytes.length)
            break;

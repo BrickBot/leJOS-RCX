@@ -123,6 +123,8 @@ implements Constants
     }
     else
     {
+        if (iOutputFile == null)
+            Utilities.fatal ("No ouput file specified. Use -d, -o or -gb");
         pBaseStream = new FileOutputStream (iOutputFile);
     }
     OutputStream pOut =
@@ -207,10 +209,6 @@ implements Constants
       Utilities.fatal ("Internal error: Classpath not defined. " +
         "Use either -classpath or property " + CP_PROPERTY);
     }
-    if (iOutputFile == null)
-    {
-      Utilities.fatal ("No output file specified. Use -d or -o.");
-    }
     main ((String) aArgs.elementAt (0)); 
   }
 
@@ -227,7 +225,6 @@ implements Constants
         pOption.iOption = arg[i];
         if (arg[i].startsWith ("-verbose="))
 	{
-          pOption.iOption = "-verbose";
           pOption.iArgument = arg[i].substring ("-verbose=".length());
 	}
         else if (arg[i].equals ("-classpath"))
@@ -239,14 +236,6 @@ implements Constants
 	{
           pOption.iArgument = arg[++i];
           Utilities.trace ("Got -o option: " + pOption.iArgument);
-	}
-        else if (arg[i].equals ("-d"))
-	{
-          pOption.iOption = "-d";
-        }
-        else if (arg[i].equals ("-gb"))
-	{
-          pOption.iArgument = arg[++i];
 	}
         pOptions.addElement (pOption);
       }
