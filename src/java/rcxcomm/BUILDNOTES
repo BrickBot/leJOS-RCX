@@ -1,0 +1,7 @@
+The Makefile for the irtower dll or shared library needs to access the
+JNI include files (jni.h and an OS dependant one) from your JDK 
+installation. This requires the JDK environment variable to be set
+to the directory that your JDK is installed in. The jni.h include file
+is in $JDK/include and the OS dependant one is $JDK/include/win32 or
+$JDK/include/genunix.
+
