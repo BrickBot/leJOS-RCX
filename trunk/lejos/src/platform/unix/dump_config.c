@@ -32,9 +32,11 @@ int main (int argc, char **argv)
   printf ("#ifndef _PLATFORM_CONFIG_H\n");	
   printf ("#define _PLATFORM_CONFIG_H\n");
   printf ("\n");
+  printf ("#include <stdio.h>\n");
   printf ("#define ptr2word(PTR_) ((STACKWORD) (PTR_))\n");	
   printf ("#define word2ptr(WRD_) ((void *) (WRD_))\n");
   printf ("#define LITTLE_ENDIAN %d\n", determine_little_endian());	
+  printf ("#define FP_ARITHMETIC 1\n");	
   printf ("#define PLATFORM_HANDLES_SWITCH_THREAD 0\n");
   printf ("#define OPCODES_PER_TIME_SLICE 148\n");
   printf ("#define VERIFY\n");

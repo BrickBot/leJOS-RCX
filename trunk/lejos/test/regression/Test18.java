@@ -1,11 +1,10 @@
 
-import tinyvm.rcx.*;
+import josx.platform.rcx.*;
 
 public class Test18
 {
   public static void main (String[] arg)
   {
-    Sensor.S3.setCheckRaw (true);
     Sensor.S3.activate();
     Sensor.S3.addSensorListener (
       new SensorListener() {

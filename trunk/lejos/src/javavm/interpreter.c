@@ -44,11 +44,6 @@ JINT tempInt;
  */
 void do_goto (boolean aCond)
 {
-  #if 0
-  printf ("do_goto: %d, %d (= %d)\n", (int) pc[0], (int) pc[1],
-          (JSHORT) (((TWOBYTES) pc[0] << 8) | pc[1]));
-  #endif
-
   if (aCond)
   {
     pc += (JSHORT) (((TWOBYTES) pc[0] << 8) | pc[1]);
@@ -68,6 +63,8 @@ void do_isub (void)
   set_top_word (word2jint(get_top_word()) - word2jint(poppedWord));
 }
 
+#if FP_ARITHMETIC
+
 void do_fcmp (JFLOAT f1, JFLOAT f2, STACKWORD def)
 {
   if (f1 > f2)
@@ -79,6 +76,8 @@ void do_fcmp (JFLOAT f1, JFLOAT f2, STACKWORD def)
   else 
     push_word (def);
 }
+
+#endif
 
 /**
  * @return A String instance, or JNULL if an exception was thrown
@@ -157,9 +156,12 @@ void engine()
   if (!(--numOpcodes))
   {
     #if DEBUG_THREADS
-    printf ("switching threads: %d\n", (int) numOpcodes);
+    printf ("switching thread: %d\n", (int) numOpcodes);
     #endif
     switch_thread();
+    #if DEBUB_THREADS
+    printf ("done switching thread\n");
+    #endif
     numOpcodes = OPCODES_PER_TIME_SLICE;
   }
   if (gMustExit)

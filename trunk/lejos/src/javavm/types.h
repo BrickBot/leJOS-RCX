@@ -46,12 +46,14 @@ typedef struct
 #define ref2ptr(REF_)       word2ptr((STACKWORD) (REF_))
 #define ref2obj(REF_)       ((Object *) ref2ptr(REF_))
 
+#if 0
 static inline JINT jlong_compare (JLONG a1, JLONG a2)
 {
   if (a1.hi == a2.hi)
     return a1.lo - a2.lo;
   return a1.hi - a2.hi;
 }
+#endif
 
 #endif _TYPES_H
 

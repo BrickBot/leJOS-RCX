@@ -23,6 +23,7 @@ a linked binary into the device. In the RCX, the firmware
 must contain some logic (rcx_impl/main.c) that allows
 a download tool (tools/tvm.c) to send the binary over an
 IR link. In Unix, the linked binary is simply a file that 
-is loaded into memory.
+is loaded into memory. In other cases, you might have to
+make the binary part of a ROM file.
 
 

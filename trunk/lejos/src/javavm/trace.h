@@ -55,6 +55,8 @@ extern void assert (boolean aCond, int aCode);
 
 #endif
 
+#define DEBUG_THREADS  0
+
 #if DEBUG_RCX
 extern void debug (short s, short n1, short n2);
 #endif

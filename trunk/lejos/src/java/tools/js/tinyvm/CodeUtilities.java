@@ -336,6 +336,7 @@ implements OpCodeConstants, OpCodeInfo, Constants
         case OP_LDIV:
         case OP_LREM:
         case OP_LNEG:
+        case OP_LCMP:		
         case OP_FREM:
         case OP_DREM:
         case OP_LSHL:

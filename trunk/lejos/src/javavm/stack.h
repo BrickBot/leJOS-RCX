@@ -108,7 +108,7 @@ static inline JINT pop_jint (void)
   return word2jint(*stackTop--);
 }
 
-static inline STACKWORD pop_word_or_ref (const boolean aIsReference)
+static inline STACKWORD pop_word_or_ref()
 {
   --isReference;
   return *stackTop--;

@@ -10,7 +10,7 @@ Building
 
 make         : What users run to install. Creates jar files and tools.
 make all     : make + rcx_impl directory, which creates bin/lejos.srec.
-make release : make all + releases according to VERSION file in /usr/tmp.
+make release : make all + releases in /usr/tmp according to VERSION file.
 make clean   : remove class files, object files, etc.
 
 Organization
@@ -43,5 +43,19 @@ In Java code, please stick to what the Java Language Spec says:
 - Constant names are all uppercase, and they typically
   have underscores.
 - Package names are all lowercase.
+
+Credit
+------
+
+Don't forget to give credit where credit is due. And give yourself
+credit by putting an @author tag in JavaDoc comments. This also
+lets feedback go directly to the author of a particular API. This
+is what an @author tag might look like:
+
+/**
+ * Documentation here.
+ *
+ * @author <a href="mailto:jhsolorz@yahoo.com">jose</a>
+ */
 
 

@@ -91,20 +91,8 @@ case OP_DCONST_0:
   push_word (0);
   // Fall through!
 case OP_FCONST_0:
-  push_word (jfloat2word((JFLOAT) 0.0));
-  goto LABEL_ENGINELOOP;
-case OP_FCONST_1:
-  push_word (jfloat2word((JFLOAT) 1.0));
-  goto LABEL_ENGINELOOP;
-case OP_FCONST_2:
-  push_word (jfloat2word((JFLOAT) 2.0));
-  goto LABEL_ENGINELOOP;
-case OP_DCONST_1:
-  // Stack size: +2
-  // Arguments: 0
   push_word (0);
-  push_word (jfloat2word((JFLOAT) 1.0));
-  goto LABEL_ENGINELOOP;
+  goto LABEL_ENGINELOOP;  
 case OP_POP2:
   // Stack size: -2
   // Arguments: 0
@@ -149,6 +137,24 @@ case OP_SWAP:
   swap(); 
   goto LABEL_ENGINELOOP;
 
+#if FP_ARITHMETIC
+  
+case OP_FCONST_1:
+  push_word (jfloat2word((JFLOAT) 1.0));
+  goto LABEL_ENGINELOOP;
+case OP_FCONST_2:
+  push_word (jfloat2word((JFLOAT) 2.0));
+  goto LABEL_ENGINELOOP;
+case OP_DCONST_1:
+  // Stack size: +2
+  // Arguments: 0
+  push_word (0);
+  push_word (jfloat2word((JFLOAT) 1.0));
+  goto LABEL_ENGINELOOP;
+
+#endif FP_ARITHMETIC
+
+  
 // Notes:
 // - LDC_W should not occur in TinyVM or CompactVM.
 // - Arguments of LDC and LDC2_W are postprocessed.
