@@ -3,9 +3,11 @@ leJOS 1.0.3:
 
   Paul Andrews has added:
   - Fixed application download code. Fewer hangs now.
-  - Added USB support to firmdl and lejosrun. Set RCXTTY
+  - Added experimental USB support to firmdl and lejosrun. Set RCXTTY
     to 'usb'.
   - Added progress indicator to lejosrun.
+  - Fixed uninitialised variable and boundary condition in
+    interpreter that could have prevented task switching.
   
   Juergen Stuber has added:
   - LCDConstants.java
