@@ -12,9 +12,9 @@
 #include <windows.h>
 #endif
 
-extern "C" {
+// extern "C" {
 #include "rcx_comm.h"
-}
+// }
 
 #ifdef __APPLE__
 #include <CoreFoundation/CoreFoundation.h>
@@ -61,9 +61,9 @@ int GetLastError() {
 }
 #endif
 
-extern "C" {
+// extern "C" {
 extern int __comm_debug;
-}
+// }
 
 int usb_flag;
 
