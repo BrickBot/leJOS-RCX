@@ -137,6 +137,9 @@ void run(void)
   }
   // Execute the bytecode interpreter
   set_program_number (0);
+  #if DEBUG_STARTUP
+  printf ("Engine starting.\n");
+  #endif
   engine();
   // Engine returns when all non-daemon threads are dead
   #if DEBUG_STARTUP
@@ -196,7 +199,7 @@ int main (int argc, char *argv[])
 		exit (1);
 	}
 #if DEBUG_STARTUP
-	printf ("Reading binary %s\n", argv[1]);
+	printf ("Reading binary %s\n", file);
 #endif
 	readBinary (file);
 	if (gettimeofday(&gStart, NULL)) 
@@ -212,5 +215,8 @@ int main (int argc, char *argv[])
         last_ad_time = get_sys_time();
 
 	run();
-	return 0;
+	itimer.it_value.tv_usec = 0;
+	setitimer(ITIMER_REAL, &itimer, null);
+	signal(SIGALRM, SIG_DFL);
+	exit(0);
 } 
