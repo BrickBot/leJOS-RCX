@@ -2,28 +2,27 @@
 Summary
 -------
 
--- You should have JDK1.2. JDK1.3 should also work. 
+-- You should have JDK1.1 or JDK1.2. JDK1.3 should also work. 
 -- Your PATH must contain the JDK's bin directory.
 -- In Unix, type 'make' to finish installation of leJOS.
 -- Add leJOS's bin directory to your PATH.
 -- Set RCXTTY to your serial device (e.g. COM1 or /dev/ttyS0).
 -- Download firmware using lejosfirmdl.
--- Compile using lejosc instead of javac.
+-- Compile using lejosc (or lejosc1) instead of javac.
 -- Run programs in the RCX using lejos.
 -- Run programs in the host using emu-lejos.
--- Exceptions: Use lejos -verbose. Exceptions
-   are shown in the RCX as [XXXX Y], where 
-   XXXX = method_signature, and 
+-- Exceptions: Use lejos -verbose. Exceptions are shown in 
+   the RCX as [XXXX Y], where XXXX = method_signature, and 
    Y = exception_class_index MOD 10.
 	     
 What is leJOS?
 --------------
 
-leJOS is a tiny (~ 16 Kb) Java-based operating system
+leJOS is a tiny (~ 17 Kb) Java-based operating system
 that has been ported to the following platforms:
 
-  - Lego Mindstorms RCX, i.e. Hitachi H8300
-  - Unix (for emulation of RCX programs only)
+- Lego Mindstorms RCX, i.e. Hitachi H8300
+- Unix (for emulation of RCX programs only)
 
 leJOS was forked out of the TinyVM project
 (http://tinyvm.sourceforge.net). leJOS contains
@@ -32,26 +31,28 @@ and run Java programs. These are some of the features
 offered by leJOS:
 
 - Object oriented language (Java).
-- Arrays.
+- Preemtive threads (tasks).
+- Arrays, including multi-dimensional ones.
 - Recursion.
 - Synchronization.
 - Exceptions.
-- Preemtive threads of execution.
 - Well-documented API.
 
 The above are also provided by TinyVM. But in addition
 to these, leJOS also offers:
 
+- A Windows version, which doesn't require CygWin.
 - Floating point operations (doubles work like floats).
 - String constants.
-- Casting of 8-byte longs (but not logic or arithmetic).
+- Casting of longs to ints and vice versa.
 - Marks references in the stack (which makes it feasible
   to implement garbage collection).
-- java.lang.Math class with sin, cos, tan, pow, etc.
+- Multi-program downloading.
+- java.lang.Math class with sin, cos, tan, atan, pow, etc.
 - More APIs.
 
 TinyVM is still around simply as a low-footprint alternative
-to leJOS. TinyVM is about 6 Kb smaller in the RCX.
+to leJOS. TinyVM is about 7 Kb smaller in the RCX.
 
 How do you pronounce leJOS?
 ---------------------------
@@ -81,16 +82,14 @@ Environment:
     partition, it's /dev/ttyS1, which corresponds
     to COM2 under Windows.
 
-Building the Tools:
-  Under Unix, simply go to installation directory and
-  type 'make'. At this point all of the tools necessary
-  to run leJOS should be available under bin.
+Building the Tools (UNIX ONLY):
+  Simply go to the installation directory and
+  type 'make'. 
 
 Downloading the Firmware:
   Run the lejosfirmdl utility. When the firmware
-  starts, the LCD shows the power level (a number
-  in the 200s or 300s), and you should hear a 
-  double beep.
+  starts, the LCD shows the power level as a
+  percentage, and you should hear a double beep.
   
   The firmware only needs to be downloaded once.
   It is also easy to replace, say, with the official
@@ -100,12 +99,11 @@ Downloading the Firmware:
 Example
 -------
 
-A good example to get started is the View example,
-which also allows you to test sensors and motors,
-so you can calibrate constants in your programs.
-To run the View example, execute the following 
-commands (assuming the current directory is the leJOS
-installation directory):
+A nice example to get started is the View example,
+which you can use later if you need to test sensors 
+and motors. To run the View example, 
+execute the following commands (assuming the current 
+directory is the leJOS installation directory):
 
    LINUX                      WINDOWS
    -----                      -------
@@ -119,17 +117,77 @@ cd examples/view            cd examples\view
 export CLASSPATH=.          set CLASSPATH=.
 lejosc *.java               lejosc *.java
 lejos View                  lejos View
+
+(The last step will take about half a minute).
+
+Compiling, Linking and Running
+------------------------------
+
+To compile your Java classes, use lejosc instead of
+javac. If the JDK in your PATH is a 1.1 JDK, use
+lejosc1 instead.
+
+Note that lejosc is not a Java compiler. It's simply
+a small program that calls javac after setting an
+appropriate value for -bootclasspath. If you prefer
+another Java compiler to javac, define the JAVAC
+environment variable.
+
+The basic way to use the linker is to make sure that
+class files can be located in CLASSPATH, and execute 
+'lejos' a you would execute 'java', e.g.
+
+  lejos MyMainClass
+  
+The above links and resolves all classes that could
+be used by a program with entry point in MyMainClass.
+The resulting linked binary is downloaded to the
+RCX. (This is done by creating a temporary
+file, so the current directory should be writable).
+
+To simply create a binary file containing the linked
+program, use:
+
+  lejos -o MyProgram.bin MyProgram
+  
+You can download a previously linked program with:
+
+  lejosrun MyProgram.bin
+
+You can also download multiple programs in one shot as 
+follows:
+
+  lejos Class1,Class2,...
+  
+The programs will be linked together, and will replace
+any programs previously in the RCX. You can press Prgm
+to select which program to run.
+  
+After the standing man figure appears in the RCX, you
+can press Run to start a program. If the program exits
+by itself, the standing man figure will appear again.
+To stop a running program, hold the Run button while 
+you press On/Off. Switching off the RCX will also stop
+a running program.
   
 Emulation
 ---------
 
 You should be able to run linked programs in the 
 host computer. All you need to do is use emu-lejos 
-instead of lejos.
+instead of lejos, and emu-lejosrun to run a linked
+program, e.g.
+
+  emu-lejos -o MyProgram.bin MyProgram
+  emu-lejosrun MyProgram.bin
 
 In some cases it might be easier to debug
 programs with the emulated VM, and you'll also 
 get slightly more detailed exception information.
+But this emulation tool does not attempt to
+simulate an RCX graphically or anything like
+that. It simply dumps traces that allow you
+to check what your program is doing.
 
 Limitations
 -----------
@@ -146,7 +204,7 @@ mind are:
   - Arithmetic operations on variables of type 
     long are not supported, although you can
     cast ints to longs and vice versa.
-  - Maximum array length is 255.
+  - Maximum array length is 511.
   - The instanceof operation will always be true  
     for interfaces. In bytecode, CHECKCAST succeeds
     on all interface classes (which is a bit unsafe).
@@ -170,8 +228,9 @@ Known Bugs
     be constants.
 
   - Initializers (static or otherwise) are not
-    implicitly synchronized. This could lead to race
-    conditions. 
+    implicitly synchronized. This could lead to access
+    of statics before they are initialized, when
+    multiple threads use a class.
     
 Documentation
 -------------
