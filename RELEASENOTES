@@ -1,11 +1,20 @@
+leJOS 2.0
+---------
+
   Paul Andrews has added:
   - Priority inversion avoidance to the thread scheduler.
   - Variable thread stack sizes.
   - Code layout modifications to remove the motor twitching introduced in 1.0.5
   - Various minor code/build tweaks to reduce the size of the VM.
+  - Minor fix to the 'lejos' command to enable multiple levels of
+    verbosity (syntax -verbos[=<n>]).
   
   Markus Strickler has added:
   - Experimental support for USB on MAC OS X
+
+  Brian Bagnall has added:
+  - Modified trig functions in Math class - they are now 10x faster.
+    Code donated by Paulo Costa
 
   Lawrie Griffiths has added:
   - Decoupling of ListenerThread from Sensor, Button and Serial, so that these
