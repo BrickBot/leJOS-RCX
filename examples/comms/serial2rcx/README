@@ -1,7 +1,10 @@
+This example was contributed by Reinhard Schiedermeier
+(schieder <at> informatik.fh).
+It allows two RCXs to communicate with each other. 
 
-This example was contributed by Schiedermeier Reinhard
-(schieder <at> informatik.fh). It allows two RCXs to communicate
-with each other. Compile and download Receiver to one
-RCX; then download Sender to the other RCX. (Make sure
-only one of the RCXs is on when you download each program).
+% make
 
+links the two programs together into one binary and
+downloads it to one RCX. Load it onto both RCX, then
+use the Prgm button to select program 0 on the first
+and program 1 on the second RCX, then start them.
