@@ -87,7 +87,7 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
       int selected = TEMP_FAILURE_RETRY (select(FD_SETSIZE, &fds, NULL, NULL, &tv));
 		if (selected > 0)
 		{
-			int count = read(fd, &bufp[len], maxlen - len);
+			int count = read(((Port*) port)->fileHandle, &bufp[len], maxlen - len);
 			if (count < 0) 
 			{
 				perror("read");
