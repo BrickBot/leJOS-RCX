@@ -42,7 +42,7 @@ PROGRAMS=${TVM} ${TVMC} ${TVMP} ${TVMC1} ${TVMP1} ${RCXLOADER} ${UNIXLOADER}
 default: firmdl programs
 
 firmdl: FORCE
-	cd firmdl; make
+	cd firmdl; $(MAKE)
 
 FORCE:
 
@@ -85,4 +85,4 @@ ${UNIXLOADER}: javaexec.c util.o
 
 clean:
 	rm -rf *.o *~ core ${PROGRAMS}
-	cd firmdl; make clean
+	cd firmdl; $(MAKE) clean
