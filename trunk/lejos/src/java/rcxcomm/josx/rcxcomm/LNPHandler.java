@@ -2,7 +2,7 @@ package josx.rcxcomm;
 
 /**
  * A Packet handler that implements the outer LNP packet format.
- * It uses the Tower call to send and receive LNP packets.
+ * It uses LLC to send and receive LNP packets.
  **/
 public class LNPHandler extends PacketHandler {
 
@@ -10,9 +10,21 @@ public class LNPHandler extends PacketHandler {
   private boolean gotPacket = false;
   private byte [] inPacket = new byte [259];
   private int inPacketLength;
+  private boolean isAddressing;
 
+  /**
+   * Creates an LNP packet handler and initializes LLC
+   **/
   public LNPHandler() {
     LLC.init();
+  }
+
+  /**
+   * Test if last received packet is addressing (or integrity)
+   * @return true if an addressing packet, false if an integrity packet
+   **/
+  public boolean isAddressing() {
+    return isAddressing;
   }
 
   /** Send a packet.
@@ -47,6 +59,7 @@ public class LNPHandler extends PacketHandler {
       op = (byte) r;
       if (op == (byte) 0xf0 || op == (byte) 0xf1) {
         gotPacket = true;
+        isAddressing = (op == (byte) 0xf1);
         inPacket[0] = op;
         inPacket[1] = (byte) LLC.receive();
         int extra = inPacket[1] + 1; // Add 1 for the checksum
