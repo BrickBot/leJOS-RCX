@@ -1,9 +1,12 @@
 /*
  * $Log$
+ * Revision 1.1  2003/05/01 11:58:07  mpscholz
+ * an example for using the RemoteControlMessenger
+ *
  */
 
 import java.io.*;
-import josx.platform.rcx.remotecontrol.*;
+import josx.rcxcomm.remotecontrol.*;
 
 /////////////////////////////////////////////////////////
 /**
