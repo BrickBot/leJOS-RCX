@@ -205,6 +205,7 @@ implements Constants
       System.out.println ("Options:");
       System.out.println ("  -o <path>         Dump binary into path (no download)");
       System.out.println ("  -verbose[=<n>]    Print class and signature information");
+      System.out.println ("  -all              Include all methods");
       System.exit (1);
     }
     processOptions (aOptions);
