@@ -37,13 +37,13 @@ implements Constants
     try {
       Utilities.verbose (1, "Executing " + pTvmExec + " (downloading) ...");
       Process p = Runtime.getRuntime().exec (pParams);
-      p.waitFor();
+      if (p.waitFor() != 0)
+        System.err.println ("tvm: returned error status.");
     } catch (InterruptedException e) {
       Utilities.fatal ("Execution of " + pTvmExec + " was interrupted.");
     } catch (IOException e) {
       Utilities.fatal ("Problem executing " + pTvmExec + ". " +
-                       "Apparently, the program was not found. " +
-                       "Make sure your TINYVM_HOME setting is right.");
+                       "Apparently, the program was not found. ");
     }
   }
   

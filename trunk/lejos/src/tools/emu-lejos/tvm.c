@@ -347,7 +347,7 @@ main(int argc, char **argv)
     long i;
     char *tty;
     long fd;
-    long pDesc, pLength;
+    long pDesc, pLength, pTotal;
     long r, index, rest, numToWrite, offset;
 
     if (argc != 2) {
@@ -377,11 +377,16 @@ main(int argc, char **argv)
     }
     lseek (pDesc, 0, SEEK_SET);
     pBinary = (void *) malloc (pLength);
-    r = read (pDesc, pBinary, pLength);
-    if (r != pLength)
+    pTotal = 0;
+    while (pTotal < pLength)
     {
-      printf ("Failed to read %d bytes from %s\n", (int) pLength, argv[1]);
-      exit (1);
+      r = read (pDesc, pBinary + pTotal, pLength - pTotal);
+      if (r == -1)
+      {
+        printf ("Unexpected EOF in %s. Read only %ld bytes.\n", argv[1], pTotal);
+        exit (1);
+      }
+      pTotal += r;
     }
     if (pBinary[0] != ((MAGIC >> 8) & 0xFF) ||
         pBinary[1] != ((MAGIC >> 0) & 0xFF))
