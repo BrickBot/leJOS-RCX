@@ -12,7 +12,7 @@ IRTOWER=../../bin/irtower.dll
 CCOPT=-mno-cygwin -I${JDK}/include -I${JDK}/include/win32 -Wl,--add-stdcall-alias -shared -o ${IRTOWER}
 else
 IRTOWER=../../bin/libirtower.so
-CCOPT=-o ${IRTOWER} -shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) 
+CCOPT=-o ${IRTOWER} -shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) -DLINUX
 endif
 # This is for OS X
 ifneq (,$(findstring darwin,$(OSTYPE)))

@@ -93,11 +93,23 @@ Environment:
   - RCXTTY must be defined to point to the
     IR device file. For example, in my Linux
     partition, it's /dev/ttyS1, which corresponds
-    to COM2 under Windows.
+    to COM2 under Windows. If you are using USB,
+    you can specify RCXTTY=usb or pass --tty=usb to 
+    the commands.
 
 Building the Tools (UNIX ONLY):
-  Simply go to the installation directory and
+  If you are building the tools for Linux, take the following
+  steps:
+
+  [1] Edit the Makefile in lejos/tools and add -DLINUX to the CCOPT.
+  [2] Edit the Makefile in lejos/tools/firmdl and add -DLINUX to the CFLAGS.
+
+  Then, go to the installation directory and
   type 'make'. 
+
+  Note: if you are using USB on Linux, there is a USB driver for
+	the Lego IR tower in tools/linux/legousbtower. See the 
+	README in that directory for details.
 
 Downloading the Firmware:
   Run the lejosfirmdl utility. When the firmware
