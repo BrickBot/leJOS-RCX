@@ -114,7 +114,7 @@ public class Serial
   /**
    * Sends a packet to the IR tower or another RCX.
    * In general, the IR tower will only receive <i>responses</i>
-   * to messages it has sent.
+   * to messages it has sent. The call returns immediately.
    */
   public static void sendPacket (byte[] aBuffer, int aOffset, int aLen)
   {
@@ -145,6 +145,24 @@ public class Serial
    */
   public native static void resetSerial();
 
+  /**
+   * Return true if a message is being sent.
+   */
+  public static boolean isSending()
+  {
+    return Native.readMemoryByte(0xef93) != 0x4f;
+  }
+
+  /**
+   * Wait until a message has been sent.
+   */
+  public static void waitTillSent() throws InterruptedException
+  {
+    while (isSending())
+    {
+       Thread.sleep(20);
+    }
+  }
 }
 
 

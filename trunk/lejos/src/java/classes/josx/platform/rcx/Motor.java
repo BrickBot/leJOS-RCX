@@ -44,6 +44,14 @@ public class Motor
   }
 
   /**
+   * Get the ID of the motor. One of 'A', 'B' or 'C'.
+   */
+  public final char getId()
+  {
+    return iId;
+  }
+
+  /**
    * Sets motor power to a <i>value between 0 and 7</i>.
    * @param A value in the range [0-7].
    */
@@ -61,6 +69,14 @@ public class Motor
     iMode = 1;
     controlMotor (iId, 1, iPower);
   }
+  
+  /**
+   * Return true if motor is forward.
+   */
+  public final boolean isForward()
+  {
+    return (iMode == 1);
+  }
 
   /**
    * Causes motor to rotate backwards.
@@ -69,6 +85,14 @@ public class Motor
   {
     iMode = 2;
     controlMotor (iId, 2, iPower);
+  }
+
+  /**
+   * Return true if motor is backward.
+   */
+  public final boolean isBackward()
+  {
+    return (iMode == 2);
   }
 
   /**
@@ -118,6 +142,14 @@ public class Motor
   {
     iMode = 3;
     controlMotor (iId, 3, 7);
+  }
+  
+  /**
+   * Return true if motor is stopped.
+   */
+  public final boolean isStopped()
+  {
+    return (iMode == 3);
   }
 
   /**
