@@ -1,6 +1,7 @@
 #!/bin/sh
 set -x
 export CLASSPATH=.
+export PATH=.:../bin:$PATH
 
 echo ------------------ Compiling $1
 lejosc $1.java

@@ -244,12 +244,13 @@ void engine()
     #include "op_arithmetic.hc"
     #include "op_methods.hc"
 
+/*
 #ifdef VERIFY
 	default:
 		assert(false, (TWOBYTES)(pc-1) % 10000);
 		break;
 #endif
-
+*/
   }
 
   //-----------------------------------------------
