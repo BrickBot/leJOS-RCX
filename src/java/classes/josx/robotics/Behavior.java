@@ -16,7 +16,7 @@ package josx.robotics;
 * these objects, create an array of them and use that array to initialize an
 * Arbitrator object.
 *
-* @see robotics.rcx.Arbitrator
+* @see Arbitrator
 * @author <a href="mailto:bbagnall@escape.ca">Brian Bagnall</a>
 * @version 0.1  27-July-2001
 */
