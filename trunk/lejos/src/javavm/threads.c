@@ -197,6 +197,19 @@ void switch_thread()
       }
       break;
     case DEAD:
+
+      #if REMOVE_DEAD_THREADS
+      free_array ((Object *) word2ptr (currentThread->stackFrameArray));
+      free_array ((Object *) word2ptr (currentThread->stackArray));
+      free_array ((Object *) word2ptr (currentThread->isReferenceArray));
+
+      #ifdef SAFE
+      currentThread->stackFrameArray = JNULL;
+      currentThread->stackArray = JNULL;
+      currentThread->isReferenceArray = JNULL;
+      #endif SAFE
+      #endif REMOVE_DEAD_THREADS
+      
       if (currentThread == anchorThread)
       {
 	if (!liveThreadExists)
@@ -211,23 +224,12 @@ void switch_thread()
 	/* anchorThread should always point somewhere in the circular list */
 	anchorThread = previousThread;
       }
-      #if REMOVE_DEAD_THREADS
-      free_array ((Object *) word2ptr (currentThread->stackFrameArray));
-      free_array ((Object *) word2ptr (currentThread->stackArray));
-      free_array ((Object *) word2ptr (currentThread->isReferenceArray));
-
-      #ifdef SAFE
-      currentThread->stackFrameArray = JNULL;
-      currentThread->stackArray = JNULL;
-      currentThread->isReferenceArray = JNULL;
-      #endif SAFE
 
       /* Remove currentThread from circular list */
       
       previousThread->nextThread = ptr2word (currentThread->nextThread);
       currentThread = previousThread;
       
-      #endif REMOVE_DEAD_THREADS
       break;
     case STARTED:      
       // Put stack ptr at the beginning of the stack so we can push arguments
