@@ -1,12 +1,12 @@
 package js.tinyvm;
 
-import js.classfile.JCPE_Utf8;
+import org.apache.bcel.classfile.ConstantUtf8;
 
 public class Signature
 {
    String iImage;
 
-   public Signature (String aName, JCPE_Utf8 aDescriptor)
+   public Signature (String aName, ConstantUtf8 aDescriptor)
    {
       iImage = aName + aDescriptor;
    }

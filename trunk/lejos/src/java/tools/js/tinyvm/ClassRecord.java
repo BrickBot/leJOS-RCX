@@ -10,28 +10,31 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import js.classfile.JCPE_Class;
-import js.classfile.JCPE_Double;
-import js.classfile.JCPE_Float;
-import js.classfile.JCPE_Integer;
-import js.classfile.JCPE_InterfaceMethodref;
-import js.classfile.JCPE_Long;
-import js.classfile.JCPE_Methodref;
-import js.classfile.JCPE_NameAndType;
-import js.classfile.JCPE_String;
-import js.classfile.JClassFile;
-import js.classfile.JConstantPool;
-import js.classfile.JConstantPoolEntry;
-import js.classfile.JField;
-import js.classfile.JMethod;
 import js.tinyvm.io.ByteWriter;
 import js.tinyvm.io.IOUtilities;
 import js.tinyvm.util.HashVector;
 
+import org.apache.bcel.Constants;
+import org.apache.bcel.classfile.ClassParser;
+import org.apache.bcel.classfile.Constant;
+import org.apache.bcel.classfile.ConstantClass;
+import org.apache.bcel.classfile.ConstantDouble;
+import org.apache.bcel.classfile.ConstantFloat;
+import org.apache.bcel.classfile.ConstantInteger;
+import org.apache.bcel.classfile.ConstantInterfaceMethodref;
+import org.apache.bcel.classfile.ConstantLong;
+import org.apache.bcel.classfile.ConstantMethodref;
+import org.apache.bcel.classfile.ConstantNameAndType;
+import org.apache.bcel.classfile.ConstantPool;
+import org.apache.bcel.classfile.ConstantString;
+import org.apache.bcel.classfile.Field;
+import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.classfile.Method;
+
 /**
  * Abstraction for a class record (see vmsrc/language.h).
  */
-public class ClassRecord implements WritableData, Constants
+public class ClassRecord implements WritableData
 {
    int iIndex = -1;
    String iName;
@@ -39,7 +42,7 @@ public class ClassRecord implements WritableData, Constants
     * On-demand size of the class.
     */
    int iClassSize = -1;
-   JClassFile iCF;
+   JavaClass iCF;
    Binary iBinary;
    final EnumerableSet iMethodTable = new EnumerableSet();
    final RecordTable iInstanceFields = new Sequence();
@@ -59,7 +62,7 @@ public class ClassRecord implements WritableData, Constants
 
    public String getName ()
    {
-      return iCF.getName();
+      return iCF.getClassName();
    }
 
    public int getLength ()
@@ -85,17 +88,17 @@ public class ClassRecord implements WritableData, Constants
          aOut.writeU2(pMethodTableOffset);
          aOut.writeU2(iInstanceFields.getOffset());
          int pNumFields = iInstanceFields.size();
-         if (pNumFields > MAX_FIELDS)
+         if (pNumFields > TinyVMConstants.MAX_FIELDS)
          {
             throw new TinyVMException("Class " + iName + ": No more than "
-               + MAX_FIELDS + " fields expected");
+               + TinyVMConstants.MAX_FIELDS + " fields expected");
          }
          aOut.writeU1(pNumFields);
          int pNumMethods = iMethodTable.size();
-         if (pNumMethods > MAX_METHODS)
+         if (pNumMethods > TinyVMConstants.MAX_METHODS)
          {
             throw new TinyVMException("Class " + iName + ": No more than "
-               + MAX_METHODS + " methods expected");
+               + TinyVMConstants.MAX_METHODS + " methods expected");
          }
          aOut.writeU1(pNumMethods);
          aOut.writeU1(iParentClassIndex);
@@ -122,12 +125,13 @@ public class ClassRecord implements WritableData, Constants
 
    public boolean hasStaticInitializer ()
    {
-      Enumeration pEnum = iCF.getMethods().elements();
-      while (pEnum.hasMoreElements())
+      Method[] methods = iCF.getMethods();
+      for (int i = 0; i < methods.length; i++)
       {
-         JMethod pMethod = (JMethod) pEnum.nextElement();
-         if (pMethod.getName().toString().equals("<clinit>"))
+         if (methods[i].getName().equals(Constants.STATIC_INITIALIZER_NAME))
+         {
             return true;
+         }
       }
       return false;
    }
@@ -140,18 +144,18 @@ public class ClassRecord implements WritableData, Constants
       MethodRecord pRec = (MethodRecord) iMethods.get(aSignature);
       if (pRec == null)
          return false;
-      return ((pRec.getFlags() & M_STATIC) == 0) ^ aStatic;
+      return ((pRec.getFlags() & TinyVMConstants.M_STATIC) == 0) ^ aStatic;
    }
 
    public void initFlags ()
    {
       iFlags = 0;
       if (isArray())
-         iFlags |= C_ARRAY;
+         iFlags |= TinyVMConstants.C_ARRAY;
       if (isInterface())
-         iFlags |= C_INTERFACE;
+         iFlags |= TinyVMConstants.C_INTERFACE;
       if (hasStaticInitializer())
-         iFlags |= C_HASCLINIT;
+         iFlags |= TinyVMConstants.C_HASCLINIT;
    }
 
    /**
@@ -195,10 +199,11 @@ public class ClassRecord implements WritableData, Constants
 
    public ClassRecord getParent ()
    {
-      JCPE_Class pParent = iCF.getSuperClass();
+      JavaClass pParent = iCF.getSuperClass();
       if (pParent == null)
          return null;
-      ClassRecord pRec = iBinary.getClassRecord(pParent.getName().toString());
+      ClassRecord pRec = iBinary.getClassRecord(pParent.getClassName().replace(
+         '.', '/'));
       return pRec;
    }
 
@@ -208,9 +213,10 @@ public class ClassRecord implements WritableData, Constants
       if (pRec == null)
       {
          iParentClassIndex = 0;
-         if (!iCF.getName().equals("java/lang/Object"))
+         if (!iCF.getClassName().equals("java.lang.Object"))
          {
-            throw new TinyVMException("Expected java.lang.Object");
+            throw new TinyVMException("Expected java.lang.Object: "
+               + iCF.getClassName());
          }
       }
       else
@@ -229,15 +235,14 @@ public class ClassRecord implements WritableData, Constants
    {
       _logger.log(Level.INFO, "Processing CONSTANT_Class entries in " + iName);
 
-      JConstantPool pPool = iCF.getConstantPool();
-      Enumeration pEntries = pPool.elements();
-      while (pEntries.hasMoreElements())
+      ConstantPool pPool = iCF.getConstantPool();
+      Constant[] constants = pPool.getConstantPool();
+      for (int i = 0; i < constants.length; i++)
       {
-         JConstantPoolEntry pEntry = (JConstantPoolEntry) pEntries
-            .nextElement();
-         if (pEntry instanceof JCPE_Class)
+         Constant pEntry = constants[i];
+         if (pEntry instanceof ConstantClass)
          {
-            String pClassName = ((JCPE_Class) pEntry).getName();
+            String pClassName = ((ConstantClass) pEntry).getBytes(pPool);
             if (pClassName.startsWith("["))
             {
                _logger.log(Level.INFO, "Skipping array: " + pClassName);
@@ -251,42 +256,45 @@ public class ClassRecord implements WritableData, Constants
                aClassRecords.add(pRec);
             }
          }
-         else if (pEntry instanceof JCPE_Methodref)
+         else if (pEntry instanceof ConstantMethodref)
          {
-            JCPE_Class pClass = ((JCPE_Methodref) pEntry).getClassEntry();
-            ClassRecord pClassRec = (ClassRecord) aClasses
-               .get(pClass.getName());
+            String className = ((ConstantMethodref) pEntry).getClass(pPool)
+               .replace('.', '/');
+            ClassRecord pClassRec = (ClassRecord) aClasses.get(className);
             if (pClassRec == null)
             {
-               pClassRec = ClassRecord.getClassRecord(pClass.getName(),
-                  aClassPath, iBinary);
-               aClasses.put(pClass.getName(), pClassRec);
+               pClassRec = ClassRecord.getClassRecord(className, aClassPath,
+                  iBinary);
+               aClasses.put(className, pClassRec);
                aClassRecords.add(pClassRec);
             }
-            pClassRec.addUsedMethod(((JCPE_Methodref) pEntry).getNameAndType()
-               .getName()
-               + ":"
-               + ((JCPE_Methodref) pEntry).getNameAndType().getDescriptor());
+            ConstantNameAndType cnat = (ConstantNameAndType) iCF
+               .getConstantPool().getConstant(
+                  ((ConstantMethodref) pEntry).getNameAndTypeIndex());
+            pClassRec.addUsedMethod(cnat.getName(iCF.getConstantPool()) + ":"
+               + cnat.getSignature(iCF.getConstantPool()));
          }
-         else if (pEntry instanceof JCPE_InterfaceMethodref)
+         else if (pEntry instanceof ConstantInterfaceMethodref)
          {
-            aInterfaceMethods.addElement(((JCPE_InterfaceMethodref) pEntry)
-               .getNameAndType().getName()
-               + ":"
-               + ((JCPE_InterfaceMethodref) pEntry).getNameAndType()
-                  .getDescriptor());
+            ConstantNameAndType cnat = (ConstantNameAndType) iCF
+               .getConstantPool().getConstant(
+                  ((ConstantInterfaceMethodref) pEntry).getNameAndTypeIndex());
+            aInterfaceMethods.addElement(cnat.getName(iCF.getConstantPool())
+               + ":" + cnat.getSignature(iCF.getConstantPool()));
          }
-         else if (pEntry instanceof JCPE_NameAndType)
+         else if (pEntry instanceof ConstantNameAndType)
          {
-            if (((JCPE_NameAndType) pEntry).getDescriptor().substring(0, 1)
-               .equals("("))
+            if (((ConstantNameAndType) pEntry).getSignature(
+               iCF.getConstantPool()).substring(0, 1).equals("("))
             {
-               if (!((JCPE_NameAndType) pEntry).getName().substring(0, 1)
-                  .equals("<"))
+               if (!((ConstantNameAndType) pEntry).getName(
+                  iCF.getConstantPool()).substring(0, 1).equals("<"))
                {
-                  aInterfaceMethods.addElement(((JCPE_NameAndType) pEntry)
-                     .getName()
-                     + ":" + ((JCPE_NameAndType) pEntry).getDescriptor());
+                  aInterfaceMethods.addElement(((ConstantNameAndType) pEntry)
+                     .getName(iCF.getConstantPool())
+                     + ":"
+                     + ((ConstantNameAndType) pEntry).getSignature(iCF
+                        .getConstantPool()));
                }
             }
          }
@@ -298,7 +306,7 @@ public class ClassRecord implements WritableData, Constants
       iUsedMethods.addElement(aRef);
    }
 
-   public static String cpEntryId (JConstantPoolEntry aEntry)
+   public static String cpEntryId (Constant aEntry)
    {
       String pClassName = aEntry.getClass().getName();
       int pDotIdx = pClassName.lastIndexOf('.');
@@ -373,23 +381,22 @@ public class ClassRecord implements WritableData, Constants
       _logger.log(Level.INFO, "Processing other constants in " + iName);
 
       EnumerableSet pConstantSet = (EnumerableSet) aConstantTable;
-      JConstantPool pPool = iCF.getConstantPool();
-      Enumeration pEntries = pPool.elements();
-      while (pEntries.hasMoreElements())
+      ConstantPool pPool = iCF.getConstantPool();
+      Constant[] constants = pPool.getConstantPool();
+      for (int i = 0; i < constants.length; i++)
       {
-         JConstantPoolEntry pEntry = (JConstantPoolEntry) pEntries
-            .nextElement();
-         if (pEntry instanceof JCPE_String || pEntry instanceof JCPE_Double
-            || pEntry instanceof JCPE_Float || pEntry instanceof JCPE_Integer
-            || pEntry instanceof JCPE_Long)
+         Constant pEntry = constants[i];
+         if (pEntry instanceof ConstantString
+            || pEntry instanceof ConstantDouble
+            || pEntry instanceof ConstantFloat
+            || pEntry instanceof ConstantInteger
+            || pEntry instanceof ConstantLong)
          {
-            ConstantRecord pRec = new ConstantRecord(pEntry);
+            ConstantRecord pRec = new ConstantRecord(pPool, pEntry);
             if (!pConstantSet.contains(pRec))
             {
-               ConstantValue pValue = new ConstantValue(pEntry);
-               pRec.setConstantValue(pValue);
                pConstantSet.add(pRec);
-               aConstantValues.add(pValue);
+               aConstantValues.add(pRec.constantValue());
             }
          }
       }
@@ -401,13 +408,13 @@ public class ClassRecord implements WritableData, Constants
    {
       _logger.log(Level.INFO, "Processing methods in " + iName);
 
-      Enumeration pEntries = iCF.getMethods().elements();
-      while (pEntries.hasMoreElements())
+      Method[] methods = iCF.getMethods();
+      for (int i = 0; i < methods.length; i++)
       {
-         JMethod pMethod = (JMethod) pEntries.nextElement();
+         Method pMethod = methods[i];
          Signature pSignature = new Signature(pMethod.getName(), pMethod
-            .getDescriptor());
-         String meth = pMethod.getName() + ":" + pMethod.getDescriptor();
+            .getSignature());
+         String meth = pMethod.getName() + ":" + pMethod.getSignature();
 
          if (aAll || iUseAllMethods || iUsedMethods.indexOf(meth) >= 0
             || pMethod.getName().substring(0, 1).equals("<")
@@ -433,10 +440,10 @@ public class ClassRecord implements WritableData, Constants
    {
       _logger.log(Level.INFO, "Processing methods in " + iName);
 
-      Enumeration pEntries = iCF.getFields().elements();
-      while (pEntries.hasMoreElements())
+      Field[] fields = iCF.getFields();
+      for (int i = 0; i < fields.length; i++)
       {
-         JField pField = (JField) pEntries.nextElement();
+         Field pField = fields[i];
          if (pField.isStatic())
          {
             StaticValue pValue = new StaticValue(pField);
@@ -470,24 +477,30 @@ public class ClassRecord implements WritableData, Constants
       }
    }
 
-   public static ClassRecord getClassRecord (String aName, ClassPath aCP,
+   public static ClassRecord getClassRecord (String className, ClassPath aCP,
       Binary aBinary) throws TinyVMException
    {
-      InputStream pIn = aCP.getInputStream(aName);
+      assert className != null: "Precondition: aName != null";
+      assert aCP != null: "Precondition: aCP != null";
+      assert aBinary != null: "Precondition: aBinary != null";
+      assert className.indexOf('.') == -1: "Precondition: className is in correct form: "
+         + className;
+
+      InputStream pIn = aCP.getInputStream(className);
       if (pIn == null)
       {
-         throw new TinyVMException("Class " + aName.replace('/', '.')
-            + " (file " + aName + ".class) not found in CLASSPATH " + aCP);
+         throw new TinyVMException("Class " + className.replace('/', '.')
+            + " (file " + className + ".class) not found in CLASSPATH " + aCP);
       }
 
       ClassRecord pCR = new ClassRecord();
       try
       {
          pCR.iBinary = aBinary;
-         pCR.iCF = new JClassFile();
-         pCR.iName = aName;
+         pCR.iName = className;
          InputStream pBufIn = new BufferedInputStream(pIn, 4096);
-         pCR.iCF.read(pBufIn);
+         // TODO aName OK?
+         pCR.iCF = new ClassParser(pBufIn, className).parse();
          pBufIn.close();
       }
       catch (Exception e)

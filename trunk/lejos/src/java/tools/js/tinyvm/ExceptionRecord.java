@@ -2,22 +2,23 @@ package js.tinyvm;
 
 import java.io.IOException;
 
-import js.classfile.JCPE_Class;
-import js.classfile.JClassFile;
-import js.classfile.JExcep;
 import js.tinyvm.io.ByteWriter;
 import js.tinyvm.io.IOUtilities;
 
-public class ExceptionRecord implements WritableData, Constants
+import org.apache.bcel.classfile.CodeException;
+import org.apache.bcel.classfile.ConstantClass;
+import org.apache.bcel.classfile.JavaClass;
+
+public class ExceptionRecord implements WritableData
 {
-   JExcep iExcep;
+   CodeException iExcep;
    int iClassIndex;
 
-   public ExceptionRecord (JExcep aExcep, Binary aBinary, JClassFile aCF)
+   public ExceptionRecord (CodeException aExcep, Binary aBinary, JavaClass aCF)
       throws Exception
    {
       iExcep = aExcep;
-      int pCPIndex = aExcep.getClassIndex();
+      int pCPIndex = aExcep.getCatchType();
       if (pCPIndex == 0)
       {
          // An index of 0 means ANY.
@@ -25,9 +26,9 @@ public class ExceptionRecord implements WritableData, Constants
       }
       else
       {
-         JCPE_Class pCls = (JCPE_Class) aCF.getConstantPool()
-            .getEntry(pCPIndex);
-         String pName = pCls.getName();
+         ConstantClass pCls = (ConstantClass) aCF.getConstantPool()
+            .getConstant(pCPIndex);
+         String pName = pCls.getBytes(aCF.getConstantPool());
          iClassIndex = aBinary.getClassIndex(pName);
       }
       if (iClassIndex == -1)
@@ -47,10 +48,11 @@ public class ExceptionRecord implements WritableData, Constants
 
    public void dump (ByteWriter aOut) throws TinyVMException
    {
-      int pStart = iExcep.getStartPc();
-      int pEnd = iExcep.getEndPc();
-      int pHandler = iExcep.getHandlerPc();
-      if (pStart > MAX_CODE || pEnd > MAX_CODE || pHandler > MAX_CODE)
+      int pStart = iExcep.getStartPC();
+      int pEnd = iExcep.getEndPC();
+      int pHandler = iExcep.getHandlerPC();
+      if (pStart > TinyVMConstants.MAX_CODE || pEnd > TinyVMConstants.MAX_CODE
+         || pHandler > TinyVMConstants.MAX_CODE)
       {
          throw new TinyVMException("Exception handler with huge PCs");
       }

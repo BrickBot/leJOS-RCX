@@ -16,12 +16,16 @@ import js.tinyvm.util.HashVector;
 /**
  * Abstraction for dumped binary.
  */
-public class Binary implements SpecialClassConstants, SpecialSignatureConstants
+public class Binary
 {
-   /** the writer for signature writing. */
+   /**
+    * the stringwriter for signature writing.
+    */
    private StringWriter stringWriter;
 
-   /** the signature writer. */
+   /**
+    * the signature writer.
+    */
    private PrintWriter signatureWriter;
 
    // State that is written to the binary:
@@ -51,85 +55,215 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
    public Binary ()
    {
       this.stringWriter = new StringWriter();
-      this.signatureWriter = new PrintWriter(this.stringWriter);
+
+      // TODO remove this
+      // this.signatureWriter = new PrintWriter(this.stringWriter);
+      this.signatureWriter = new PrintWriter(System.out);
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   /**
+    * Dump.
+    * 
+    * @param writer
+    * @throws TinyVMException
+    */
+   public void dump (ByteWriter writer) throws TinyVMException
    {
-      iEntireBinary.dump(aOut);
+      iEntireBinary.dump(writer);
    }
 
-   public boolean hasMain (String aClassName)
+   //
+   // classes
+   //
+
+   /**
+    * Add a class.
+    * 
+    * @param className class name with '/'
+    * @param classRecord
+    */
+   protected void addClassRecord (String className, ClassRecord classRecord)
    {
-      ClassRecord pRec = getClassRecord(aClassName);
+      assert className != null: "Precondition: className != null";
+      assert classRecord != null: "Precondition: classRecord != null";
+      assert className.indexOf('.') == -1: "Precondition: className is in correct form";
+
+      iClasses.put(className, classRecord);
+      iClassTable.add(classRecord);
+   }
+
+   /**
+    * Has class in binary a public static void main (String[] args) method?
+    * 
+    * @param className class name with '/'
+    * @return
+    */
+   public boolean hasMain (String className)
+   {
+      assert className != null: "Precondition: className != null";
+      assert className.indexOf('.') == -1: "Precondition: className is in correct form";
+
+      ClassRecord pRec = getClassRecord(className);
       return pRec.hasMethod(new Signature("main", "([Ljava/lang/String;)V"),
          true);
    }
 
-   public ClassRecord getClassRecord (String aClassName)
+   /**
+    * Get class record with given signature.
+    * 
+    * @param className class name with '/'
+    * @return class record or null if not found
+    */
+   public ClassRecord getClassRecord (String className)
    {
-      return (ClassRecord) iClasses.get(aClassName);
+      assert className != null: "Precondition: className != null";
+      assert className.indexOf('.') == -1: "Precondition: className is in correct form";
+
+      return (ClassRecord) iClasses.get(className);
    }
 
-   public int getClassIndex (String aClassName)
+   /**
+    * Get index of class in binary by its signature.
+    * 
+    * @param className class name with '/'
+    * @return index of class in binary or -1 if not found
+    */
+   public int getClassIndex (String className)
    {
-      return getClassIndex(getClassRecord(aClassName));
+      assert className != null: "Precondition: className != null";
+      assert className.indexOf('.') == -1: "Precondition: className is in correct form";
+
+      return getClassIndex(getClassRecord(className));
    }
 
-   public int getClassIndex (ClassRecord aRec)
+   /**
+    * Get index of class in binary by its class record.
+    * 
+    * @param classRecord
+    * @return index of class in binary or -1 if not found
+    */
+   public int getClassIndex (ClassRecord classRecord)
    {
-      if (aRec == null)
+      if (classRecord == null)
+      {
          return -1;
-      return iClassTable.indexOf(aRec);
+      }
+
+      return iClassTable.indexOf(classRecord);
    }
 
-   public int getConstantIndex (ConstantRecord aRec)
+   //
+   // constants
+   //
+
+   /**
+    * Get constant record with given index.
+    * 
+    * @param index
+    * @return constant record or null if not found
+    */
+   public ConstantRecord getConstantRecord (int index)
    {
-      if (aRec == null)
+      assert index >= 0: "Precondition: index >= 0";
+
+      return (ConstantRecord) iConstantTable.elementAt(index);
+   }
+
+   /**
+    * Get index of constant in binary by its constant record.
+    * 
+    * @param constantRecord
+    * @return index of constant in binary or -1 if not found
+    */
+   public int getConstantIndex (ConstantRecord constantRecord)
+   {
+      if (constantRecord == null)
+      {
          return -1;
-      return iConstantTable.indexOf(aRec);
+      }
+
+      return iConstantTable.indexOf(constantRecord);
    }
 
-   public ConstantRecord getConstantRecord (int aIndex)
+   //
+   // processing
+   //
+
+   /**
+    * Create closure.
+    * 
+    * @param entryClassNames names of entry class with '/'
+    * @param aClassPath class path
+    * @param aAll do not filter classes?
+    */
+   public static Binary createFromClosureOf (String[] entryClassNames,
+      ClassPath aClassPath, boolean aAll) throws TinyVMException
    {
-      return (ConstantRecord) iConstantTable.elementAt(aIndex);
+      Binary pBin = new Binary();
+      // From special classes and entry class, store closure
+      pBin.processClasses(entryClassNames, aClassPath);
+      // Store special signatures
+      pBin.processSpecialSignatures();
+      pBin.processConstants();
+      pBin.processMethods(aAll);
+      pBin.processFields();
+      // Copy code as is (first pass)
+      pBin.processCode(false);
+      pBin.storeComponents();
+      pBin.initOffsets();
+      // Post-process code after offsets are set (second pass)
+      pBin.processCode(true);
+      // Do -verbose reporting
+      pBin.report();
+
+      return pBin;
    }
 
-   public void processClasses (Vector aEntryClasses, ClassPath aClassPath)
+   public void processClasses (String[] entryClassNames, ClassPath classPath)
       throws TinyVMException
    {
+      assert entryClassNames != null: "Precondition: entryClassNames != null";
+      assert classPath != null: "Precondition: classPath != null";
+
       Vector pInterfaceMethods = new Vector();
-      // Add special classes first
-      for (int i = 0; i < CLASSES.length; i++)
+
+      // Add special all classes first
+      String[] specialClasses = SpecialClassConstants.CLASSES;
+      _logger.log(Level.INFO, "Starting with " + specialClasses.length
+         + " special classes.");
+      for (int i = 0; i < specialClasses.length; i++)
       {
-         String pName = CLASSES[i];
-         ClassRecord pRec = ClassRecord.getClassRecord(pName, aClassPath, this);
-         iClasses.put(pName, pRec);
-         iClassTable.add(pRec);
+         String className = specialClasses[i];
+         ClassRecord classRecord = ClassRecord.getClassRecord(className,
+            classPath, this);
+         addClassRecord(className, classRecord);
          // pRec.useAllMethods();
       }
+
       // Now add entry classes
-      int pEntrySize = aEntryClasses.size();
-      for (int i = 0; i < pEntrySize; i++)
+      _logger.log(Level.INFO, "Starting with " + entryClassNames.length
+         + " entry classes.");
+      for (int i = 0; i < entryClassNames.length; i++)
       {
-         String pName = (String) aEntryClasses.elementAt(i);
-         ClassRecord pRec = ClassRecord.getClassRecord(pName, aClassPath, this);
-         iClasses.put(pName, pRec);
-         iClassTable.add(pRec);
+         String className = entryClassNames[i];
+         ClassRecord pRec = ClassRecord.getClassRecord(className, classPath,
+            this);
+         addClassRecord(className, pRec);
          pRec.useAllMethods();
          // Update table of indices to entry classes
-         iEntryClassIndices.add(new EntryClassIndex(this, pName));
+         iEntryClassIndices.add(new EntryClassIndex(this, className));
       }
+
+      // Now add the closure.
       _logger.log(Level.INFO, "Starting with " + iClassTable.size()
          + " classes.");
-      // Now add the closure.
       // Yes, call iClassTable.size() in every pass of the loop.
       for (int pIndex = 0; pIndex < iClassTable.size(); pIndex++)
       {
          ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
          _logger.log(Level.INFO, "Class " + pIndex + ": " + pRec.iName);
          appendSignature("Class " + pIndex + ": " + pRec.iName);
-         pRec.storeReferredClasses(iClasses, iClassTable, aClassPath,
+         pRec.storeReferredClasses(iClasses, iClassTable, classPath,
             pInterfaceMethods);
       }
       // Initialize indices and flags
@@ -147,11 +281,11 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
 
    public void processSpecialSignatures ()
    {
-      for (int i = 0; i < SIGNATURES.length; i++)
+      for (int i = 0; i < SpecialSignatureConstants.SIGNATURES.length; i++)
       {
-         Signature pSig = new Signature(SIGNATURES[i]);
+         Signature pSig = new Signature(SpecialSignatureConstants.SIGNATURES[i]);
          iSignatures.addElement(pSig);
-         iSpecialSignatures.put(pSig, SIGNATURES[i]);
+         iSpecialSignatures.put(pSig, SpecialSignatureConstants.SIGNATURES[i]);
       }
    }
 
@@ -207,6 +341,10 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
       }
    }
 
+   //
+   // storing
+   //
+
    public void storeComponents ()
    {
       // Master record and class table are always the first two:
@@ -251,6 +389,10 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
       }
       return pTotal;
    }
+
+   //
+   // reporting
+   //
 
    public void report () throws TinyVMException
    {
@@ -304,6 +446,8 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
    public void appendSignature (String msg)
    {
       this.signatureWriter.println(msg);
+      // TODO remove this
+      this.signatureWriter.flush();
    }
 
    /**
@@ -318,29 +462,6 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
       pw.print(this.stringWriter.toString());
       pw.flush();
       pw.close();
-   }
-
-   public static Binary createFromClosureOf (Vector aEntryClasses,
-      ClassPath aClassPath, boolean aAll) throws TinyVMException
-   {
-      Binary pBin = new Binary();
-      // From special classes and entry class, store closure
-      pBin.processClasses(aEntryClasses, aClassPath);
-      // Store special signatures
-      pBin.processSpecialSignatures();
-      pBin.processConstants();
-      pBin.processMethods(aAll);
-      pBin.processFields();
-      // Copy code as is (first pass)
-      pBin.processCode(false);
-      pBin.storeComponents();
-      pBin.initOffsets();
-      // Post-process code after offsets are set (second pass)
-      pBin.processCode(true);
-      // Do -verbose reporting
-      pBin.report();
-
-      return pBin;
    }
 
    private static final Logger _logger = Logger.getLogger("TinyVM");

@@ -3,17 +3,20 @@ package js.tinyvm;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import js.classfile.JField;
 import js.tinyvm.io.ByteWriter;
 
-public class StaticValue extends WritableDataWithOffset implements Constants
-{
-   int iType;
+import org.apache.bcel.Constants;
+import org.apache.bcel.classfile.Field;
 
-   public StaticValue (JField aEntry) throws TinyVMException
+public class StaticValue extends WritableDataWithOffset
+{
+   Field _field;
+   byte iType;
+
+   public StaticValue (Field aEntry) throws TinyVMException
    {
-      iType = InstanceFieldRecord.descriptorToType(aEntry.getDescriptor()
-         .toString());
+      _field = aEntry;
+      iType = TinyVMConstants.tinyVMType(_field.getType().getType());
    }
 
    public int getLength () throws TinyVMException
@@ -29,34 +32,36 @@ public class StaticValue extends WritableDataWithOffset implements Constants
          DataOutputStream pDataOut = (DataOutputStream) aOut;
          switch (iType)
          {
-            case T_BOOLEAN:
+            case Constants.T_BOOLEAN:
                pDataOut.writeBoolean(false);
                break;
-            case T_BYTE:
+            case Constants.T_BYTE:
                pDataOut.writeByte(0);
                break;
-            case T_CHAR:
+            case Constants.T_CHAR:
                pDataOut.writeChar(0);
                break;
-            case T_SHORT:
+            case Constants.T_SHORT:
                pDataOut.writeShort(0);
                break;
-            case T_REFERENCE:
-            case T_INT:
+            case Constants.T_ARRAY: // TODO correct?
+            case TinyVMConstants.T_REFERENCE:
+            case Constants.T_OBJECT:
+            case Constants.T_INT:
                pDataOut.writeInt(0);
                break;
-            case T_FLOAT:
+            case Constants.T_FLOAT:
                pDataOut.writeFloat((float) 0.0);
                break;
-            case T_LONG:
+            case Constants.T_LONG:
                pDataOut.writeLong(0L);
                break;
-            case T_DOUBLE:
+            case Constants.T_DOUBLE:
                pDataOut.writeInt(0);
                pDataOut.writeFloat((float) 0.0);
                break;
             default:
-               assert false: "Check: valid type";
+               assert false: "Check: valid type: " + iType;
          }
       }
       catch (IOException e)

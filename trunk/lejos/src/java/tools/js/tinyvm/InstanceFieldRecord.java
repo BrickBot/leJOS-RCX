@@ -2,53 +2,25 @@ package js.tinyvm;
 
 import java.io.IOException;
 
-import js.classfile.JField;
 import js.tinyvm.io.ByteWriter;
+
+import org.apache.bcel.Constants;
+import org.apache.bcel.classfile.Field;
 
 public class InstanceFieldRecord implements WritableData, Constants
 {
-   JField iField;
-   int iType;
+   Field iField;
+   byte iType;
 
-   public InstanceFieldRecord (JField aEntry) throws TinyVMException
+   public InstanceFieldRecord (Field aEntry) throws TinyVMException
    {
       iField = aEntry;
-      iType = descriptorToType(iField.getDescriptor().toString());
+      iType = TinyVMConstants.tinyVMType(iField.getType().getType());
    }
 
    public String getName ()
    {
       return iField.getName();
-   }
-
-   public static int descriptorToType (String aDesc) throws TinyVMException
-   {
-      switch (aDesc.charAt(0))
-      {
-         case 'B':
-            return T_BYTE;
-         case 'C':
-            return T_CHAR;
-         case 'D':
-            return T_DOUBLE;
-         case 'F':
-            return T_FLOAT;
-         case 'I':
-            return T_INT;
-         case 'J':
-            return T_LONG;
-         case 'S':
-            return T_SHORT;
-         case 'Z':
-            return T_BOOLEAN;
-         case 'L':
-         case '[':
-            return T_REFERENCE;
-         default:
-         {
-            throw new TinyVMException("Bug IFR-2: " + aDesc);
-         }
-      }
    }
 
    public int getLength ()
@@ -68,26 +40,35 @@ public class InstanceFieldRecord implements WritableData, Constants
       }
    }
 
-   public static int getTypeSize (int aType) throws TinyVMException
+   /**
+    * Get type size in bytes.
+    * 
+    * @param type type to get size for
+    */
+   public static int getTypeSize (byte type) throws TinyVMException
    {
-      switch (aType)
+      switch (type)
       {
-         case T_BYTE:
-         case T_BOOLEAN:
+         case Constants.T_VOID:
+            return 0; // TODO correct?
+         case Constants.T_BYTE:
+         case Constants.T_BOOLEAN:
             return 1;
-         case T_SHORT:
-         case T_CHAR:
+         case Constants.T_SHORT:
+         case Constants.T_CHAR:
             return 2;
-         case T_INT:
-         case T_REFERENCE:
-         case T_FLOAT:
+         case TinyVMConstants.T_REFERENCE:
+         case Constants.T_INT:
+         case Constants.T_ARRAY:
+         case Constants.T_OBJECT:
+         case Constants.T_FLOAT:
             return 4;
-         case T_LONG:
-         case T_DOUBLE:
+         case Constants.T_LONG:
+         case Constants.T_DOUBLE:
             return 8;
          default:
          {
-            throw new TinyVMException("Bug SV-1: " + aType);
+            throw new TinyVMException("Undefined type: " + type);
          }
       }
    }

@@ -5,6 +5,8 @@ import java.io.IOException;
 import js.tinyvm.io.ByteWriter;
 import js.tinyvm.io.IOUtilities;
 
+import org.apache.bcel.Constants;
+
 public class MasterRecord implements WritableData, Constants
 {
    Binary iBinary;
@@ -16,7 +18,7 @@ public class MasterRecord implements WritableData, Constants
 
    public void dump (ByteWriter aOut) throws TinyVMException
    {
-      int pMagicNumber = MAGIC_MASK;
+      int pMagicNumber = TinyVMConstants.MAGIC_MASK;
       int pConstantTableOffset = iBinary.iConstantTable.getOffset();
       if (pConstantTableOffset <= 0 || pConstantTableOffset > 0xFFFF)
       {
@@ -32,9 +34,9 @@ public class MasterRecord implements WritableData, Constants
       int pNumStaticFields = iBinary.iStaticFields.size();
       int pEntryClassesOffset = iBinary.iEntryClassIndices.getOffset();
       int pNumEntryClasses = iBinary.iEntryClassIndices.size();
-      assert pNumEntryClasses < MAX_CLASSES: "Check: not too much classes";
+      assert pNumEntryClasses < TinyVMConstants.MAX_CLASSES: "Check: not too much classes";
       int pLastClass = iBinary.iClassTable.size() - 1;
-      assert pLastClass >= 0 && pLastClass < MAX_CLASSES: "Check: class index in range";
+      assert pLastClass >= 0 && pLastClass < TinyVMConstants.MAX_CLASSES: "Check: class index in range";
 
       try
       {

@@ -5,100 +5,168 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import js.classfile.JCPE_Double;
-import js.classfile.JCPE_Float;
-import js.classfile.JCPE_Integer;
-import js.classfile.JCPE_Long;
-import js.classfile.JCPE_String;
-import js.classfile.JCPE_Utf8;
-import js.classfile.JConstantPoolEntry;
 import js.tinyvm.io.ByteWriter;
 
+import org.apache.bcel.Constants;
+import org.apache.bcel.classfile.Constant;
+import org.apache.bcel.classfile.ConstantDouble;
+import org.apache.bcel.classfile.ConstantFloat;
+import org.apache.bcel.classfile.ConstantInteger;
+import org.apache.bcel.classfile.ConstantLong;
+import org.apache.bcel.classfile.ConstantPool;
+import org.apache.bcel.classfile.ConstantString;
+
+/**
+ * This class represents a constant value of a basic type.
+ */
 public class ConstantValue extends WritableDataWithOffset
 {
-   JConstantPoolEntry iEntry;
+   /**
+    * The dereferenced value.
+    */
+   Object _value;
 
-   public ConstantValue (JConstantPoolEntry aEntry)
+   /**
+    * Constructor.
+    * 
+    * @param pool constant pool
+    * @param constant constant
+    */
+   public ConstantValue (ConstantPool pool, Constant constant)
    {
-      iEntry = aEntry;
+      _value = value(pool, constant);
+
+      assert _value != null: "Postconditon: result != null";
    }
 
-   public int getLength ()
+   // use Object.equals() for equality
+   // use Object.hashCode() for hash code
+
+   /**
+    * Dereferenced value.
+    */
+   public Object value ()
    {
-      if (iEntry instanceof JCPE_String)
+      assert _value != null: "Postconditon: result != null";
+      return _value;
+   }
+
+   /**
+    * Get type of this value.
+    */
+   public byte getType ()
+   {
+      if (_value instanceof Double)
       {
-         JCPE_Utf8 pValue = ((JCPE_String) iEntry).getValue();
-         return pValue.getSize();
+         // TODO map long to double correct?
+         return Constants.T_LONG;
       }
-      else if (iEntry instanceof JCPE_Integer)
+      else if (_value instanceof Float)
       {
-         return 4;
+         return Constants.T_FLOAT;
       }
-      else if (iEntry instanceof JCPE_Long)
+      else if (_value instanceof Integer)
       {
-         return 8;
+         return Constants.T_INT;
       }
-      else if (iEntry instanceof JCPE_Double)
+      else if (_value instanceof Long)
       {
-         return 8;
+         return Constants.T_LONG;
       }
-      else if (iEntry instanceof JCPE_Float)
+      else if (_value instanceof String)
       {
-         return 4;
+         return TinyVMConstants.tinyVMType(Constants.T_OBJECT);
       }
       else
       {
-         assert false: "Check: known entry type";
-         return 0;
+         assert false: "Check: known type";
+         return -1;
       }
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   /**
+    * Get length in bytes of value.
+    */
+   public int getLength ()
    {
+      if (_value instanceof Double)
+      {
+         return 8;
+      }
+      else if (_value instanceof Float)
+      {
+         return 4;
+      }
+      else if (_value instanceof Integer)
+      {
+         return 4;
+      }
+      else if (_value instanceof Long)
+      {
+         return 8;
+      }
+      else if (_value instanceof String)
+      {
+         return ((String) _value).getBytes().length;
+      }
+      else
+      {
+         assert false: "Check: known type";
+         return -1;
+      }
+   }
+
+   /**
+    * Dump.
+    * 
+    * @param writer byte writer
+    */
+   public void dump (ByteWriter writer) throws TinyVMException
+   {
+      assert writer != null: "Precondition: writer != null";
+
       try
       {
          // Constant values must be dumped in Big Endian order.
-         DataOutputStream pDataOut = (DataOutputStream) aOut;
-         if (iEntry instanceof JCPE_String)
+         DataOutputStream pDataOut = (DataOutputStream) writer;
+         if (_value instanceof Double)
          {
-            JCPE_Utf8 pValue = ((JCPE_String) iEntry).getValue();
-            byte[] pBytes = pValue.getBytes();
-            pDataOut.write(pBytes, 0, pBytes.length);
-         }
-         else if (iEntry instanceof JCPE_Integer)
-         {
-            int pValue = ((JCPE_Integer) iEntry).getValue();
-            pDataOut.writeInt(pValue);
-         }
-         else if (iEntry instanceof JCPE_Long)
-         {
-            long pValue = ((JCPE_Long) iEntry).getValue();
-            int pIntValue = (int) pValue;
-            if (pIntValue != pValue)
+            double doubleValue = ((Double) _value).doubleValue();
+            float floatValue = (float) doubleValue;
+            if (doubleValue != 0.0
+               && Math.abs((doubleValue - floatValue) / doubleValue) > 0.1)
             {
-               _logger.log(Level.WARNING, "Long " + pValue + "L truncated to "
-                  + pIntValue + ".");
+               _logger.log(Level.WARNING, "Double " + doubleValue
+                  + " truncated to " + floatValue + "f.");
             }
             pDataOut.writeInt(0);
-            pDataOut.writeInt(pIntValue);
+            pDataOut.writeInt(Float.floatToIntBits(floatValue));
          }
-         else if (iEntry instanceof JCPE_Double)
+         else if (_value instanceof Float)
          {
-            double pDoubleValue = ((JCPE_Double) iEntry).getValue();
-            float pValue = (float) pDoubleValue;
-            if (pDoubleValue != 0.0
-               && Math.abs((pDoubleValue - pValue) / pDoubleValue) > 0.1)
+            pDataOut.writeInt(Float.floatToIntBits(((Float) _value)
+               .floatValue()));
+         }
+         else if (_value instanceof Integer)
+         {
+            pDataOut.writeInt(((Integer) _value).intValue());
+         }
+         else if (_value instanceof Long)
+         {
+            long longValue = ((Long) _value).longValue();
+            int intValue = (int) longValue;
+            if (intValue != longValue)
             {
-               _logger.log(Level.WARNING, "Double " + pDoubleValue
-                  + " truncated to " + pValue + "f.");
+               _logger.log(Level.WARNING, "Long " + longValue
+                  + "L truncated to " + intValue + ".");
             }
             pDataOut.writeInt(0);
-            pDataOut.writeInt(Float.floatToIntBits(pValue));
+            pDataOut.writeInt(intValue);
          }
-         else if (iEntry instanceof JCPE_Float)
+         else if (_value instanceof String)
          {
-            float pValue = (float) ((JCPE_Float) iEntry).getValue();
-            pDataOut.writeInt(Float.floatToIntBits(pValue));
+            byte[] bytes = ((String) _value).getBytes();
+            pDataOut.write(bytes, 0, bytes.length);
          }
          else
          {
@@ -111,14 +179,50 @@ public class ConstantValue extends WritableDataWithOffset
       }
    }
 
-   public boolean equals (Object aOther)
-   {
-      return (aOther == this);
-   }
+   //
+   // protected interface
+   //
 
-   public int hashCode ()
+   /**
+    * Get value from constant.
+    * 
+    * @param pool constant pool
+    * @param constant constant to get value from
+    * @return Double, Float, Integer, Long or String
+    */
+   private Object value (ConstantPool pool, Constant constant)
    {
-      return System.identityHashCode(this);
+      assert pool != null: "Precondition: pool != null";
+      assert constant != null: "Precondition: constant != null";
+
+      Object result = null;
+      if (constant instanceof ConstantDouble)
+      {
+         result = new Double(((ConstantDouble) constant).getBytes());
+      }
+      else if (constant instanceof ConstantFloat)
+      {
+         result = new Float(((ConstantFloat) constant).getBytes());
+      }
+      else if (constant instanceof ConstantInteger)
+      {
+         result = new Integer(((ConstantInteger) constant).getBytes());
+      }
+      else if (constant instanceof ConstantLong)
+      {
+         result = new Long(((ConstantLong) constant).getBytes());
+      }
+      else if (constant instanceof ConstantString)
+      {
+         result = new String(((ConstantString) constant).getBytes(pool));
+      }
+      else
+      {
+         assert false: "Check: known type";
+      }
+
+      assert result != null: "Postconditon: result != null";
+      return result;
    }
 
    private static final Logger _logger = Logger.getLogger("TinyVM");
