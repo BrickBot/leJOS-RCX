@@ -34,7 +34,7 @@ public class LLC {
 
   /**
    * Indicate whether the last send is still active
-   * @result true if still sending, else false
+   * @return true if still sending, else false
    **/
   public static native boolean isSendError();
 
