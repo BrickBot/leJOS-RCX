@@ -2,6 +2,8 @@ package js.tools;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 
 import js.common.AbstractTool;
@@ -29,6 +31,29 @@ public class FirmdlTool extends AbstractTool
   }
 
   /**
+   * Execute firmware download with default firmware.
+   * 
+   * @param tty port
+   * @param download download read image?
+   * @param fastMode use fast mode?
+   * @throws ToolException
+   */
+  public void start (String tty, boolean download, boolean fastMode)
+      throws FirmdlException
+  {
+    // get firmware
+    // Find the lejos bin directory
+    // String dir = which("js.tools.Firmdl");
+    // fileName = dir + "bin/lejos.srec";
+    InputStream stream = Firmdl.class.getResourceAsStream("/lejos.srec");
+    if (stream == null)
+    {
+      throw new FirmdlException("Unable to find default lejos.srec");
+    }
+    start(new InputStreamReader(stream), tty, download, fastMode);
+  }
+
+  /**
    * Execute firmware download.
    * 
    * @param reader reader to read firmware from
@@ -37,8 +62,8 @@ public class FirmdlTool extends AbstractTool
    * @param fastMode use fast mode?
    * @throws ToolException
    */
-  public void start (Reader reader, String tty, boolean download, boolean fastMode)
-      throws FirmdlException
+  public void start (Reader reader, String tty, boolean download,
+      boolean fastMode) throws FirmdlException
   {
     try
     {
@@ -47,8 +72,8 @@ public class FirmdlTool extends AbstractTool
       int length = 0;
       for (int i = 0; i < image.segments.length; i++)
       {
-        getProgressListener().log("Segment " + i + ": length = "
-            + image.segments[i].length);
+        getProgressListener().log(
+            "Segment " + i + ": length = " + image.segments[i].length);
         length += image.segments[i].length;
       }
 
@@ -62,12 +87,12 @@ public class FirmdlTool extends AbstractTool
             getProgressListener().operation("Installing fastmode firmware");
             d.open(tty, false);
             d.installFirmware(FastImage.fastdlImage,
-                FastImage.fastdlImage.length, IMAGE_START, false);
+                FastImage.fastdlImage.length, IMAGE_START);
             d.close();
           }
           getProgressListener().operation("Installing firmware");
           d.open(tty, fastMode);
-          d.installFirmware(image.data, length, image.entry, true);
+          d.installFirmware(image.data, length, image.entry);
           d.close();
         }
         catch (ToolException e)
