@@ -2,10 +2,7 @@ package js.tools;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.io.StringWriter;
 
 import js.common.ToolException;
@@ -74,33 +71,21 @@ public class Firmdl extends FirmdlTool
     // files
     String[] srecs = commandLine.getArgs();
 
-    // get firmware
-    // Find the lejos bin directory
-    // String dir = which("js.tools.Firmdl");
-    // fileName = dir + "bin/lejos.srec";
-    Reader reader;
     if (srecs.length == 0)
     {
-      InputStream stream = Firmdl.class.getResourceAsStream("/lejos.srec");
-      if (stream == null)
-      {
-        throw new FirmdlException("Unable to find default lejos.srec");
-      }
-      reader = new InputStreamReader(stream);
+      start(tty, download, fastMode);
     }
     else
     {
       try
       {
-        reader = new FileReader(srecs[0]);
+        start(new FileReader(srecs[0]), tty, download, fastMode);
       }
       catch (FileNotFoundException e)
       {
         throw new FirmdlException(e);
       }
     }
-
-    start(reader, tty, download, fastMode);
   }
 
   /**

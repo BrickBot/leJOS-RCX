@@ -17,14 +17,13 @@ public class Download
   private Tower _tower;
   private ToolProgressListener _progress = null;
 
-
   /**
    * Constructor.
    */
   public Download(ToolProgressListener listener)
   {
     assert listener != null : "Precondition: listener != null";
-    
+
     _progress = listener;
   }
 
@@ -108,9 +107,6 @@ public class Download
    */
   public void downloadProgram (byte[] buffer, int length) throws ToolException
   {
-    // TODO use verbose as parameter?
-    boolean verbose = true;
-
     byte[] send = new byte[3];
     byte[] recv = new byte[3];
 
@@ -137,7 +133,7 @@ public class Download
           + "\nTurn RCX off and on if necessary.");
     }
 
-    transferData(buffer, length, true, verbose);
+    transferData(buffer, length, true);
   }
 
   /**
@@ -146,14 +142,13 @@ public class Download
    * @param image firmware
    * @param length length of firmware
    * @param baseAddress base address of firmware
-   * @param verbose output progress?
    */
-  public void installFirmware (byte[] image, int length, int baseAddress,
-      boolean verbose) throws ToolException
+  public void installFirmware (byte[] image, int length, int baseAddress)
+      throws ToolException
   {
-    deleteFirmware(verbose);
-    downloadFirmware(image, length, baseAddress, verbose);
-    unlockFirmware(verbose);
+    deleteFirmware();
+    downloadFirmware(image, length, baseAddress);
+    unlockFirmware();
   }
 
   /**
@@ -162,20 +157,16 @@ public class Download
    * @param image firmware
    * @param length length of firmware
    * @param baseAddress base address of firmware
-   * @param verbose output progress?
    */
-  public void downloadFirmware (byte[] image, int len, int baseAddress,
-      boolean verbose) throws ToolException
+  public void downloadFirmware (byte[] image, int len, int baseAddress)
+      throws ToolException
   {
     byte[] send = new byte[6];
     byte[] recv = new byte[2];
 
-    if (verbose)
-    {
-      _progress.operation("Downloading firmware");
-      int kB = (len + 1023) / 1024;
-      _progress.log("Total image size = " + len + " (" + kB + "kB)");
-    }
+    _progress.operation("Downloading firmware");
+    int kB = (len + 1023) / 1024;
+    _progress.log("Total image size = " + len + " (" + kB + "kB)");
 
     // Compute image checksum
     // TODO what is this?
@@ -211,28 +202,20 @@ public class Download
           + e.getMessage());
     }
 
-    transferData(image, len, false, verbose);
+    transferData(image, len, false);
 
-    if (verbose)
-    {
-      _progress.operation("Firmware downloaded");
-    }
+    _progress.operation("Firmware downloaded");
   }
 
   /**
    * Delete the firmware.
-   * 
-   * @param verbose output progress?
    */
-  public void deleteFirmware (boolean verbose) throws ToolException
+  public void deleteFirmware () throws ToolException
   {
     byte[] send = new byte[6];
     byte[] recv = new byte[1];
 
-    if (verbose)
-    {
-      _progress.operation("Deleting firmware");
-    }
+    _progress.operation("Deleting firmware");
 
     // Delete firmware
     send[0] = 0x65;
@@ -255,26 +238,18 @@ public class Download
       throw new ToolException("Delete firmware failed: " + e.getMessage());
     }
 
-    if (verbose)
-    {
-      _progress.operation("Firmware deleted");
-    }
+    _progress.operation("Firmware deleted");
   }
 
   /**
    * Unlock the firmware.
-   * 
-   * @param verbose output progress?
    */
-  public void unlockFirmware (boolean verbose) throws ToolException
+  public void unlockFirmware () throws ToolException
   {
     byte[] send = new byte[6];
     byte[] recv = new byte[26];
 
-    if (verbose)
-    {
-      _progress.operation("Unlocking firmware");
-    }
+    _progress.operation("Unlocking firmware");
 
     // Unlock firmware
     send[0] = (byte) 0xa5;
@@ -298,10 +273,7 @@ public class Download
       throw new ToolException("Unlock firmware failed: " + e.getMessage());
     }
 
-    if (verbose)
-    {
-      _progress.operation("Firmware unlocked");
-    }
+    _progress.operation("Firmware unlocked");
   }
 
   /**
@@ -311,10 +283,9 @@ public class Download
    * @param data data array
    * @param length number of bytes to transfer
    * @param terminate0 is last block to transfer numebr 0?
-   * @param verbose output progress?
    */
-  public void transferData (byte[] data, int length, boolean terminate0,
-      boolean verbose) throws ToolException
+  public void transferData (byte[] data, int length, boolean terminate0)
+      throws ToolException
   {
     byte opcode = 0x45;
     int addr = 0;
