@@ -25,28 +25,26 @@ public class Tower
     */
    public Tower ()
    {
-      this("", false);
+      this("");
    }
 
    /**
     * Create the tower class.
     */
-   public Tower (String tty, boolean fastMode)
+   public Tower (String tty)
    {
       assert tty != null: "Precondition: tty != null";
 
       _tty = tty;
       _isOpen = false;
-      // TODO include this if native implementation compiles
-      // setFast(fastMode? 1 : 0);
    }
 
    /**
     * Open the tower.
     */
-   public void openTower () throws TowerException
+   public void openTower (boolean fastMode) throws TowerException
    {
-      int status = open(_tty);
+      int status = open(_tty, fastMode);
       if (status != 0)
       {
          throw new TowerException(status);
@@ -74,25 +72,7 @@ public class Tower
     */
    public int getError ()
    {
-      return err;
-   }
-
-   /**
-    * Getter for USB Flag
-    * 
-    * @return USB Flag as an integer
-    */
-   public boolean isUSB ()
-   {
-      return usbFlag == 1;
-   }
-
-   /**
-    * Check if RCX is alive.
-    */
-   public boolean isRCXAlive ()
-   {
-      return isAlive() == 1;
+      return _error;
    }
 
    /**
@@ -222,47 +202,66 @@ public class Tower
       try
       {
          // try to search in the directory in which the jar resides
-         String filename = System.mapLibraryName("jirtrcx");
          URL url = Tower.class.getResource("Tower.class");
          String jarFilename = url.getFile();
          // cut "file:" and jar part beginning with "!"
          File jarFile = new File(jarFilename.substring(5, jarFilename
             .indexOf('!')));
-         File file = new File(jarFile.getParentFile(), filename);
-         String path = file.getAbsolutePath();
+
+         String filename = System.mapLibraryName("irtrcx");
+         String path = new File(jarFile.getParentFile(), filename)
+            .getAbsolutePath();
+         // System.err.println("Loading native lib " + path);
+         System.load(path);
+
+         filename = System.mapLibraryName("jirtrcx");
+         path = new File(jarFile.getParentFile(), filename).getAbsolutePath();
          // System.err.println("Loading native lib " + path);
          System.load(path);
       }
       catch (Throwable e)
       {
-         // System.err.println("Unable to load native lib jirtrcx: " +
-         // e.getMessage());
+         // System.err.println("Unable to load native lib: " + e.getMessage());
 
          try
          {
             // try again the default way
+            // System.err.println("Loading native lib irtrcx");
+            System.loadLibrary("irtrcx");
             // System.err.println("Loading native lib jirtrcx");
             System.loadLibrary("jirtrcx");
          }
          catch (Throwable e1)
          {
-            // System.err.println("Unable to load native lib jirtrcx: " +
-            // e1.getMessage());
+            System.err.println("Unable to load native lib: "
+               + e1.getMessage());
          }
       }
    }
 
+   //
    // native fields
-   private int err;
-   private long fh;
-   private int usbFlag;
+   //
 
+   /**
+    * File handle of tower.
+    * This field is only for native usage!
+    */
+   private long _fileHandle;
+   
+   /**
+    * System error code of last operation.
+    * Read only field!
+    */
+   private int _error;
+   
    /**
     * Open the tower
     * 
     * @param port port to use, e.g. usb or COM1
+    * @param fastMode open port for fast mode transmissions?
     */
-   protected final native int open (String p);
+   protected final native int open (String p, boolean fastMode);
 
    /**
     * Close the tower
@@ -272,11 +271,14 @@ public class Tower
    protected final native int close ();
 
    /**
-    * Set fast mode
-    * 
-    * @param fast - 0 = slow mode, 1 = fast mode
+    * Check if RCX is alive
     */
-   protected final native int setFast (int fast);
+   public final native boolean isRCXAlive ();
+
+   /**
+    * Is tower an usb tower?.
+    */
+   public final native boolean isUSB ();
 
    /**
     * Write low-level bytes to the tower, e.g 0xff550010ef10ef for ping.
@@ -312,21 +314,4 @@ public class Tower
     */
    protected final native int receive (byte b[]);
 
-   /**
-    * Dump hex to standard out.
-    * 
-    * TODO remove?
-    * 
-    * @param prefix identifies the dump
-    * @param b bytes to dump
-    * @param n numberof bytes
-    */
-   protected final native void hexdump (String prefix, byte b[], int n);
-
-   /**
-    * Check if RCX is alive
-    * 
-    * @return 1 if alive, 0 if not
-    */
-   protected final native int isAlive ();
 }

@@ -31,7 +31,7 @@ public class LNPHandler extends PacketHandler
       try
       {
          tower = new Tower();
-         tower.openTower();
+         tower.openTower(false);
          usbFlag = tower.isUSB()? 1 : 0;
       }
       catch (TowerException e)

@@ -1,7 +1,10 @@
 package josx.rcxcomm.remotecontrol;
 
 /*
- * $Log$ Revision 1.2 2004/06/12 14:59:27
+ * $Log$
+ * Revision 1.3  2004/06/21 22:49:26  markus_heiden
+ * reformatted code
+ * Revision 1.2 2004/06/12 14:59:27
  * markus_heiden reworked tools
  * 
  * Revision 1.1 2003/05/09 21:43:27 mpscholz moved remote control classes to
@@ -172,7 +175,7 @@ public class RemoteControlMessenger
       try
       {
          // open tower
-         fTower.openTower();
+         fTower.openTower(false);
          // send packet
          fTower.sendPacket(aPacket);
          // close tower

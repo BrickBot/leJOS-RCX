@@ -15,7 +15,7 @@ ifneq (,$(findstring cygwin,$(OSTYPE)))
     IRTOWER=$(LEJOS_HOME)/bin/jirtrcx.dll
     CCOPT= -mno-cygwin -I$(IRTRCX_INCL) -I${JAVA_INCL} -I${JAVA_INCL}/win32 -Wl,--add-stdcall-alias -shared -L$(LEJOS_HOME)/bin -lirtrcx
 else
-ifneq (,$(findstring darwin,$(OSTYPE)))
+  ifneq (,$(findstring darwin,$(OSTYPE)))
     # Mac OS X
     # uname -r is 1.4 on 10.1, 5.x on following SU's (yeah, baby !) and 6.0 on Jaguar (10.2)
     OS_VERSION = $(shell uname -r | cut -f1 -d'.')
