@@ -8,10 +8,6 @@
 #ifndef _CLASSES_H
 #define _CLASSES_H
 
-#define THREAD_SHIFT    0x0008
-#define THREAD_MASK     0xFF00
-#define COUNT_MASK      0x00FF
-
 #define CLASS_MASK      0x00FF
 #define CLASS_SHIFT     0
 
@@ -33,10 +29,10 @@
 #define FREE_BLOCK_SIZE_MASK 0x7FFF
 #define FREE_BLOCK_SIZE_SHIFT 0
 
-#define is_array(OBJ_)           (((OBJ_)->flags & IS_ARRAY_MASK) != 0)
-#define is_allocated(OBJ_)       (((OBJ_)->flags & IS_ALLOCATED_MASK) != 0)
-#define get_monitor_count(OBJ_)  ((OBJ_)->syncInfo & COUNT_MASK)
-#define is_gc(OBJ_)              (((OBJ_)->flags & GC_MASK) != 0)
+#define is_array(OBJ_)           ((OBJ_)->flags.objects.isArray)
+#define is_allocated(OBJ_)       ((OBJ_)->flags.freeBlock.isAllocated)
+#define get_monitor_count(OBJ_)  ((OBJ_)->monitorCount)
+#define is_gc(OBJ_)              ((OBJ_)->flags.objects.mark)
 
 // Double-check these data structures with the 
 // Java declaration of each corresponding class.
@@ -64,14 +60,37 @@ typedef struct S_Object
    *  -- bit 14   : One (is an array).
    *  -- bit 15   : One (allocated).
    */
-  TWOBYTES flags;
+   union _flags
+   {
+     TWOBYTES all;
+     struct _freeBlock
+     {
+       TWOBYTES size:15;
+       TWOBYTES isAllocated:1;
+     } freeBlock;
+     struct _objects
+     {
+       byte     class;
+       byte     padding:5;
+       byte     mark:1;
+       byte     isArray:1;
+       byte     isAllocated:1;
+     } objects;
+     struct _arrays
+     {
+       TWOBYTES length:9;
+       TWOBYTES type:4;
+       TWOBYTES mark:1;
+       TWOBYTES isArray:1;
+       TWOBYTES isAllocated:1;
+     } arrays;
+   } flags;
 
   /**
    * Synchronization state.
-   * bits 0-7: Monitor count.
-   * bits 8-15: Thread index.
    */
-  TWOBYTES syncInfo;
+  byte monitorCount;
+  byte threadId;
 
 } Object;
 
@@ -123,7 +142,7 @@ typedef struct S_String
 static inline TWOBYTES get_array_length (Object *obj)
 {
    TWOBYTES aux;
-   aux = obj->flags & ARRAY_LENGTH_MASK;
+   aux = obj->flags.all & ARRAY_LENGTH_MASK;
    #if (ARRAY_LENGTH_SHIFT == 0)
    return aux;
    #else
@@ -134,7 +153,7 @@ static inline TWOBYTES get_array_length (Object *obj)
 static inline TWOBYTES get_element_type (Object *obj)
 {
    TWOBYTES aux;
-   aux = obj->flags & ELEM_TYPE_MASK;
+   aux = obj->flags.all & ELEM_TYPE_MASK;
    #if (ELEM_TYPE_SHIFT == 0)
    return aux;
    #else
@@ -145,7 +164,7 @@ static inline TWOBYTES get_element_type (Object *obj)
 static inline TWOBYTES get_na_class_index (Object *obj)
 {
    TWOBYTES aux;
-   aux = obj->flags & CLASS_MASK;
+   aux = obj->flags.all & CLASS_MASK;
    #if (CLASS_SHIFT == 0)
    return aux;
    #else
@@ -155,10 +174,17 @@ static inline TWOBYTES get_na_class_index (Object *obj)
 
 #else
 
-#define get_array_length(ARR_)   (((ARR_)->flags & ARRAY_LENGTH_MASK) >> ARRAY_LENGTH_SHIFT)
-#define get_element_type(ARR_)   ((ARR_)->flags & ELEM_TYPE_MASK) >> ELEM_TYPE_SHIFT
-#define get_na_class_index(OBJ_) (((OBJ_)->flags & CLASS_MASK) >> CLASS_SHIFT)
-#define get_free_length(OBJ_)    (((OBJ_)->flags & FREE_BLOCK_SIZE_MASK) >> FREE_BLOCK_SIZE_SHIFT)
+#ifndef notdef
+#define get_array_length(ARR_)   (((ARR_)->flags.all & ARRAY_LENGTH_MASK) >> ARRAY_LENGTH_SHIFT)
+#define get_element_type(ARR_)   ((ARR_)->flags.all & ELEM_TYPE_MASK) >> ELEM_TYPE_SHIFT
+#define get_na_class_index(OBJ_) (((OBJ_)->flags.all & CLASS_MASK) >> CLASS_SHIFT)
+#define get_free_length(OBJ_)    (((OBJ_)->flags.all & FREE_BLOCK_SIZE_MASK) >> FREE_BLOCK_SIZE_SHIFT)
+#else
+#define get_array_length(ARR_)   ((ARR_)->flags.arrays.length)
+#define get_element_type(ARR_)   ((ARR_)->flags.arrays.type)
+#define get_na_class_index(OBJ_) ((OBJ_)->flags.objects.class)
+#define get_free_length(OBJ_)    ((OBJ_)->flags.freeBlock.size)
+#endif
 
 #endif // WIMPY_MATH
 

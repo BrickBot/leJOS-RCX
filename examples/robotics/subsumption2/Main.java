@@ -1,103 +1,48 @@
 import josx.platform.rcx.*;
 
 /**
- * Entry point for the program. Creates an instance of Subsumption
- * and kicks of the lowest priority task (wander). This version uses
+ * Entry point for the program. This version uses
  * the enhanced Thread interface available in lejos1.0.2
  */
-public class Main  {
-	public static final long FOREVER = 0x7fffffff;
-	
-	public static Subsumption main;
+public class Main implements ButtonListener {
 	public static void main (String[] arg)
 	  throws Exception {
-	  	main = new Subsumption();
-		main.start();
-		main.tasks[0].execute();
-	}
-}
+	  	try  {
+	  		new Main().start();
+	  	} catch (OutOfMemoryError e)  {
+		  	MinLCD.setNumber(0x301f,(int)Runtime.getRuntime().totalMemory(),0x3002);
+		  	MinLCD.refresh();
+	  	}
+	  }
+	  
+	public void start() {
+	  	Button.RUN.addButtonListener(this);
 
-/**
- * Coordinates a prioritised set of tasks. Tasks with higher priority
- * completely block those of a lower priority. Creates the following
- * tasks with increasing order of priority:
- * - Wander:      wander around
- * - RightBumber: avoid obstacles on the right.
- * - LeftBumber:  avoid obstacles on the left.
- * Plus it gates access to the effectors (i.e. the motors) ensuring
- * that it's priority policy is strictly enforced.
- */
-class Subsumption extends Thread implements ButtonListener {
-	public Task owner;
-	Task tasks[];
+	  	Sense s1 = new SenseNoOwner(new Wander());
+		s1.setPri(Thread.MIN_PRIORITY);
+		Sense s2 = new SenseLeft(new AvoidLeft());
+		s2.setPri(Thread.MIN_PRIORITY+1);
+		Sense s3 = new SenseRight(new AvoidRight());
+		s3.setPri(Thread.MIN_PRIORITY+1);
 	
-	public Subsumption() {
-		Button.RUN.addButtonListener(this);
-		tasks = new Task[3];
-		tasks[0]=new Wander();
-		tasks[0].setPriority(Thread.MIN_PRIORITY);
-		tasks[0].setDaemon(true);
+		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 		
-		tasks[1]=new RightBumber();
-		tasks[1].setPriority(Thread.MIN_PRIORITY+1);
-		tasks[1].setDaemon(true);
-		
-		tasks[2]=new LeftBumber();
-		tasks[2].setPriority(Thread.MIN_PRIORITY+1);
-		tasks[2].setDaemon(true);
-	}
+		s1.runIt();
+		s2.runIt();	
+		s3.runIt();
 
-	public void run() {
-		tasks[0].start();
-		tasks[1].start();
-		tasks[2].start();
-		try {
-			sleep(Main.FOREVER);
-		} catch (InterruptedException ie) {
-		}
-	}
-	
-	/**
-	 * Arbitrates between the various tasks.
-	 */	
-	public synchronized void execute(Task requestor) {
-		// Start new owner from beginning (even if it was the same one)
-		owner = requestor;	
-		requestor.reset();
-	}
+		MinLCD.setNumber(0x301f,(int)Runtime.getRuntime().freeMemory(),0x3002);
+		MinLCD.refresh();
 
-	/**
-	 * Only allow the owner to do stuff, just in case some other task calls us.
-	 * If every task had a different priority we wouldn't need to do this
-	 * but as 
-	 */	
-	public synchronized void setMotor(Task requestor, Motor motor, int power, boolean forward) {
-		if (owner == requestor) {
-			motor.setPower(power);
-			if (forward)
-				motor.forward();
-			else
-				motor.backward();
-		}
-	}
-
-	/**
-	 * Task has finished. Re-start next runnable task from the beginning.
-	 */	
-	public synchronized void release(Task releaser) {
-		// If it isn't the owner releasing, ignore it.
-		if (owner == releaser) {
-			// Search for the first runnable task. There is always one.
-			for(int i=tasks.length-1; i >= 0; i--) {
-				if (tasks[i].running()) {
-					owner = tasks[i];
-					owner.reset();
-					break;
-				}	
+		// Wait until RUN button is pressed.		
+		synchronized (Button.RUN) {
+			try  {
+				Button.RUN.wait();
+			} catch (InterruptedException ie) {
 			}
 		}
 	}
-
+	
 	public void buttonPressed(Button b) {
 	}
 		
@@ -105,7 +50,10 @@ class Subsumption extends Thread implements ButtonListener {
 	 * If the 'run' button is pressed and released, quit.
 	 */			
 	public void buttonReleased(Button b) {
-		interrupt();
+		synchronized (b) {
+			// Wake the wait() up.
+			b.notifyAll();
+		}
 	}
 }
 
@@ -118,201 +66,283 @@ interface Action {
 }
 
 /**
- * All tasks (wander, leftbumber, rightbumber) extend this class. This class
- * defines the lifecycle of a task. Namely:
- * Reset:   Re-initialise task
- * Execute: Attempt to run (may not succeed if a higher priority task is running).
- * Run:     Execute an FSM.
- * Release: Stop running.
+ * A runnable instance of an FSM,
  */
-abstract class Task extends Thread implements SensorConstants {
+abstract class Actuator extends Thread {
 	public static final Motor LEFT_MOTOR = Motor.C;
 	public static final Motor RIGHT_MOTOR = Motor.A;
-	public static final Sensor LEFT_BUMBER = Sensor.S3;
-	public static final Sensor RIGHT_BUMBER = Sensor.S1;
 	public static final boolean FORWARD = true;
 	public static final boolean BACKWARD = false;
 	public static final int END = -1;
 	public static final int START = 0;
+
+	// Any old object will do as the 'arbitrator'
+	static Object arbitrator = new Object();
 	
+	// This must be set to the one actuator allowed to execute whilst the
+	// monitor of 'arbitrator' is owned.
+	static Actuator owner;
+	
+	protected Action actions[];
+	protected int fsm[];
+	protected int state = END;
+	
+	// Useful for debugging.	
 	public static int tcount = 0;
-	
 	public int task;
-	
-	public Action actions[];
-	public int fsm[];
-	public int state = END;
 
-	public Task() {
+	public Actuator() {
 		task = ++tcount;
+		setDaemon(true);
 	}
-
+	
 	/**
-	 * Reset the FSM to its initial state.
-	 */	
-	public void reset() {
-		synchronized (Main.main) {
-			state = START;
-			
-			// Wake this thread up (not the current thread);
-			interrupt();
-		}
-	}
-
-	/**
-	 * The thread entry point. Either runs the action's FSM to completion -
-	 * sleeping or yielding between each state - or until 'running' is false.
-	 * When finished call 'release'.
+	 * The thread entry point. Runs the Actuator's FSM to completion -
+	 * waiting on the arbitrator's monitor between each state.
 	 * <P>
 	 * FSM is really a bit of a misnomer as there are no input events so
 	 * there is only one transition from each state to the next.
 	 */
 	public void run() {
+		MinLCD.setNumber(0x301f,task,0x3002);
+		MinLCD.refresh();
+
 		// Keep running until the program should exit.
-		do {
-			try {
-				MinLCD.setNumber(0x301f,task,0x3002);
-				MinLCD.refresh();
-				sleep(Main.FOREVER);
-			} catch (InterruptedException ie) {
-			}
-			
-			// Execute the FSM until it stops...
-			while (state != END) {
-				int toSleepFor;
-				synchronized (Main.main) {
-					MinLCD.setNumber(0x301f,(state+1)*10+task,0x3002);
-					MinLCD.refresh();
-					toSleepFor = actions[state].act();
-					state = fsm[state];
-				}
-				if (toSleepFor > 0) {
-					try {
-						sleep(toSleepFor);
+		synchronized (arbitrator) {
+			do {
+				// Wait until we get ownership.
+				while (owner != this) {
+					try  {
+						arbitrator.wait();	// Release arbitrator until notified
 					} catch (InterruptedException ie) {
 					}
 				}
-				else	
-					yield();
-			}
-			
-			// Its over, release the actuators.
-			release();
-		} while (true);
+				
+				// Set state to start because we might have been terminated
+				// prematurely and we always start from the beginning.
+				state = START;
+				
+				// Loop until we end or we loose ownership.				
+				while (owner == this && state != END) {
+					MinLCD.setNumber(0x301f,(state+1)*10+task,0x3002);
+					MinLCD.refresh();
+					try  {
+						// Call wait() because it releases the arbitrator.
+						arbitrator.wait(actions[state].act());
+					} catch (InterruptedException ie) {
+					}
+					state = fsm[state];
+				}
+
+				// If we ran to completion signify no owner.				
+				if (state == END)
+					owner = null;
+				
+				arbitrator.notifyAll();	
+			} while (true);
+		}
 	}
 
 	/**
-	 * Inform the coordinator that we have released the actuators.
-	 */	
-	public void release()  {
-		Main.main.release(this);
-	}
-
-	/**
-	 * Request control of the actuators
+	 * Run the Actuator.
 	 */	
 	public void execute() {
-		if (Main.main != null)
-			Main.main.execute(this);
+		synchronized (arbitrator) {
+			// Basically, set a global flag that all threads can test
+		// to see if they should stop running their FSM.
+			owner = this;
+			
+			// Wake up anything waiting on 'arbitrator'.
+			arbitrator.notifyAll();
+		}
+	}
+}
+
+/**
+ * Base class for sensor listener thread. This is tightly coupled to
+ * an actuator in this implementation.
+ */
+abstract class Sense extends Thread implements SensorListener, SensorConstants {
+	public static final Sensor LEFT_BUMBER = Sensor.S3;
+	public static final Sensor RIGHT_BUMBER = Sensor.S1;
+
+	Actuator actuator;
+	
+	Sense(Actuator actuator) {
+		this.actuator = actuator;
+		setDaemon(true);
 	}
 
 	/**
-	 * Return true if the FSM is executing, false otherwise.
-	 */
-	public boolean running()  {
-		return state != END;
+	 * This is actually executed in a thread established by
+	 * &lt;bumper&gt;.addSensorListener(). That thread executes at
+	 * MAX_PRIORITY so just hand the call off.
+	 */	
+	public void stateChanged(Sensor bumper, int oldValue, int newValue) {
+		synchronized (bumper) {
+			bumper.notifyAll();
+		}
 	}
 	
-	/**
-	 * Convenience function to make it appear to subclasses that
-	 * they have direct control of the actuators when they are in
-	 * fact gated by the controller.
-	 */	
-	public void setMotor(Motor motor, int power, boolean forward) {
-		Main.main.setMotor(this, motor, power, forward);
+	public void setPri(int priority) {
+		actuator.setPriority(priority);
+		setPriority(priority);
+	}
+	
+	public void runIt() {
+		actuator.start();
+		start();
+	}
+}
+
+/**
+ * Defines a thread to detect an obstacle on the left.
+ */
+class SenseLeft extends Sense {
+	SenseLeft(Actuator actuator) {
+		super(actuator);
+		
+		LEFT_BUMBER.setTypeAndMode (SENSOR_TYPE_TOUCH, SENSOR_MODE_BOOL);
+		LEFT_BUMBER.activate();
+		
+		// Add a listener for the bumper
+		LEFT_BUMBER.addSensorListener(this);
+	}
+	
+	public void run() {
+		// Never exit the thread
+		do {
+			// Grab the monitor of the bumper
+			synchronized (LEFT_BUMBER) {
+			
+				// While bumper isn't pressed wait.
+				while (!LEFT_BUMBER.readBooleanValue()) {
+					try {
+						LEFT_BUMBER.wait();
+					} catch (InterruptedException ie) {
+					}
+					Sound.playTone(440, 10);
+				}
+			}
+			Sound.playTone(500, 10);
+			
+			// Execute our FSM
+			actuator.execute();
+		} while (true);
 	}
 }
 
 /**
  * Defines a finite state machine to avoid an obstacle on the left.
  */		
-class LeftBumber extends Task implements SensorListener {
-	public LeftBumber() {
-		LEFT_BUMBER.setTypeAndMode (SENSOR_TYPE_TOUCH, SENSOR_MODE_BOOL);
-		LEFT_BUMBER.activate();
+class AvoidLeft extends Actuator {
+	public AvoidLeft() {
 		actions = new Action[2];
 		actions[0] = new Action() {
 			public int act() {
-				setMotor(LEFT_MOTOR, 7, BACKWARD);
-				setMotor(RIGHT_MOTOR, 7, BACKWARD);
-				return 200;
+				LEFT_MOTOR.setPower(7); LEFT_MOTOR.backward();
+				RIGHT_MOTOR.setPower(7); RIGHT_MOTOR.backward();
+				return (200);
 			}
 		};
 		
 		actions[1] = new Action() {
 			public int act() {
-				setMotor(LEFT_MOTOR, 7, FORWARD);
-				return 200;
+				LEFT_MOTOR.forward();
+				return (200);
 			}
 		};
 
 		fsm = new int[2];		
 		fsm[0] = 1;
 		fsm[1] = END;
-		LEFT_BUMBER.addSensorListener(this);
 	}
+}
 
-	/**
-	 * This is actually executed in a thread established by
-	 * LEFT_BUMBER.addSensorListener().
-	 */	
-	public void stateChanged(Sensor bumber, int oldValue, int newValue) {
-		Sound.playTone(440, 10);
-		if (bumber.readBooleanValue()) {
-			Sound.playTone(500, 10);
-			execute();
-		}
+/**
+ * Defines a thread to detect an obstacle on the left.
+ */
+class SenseRight extends Sense {
+	SenseRight(Actuator actuator) {
+		super(actuator);
+		
+		RIGHT_BUMBER.setTypeAndMode (SENSOR_TYPE_TOUCH, SENSOR_MODE_BOOL);
+		RIGHT_BUMBER.activate();
+		
+		// Add a listener for the bumper
+		RIGHT_BUMBER.addSensorListener(this);
+	}
+	
+	public void run() {
+		// Never exit the thread
+		do {
+			// Grab the monitor of the bumper
+			synchronized (RIGHT_BUMBER) {
+			
+				// While bumper isn't pressed wait.
+				while (!RIGHT_BUMBER.readBooleanValue()) {
+					try {
+						RIGHT_BUMBER.wait();
+					} catch (InterruptedException ie) {
+					}
+					Sound.playTone(1000, 10);
+				}
+			}
+			Sound.playTone(1400, 10);
+			
+			// Execute our FSM
+			actuator.execute();
+		} while (true);
 	}
 }
 
 /**
  * Defines a finite state machine to avoid an obstacle on the right.
  */		
-class RightBumber extends Task implements SensorListener {
-	public RightBumber() {
-		RIGHT_BUMBER.setTypeAndMode (SENSOR_TYPE_TOUCH, SENSOR_MODE_BOOL);
-		RIGHT_BUMBER.activate();
+class AvoidRight extends Actuator {
+	public AvoidRight() {
 		actions = new Action[2];
 		actions[0] = new Action() {
 			public int act() {
-				setMotor(LEFT_MOTOR, 7, BACKWARD);
-				setMotor(RIGHT_MOTOR, 7, BACKWARD);
-				return 200;
+				LEFT_MOTOR.setPower(7); LEFT_MOTOR.backward();
+				RIGHT_MOTOR.setPower(7); RIGHT_MOTOR.backward();
+				return (200);
 			}
 		};
 		
 		actions[1] = new Action() {
 			public int act() {
-				setMotor(RIGHT_MOTOR, 7, FORWARD);
-				return 200;
+				RIGHT_MOTOR.forward();
+				return (200);
 			}
 		};
 
 		fsm = new int[2];		
 		fsm[0] = 1;
 		fsm[1] = END;
-		RIGHT_BUMBER.addSensorListener(this);
 	}
+}
 
-	/**
-	 * This is actually executed in a thread established by
-	 * RIGHT_BUMBER.addSensorListener().
-	 */	
-	public void stateChanged(Sensor bumber, int oldValue, int newValue) {
-		Sound.playTone(1000, 10);
-		if (bumber.readBooleanValue()) {
-			Sound.playTone(1400, 10);
-			execute();
+/**
+ * A class to sense when the arbitrator has no owner so we can give it one.
+ */
+class SenseNoOwner extends Sense  {
+	public SenseNoOwner(Actuator actuator) {
+		super(actuator);
+	}
+	
+	public void run() {
+		while (true) {
+			synchronized (Actuator.arbitrator) {
+				try {
+					Actuator.arbitrator.wait();	// Wait until notified
+				} catch (InterruptedException ie) {
+				}
+				
+				// If there is no owner, we'll take it.
+				if (Actuator.owner == null)
+					actuator.execute();
+			}	
 		}
 	}
 }
@@ -320,30 +350,28 @@ class RightBumber extends Task implements SensorListener {
 /**
  * Defines a finite state machine to wander around aimlessley.
  */		
-class Wander extends Task {
+class Wander extends Actuator {
 	public Wander() {
 		actions = new Action[3];
 		actions[0] = new Action() {
 			public int act() {
-				setMotor(LEFT_MOTOR, 7, FORWARD);
-				setMotor(RIGHT_MOTOR, 7, FORWARD);
-				return 5000;
+				LEFT_MOTOR.setPower(7); LEFT_MOTOR.forward();
+				RIGHT_MOTOR.setPower(7); RIGHT_MOTOR.forward();
+				return (5000);
 			}
 		};
 		
 		actions[1] = new Action() {
 			public int act() {
-				setMotor(LEFT_MOTOR, 3, FORWARD);
-				setMotor(RIGHT_MOTOR, 7, FORWARD);
-				return 2000;
+				LEFT_MOTOR.setPower(3);
+				return (2000);
 			}
 		};
 		
 		actions[2] = new Action() {
 			public int act() {
-				setMotor(LEFT_MOTOR, 7, BACKWARD);
-				setMotor(RIGHT_MOTOR, 7, FORWARD);
-				return 700;
+				LEFT_MOTOR.setPower(7); LEFT_MOTOR.backward();
+				return (700);
 			}
 		};
 		

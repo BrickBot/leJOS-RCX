@@ -41,7 +41,6 @@ byte typeSize[] = {
  */
 static TWOBYTES *startPtr;
 static TWOBYTES *memoryTop;
-static TWOBYTES *allocPtr;
 static TWOBYTES free;	// Total number of free words in heap
 
 extern void deallocate (TWOBYTES *ptr, TWOBYTES size);
@@ -70,7 +69,7 @@ static inline void set_array (Object *obj, const byte elemType, const TWOBYTES l
   assert (elemType <= (ELEM_TYPE_MASK >> ELEM_TYPE_SHIFT), MEMORY0); 
   assert (length <= (ARRAY_LENGTH_MASK >> ARRAY_LENGTH_SHIFT), MEMORY1);
   #endif
-  obj->flags = IS_ALLOCATED_MASK | IS_ARRAY_MASK | ((TWOBYTES) elemType << ELEM_TYPE_SHIFT) | length;
+  obj->flags.all = IS_ALLOCATED_MASK | IS_ARRAY_MASK | ((TWOBYTES) elemType << ELEM_TYPE_SHIFT) | length;
   #ifdef VERIFY
   assert (is_array(obj), MEMORY3);
   #endif
@@ -88,9 +87,10 @@ inline Object *memcheck_allocate (const TWOBYTES size)
     throw_exception (outOfMemoryError);
     return JNULL;
   }
-  ref->syncInfo = 0;
+  ref->monitorCount = 0;
+  ref->threadId = 0;
   #ifdef SAFE
-  ref->flags = 0;
+  ref->flags.all = 0;
   #endif
   return ref;
 }
@@ -146,7 +146,7 @@ Object *new_object_for_class (const byte classIndex)
 
   // Initialize default values
 
-  ref->flags = IS_ALLOCATED_MASK | classIndex;
+  ref->flags.all = IS_ALLOCATED_MASK | classIndex;
   initialize_state (ref, instanceSize);
 
   #if DEBUG_OBJECTS || DEBUG_MEMORY
@@ -353,11 +353,6 @@ void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr)
   #endif
 }
 
-// Notes on allocation:
-// 1. It's first-fit.
-// 2. First 2 bytes of free block is size.
-// 3. Second 2 bytes of free block is abs. offset of next free block.
-
 #if DEBUG_RCX_MEMORY
 
 void scan_memory (TWOBYTES *numNodes, TWOBYTES *biggest, TWOBYTES *freeMem)
@@ -378,23 +373,23 @@ void init_memory (void *ptr, TWOBYTES size)
 
   startPtr = ptr;
   memoryTop = ((TWOBYTES *) ptr) + size;
-  allocPtr = ptr;
   #if DEBUG_MEMORY
   printf ("Setting start of memory to %d\n", (int) startPtr);
   printf ("Going to reserve %d words\n", size);
   #endif
-  free = 0;
-  deallocate (ptr, size);
+  free = size;
+  *((TWOBYTES*)ptr) = size;
 }
 
 TWOBYTES *allocate (TWOBYTES size)
 {
   TWOBYTES blockHeader;
-  TWOBYTES *ptr;
-  boolean rolled = false;
+  TWOBYTES *ptr = startPtr;
   
-  ptr = allocPtr;
-  for (;;)
+#if DEBUG_MEMORY
+  printf("Allocate %d\n", size);
+#endif
+  while (ptr < memoryTop)
   {
     blockHeader = *ptr;
     if (blockHeader & IS_ALLOCATED_MASK)
@@ -405,41 +400,75 @@ TWOBYTES *allocate (TWOBYTES size)
     }
     else
     {
-      if (size <= blockHeader)
-      {
-        allocPtr = ptr + size;
-	if (size < blockHeader)
-          *allocPtr = blockHeader - size;
-        if (allocPtr >= memoryTop)
-          allocPtr = startPtr;
-        free -= size;
+      free -= size;
+      if (size == blockHeader)
         return ptr;
+      else if (size < blockHeader)
+      {
+        // Return tailend
+        *ptr -= size;
+        return ptr + *ptr;
       }
+      
       ptr += blockHeader;
     }
-    if (ptr >= memoryTop)
-    {
-      ptr = startPtr;
-      rolled = true;
-    }      
-    if (rolled && ptr >= allocPtr)
-      return JNULL;
   }
+    
+  return JNULL;
 }
 
 /**
- * Doesn't coallesce adjacent free blocks. But then nothing gets freed
- * anyway.
+ * Now coallesces adjacent free blocks.
  * @param size Must be exactly same size used in allocation.
  */
-void deallocate (TWOBYTES *ptr, TWOBYTES size)
+void deallocate (TWOBYTES *p, TWOBYTES size)
 {
+#ifdef COALLESCE 
+  TWOBYTES blockHeader;
+  TWOBYTES *ptr = startPtr;
+
+#if DEBUG_MEMORY
+  printf("Deallocate %d\n", size);
+#endif
+
   #ifdef VERIFY
   assert (size <= (FREE_BLOCK_SIZE_MASK >> FREE_BLOCK_SIZE_SHIFT), MEMORY3);
   #endif
 
-  free += size;  
-  *ptr = size;
+  free += size;
+  while (ptr < memoryTop)
+  {
+    blockHeader = *ptr;
+    
+    if (blockHeader & IS_ALLOCATED_MASK)
+    {
+      TWOBYTES s = (blockHeader & IS_ARRAY_MASK) ? get_array_size ((Object *) ptr) :
+                                             get_object_size ((Object *) ptr);
+      ptr += s;
+    }
+    else if (p + size == ptr)
+    {
+      // Join with later block
+      *p = size + blockHeader;
+      return;
+    }
+    else if (ptr + blockHeader == p)
+    {
+      // Join with earlier block
+      *ptr = size + blockHeader;
+      p = ptr;
+    }
+    
+    ptr += *ptr;
+  }
+#else
+  #ifdef VERIFY
+  assert (size <= (FREE_BLOCK_SIZE_MASK >> FREE_BLOCK_SIZE_SHIFT), MEMORY3);
+  #endif
+
+  free += size;
+  ((Object*)p)->flags.all = size;
+#endif
 }
 
 int getHeapSize() {

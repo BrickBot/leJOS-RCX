@@ -35,11 +35,11 @@ static MethodRecord *tempMethodRecord;
 
 // Methods:
 
-byte get_class_index (Object *obj)
+inline byte get_class_index (Object *obj)
 {
   byte f;
 
-  f = obj->flags;
+  f = obj->flags.all;
   if (f & IS_ARRAY_MASK)
     return JAVA_LANG_OBJECT;
   return (f & CLASS_MASK);

@@ -27,8 +27,9 @@ extern char *OPCODE_NAME[];
 static Runtime _runtime = {
   // Object instance data
   {
-    JAVA_LANG_RUNTIME, // class index
-    0                  // Syncinfo
+    { JAVA_LANG_RUNTIME }, // class index
+    0,                     // monitorCount
+    0                      // threadId
   }
   // Nothing else at the moment
 };

@@ -139,7 +139,12 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       interrupt_thread((Thread*)word2ptr(paramBase[0]));
       return;
     case interrupted_4_5Z:
-      push_word(currentThread->interrupted);
+      {
+      	JBYTE i = currentThread->interrupted;
+      	currentThread->interrupted = 0;
+      	push_word(i);
+      }
+      return;
       return;
     case isInterrupted_4_5Z:
       push_word(((Thread*)word2ptr(paramBase[0]))->interrupted);
