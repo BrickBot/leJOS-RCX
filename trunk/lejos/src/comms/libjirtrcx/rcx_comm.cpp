@@ -80,7 +80,7 @@ void myperror(char *str) {
 #if defined(_WIN32) || defined(__CYGWIN32__)
     if (__comm_debug)fprintf(stderr, "Error %lu: %s\n", (unsigned long) GetLastError(), str);
 #else
-    perror(str);
+    if (__comm_debug) perror(str);
 #endif
 }
 
@@ -157,7 +157,7 @@ int nbread (FILEDESCR fd, void *buf, int maxlen, int timeout)
 	tv.tv_usec = (timeout % 1000) * 1000;
 
 	if (select(fd+1, &fds, NULL, NULL, &tv) < 0) {
-	    perror("select");
+	    myperror("select");
 	    return RCX_READ_ERR;
 	}
 
@@ -165,7 +165,7 @@ int nbread (FILEDESCR fd, void *buf, int maxlen, int timeout)
 	    break;
 
 	if ((count = read(fd, &bufp[len], maxlen - len)) < 0) {
-	    perror("read");
+	    myperror("read");
 	    retun RCX_READ_ERR;
 	}
 
@@ -193,7 +193,8 @@ int mywrite(FILEDESCR fd, const void *buf, size_t len) {
     DWORD nBytesWritten=0;
     if (!WriteFile(fd, buf, len, &nBytesWritten, NULL)) 
 		return RCX_WRITE_FAIL;
-    else return nBytesWritten;
+    FlushFileBuffers(fd);
+    return nBytesWritten;
 #else
     return write(fd, buf, len);
 #endif
@@ -254,7 +255,7 @@ FILEDESCR rcx_init(char *tty, int is_fast)
 #else
 
     if ((fd = open(tty, O_RDWR)) < 0) {
-		perror(tty);
+		myperror(tty);
 		return BADFILE;
     }
 
@@ -278,7 +279,7 @@ FILEDESCR rcx_init(char *tty, int is_fast)
     }
 
     if (tcsetattr(fd, TCSANOW, &ios) == -1) {
-		perror("tcsetattr");
+		myperror("tcsetattr");
 		return BADFILE;
     }
 #endif
