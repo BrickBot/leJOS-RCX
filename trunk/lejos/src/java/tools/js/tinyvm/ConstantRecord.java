@@ -81,7 +81,7 @@ public class ConstantRecord implements WritableData
       try
       {
          writer.writeU2(_constantValue.getOffset());
-         writer.writeU1(_constantValue.getType());
+         writer.writeU1(_constantValue.getType().type());
          writer.writeU1(_constantValue.getLength());
          IOUtilities.writePadding(writer, 2);
       }

@@ -9,17 +9,17 @@ import org.apache.bcel.classfile.Field;
 public class StaticValue extends WritableDataWithOffset
 {
    Field _field;
-   byte iType;
+   TinyVMType iType;
 
    public StaticValue (Field aEntry) throws TinyVMException
    {
       _field = aEntry;
-      iType = TinyVMConstants.tinyVMType(_field.getType().getType());
+      iType = TinyVMType.tinyVMType(_field.getType());
    }
 
    public int getLength () throws TinyVMException
    {
-      return InstanceFieldRecord.getTypeSize(iType);
+      return iType.size();
    }
 
    public void dump (IByteWriter writer) throws TinyVMException
@@ -27,33 +27,34 @@ public class StaticValue extends WritableDataWithOffset
       try
       {
          // Static values must be dumped in Big Endian order
-         switch (iType)
+         // TODO move to TinyVMType?
+         switch (iType.type())
          {
-            case TinyVMConstants.T_BOOLEAN:
+            case TinyVMType.T_BOOLEAN_TYPE:
                writer.writeBoolean(false);
                break;
-            case TinyVMConstants.T_BYTE:
+            case TinyVMType.T_BYTE_TYPE:
                writer.writeByte(0);
                break;
-            case TinyVMConstants.T_CHAR:
+            case TinyVMType.T_CHAR_TYPE:
                writer.writeChar(0);
                break;
-            case TinyVMConstants.T_SHORT:
+            case TinyVMType.T_SHORT_TYPE:
                writer.writeShort(0);
                break;
-            // case TinyVMConstants.T_ARRAY:
-            // case TinyVMConstants.T_OBJECT:
-            case TinyVMConstants.T_REFERENCE:
-            case TinyVMConstants.T_INT:
+            // case TinyVMType.T_ARRAY_TYPE:
+            // case TinyVMType.T_OBJECT_TYPE:
+            case TinyVMType.T_REFERENCE_TYPE:
+            case TinyVMType.T_INT_TYPE:
                writer.writeInt(0);
                break;
-            case TinyVMConstants.T_FLOAT:
+            case TinyVMType.T_FLOAT_TYPE:
                writer.writeFloat((float) 0.0);
                break;
-            case TinyVMConstants.T_LONG:
+            case TinyVMType.T_LONG_TYPE:
                writer.writeLong(0L);
                break;
-            case TinyVMConstants.T_DOUBLE:
+            case TinyVMType.T_DOUBLE_TYPE:
                writer.writeInt(0);
                writer.writeFloat((float) 0.0);
                break;
@@ -76,7 +77,7 @@ public class StaticValue extends WritableDataWithOffset
 
    public int hashCode ()
    {
-      return iType;
+      return iType.type();
    }
 }
 

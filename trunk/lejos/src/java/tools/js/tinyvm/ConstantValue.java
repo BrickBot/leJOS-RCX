@@ -52,33 +52,33 @@ public class ConstantValue extends WritableDataWithOffset
    /**
     * Get type of this value.
     */
-   public byte getType ()
+   public TinyVMType getType ()
    {
       if (_value instanceof Double)
       {
          // TODO map long to double correct?
-         return TinyVMConstants.T_LONG;
+         return TinyVMType.T_LONG;
       }
       else if (_value instanceof Float)
       {
-         return TinyVMConstants.T_FLOAT;
+         return TinyVMType.T_FLOAT;
       }
       else if (_value instanceof Integer)
       {
-         return TinyVMConstants.T_INT;
+         return TinyVMType.T_INT;
       }
       else if (_value instanceof Long)
       {
-         return TinyVMConstants.T_LONG;
+         return TinyVMType.T_LONG;
       }
       else if (_value instanceof String)
       {
-         return TinyVMConstants.T_OBJECT;
+         return TinyVMType.T_OBJECT;
       }
       else
       {
          assert false: "Check: known type";
-         return -1;
+         return null;
       }
    }
 
