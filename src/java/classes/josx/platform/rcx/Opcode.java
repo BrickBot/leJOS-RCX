@@ -120,5 +120,6 @@ public interface Opcode
   public static final byte OPCODE_SET_MOTOR_POWER_REPLY = (byte)0xe4;
   public static final byte OPCODE_GET_VALUE_REPLY = (byte)0xe5;
   public static final byte OPCODE_ALIVE_REPLY = (byte)0xe7;
-  public static final byte OPCODE_SET_MESSAGE_REPLY = (byte)0xf7;
+
+  public static final byte OPCODE_SET_MESSAGE = (byte)0xf7;
 }
