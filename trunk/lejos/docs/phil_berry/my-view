@@ -1,0 +1,270 @@
+File:		MYVIEW
+Purpose:	This describes my view on this tool.
+
+As I am still learning it, I thought I would document what I did to get
+started. Here it is.
+
+After untarring the package I checked to see if I had Java installed. The
+easiest way is first to see if there is a compiler:
+
+	which javac
+
+If you get a response you have a java compiler installed. It should also
+tell you what version it is. Here is the response I got:
+
+	/usr/local/jdk1.2.2/bin/javac
+
+If you have not got the the JDK installed you need to get that.
+
+Next you need to add the bin directory of this tool to your PATH. This
+should be added to your .profile, .bashrc or .login file. Assuming
+the tool is loaded into /usr/local/lejos_1_0_0beta2 you can add this line:
+
+	PATH=$PATH:/usr/local/lejos1_0_0beta2/bin
+
+You should also add or modify your CLASSPATH variable. To see if it is set
+use:
+
+	echo $CLASSPATH
+
+Again, in your .profile file you can add this line:
+
+	CLASSPATH=$CLASSPATH:/usr/local/lejos1_0_0beta2/lib:.
+	export CLASSPATH
+
+You are now ready to start using this tool. The first thing to try is to
+run the emulation software. This does not need any hardware and so should
+work straight from the package.
+
+The first test
+
+The first file we will create will simply display the number 111 on the LCD.
+In your home directory create a working directory called lejos. Then create
+this file called Test.java:
+
+	/* File:	~/lejos/Test.java */
+	import josx.platform.rcx.*;
+
+	public class Test {
+		public static void main (String[] aArg) {
+			LCD.showNumber (111);
+		}
+	}
+
+Now run these commands:
+
+	cd ~/lejos
+	lejosc Test.java		# This compiles the code.
+	emu-lejos -o Test.bin Test	# This links the two files.
+	emu-lejosrun Test.bin		# This runs the linked file.
+
+The lejosc command (note the final c, like javac) compiles the code using
+javac. It creates the Test.class file. Next you need to create a binary
+image file. You do this with emu-lejos. The -o option defines the file you
+want to create. The name can be anything, but .bin is used to give you a clue
+later on! To run the emulation you run it against this image file. Here is
+the output:
+
+	& ROM call 3: 0x1FF2 (12319, 111, 12290)
+	& ROM call 0: 0x27C8
+
+Recall that the file you created only executed a single method:
+
+			LCD.showNumber (111);
+
+Here you can see the value as the middle number within the brackets on the
+first line.
+
+You can rewrite the decimal numbers within the brackets to hexadecimal:
+
+	$ echo "obase=16; 12319; 12290"|bc
+	301F
+	3002
+
+Looking these up in rom.h from the librcx package (get this from
+http://graphics.stanford.edu/~kekoa/rcx/tools.html#Librcx) shows
+that:
+
+	& ROM call 3: 0x1FF2 (12319, 111, 12290)
+
+		0x1FF2		function set_lcd_number
+		12319 (=0x301F)	unsigned (ie greater than zero)
+		111		the value to print
+		12290 (=0x3002)	means no decimal point.
+
+	& ROM call 0: 0x27C8
+
+		0x27C8		function refresh_display
+
+So what is this telling you? Well, each line of output is a function call
+to the librcx library. Essentially we can rewrite the output to this:
+
+	& ROM call 3: set_lcd_number (unsigned, 111, no decimal point)
+	& ROM call 0: refresh_display
+
+This script will extract the function numbers and their calls:
+
+awk '/^static inline/	{ start = 1; next }
+start == 1		{ fxn = $1; start = 2; next }
+start == 2 && $1 == "return" {
+			sub("\\(", ""); sub(",|\);", "")
+                        print $3, fxn; start = 0 }
+start == 2 && $1 ~ /^__/{
+			sub("\\(", ""); sub(",|\);", "")
+                        print $2, fxn; start = 0 }
+' ./librcx/lib/rom.h|sort
+
+The output of this (modified):
+
+
+0x1498 init_sensors			check_for_data			0x3426
+0x14c0 read_sensor			clear_display			0x27ac
+0x1946 set_sensor_active		clear_lcd_segment		0x1e4a
+0x19c4 set_sensor_passive		control_motor			0x1a4e
+0x1a22 shutdown_sensors			control_output			0x3de0
+0x1a4e control_motor			get_power_status		0x29f2
+0x1aba init_buttons			get_sound_playing_flag		0x3ccc
+0x1b32 play_view_button_sound		init_buttons			0x1aba
+0x1b62 set_lcd_segment			init_port_6_bit_3		0x3692
+0x1e4a clear_lcd_segment		init_power			0x2964
+0x1fb6 read_buttons			init_sensors			0x1498
+0x1ff2 set_lcd_number			init_serial			0x30d0
+0x27ac clear_display			init_timer			0x3b9a
+0x27c8 refresh_display			play_sound_or_set_data_pointer	0x327c
+0x27f4 shutdown_buttons			play_system_sound		0x299a
+0x2964 init_power			play_view_button_sound		0x1b32
+0x299a play_system_sound		read_buttons			0x1fb6
+0x29f2 get_power_status			read_sensor			0x14c0
+0x2a62 shutdown_power			receive_data			0x33b0
+0x30d0 init_serial			refresh_display			0x27c8
+0x3250 set_range_long			reset_minute_timer		0x339a
+0x3266 set_range_short			send_data			0x343e
+0x327c play_sound_or_set_data_pointer	set_lcd_number			0x1ff2
+0x339a reset_minute_timer		set_lcd_segment			0x1b62
+0x33b0 receive_data			set_range_long			0x3250
+0x3426 check_for_data			set_range_short			0x3266
+0x343e send_data			set_sensor_active		0x1946
+0x3636 shutdown_serial			set_sensor_passive		0x19c4
+0x3692 init_port_6_bit_3		shutdown_buttons		0x27f4
+0x36aa shutdown_port_6_bit_3		shutdown_port_6_bit_3		0x36aa
+0x3b9a init_timer			shutdown_power			0x2a62
+0x3ccc get_sound_playing_flag		shutdown_sensors		0x1a22
+0x3de0 control_output			shutdown_serial			0x3636
+0x3ed4 shutdown_timer			shutdown_timer			0x3ed4
+
+For each of these the parameters that can be shown is listed below:
+
+0x1498 init_sensors		No paramters
+0x14c0 read_sensor
+				Param1
+				1000	Read sensor 0
+				1001	Read sensor 1
+				1002	Read sensor 2
+				Param2	?
+0x1946 set_sensor_active	Param
+				1000	Sensor 0 active
+				1001	Sensor 1 active
+				1002	Sensor 2 active
+0x19c4 set_sensor_passive	Param
+				1000	Sensor 0 inactive
+				1001	Sensor 1 inactive
+				1002	Sensor 2 inactive
+0x1a22 shutdown_sensors		No paramters
+0x1a4e control_motor		Param1
+				2000	Control motor 0
+				2001	Control motor 1
+				2002	Control motor 2
+				Param2
+				1	forward
+				2	backward
+				3	stop
+				4	float
+				Param3
+				0..7	Power level
+0x1aba init_buttons		No paramters
+0x1b32 play_view_button_sound	Param
+				201e	Play view button sound
+0x1b62 set_lcd_segment		see next
+0x1e4a clear_lcd_segment	Param
+				3006	standing figure
+				3007	walking figure
+				3008	sensor 0 view selected
+				3009	sensor 0 active
+				300a	sensor 1 view selected
+				300b	sensor 1 active
+				300c	sensor 2 view selected
+				300d	sensor 2 active
+				300e	motor 0 view selected
+				300f	motor 0 backward arrow
+				3010	motor 0 forward arrow
+				3011	motor 1 view selected
+				3012	motor 1 backward arrow
+				3013	motor 1 forward arrow
+				3014	motor 2 view selected
+				3015	motor 2 backward arrow
+				3016	motor 2 forward arrow
+				3018	datalog indicator, multiple calls
+					 add 4 quarters clockwise
+				3019	download in progress, multiple calls
+					 adds up to 5 dots to right
+				301a	upload in progress, multiple calls
+					 removes up to 5 dots from left
+				301b	battery low
+				301c	short range indicator
+				301d	long range indicator
+				3020	all segments
+0x1fb6 read_buttons		Param1
+				3000	Read button
+				Param2	?
+0x1ff2 set_lcd_number		Param1
+				3001	Set LCD main number signed
+				3017	Set LCD program number
+				301f	Set LCD main number unsigned
+				Param2
+				The numeric value
+				Param3
+				3002	no decmial point (param1=3001,301f)
+				3003	000.0 format (param1=3001,301f)
+				3004	00.00 format (param1=3001,301f)
+				3005	0.000 format (param1=3001,301f)
+0x27ac clear_display		No paramters
+0x27c8 refresh_display		No paramters
+0x27f4 shutdown_buttons		No paramters
+0x2964 init_power		No paramters
+0x299a play_system_sound	Param1
+				4003	Play unqueued system sound
+				4004	Play queued system sound
+				Param2
+				sound	?
+0x29f2 get_power_status		Param1
+				4000	Read on/off key
+				4001	Read battery power
+				Param2
+				*ptr to power*(43988/1560) mV
+0x2a62 shutdown_power		No paramters
+0x30d0 init_serial
+0x3250 set_range_long		Param
+				1770	Set range long
+0x3266 set_range_short		Param
+				1770	Set range short
+0x327c play_sound_or_set_data_pointer
+0x339a reset_minute_timer	No paramters
+0x33b0 receive_data
+0x3426 check_for_data		Param1
+				0	Not ready to receive data
+				1	Ready to receive data
+				Param2
+				*ptr to address for next byte
+0x343e send_data
+0x3636 shutdown_serial		No paramters
+0x3692 init_port_6_bit_3	No paramters
+0x36aa shutdown_port_6_bit_3	No paramters
+0x3b9a init_timer		Not relevant!
+				Param1
+				Param2
+0x3ccc get_sound_playing_flag	Param1
+				700c
+				Param2	?
+0x3de0 control_output
+0x3ed4 shutdown_timer		No paramters
+

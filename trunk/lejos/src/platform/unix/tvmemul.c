@@ -27,6 +27,7 @@ Thread   *bootThread;
 TWOBYTES *gMemory;
 TWOBYTES gMemorySize = MEMORY_SIZE;
 struct timeval gStart;
+int	verbose = 0;	/* If 1, print descriptive strings. */
 
 void handle_uncaught_exception (Object *exception,
                                        const Thread *thread,
@@ -113,23 +114,59 @@ void run(void)
   #endif DEBUG_RUNS
 }
 
+/***************************************************************************
+ * int main
+ * Parses command line. Format is:
+ *	argv[0] [-v] bin_file
+ *
+ * options:
+ *	-v	Verbose mode. Prints text output rather than raw output.
+ *
+ *--------------------------------------------------------------------------
+ * To go into man page:
+ * Name:	emu-lejosrun - Emulate lejos RCX code in Unix
+ *
+ * Synosis:	emu-lejosrun [-v] bin_file
+ *
+ * Description:	Executes a binary file created by the lejos compiler within
+ *		Unix rather than in the RCX environment. The Java byte-codes
+ *		are executed here, and their actions are listed rather than
+ *		executed as they would be on the real RCX device.
+ *
+ * Options:	-v	Verbose mode. Normally the output is printed in raw
+ *			mode. The actual hex values are printed. Using this
+ *			option displays more user-friendly output.
+ *--------------------------------------------------------------------------
+ ***************************************************************************/
 int main (int argc, char *argv[])
 {
-  if (argc != 2)
-  {
-    printf ("%s runs a binary dumped by the linker.\n", argv[0]);
-    printf ("Use: %s <path>\n", argv[0]);
-    exit (1);
-  }
-  #if DEBUG_STARTUP
-  printf ("Reading binary %s\n", argv[1]);
-  #endif
-  readBinary (argv[1]);
-  if (gettimeofday(&gStart, NULL)) 
-    perror("main: gettimeofday");
-  run();
-  return 0;
+	int	c;
+	char	*file = argv[argc - 1];
+
+	/* Process any options. */
+	while(--argc > 0 && (*++argv)[0] == '-')
+		while((c = *++argv[0]) != 0)
+			switch (c) {
+			case 'v':
+				verbose = 1;
+				break;
+			default:
+				printf("%s: unknown option %c\n",
+					argv[0], c);
+				exit(1);
+			}
+	if (argc != 1)
+	{
+		printf ("%s runs a binary dumped by the linker.\n", argv[0]);
+		printf ("Use: %s [-v] binary_file\n", argv[0]);
+		exit (1);
+	}
+#if DEBUG_STARTUP
+	printf ("Reading binary %s\n", argv[1]);
+#endif
+	readBinary (file);
+	if (gettimeofday(&gStart, NULL)) 
+		perror("main: gettimeofday");
+	run();
+	return 0;
 } 
-
-
-

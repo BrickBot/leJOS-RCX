@@ -74,6 +74,12 @@ After 1.0.0beta2:
   in order to fix "Permission Denied" bug. Thanks to Paolo
   Masetti for his feedback regarding this problem.
   
+After 1.0.0beta3:
+-----------------
+
+- Thanks to Phil Berry for contributing documentation and
+  code that helps make sense of emu-lejosrun traces.
+  
   
 
 

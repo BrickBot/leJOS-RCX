@@ -1,0 +1,38 @@
+This directory contains the code necessary to create the Unix emulation tool.
+The code for this tool is split into two parts. There is the virtual machine
+code itself, and that can be found in ../vmsrc. This directory contains only
+that necessary to create the emulator, emu-lejosrun.
+
+This lists the main files the unix_impl directory. 
+
+dump_config.c		This tests for endian type (ie little or big endian)
+			and creates the file platform_config.h.
+dump_config		Run this and it generates the platform_config.h
+			file. This is the executable generated from
+			dump_config.c
+tvmemul.c		Main entry point for Tiny VM emulation.
+dump.c			This dumps the contents of the Tiny VM binary.
+			Synopsis:
+				dump <path> [class|constant] <index>
+			This is a diagnostic tool used for development. An
+			example of its usage is this:
+
+				dump Test.class class LCD
+
+platform_config.h	This is used in all the builds in this directory.
+nativeemul.c		Native method handling for unix emulation
+			implementation.
+load.c			Loads the VM binary into memory. This involves opening
+			and reading the file, followed by a test of its magic
+			number to make sure it is an RCX binary file. (MAGIC is
+			defined in ../vmsrc/magic.h to be 0xCAF1.) 
+load.h			Header file for load.c
+opcodeinfo.c		Machine-generated file of opcodes. These match the
+			opcodes listed in the Java VM spec. For more info
+			about these see:
+
+				http://java.sun.com/docs/books/vmspec
+
+systime.h		System header file.
+traceemul.c		Defines the assert function.
+documentation.c		Routines that are called when the -v switch i used.

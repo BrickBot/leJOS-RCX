@@ -28,6 +28,10 @@ public class TextLCD
   {
   }
 
+  /**
+   * Prints a string on the LCD. 
+   * No need to refresh.
+   */
   public static final void print(String str)
   {
     // This is leaking
@@ -36,6 +40,7 @@ public class TextLCD
 
   /**
    * Print up to the first 5 characters of a char array to the LCD.
+   * There is no need to refresh the LCD.
    * Space is displayed if less than five characters.
    * Characters are approximations. There is only so much you can
    * do with this lcd screen!
@@ -48,12 +53,14 @@ public class TextLCD
 	printChar( text[i] , 4 - i); 
 
      while(i <= 4) printChar((char)0, 4 - i++); // print blanks
+     LCD.refresh();
   }
 
   /**
    * Prints a character to a given position.  Input character is
    * assumed to be an ascii character < 127. Position is between
    * zero and four, counting from the RIGHT.
+   * Character will not be shown until <code>LCD.refresh</code> is called.
    */
   public static final void printChar(char the_char, int pos)
   {

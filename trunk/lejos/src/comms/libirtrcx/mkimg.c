@@ -134,7 +134,7 @@ int srec_load (char *name, unsigned char *image, int maxlen, unsigned short *sta
     return length;
 }
 
-char *basename (char *path)
+char *get_base_name (char *path)
 {
     char *last = strrchr(path, '/');
     return (last) ? last + 1 : path;
@@ -142,7 +142,7 @@ char *basename (char *path)
 
 char *build_image_name (char *dst, char *src)
 {
-    char *base = basename(src);
+    char *base = get_base_name(src);
     while (*base) {
 	if ((*base >= 'a' && *base <= 'z') || (*base >= 'A' && *base <= 'A') ||
 	    (*base >= '0' && *base <= '9') || *base == '_')
@@ -166,7 +166,7 @@ int main (int argc, char **argv)
     unsigned int image_len;
     int i;
 
-    argv[0] = basename(argv[0]);
+    argv[0] = get_base_name(argv[0]);
 
     if (argc != 2) {
 	fprintf(stderr, "usage: %s filename\n", argv[0]);

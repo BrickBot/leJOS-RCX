@@ -102,9 +102,17 @@ static inline Object *create_string (ConstantRecord *constantRecord,
     deallocate (obj2ptr(ref), class_size (JAVA_LANG_STRING));    
     return JNULL;
   }
-  ((String *) ref)->characters = ptr2word(arr);
+  
+  //printf ("char array at %d\n", (int) arr);
+  
+  store_word ((byte *) &(((String *) ref)->characters), 4, obj2word(arr));
+  
   for (i = 0; i < constantRecord->constantSize; i++)
+  {
     jchar_array(arr)[i] = (JCHAR) get_constant_ptr(constantRecord)[i];
+
+    //printf ("char %d: %c\n", i, (char) (jchar_array(arr)[i])); 
+  }
   return ref;
 }
 

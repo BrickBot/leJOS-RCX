@@ -10,7 +10,7 @@ CFLAGS=-I../vmsrc -I. -Wall -Wno-unused
 DUMP_OBJ=dump.o load.o
 
 VMEMUL_OBJ=interpreter.o threads.o exceptions.o \
-	   memory.o language.o \
+	   memory.o language.o verbose.o \
            tvmemul.o traceemul.o nativeemul.o load.o opcodeinfo.o
 
 DUMP_TARGET=../bin/emu-dump

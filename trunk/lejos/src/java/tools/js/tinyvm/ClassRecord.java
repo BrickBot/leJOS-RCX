@@ -378,7 +378,7 @@ public class ClassRecord implements WritableData, Constants
     {
       Utilities.fatal ("Class " + aName.replace ('/', '.') + 
         " (file " + aName + 
-        ".class) not found in: " + aCP);
+        ".class) not found in CLASSPATH: " + aCP);
     }
     ClassRecord pCR = new ClassRecord();
     pCR.iBinary = aBinary;

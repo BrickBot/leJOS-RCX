@@ -14,6 +14,10 @@ public final class Math {
 	                                      0.027976453f, 0.013988227f, 0.006994114f, 
 	                                      0.003497057f};
 	
+	private static final int[] POWEROF2 = { 1, 2, 4, 8, 16, 32, 64, 128,
+	                                        256, 512, 1024, 4096, 8192, 16348,
+	                                        32768 };
+		
 	// Math constants
 	public static final double E = 2.718281828459045;
 	public static final double PI = 3.141592653589793;
@@ -156,29 +160,29 @@ public final class Math {
 		return exp(b * log(a));
 	}
 
-	/**
-	* Power function.  This one is faster, but can only do powers of integer.
-	*/
-	public static double pow(double a, int b) {
-		float c = 1.0f;
-		
-		if(b==0)
-			return 1.0;
-		
-		if(b > 0) {
-			for(int i=0;i<b;i++) {
-				c = c * (float) a;
-			}
-		}
-		else if(b < 0) {
-			for(int i=0;i>b;i--) {
-				c = c / (float) a;
-			}	
-		}	
-		
-		return c;
-	}
-
+// 	/**
+// 	* Power function.  This one is faster, but can only do powers of integer.
+// 	*/
+// 	public static double pow(double a, int b) {
+// 		float c = 1.0f;
+// 		
+// 		if(b==0)
+// 			return 1.0;
+// 		
+// 		if(b > 0) {
+// 			for(int i=0;i<b;i++) {
+// 				c = c * (float) a;
+// 			}
+// 		}
+// 		else if(b < 0) {
+// 			for(int i=0;i>b;i--) {
+// 				c = c / (float) a;
+// 			}	
+// 		}	
+// 		
+// 		return c;
+// 	}
+// 
 	
 	/**
 	* Returns the absolute value of a double value. If the argument is not negative, the argument is
@@ -277,8 +281,8 @@ public final class Math {
 		float y = 0.0f;
 		
 		for(int i = 0;i <= N;i++) {
-			float dx = x / (float) Math.pow(2, i);
-    	float dy = y / (float) Math.pow(2, i);
+			float dx = x / (float) POWEROF2[i];
+    	float dy = y / (float) POWEROF2[i];
     	float da = DIGIT[i];
     	
     	if(a >= 0) {
@@ -319,8 +323,8 @@ public final class Math {
 			return 0.0; // Otherwise returns tiny number
 		
 		for(int i = 0;i <= N;i++) {		
-			double dx = x / Math.pow(2, i);
-    	double dy = y / Math.pow(2, i);
+			double dx = x / POWEROF2[i];
+    	double dy = y / POWEROF2[i];
     	double da = DIGIT[i];
     	
     	if(y < 0) {
@@ -370,14 +374,14 @@ public final class Math {
   * Arc cosine function.
 	*/
 	public static double acos(double a) {
-		return atan(sqrt(1-pow(a,2))/a);
+		return atan(sqrt(1-a*a)/a);
 	}
 	
 	/**
   * Arc sine function.
 	*/
 	public static double asin(double a) {
-		return atan(a/sqrt(1-pow(a,2)));
+		return atan(a/sqrt(1-a*a));
 	}
 	
   /**
