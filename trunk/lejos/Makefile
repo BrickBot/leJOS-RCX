@@ -25,13 +25,18 @@ release:
 	cvs export -D tomorrow -d ${TEMP}/tinyvm_release tinyvm
 	zip -r ${TEMP}/tinyvm_`cat VERSION` ${TEMP}/tinyvm_release
 	diff bin/tinyvm.srec ${TEMP}/tinyvm_release/bin/tinyvm.srec
-	cd ${TEMP}/tinyvm_release; export TINYVM_HOME=${TEMP}/tinyvm_release; export PATH=${TINYVM_HOME}/bin:${PATH}; which tvmc; make; cd regression; ./run/sh
 
 check:
 	@if [ -f ${TINYVM_HOME} ]; then \
 	  echo "Error: Please define TINYVM_HOME."; \
 	  exit 1; \
 	fi;
+
+check_release:
+	echo TINYVM_HOME=${TINYVM_HOME}
+	echo Location of tvmc=`which tvmc`
+	echo Location of tvmld=`which tvmld`
+	which tvmc; make; cd regression; ./run/sh
 
 all_jtools: java_tools generated_files java_loader
 	cd ${JTOOLS}; jar cf ${LIB_DIR}/jtools.jar `find . -name '*.class' -printf "%h/%f " `
