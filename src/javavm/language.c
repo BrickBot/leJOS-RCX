@@ -253,20 +253,14 @@ boolean dispatch_special (MethodRecord *methodRecord, byte *retAddr)
   {
 #if !FIXED_STACK_SIZE
     StackFrame *stackBase;
-    
-    // Roughly speaking, need at least this many bytes
-    // int len = (int)(stackTop + methodRecord->maxOperands) - (int)(stack_array());
-    
     int i;
+    
+    // Need at least this many bytes
+    // int len = (int)(stackTop + methodRecord->maxOperands) - (int)(stack_array()) - HEADER_SIZE;
+    
     // Need to compute new array size (as distinct from number of bytes in array).
-  	int newlen = (((int)(stackTop + methodRecord->maxOperands) - (int)(stack_array()) / 4) + 1) * 3 / 2;
-  	JINT newStackArray = JNULL;
-#if DEBUG_MEMORY
-	printf("thread=%d, stackTop(%d), localsBase(%d)=%d\n", currentThread->threadId, (int)stackTop, (int)localsBase, (int)(*localsBase));
-#endif
-
-    // increase the stack frame size
-	newStackArray = ptr2word(reallocate_array(word2ptr(currentThread->stackArray), newlen));
+  	int newlen = (((int)(stackTop + methodRecord->maxOperands) - (int)(stack_array()) - HEADER_SIZE + 1) / 4) * 3 / 2;
+  	JINT newStackArray = ptr2word(reallocate_array(word2ptr(currentThread->stackArray), newlen));
   	
   	// If can't allocate new stack, give in!
     if (newStackArray == JNULL)
@@ -292,7 +286,7 @@ boolean dispatch_special (MethodRecord *methodRecord, byte *retAddr)
     	stackBase[i].localsBase = word2ptr(ptr2word(stackBase[i].localsBase) + newlen);
    		stackBase[i].stackTop = word2ptr(ptr2word(stackBase[i].stackTop) + newlen);
 #if DEBUG_MEMORY
-	printf("stackBase[%d].localsBase(%d) = %d\n", len, (int)stackBase[i].localsBase, (int)(*stackBase[i].localsBase));
+	printf("stackBase[%d].localsBase(%d) = %d\n", i, (int)stackBase[i].localsBase, (int)(*stackBase[i].localsBase));
 #endif
     }
     
