@@ -7,12 +7,12 @@ import java.io.*;
  * RCXAbstractPort implements input and output stream handling and input
  * buffering. It uses a packet handler for sending and receivng packets.
  * This version is abstract because it has no packet handler defined.
- * Specific versions of RCXAbstractPorts override the constructor and
+ * Specific versions of RCXAbstractPort override the constructor and
  * set up the packet handler to use a specific protocol stack. 
  * @author Brian Bagnall
  * @author Lawrie Griffiths
  */
-public class RCXAbstractPort {
+public abstract class RCXAbstractPort {
 
    private boolean portOpen = true;
    private Listener listener;
@@ -23,8 +23,9 @@ public class RCXAbstractPort {
    protected PacketHandler packetHandler;
 
    /**
-    *  Parameterless constructor for the RCXAbstractPort.
-    *  Opens the port.
+    * Constructor for the RCXAbstractPort.
+    * Opens the port, and sets the protocol packet handler.
+    * @param handler the packet handler
     */
    public RCXAbstractPort(PacketHandler handler) throws IOException {
       packetHandler = handler;
@@ -79,6 +80,7 @@ public class RCXAbstractPort {
    private byte [] inPacket = new byte[2];
 
    /** Listener class runs a thread that reads and buffers bytes.
+    * Allows a maximum of two bytes in a packet.
     */
    private class Listener extends Thread {
       public void run() {
