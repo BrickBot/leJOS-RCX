@@ -23,14 +23,14 @@
 
 CC=$(shell $(LEJOS_HOME)/cctest.sh)
 
-COPT = -O2 
+COPT = -O2
 # For debugging:
 # COPT = -O0
 
 # Default: Unix
 RCXCOMM=rcx_comm_linux.cpp
-CFLAGS=-I$(LEJOS_HOME)/src/tools/linux/legousbtower -shared -fpic	
-LFLAGS=-shared
+CFLAGS=-I$(LEJOS_HOME)/src/tools/linux/legousbtower -shared -fpic
+LFLAGS=-shared -lstdc++
 IRTRCX=$(LEJOS_HOME)/bin/libirtrcx.so
 
 # Windows with CygWin installed
@@ -54,7 +54,6 @@ OBJS = $(addsuffix .o, $(basename $(SRCS)))
 
 default: all
 all: $(IRTRCX)
-	@echo Built $(IRTRCX)
 
 $(IRTRCX): $(OBJS)
 	$(CC) -o $(IRTRCX) $(OBJS) $(LFLAGS)
