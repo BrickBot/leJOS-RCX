@@ -6,6 +6,9 @@ import js.classfile.JCPE_Integer;
 import js.classfile.JCPE_Long;
 import js.classfile.JCPE_String;
 import js.classfile.JConstantPoolEntry;
+import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IOUtilities;
+import js.tinyvm.util.Assertion;
 
 public class ConstantRecord implements WritableData, Constants
 {

@@ -1,5 +1,8 @@
 package js.tinyvm;
 
+import js.tinyvm.io.ByteWriter;
+import js.tinyvm.util.Assertion;
+
 
 public class CodeSequence extends WritableDataWithOffset
 {

@@ -1,4 +1,5 @@
-package js.tinyvm;
+package js.tinyvm.io;
+
 
 
 public class IOUtilities

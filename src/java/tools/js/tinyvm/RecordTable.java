@@ -2,6 +2,10 @@ package js.tinyvm;
 
 import java.util.Enumeration;
 
+import js.tinyvm.io.ByteWriter;
+import js.tinyvm.io.IOUtilities;
+import js.tinyvm.util.Assertion;
+
 public abstract class RecordTable extends WritableDataWithOffset
 implements Constants
 {

@@ -9,6 +9,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
+import js.tinyvm.util.Assertion;
+
 public class ClassPath
 {
   private Object[] iEntries;

@@ -9,6 +9,8 @@ import js.classfile.JCPE_Long;
 import js.classfile.JCPE_String;
 import js.classfile.JCPE_Utf8;
 import js.classfile.JConstantPoolEntry;
+import js.tinyvm.io.ByteWriter;
+import js.tinyvm.util.Assertion;
 
 public class ConstantValue extends WritableDataWithOffset
 {

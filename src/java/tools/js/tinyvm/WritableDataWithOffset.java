@@ -1,5 +1,7 @@
 package js.tinyvm;
 
+import js.tinyvm.util.Assertion;
+
 
 public abstract class WritableDataWithOffset implements WritableData
 {

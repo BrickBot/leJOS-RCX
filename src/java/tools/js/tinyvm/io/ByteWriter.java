@@ -1,4 +1,4 @@
-package js.tinyvm;
+package js.tinyvm.io;
 
 import java.io.IOException;
 

@@ -1,10 +1,10 @@
-package js.tinyvm;
+package js.tinyvm.util;
 
 
 public class Assertion
 {
   static int iVerboseLevel;
-  static boolean iTrace = Boolean.getBoolean ("trace");
+  public static boolean iTrace = Boolean.getBoolean ("trace");
 
   public static void setVerboseLevel (int aVerboseLevel)
   {
