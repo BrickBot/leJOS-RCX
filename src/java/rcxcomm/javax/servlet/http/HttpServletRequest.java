@@ -21,8 +21,9 @@ public class HttpServletRequest {
   private String queryString;
   private int queryStringLength;
   private static final int MAX_PARAM = 16;
-  private char [] paramChars = new char[MAX_PARAM];
-  private String param = new String(paramChars);
+  private char [] tempChars = new char[MAX_PARAM];
+  private String param = new String(tempChars, 0, MAX_PARAM);
+  private char [] paramChars = StringUtils.getCharacters(param);
   private int paramLength = 0;
   
   void setPath(String path, int pathLength) {
@@ -101,8 +102,8 @@ public class HttpServletRequest {
    * @return  the parameter value or null
    */
   public String getParameter(String name) {
-    char [] nameChars = name.toCharArray();
-    char [] queryStringChars = queryString.toCharArray();
+    char [] nameChars = StringUtils.getCharacters(name);
+    char [] queryStringChars = StringUtils.getCharacters(queryString);
 
     // Look for paameter name. Value must be at least one character
 
