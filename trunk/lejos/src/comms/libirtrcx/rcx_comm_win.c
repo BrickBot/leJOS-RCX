@@ -36,8 +36,10 @@
 #include <errno.h>
 #include <windows.h>
 
+#define USB_TOWER_NAME "\\\\.\\LEGOTOWER1"
+#define DEFAULTTTY "usb"
+
 typedef struct timeval timeval_t;
-void gettimeofday(struct timeval *tv, void *tzp);
 
 #include "rcx_comm.h"
 #include "rcx_comm_win.h"
@@ -48,6 +50,7 @@ void gettimeofday(struct timeval *tv, void *tzp);
 
 void __rcx_open_setDevice(Port* port, char* symbolicName, int fast);
 int __rcx_open_setSerialPortParameters (Port* port);
+void gettimeofday(struct timeval *tv, void *tzp);
 
 //
 // attributes
@@ -151,12 +154,6 @@ int __rcx_read_serial (void* port, void *buf, int maxlen, int timeout_ms)
 	return len;
 }
 
-// discard all characters in the input queue of tty
-void __rcx_flush(void* port)
-{
-	PurgeComm(((Port*) port)->fileHandle, PURGE_RXABORT | PURGE_RXCLEAR);
-}
-
 int __rcx_write(void* port, void* buf, int len) 
 {
 	DWORD written = 0;
@@ -167,6 +164,18 @@ int __rcx_write(void* port, void* buf, int len)
 	FlushFileBuffers(((Port*) port)->fileHandle);
 	
 	return written;
+}
+
+// discard all characters in the input queue of tty
+void __rcx_purge(void* port)
+{
+	PurgeComm(((Port*) port)->fileHandle, PURGE_RXABORT | PURGE_RXCLEAR);
+}
+
+// flush all characters in the output queue of tty
+void __rcx_flush(void* port)
+{
+    FlushFileBuffers (((Port*) port)->fileHandle);
 }
 
 // RCX routines

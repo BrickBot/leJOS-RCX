@@ -159,14 +159,28 @@ int rcxReceiveSlow (void* port, void *buf, int maxlen, int timeout);
 // Send a packet an receive a response.
 int rcxSendReceive (void* port, void* send, int slen, void *recv, int rlen, int timeout, int retries);
 		  
-// Is RCX alive?
-int rcxIsAlive (void* port);
+// Purge buffers.
+void rcxPurge(void* port);
 
 // Flush buffers.
 void rcxFlush(void* port);
 
+// Is RCX alive?
+int rcxIsAlive (void* port);
+
 // ???
 void rcxPerror(char *str) ;
+
+//
+// OS dependant interface
+//
+
+extern void* __rcx_open (char *tty, int fast);
+extern void __rcx_close (void* port);
+extern int __rcx_read(void* port, void* buffer, int maxLength, int timeout_ms);
+extern int __rcx_write(void* port, void* buffer, int length);
+extern void __rcx_purge(void* port);
+extern void __rcx_flush(void* port);
 
 //
 // error handling

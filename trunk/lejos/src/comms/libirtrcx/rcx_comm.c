@@ -114,7 +114,7 @@ int rcxWakeupTower (void* port, int timeout)
 	// First, I send a KeepAlive Byte to settle IR Tower...
 	rcxWrite(port, &keepalive, 1);
 	usleep(20000);
-	rcxFlush(port);
+	rcxPurge(port);
 	
 	timerReset(&timer);
 	
@@ -143,7 +143,7 @@ int rcxWakeupTower (void* port, int timeout)
 			return RCX_OK;
 		}
 
-		rcxFlush(port);
+		rcxPurge(port);
 	} while (timerRead(&timer) < timeout);
 	
 	return count == 0? RCX_NO_TOWER : RCX_BAD_LINK;	
@@ -219,6 +219,8 @@ int rcxSend (void* port, void* send, int sendLength)
 		return RCX_WRITE_FAIL;
 	}
 
+   rcxFlush(port);
+
 	// Check echo
    // USB tower does not echo!
 	if (!rcxIsUsb(port) && rcxCheckEcho(port) == 0)
@@ -248,8 +250,8 @@ int rcxCheckEcho (void* port, char* send, int sendLength)
 	int result = read == sendLength /* && !memcmp(echo, send, sendLength) */? 1 : 0;
 	if (result) 
 	{
-		// Flush connection if echo is bad
-		rcxFlush(port);
+		// Purge connection if echo is bad
+		rcxPurge(port);
 	}
 	
 	return result;
@@ -473,6 +475,18 @@ int rcxSendReceive (void* port, void* send, int sendLength,
 	return status;
 }
 
+// Purge send buffers.
+void rcxPurge (void* port)
+{
+	__rcx_purge(port);
+}
+
+// Flush send buffers.
+void rcxFlush(void* port)
+{
+	__rcx_flush(port);
+}
+
 // Is RCX alive?
 int rcxIsAlive (void* port)
 {
@@ -484,13 +498,7 @@ int rcxIsAlive (void* port)
 	return read == 1? 1 : 0;
 }
 
-// Flush buffers.
-void rcxFlush(void* port)
-{
-	__rcx_flush(port);
-}
-
-// ???
+// error output
 void rcxPerror(char *str) 
 {
 	__rcx_perror(str);
