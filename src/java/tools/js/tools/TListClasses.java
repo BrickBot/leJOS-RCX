@@ -1,4 +1,4 @@
-package js.test;
+package js.tools;
 import java.lang.reflect.*;
 
 public class TListClasses
