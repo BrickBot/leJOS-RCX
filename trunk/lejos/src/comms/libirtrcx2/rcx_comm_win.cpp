@@ -213,7 +213,13 @@ void* __rcx_open(char* tty, bool fast)
 	__rcx_open_setDevice(result, tty, fast);
 			
 	result->fileHandle = CreateFile(
-	  result->deviceName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	  result->deviceName, 
+	  GENERIC_READ | GENERIC_WRITE, 
+	  0, 
+	  NULL, 
+	  OPEN_EXISTING, 
+	  0, 
+	  NULL);
 	if (result->fileHandle == INVALID_HANDLE_VALUE) 
    {
 		if (__comm_debug) printf("Error %lu: Opening %s\n", (unsigned long) GetLastError(), result->deviceName);
@@ -233,13 +239,15 @@ void* __rcx_open(char* tty, bool fast)
 		   CloseHandle(result->fileHandle);
 		}
 		free(result);
-		result = NULL;
+		return NULL;
 	}
-
-	if (__comm_debug) printf("device = %s\n", result->deviceName);
-	if (__comm_debug) printf("port type = %s\n", result->usb? "usb" : "serial");
-
-	return result;
+	else
+	{
+		if (__comm_debug) printf("device = %s\n", result->deviceName);
+		if (__comm_debug) printf("port type = %s\n", result->usb? "usb" : "serial");
+	
+		return result;
+	}
 }
 
 void __rcx_open_setDevice (Port* port, char* symbolicName, bool fast)

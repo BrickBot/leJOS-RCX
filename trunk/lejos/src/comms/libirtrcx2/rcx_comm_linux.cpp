@@ -134,9 +134,9 @@ void __rcx_flush(void* port)
 	__rcx_read(port, echo, BUFFERSIZE, 200);
 }
 
-void* __rcx_open(char *tty, bool is_fast)
+void* __rcx_open(char *tty, bool fast)
 {
-	if (__comm_debug) printf("mode = %s\n", is_fast ? "fast" : "slow");
+	if (__comm_debug) printf("mode = %s\n", fast ? "fast" : "slow");
 	if (__comm_debug) printf("tty = %s\n", tty);
 
 	bool success = true;
