@@ -21,7 +21,7 @@ leJOS 2.1.0
   - a new example file (RemoteControlTest.java) for this in the examples\remotectl section 
  
   Markus Strickler has added:
-  - completed support for USB on Mac OS X
+  - enhanced support for USB on Mac OS X including josx.rcxcomm
   - fixed Makefile for picking up JNI headers on Linux
 
   Markus Strickler & Andy Belk have added:
