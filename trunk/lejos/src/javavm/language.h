@@ -16,7 +16,9 @@
 
 extern void dispatch_special (byte classIdx, byte methodIndex, byte *rAddr);
 extern void dispatch_virtual (Object *obj, TWOBYTES signature, byte *rAddr);
-extern short find_method (byte classIndex, TWOBYTES methodSignature);
+extern short find_method (byte classIndex, TWOBYTES signature);
+extern STACKWORD instance_of (Object *obj, byte classIndex);
+extern void do_return (byte numWords);
 
 typedef struct S_MasterRecord
 {

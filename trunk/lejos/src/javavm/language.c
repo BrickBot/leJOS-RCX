@@ -29,7 +29,7 @@ void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStatic)
   byte *fieldBase;
   TWOBYTES offset;
 
-  // TBD: Check for class initialization
+  // TBD: Check for class initialization (in statics only?)
   // TBD: byte alignment not right
   
   fieldSize = (hiByte >> F_SIZE_SHIFT) + 1;
@@ -81,6 +81,7 @@ short find_method (byte classIndex, TWOBYTES methodSignature)
 void dispatch_virtual (Object *ref, TWOBYTES signature)
 {
  LABEL_METHODLOOKUP:
+  // TBD: consider arrays in next statement
   classIndex = get_class_index(ref);
   methodIndex = find_method (classIndex, signature);
   if (methodIndex == -1)
@@ -207,15 +208,17 @@ void do_return (byte numWords)
 /**
  * @return 1 or 0.
  */
-TWOBYTES instance_of (Object *obj, byte classIndex)
+STACKWORD instance_of (Object *obj, byte classIndex)
 {
+  // TBD: consider arrays
+
   byte rtType;
   rtType = get_class_index(obj);
  LABEL_INSTANCE:
   if (rtType == classIndex)
-    return (TWOBYTES) 1;
+    return 1;
   if (rtType == JAVA_LANG_OBJECT)
-    return (TWOBYTES) 0;
+    return 0;
   rtType = get_class_record(rtType)->parentClass;
   goto LABEL_INSTANCE;
 }

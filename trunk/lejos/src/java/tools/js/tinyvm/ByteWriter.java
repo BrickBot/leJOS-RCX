@@ -21,3 +21,4 @@ public interface ByteWriter
 
   public int size();
 }
+

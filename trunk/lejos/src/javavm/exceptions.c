@@ -1,10 +1,15 @@
 
-#include "exceptions.h"
 #include "types.h"
-#include "classes.h"
+#include "trace.h"
+#include "constants.h"
+#include "specialsignatures.h"
+#include "exceptions.h"
 #include "threads.h"
-
-// TBD: Exception in synchronized blocks?
+#include "classes.h"
+#include "language.h"
+#include "configure.h"
+#include "interpreter.h"
+#include "memory.h"
 
 /**
  * @return false iff all threads are dead.
@@ -12,20 +17,21 @@
 void trow_exception (Object *exception)
 {
   TWOBYTES currentOffset;
-  int numExceptions;
   MethodRecord *methodRecord;
   StackFrame *stackFrame;
   ExceptionRecord *exceptionRecord;
+  byte numExceptionHandlers;
+  byte i;
 
  LABEL_PROPAGATE:
   if (currentThread->state == DEAD)
     return;
   stackFrame = (StackFrame *) currentThread->currentStackFrame;
   methodRecord = stackFrame->methodRecord;
-  exceptionRecord = (ExceptionRecord *) (binary_base() + methodRecord->exceptionTable);
-  currentOffset = pc - (binary_base() + methodRecord->codeOffset);
-  numExceptions = methodRecord->numExceptions;
-  for (int i = 0; i < numExceptions; i++)
+  exceptionRecord = (ExceptionRecord *) (get_binary_base() + methodRecord->exceptionTable);
+  currentOffset = (TWOBYTES) (pc - (get_binary_base() + methodRecord->codeOffset));
+  numExceptionHandlers = methodRecord->numExceptionHandlers;
+  for (i = 0; i < numExceptionHandlers; i++)
   {
     if (currentOffset >= exceptionRecord->start && currentOffset <= exceptionRecord->end)
     {
@@ -36,7 +42,7 @@ void trow_exception (Object *exception)
         stackTop = stackFrame->localsBase + methodRecord->numLocals - 1;
         stackFrame->stackTop = stackTop;
         // Jump to handler:
-        pc = binary_base() + methodRecord->codeOffset + 
+        pc = get_binary_base() + methodRecord->codeOffset + 
              exceptionRecord->handler;
         stackFrame->pc = pc;
         return;
@@ -44,8 +50,9 @@ void trow_exception (Object *exception)
     }
     exceptionRecord++;
   }
-  // No good handlers in current stack frame - go up
+  // No good handlers in current stack frame - go up.
   do_return (0);
+  // Note: return takes care of synchronized methods.
   goto LABEL_PROPAGATE; 
 }
 

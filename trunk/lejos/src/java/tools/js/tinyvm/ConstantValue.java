@@ -45,32 +45,33 @@ public class ConstantValue extends WritableDataWithOffset
 
   public void dump (ByteWriter aOut) throws Exception
   {
+    DataOutputStream pDataOut = (DataOutputStream) aOut;
     if (iEntry instanceof JCPE_String)
     {
       JCPE_Utf8 pValue = ((JCPE_String) iEntry).getValue();
       byte[] pBytes = pValue.getBytes();
-      aOut.write (pBytes, 0, pBytes.length);
+      pDataOut.write (pBytes, 0, pBytes.length);
     }
     else if (iEntry instanceof JCPE_Integer)
     {
       int pValue = ((JCPE_Integer) iEntry).getValue();
-      aOut.writeU4 (pValue);
+      pDataOut.writeInt (pValue);
     }
     else if (iEntry instanceof JCPE_Long)
     {
       long pValue = ((JCPE_Long) iEntry).getValue();
-      aOut.writeU8 (pValue);      
+      pDataOut.writeLong (pValue);      
     }
     else if (iEntry instanceof JCPE_Double)
     {
       float pValue = (float) ((JCPE_Double) iEntry).getValue();
-      aOut.writeU4 (0);
-      aOut.writeU4 (Float.floatToIntBits (pValue));
+      pDataOut.writeFloat (0);
+      pDataOut.writeFloat (Float.floatToIntBits (pValue));
     }
     else if (iEntry instanceof JCPE_Float)
     {
       float pValue = (float) ((JCPE_Float) iEntry).getValue();
-      aOut.writeU4 (Float.floatToIntBits (pValue));
+      pDataOut.writeFloat (Float.floatToIntBits (pValue));
     }
     else
     {
