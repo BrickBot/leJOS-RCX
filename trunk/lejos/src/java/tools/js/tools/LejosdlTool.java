@@ -107,7 +107,7 @@ public class LejosdlTool extends AbstractTool
       }
       catch (ToolException e)
       {
-        throw new LejosdlException(e);
+        throw new LejosdlException(e.getMessage(), e);
       }
       finally
       {
