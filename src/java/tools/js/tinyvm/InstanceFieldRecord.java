@@ -9,12 +9,12 @@ import org.apache.bcel.classfile.Field;
 public class InstanceFieldRecord implements WritableData
 {
    Field iField;
-   byte iType;
+   TinyVMType iType;
 
    public InstanceFieldRecord (Field aEntry) throws TinyVMException
    {
       iField = aEntry;
-      iType = TinyVMConstants.tinyVMType(iField.getType().getType());
+      iType = TinyVMType.tinyVMType(iField.getType());
    }
 
    public String getName ()
@@ -31,7 +31,7 @@ public class InstanceFieldRecord implements WritableData
    {
       try
       {
-         aOut.writeU1((int) iType);
+         aOut.writeU1((int) iType.type());
       }
       catch (IOException e)
       {
@@ -39,40 +39,9 @@ public class InstanceFieldRecord implements WritableData
       }
    }
 
-   /**
-    * Get type size in bytes.
-    * 
-    * @param type tiny vm type to get size for
-    */
-   public static int getTypeSize (byte type) throws TinyVMException
-   {
-      switch (type)
-      {
-         case TinyVMConstants.T_BYTE:
-         case TinyVMConstants.T_BOOLEAN:
-            return 1;
-         case TinyVMConstants.T_SHORT:
-         case TinyVMConstants.T_CHAR:
-            return 2;
-         // case TinyVMConstants.T_ARRAY:
-         // case TinyVMConstants.T_OBJECT:
-         case TinyVMConstants.T_REFERENCE:
-         case TinyVMConstants.T_INT:
-         case TinyVMConstants.T_FLOAT:
-            return 4;
-         case TinyVMConstants.T_LONG:
-         case TinyVMConstants.T_DOUBLE:
-            return 8;
-         default:
-         {
-            throw new TinyVMException("Undefined type: " + type);
-         }
-      }
-   }
-
    public int getFieldSize () throws TinyVMException
    {
-      return getTypeSize(iType);
+      return iType.size();
    }
 
    public boolean equals (Object aOther)

@@ -29,14 +29,13 @@ public class StaticFieldRecord implements WritableData
 
    public void dump (IByteWriter aOut) throws TinyVMException
    {
-      byte pType = TinyVMConstants.tinyVMType(iField.getType().getType());
-      assert pType >= 0 && pType <= 0xF: "Check: valid type";
+      TinyVMType type = TinyVMType.tinyVMType(iField.getType());
       int pOffset = iClassRecord.getStaticFieldOffset(iField.getName());
       assert pOffset >= 0 && pOffset <= 0x0FFF: "Check offset in range";
 
       try
       {
-         aOut.writeU2((pType << 12) | pOffset);
+         aOut.writeU2((type.type() << 12) | pOffset);
       }
       catch (IOException e)
       {
