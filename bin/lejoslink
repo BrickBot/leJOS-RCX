@@ -14,6 +14,5 @@ fi
 if [ -z "$LEJOS_HOME" ]; then 
   echo LEJOS_HOME is not defined
 else 
-  export CLASSPATH="$LEJOS_HOME/lib/jtools.jar$SEPARATOR$LEJOS_HOME/lib/commons-cli-1.0.jar$SEPARATOR$CLASSPATH$SEPARATOR."
-  java -Dtinyvm.linker=lejoslink -Djava.library.path="$LEJOS_HOME/bin" -Dtinyvm.home="$LEJOS_HOME" -Dtinyvm.write.order=BE js.tinyvm.TinyVM -classpath "$LEJOS_HOME/lib/classes.jar$SEPARATOR$LEJOS_HOME/lib/rcxrcxcomm.jar$SEPARATOR$CLASSPATH" $*
+  java -Dtinyvm.write.order=BE -classpath "$LEJOS_HOME/lib/classes.jar$SEPARATOR$LEJOS_HOME/lib/rcxcomm.jar$SEPARATOR$LEJOS_HOME/lib/commons-cli-1.0.jar$SEPARATOR$LEJOS_HOME/lib/jtools.jar$SEPARATOR$CLASSPATH" js.tinyvm.TinyVM $*
 fi
