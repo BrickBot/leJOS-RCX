@@ -27,28 +27,33 @@ case OP_F2I:
 case OP_F2D:
   // Arguments: 0
   // Stack: -1 +2
-  push_word (get_top_word());
+  // Temporary is necessary because these are macros
+  tempStackWord = get_top_word();
+  push_word (tempStackWord);
   goto LABEL_ENGINELOOP;
 case OP_D2I:
   // Arguments: 0
-  // Stack: -2 +1
-  just_set_top_word ((JINT) word2jfloat (pop_word()));
+  // Stack: -2 +1  
+  // Temporary is necessary because mixing macros is bad!
+  tempStackWord = (JINT) word2jfloat (pop_word());
+  just_set_top_word (tempStackWord);
   goto LABEL_ENGINELOOP;
 case OP_D2F:
+case OP_L2I:
   // Arguments: 0
   // Stack: -2 +1
-  just_set_top_word (pop_word());
+  // Temporary is necessary because mixing macros is bad!
+  tempStackWord = pop_word();
+  just_set_top_word (tempStackWord);
   goto LABEL_ENGINELOOP;
 case OP_I2L:
   tempStackWord = get_top_word();
   just_set_top_word (0);
   push_word (tempStackWord);
   goto LABEL_ENGINELOOP;
-case OP_L2I:
-  just_set_top_word (pop_word());
-  goto LABEL_ENGINELOOP;
 case OP_L2F:
-  just_set_top_word (jfloat2word ((JFLOAT) pop_word()));
+  tempStackWord = pop_word();
+  just_set_top_word (jfloat2word ((JFLOAT) tempStackWord));
   goto LABEL_ENGINELOOP;
 case OP_L2D:
   just_set_top_word (jfloat2word ((JFLOAT) get_top_word()));

@@ -37,8 +37,10 @@ public class ConstantRecord implements WritableData, Constants
       return T_REFERENCE;
     else if (aEntry instanceof JCPE_Double || aEntry instanceof JCPE_Long)
       return T_LONG;
-    else if (aEntry instanceof JCPE_Integer || aEntry instanceof JCPE_Float)
+    else if (aEntry instanceof JCPE_Integer)
       return T_INT;
+    else if (aEntry instanceof JCPE_Float)
+      return T_FLOAT;
     else
     {
       Utilities.assert (false);

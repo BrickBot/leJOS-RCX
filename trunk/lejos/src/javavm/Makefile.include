@@ -1,0 +1,21 @@
+
+interpreter.o: ${VMSRC}/interpreter.c
+	${CC} ${CFLAGS} -c ${VMSRC}/interpreter.c
+
+threads.o: ${VMSRC}/threads.c
+	${CC} ${CFLAGS} -c ${VMSRC}/threads.c
+
+exceptions.o: ${VMSRC}/exceptions.c
+	${CC} ${CFLAGS} -c ${VMSRC}/exceptions.c
+
+memory.o: ${VMSRC}/memory.c
+	${CC} ${CFLAGS} -c ${VMSRC}/memory.c
+
+language.o: ${VMSRC}/language.c
+	${CC} ${CFLAGS} -c ${VMSRC}/language.c
+
+
+
+
+
+
