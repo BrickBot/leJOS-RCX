@@ -1,0 +1,588 @@
+#include <jni.h>
+#include "josx_rcxcomm_irtower.h"
+#include <stdio.h>
+#include <windows.h>
+#include "rcx_comm.h"
+#include <stdlib.h>
+
+#define TOWER_NAME "\\\\.\\LEGOTOWER1"
+
+#define TIME_OUT 500
+
+int usb_flag;
+
+// open - Open the IR Tower
+
+JNIEXPORT jint JNICALL 
+Java_josx_rcxcomm_irTower_open(JNIEnv *env, jobject obj, jstring jport)
+{
+  jclass cls;
+  jfieldID fid;
+  int err = 0;
+  HANDLE fh;
+  char *tty = NULL;
+  int res = 0;
+
+#ifdef TRACE
+  printf("Entering open\n");
+#endif
+
+   // Get the port parameter 
+  
+  const char *port = env->GetStringUTFChars(jport,0);
+
+  tty = (char *) port;
+
+  // if no port supplied, read RCXTTY environment variable
+
+  if ((!tty) || *tty == 0) tty = getenv("RCXTTY");
+
+  // If still no port, default to USB
+
+  if ( (!tty)|| *tty == 0 || (stricmp( tty , "usb" ) == 0) ) {
+	usb_flag = 1;
+	tty = TOWER_NAME;
+  }
+  else usb_flag = 0;
+
+  // Get a handle for the tower device
+
+  fh = rcx_init(tty,0);
+
+  // USB Tower does not need wake-up
+  
+  if (fh == INVALID_HANDLE_VALUE) res = RCX_OPEN_FAIL;
+  else if (!usb_flag) res = rcx_wakeup_tower(fh, TIME_OUT);
+
+  // Get the OS error, if a failure has occurred
+  
+  if (res != 0) {
+	err = GetLastError();
+  }
+
+  // Set err in the Java class
+
+  cls = env->GetObjectClass(obj);
+  fid = env->GetFieldID(cls,"err","I");
+
+  if (fid == 0) {
+
+#ifdef TRACE
+	printf("Could not get field id for err.\n");
+#endif
+
+	return (jint) RCX_INTERNAL_ERR;
+  }
+
+  env->SetIntField(obj,fid,err);
+
+  // Set the handle
+
+  fid = env->GetFieldID(cls, "fh", "J");
+
+  if (fid == 0) {
+
+#ifdef TRACE
+	printf("Could not get field id for fh.\n");
+#endif
+
+	return (jint) RCX_INTERNAL_ERR;
+  }
+
+  env->SetLongField(obj,fid,(jlong) fh);
+
+  // Release the string parameter
+
+  env->ReleaseStringUTFChars(jport,port);
+
+#ifdef TRACE
+  printf("Exiting open\n");
+#endif
+
+  return (jint) res;
+
+}
+
+// close - Close the IR Tower
+
+JNIEXPORT jint JNICALL 
+Java_josx_rcxcomm_irTower_close(JNIEnv *env, jobject obj)
+{
+  jclass cls;
+  jfieldID fid;
+  HANDLE fh;
+
+#ifdef TRACE
+  printf("Entering close\n");
+#endif
+
+  // Get the file handle
+
+  cls = env->GetObjectClass(obj);
+  fid = env->GetFieldID(cls,"fh","J");
+
+  if (fid == 0) {
+
+#ifdef TRACE
+	  printf("Could not get fh field id.\n");
+#endif
+
+	  return (jint) RCX_INTERNAL_ERR;
+  }
+
+  fh = (HANDLE) env->GetLongField(obj,fid);
+
+  // Close the handle
+
+  if (fh == INVALID_HANDLE_VALUE) {
+
+#ifdef TRACE
+	  printf("File already closed\n");
+#endif
+
+	  return (jint) RCX_ALREADY_CLOSED;
+  }
+  
+  // Close the handle
+  
+  rcx_close(fh);
+
+  // Write closed handle back
+
+  fh = INVALID_HANDLE_VALUE;
+
+  env->SetLongField(obj,fid,(jlong) fh);
+
+#ifdef TRACE
+  printf("Exiting close\n");
+#endif
+
+}
+
+// write - write bytes to IR Tower
+
+JNIEXPORT jint JNICALL
+Java_josx_rcxcomm_irTower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
+{
+    int err = 0;
+	HANDLE fh;
+    jclass cls;
+    jfieldID fid;
+	DWORD actual;
+
+#ifdef TRACE
+	printf("Entering write\n");
+#endif
+
+    // Get the file handle
+
+    cls = env->GetObjectClass(obj);
+    fid = env->GetFieldID(cls,"fh","J");
+
+	if (fid == 0) {
+
+#ifdef TRACE
+		printf("Could not get fh field id.\n");
+#endif
+
+		return (jint) RCX_INTERNAL_ERR;
+    }
+
+    fh = (HANDLE) env->GetLongField(obj,fid);
+
+	// Check that file is open
+
+	if (fh == INVALID_HANDLE_VALUE) {
+
+#ifdef TRACE
+		printf("File not open\n");
+#endif
+
+		return (jint) RCX_NOT_OPEN;
+    }
+
+	// Get the array
+
+	jbyte *body = env->GetByteArrayElements(arr, 0);
+
+	// Write the bytes
+
+	actual = mywrite(fh, body, n);
+
+	if (actual < 0) {
+		err = GetLastError();
+	}
+
+	// Flush buffers
+
+	FlushFileBuffers(fh);
+
+    // Set err in the Java class
+
+    cls = env->GetObjectClass(obj);
+    fid = env->GetFieldID(cls,"err","I");
+
+    if (fid == 0) {
+
+#ifdef TRACE
+		printf("Could not get field id for err.\n");
+#endif
+
+		return (jint) RCX_INTERNAL_ERR;
+    }
+
+    env->SetIntField(obj,fid,err);
+
+	// Release the array
+
+	env->ReleaseByteArrayElements(arr, body, 0);
+
+#ifdef TRACE
+	printf("Exiting write\n");
+#endif
+
+	return (jint) actual;
+}
+
+// read - Read Bytes from IR Tower
+
+JNIEXPORT jint JNICALL
+Java_josx_rcxcomm_irTower_read(JNIEnv *env, jobject obj, jbyteArray arr)
+{
+    int err = 0, jsize;
+	HANDLE fh;
+    jclass cls;
+    jfieldID fid;
+	DWORD actual;
+
+#ifdef TRACE
+	printf("Entering read\n");
+#endif
+
+    // Get the file handle
+
+    cls = env->GetObjectClass(obj);
+    fid = env->GetFieldID(cls,"fh","J");
+
+    if (fid == 0) {
+
+#ifdef TRACE
+		printf("Could not get fh field id.\n");
+#endif	
+
+		return (jint) RCX_INTERNAL_ERR;
+    }
+
+    fh = (HANDLE) env->GetLongField(obj,fid);
+
+	// Check that file is open
+
+	if (fh == INVALID_HANDLE_VALUE) {
+
+#ifdef TRACE
+		printf("File not open\n");
+#endif
+
+		return (jint) RCX_NOT_OPEN;
+    }
+
+	// Get the array
+
+	jsize = env->GetArrayLength(arr);
+	jbyte *body = env->GetByteArrayElements(arr, 0);
+
+	actual = nbread(fh,body,jsize,TIME_OUT);
+
+    if (actual < 0) err = GetLastError();
+
+    // Set err in the Java class
+
+    cls = env->GetObjectClass(obj);
+    fid = env->GetFieldID(cls,"err","I");
+
+    if (fid == 0) {
+
+#ifdef TRACE
+		printf("Could not get field id for err.\n");
+#endif
+
+		return RCX_INTERNAL_ERR;
+    }
+
+    env->SetIntField(obj,fid,err);
+
+	// Release the array and copy it back
+
+	env->ReleaseByteArrayElements(arr, body, 1);
+
+#ifdef TRACE
+	printf("Exiting read\n");
+#endif	
+
+	return (jint) actual;
+}
+
+// send - send a message to IR Tower
+
+JNIEXPORT jint JNICALL
+Java_josx_rcxcomm_irTower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
+{
+    int err = 0;
+	HANDLE fh;
+    jclass cls;
+    jfieldID fid;
+	DWORD actual;
+
+#ifdef TRACE
+	printf("Entering send\n");
+#endif
+
+    // Get the file handle
+
+    cls = env->GetObjectClass(obj);
+    fid = env->GetFieldID(cls,"fh","J");
+
+	if (fid == 0) {
+
+#ifdef TRACE
+		printf("Could not get fh field id.\n");
+#endif
+
+		return (jint) RCX_INTERNAL_ERR;
+    }
+
+    fh = (HANDLE) env->GetLongField(obj,fid);
+
+	// Check that file is open
+
+	if (fh == INVALID_HANDLE_VALUE) {
+
+#ifdef TRACE
+		printf("File not open\n");
+#endif
+
+		return (jint) RCX_NOT_OPEN;
+    }
+
+	// Get the array
+
+	jbyte *body = env->GetByteArrayElements(arr, 0);
+
+	// Write the bytes
+
+	actual = rcx_send(fh,body,n,1);
+
+	if (actual < 0) {
+		err = GetLastError();
+	}
+
+	// Flush buffers
+
+	FlushFileBuffers(fh);
+
+    // Set err in the Java class
+
+    cls = env->GetObjectClass(obj);
+    fid = env->GetFieldID(cls,"err","I");
+
+    if (fid == 0) {
+
+#ifdef TRACE
+		printf("Could not get field id for err.\n");
+#endif
+
+		return (jint) RCX_INTERNAL_ERR;
+    }
+
+    env->SetIntField(obj,fid,err);
+
+	// Release the array
+
+	env->ReleaseByteArrayElements(arr, body, 0);
+
+#ifdef TRACE
+	printf("Exiting send\n");
+#endif
+
+	return (jint) actual;
+}
+
+// read - Read Bytes from IR Tower
+
+JNIEXPORT jint JNICALL
+Java_josx_rcxcomm_irTower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
+{
+    int err = 0, jsize;
+	HANDLE fh;
+    jclass cls;
+    jfieldID fid;
+	DWORD actual;
+
+#ifdef TRACE
+	printf("Entering receive\n");
+#endif
+
+    // Get the file handle
+
+    cls = env->GetObjectClass(obj);
+    fid = env->GetFieldID(cls,"fh","J");
+
+    if (fid == 0) {
+
+#ifdef TRACE
+		printf("Could not get fh field id.\n");
+#endif	
+
+		return (jint) RCX_INTERNAL_ERR;
+    }
+
+    fh = (HANDLE) env->GetLongField(obj,fid);
+
+	// Check that file is open
+
+	if (fh == INVALID_HANDLE_VALUE) {
+
+#ifdef TRACE
+		printf("File not open\n");
+#endif
+
+		return (jint) RCX_NOT_OPEN;
+    }
+
+	// Get the array
+
+	jsize = env->GetArrayLength(arr);
+	jbyte *body = env->GetByteArrayElements(arr, 0);
+
+	// Receive a packet
+	
+	actual = rcx_recv(fh, body, jsize, TIME_OUT, 1);
+
+    if (actual < 0) err = GetLastError();
+
+    // Set err in the Java class
+
+    cls = env->GetObjectClass(obj);
+    fid = env->GetFieldID(cls,"err","I");
+
+    if (fid == 0) {
+
+#ifdef TRACE
+		printf("Could not get field id for err.\n");
+#endif
+
+		return (jint) RCX_INTERNAL_ERR;
+    }
+
+    env->SetIntField(obj,fid,err);
+
+	// Release the array and copy it back
+
+	env->ReleaseByteArrayElements(arr, body, 1);
+
+#ifdef TRACE
+	printf("Exiting receive\n");
+#endif	
+
+	return (jint) actual;
+}
+
+// hexdump - print a hex dump to stdout
+
+JNIEXPORT void JNICALL
+Java_josx_rcxcomm_irTower_hexdump(JNIEnv *env, jobject obj, jstring jprefix, jbyteArray arr, jint n)
+{
+
+#ifdef TRACE
+	printf("Entering hexdump\n");
+#endif
+
+	//  Get the prefix
+	
+	const char *prefix = env->GetStringUTFChars(jprefix,0);
+
+	// Get the array
+
+	jbyte *body = env->GetByteArrayElements(arr, 0);
+
+	// Dump the bytes
+
+	hexdump((char *) prefix,body,n);
+
+	// Release the string parameter
+
+	env->ReleaseStringUTFChars(jprefix,prefix);
+
+	// Release the array
+
+	env->ReleaseByteArrayElements(arr, body, 0);
+
+#ifdef TRACE
+	printf("Exiting hexdump\n");
+#endif
+
+}
+
+// isAlive - test if IR Tower is alive
+
+JNIEXPORT jint JNICALL
+Java_josx_rcxcomm_irTower_isAlive(JNIEnv *env, jobject obj)
+{
+	HANDLE fh;
+    jclass cls;
+    jfieldID fid;
+
+#ifdef TRACE
+	printf("Entering isAlive\n");
+#endif
+
+    // Get the file handle
+
+    cls = env->GetObjectClass(obj);
+    fid = env->GetFieldID(cls,"fh","J");
+
+    if (fid == 0) {
+
+#ifdef TRACE
+		printf("Could not get fh field id.\n");
+#endif	
+
+		return (jint) RCX_INTERNAL_ERR;
+    }
+
+    fh = (HANDLE) env->GetLongField(obj,fid);
+  
+	// Check if RCX is alive
+	
+	jint alive = rcx_is_alive(fh,1);
+
+#ifdef TRACE
+	printf("Exiting isAlive\n");
+#endif
+
+	return (jint) alive;
+
+}
+
+// strerror - get error message corresponding to a result code
+
+JNIEXPORT jstring JNICALL
+Java_josx_rcxcomm_irTower_strerror(JNIEnv *env, jobject obj, jint errno)
+{
+
+#ifdef TRACE
+	printf("Entering strerror\n");
+#endif
+
+
+#ifdef TRACE
+	printf("Exiting strerror\n");
+#endif
+
+	return env->NewStringUTF((const char *) rcx_strerror((int) errno));
+
+}
+
+
+
+
