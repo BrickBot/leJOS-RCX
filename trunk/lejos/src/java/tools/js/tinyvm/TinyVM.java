@@ -8,54 +8,40 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.StringTokenizer;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Vector;
 
 import js.tinyvm.io.BEDataOutputStream;
 import js.tinyvm.io.ByteWriter;
 import js.tinyvm.io.LEDataOutputStream;
-import js.tinyvm.util.Assertion;
 import js.tools.ToolProgressListener;
 import js.tools.ToolProgressListenerImpl;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 /**
  * Tiny VM
  * 
- * TODO use _progress instead of Assertion
- * TODO refactor commandline parsing
+ * TODO use _progress instead of Assertion TODO refactor commandline parsing
  * TODO use no system properties, use parameters instead
  */
 public class TinyVM implements Constants
 {
   static final String CP_PROPERTY = "tinyvm.class.path";
-  static final String WO_PROPERTY = "tinyvm.write.order";
   static final String TINYVM_HOME = System.getProperty("tinyvm.home");
   static final String TINYVM_LOADER = System.getProperty("tinyvm.loader");
   static final String TEMP_DIR = System.getProperty("temp.dir");
   static final String TEMP_FILE = "__tinyvm__temp.tvm__";
   static final String TOOL_NAME = System.getProperty("tinyvm.linker");
-  
-  private String iClassPath = System.getProperty(CP_PROPERTY);
-  private String iWriteOrder = System.getProperty(WO_PROPERTY);
-  private String iOutputFile;
-  
-  private boolean iDoDownload = false;
-  private boolean iDumpFile = false;
-  private boolean iDumpGameboyRom = false;
-  private boolean iAll = false;
 
   private ToolProgressListener _progress = null;
 
-  private static class Option
-  {
-    String iOption;
-    String iArgument;
-
-    public String toString ()
-    {
-      return iOption + " " + iArgument;
-    }
-  }
+  private boolean _verbose = false;
 
   /**
    * Main entry point for command line usage.
@@ -71,6 +57,7 @@ public class TinyVM implements Constants
     }
     catch (TinyVMException e)
     {
+      e.printStackTrace();
       System.err.println(e.getMessage());
       System.exit(1);
     }
@@ -92,166 +79,142 @@ public class TinyVM implements Constants
    * @param args command line
    * @throws TinyVMException
    */
-  public void start (String[] arg) throws TinyVMException
+  public void start (String[] args) throws TinyVMException
   {
-    Vector pRealArgs = new Vector();
-    Vector pOptions = new Vector();
-    boolean gotBin = false;
+    Options options = new Options();
+    options.addOption("v", "verbose", false,
+        "print class and signature information");
+    options.addOption("cp", "classpath", true, "classpath");
+    options.addOption("d", "download", false, "download binary");
+    options.addOption("o", "output", true, "dump binary into path");
+    options.addOption("a", "all", false, "???");
+    options.addOption("wo", "writeorder", true, "write order (BE or LE)");
+    options.addOption("gb", "gameboy", false, "dump gameboy rom");
 
-    for (int i = 0; i < arg.length; i++)
+    CommandLine commandLine;
+    try
     {
-      if (arg[i].startsWith("-"))
-      {
-        Option pOption = new Option();
-        pOption.iOption = arg[i];
-        if (arg[i].startsWith("-verbose="))
-        {
-          pOption.iOption = "-verbose";
-          pOption.iArgument = arg[i].substring("-verbose=".length());
-        }
-        else if (arg[i].equals("-classpath"))
-        {
-          pOption.iArgument = arg[++i];
-          Assertion.trace("Got -classpath option: " + pOption.iArgument);
-        }
-        else if (arg[i].equals("-o"))
-        {
-          pOption.iArgument = arg[++i];
-          gotBin = true;
-          Assertion.trace("Got -o option: " + pOption.iArgument);
-        }
-        pOptions.addElement(pOption);
-      }
-      else
-      {
-        pRealArgs.addElement(arg[i]);
-      }
+      commandLine = new GnuParser().parse(options, args);
+      checkParameters(commandLine, options);
+    }
+    catch (ParseException e)
+    {
+      throw new TinyVMException(e);
     }
 
-    start(pRealArgs, pOptions, gotBin);
+    // options
+    _verbose = commandLine.hasOption("v");
+    String systemClasspath = System.getProperty(CP_PROPERTY);
+    String classpath = commandLine.getOptionValue("cp", systemClasspath);
+    boolean download = commandLine.hasOption("d");
+    String output = commandLine.getOptionValue("o");
+    boolean all = commandLine.hasOption("a");
+    boolean bigEndian = "be".equalsIgnoreCase(commandLine.getOptionValue("wo"));
+    boolean dumpGameboy = commandLine.hasOption("gb");
+
+    // files
+    String[] classes = commandLine.getArgs();
+
+    try
+    {
+      if (dumpGameboy)
+      {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
+        link(classpath, classes, all, stream, bigEndian);
+        downloadGameboyRom(stream, classes[0]);
+      }
+      else if (download)
+      {
+        File file = new File(new File(TEMP_DIR), TEMP_FILE);
+        OutputStream stream = new FileOutputStream(file);
+        link(classpath, classes, all, stream, bigEndian);
+        invokeTvm(output);
+        file.delete();
+      }
+      else if (output != null)
+      {
+        OutputStream stream = new FileOutputStream(output);
+        link(classpath, classes, all, stream, bigEndian);
+      }
+    }
+    catch (FileNotFoundException e)
+    {
+      throw new TinyVMException(e);
+    }
   }
 
   /**
-   * Execute tiny vm.
+   * Check parameters.
    * 
-   * @param aArgs
-   * @param aOptions
-   * @param gotBin
-   * @throws Exception
-   */
-  public void start (Vector aArgs, Vector aOptions, boolean gotBin)
-      throws TinyVMException
-  {
-    // if no download program is supplied, the -o parameter is mandatory
-    // Make the usage statement reflect this
-
-    if (aArgs.size() != 1 || (TINYVM_LOADER == null && !gotBin))
-    {
-      String firstLine = TOOL_NAME + " links";
-      if (TINYVM_LOADER != null)
-        firstLine += " and downloads";
-      firstLine += " a program.";
-      System.out.println(firstLine);
-      String useLine = "Use: " + TOOL_NAME + " [options] class1[,class2,...]";
-      if (TINYVM_LOADER == null)
-        useLine += " -o <path>";
-      System.out.println(useLine);
-      if (TINYVM_LOADER == null)
-        System.out.println("Dumps binary into <path>");
-      System.out.println("Options:");
-      if (TINYVM_LOADER != null)
-        System.out
-            .println("  -o <path>         Dump binary into path (no download)");
-      System.out
-          .println("  -verbose[=<n>]    Print class and signature information");
-      System.out.println("  -all              Include all methods");
-      System.exit(1);
-    }
-    processOptions(aOptions);
-    if (iClassPath == null)
-    {
-      throw new TinyVMException("Internal error: Classpath not defined. "
-          + "Use either -classpath or property " + CP_PROPERTY);
-    }
-    
-    start((String) aArgs.elementAt(0));
-  }
-
-  /**
-   * Process options.
-   * 
-   * @param aOptions
+   * @param classpath
+   * @param classes
+   * @param all
+   * @return @throws TinyVMException
    * @throws TinyVMException
    */
-  public void processOptions (Vector aOptions) throws TinyVMException
+  protected void checkParameters (CommandLine commandLine, Options options)
+      throws TinyVMException
   {
-    int pSize = aOptions.size();
-    for (int i = 0; i < pSize; i++)
+    try
     {
-      Option pOpt = (Option) aOptions.elementAt(i);
-      Assertion.trace("Option " + i + ": " + pOpt);
-      if (pOpt.iOption.equals("-classpath"))
+      if (!commandLine.hasOption("cp")
+          && System.getProperty(CP_PROPERTY) == null)
       {
-        iClassPath = pOpt.iArgument;
+        throw new TinyVMException("No classpath defined");
       }
-      if (pOpt.iOption.equals("-o"))
+
+      int dumpGameboyRom = commandLine.hasOption("gb") ? 1 : 0;
+      int download = commandLine.hasOption("d") ? 1 : 0;
+      int output = commandLine.hasOption("o") ? 1 : 0;
+      if (dumpGameboyRom + download + output > 1)
       {
-        if (iDoDownload)
-        {
-          throw new TinyVMException("You cannot specify both -d and -o options.");
-        }
-        iDumpFile = true;
-        iOutputFile = pOpt.iArgument;
+        throw new TinyVMException("-gb -d and -o are exclusive");
       }
-      else if (pOpt.iOption.equals("-gb"))
+      else if (dumpGameboyRom + download + output == 0)
       {
-        iDumpGameboyRom = true;
+        throw new TinyVMException("No output location specified");
       }
-      else if (pOpt.iOption.equals("-all"))
+
+      String writeOrder = commandLine.getOptionValue("wo").toLowerCase();
+      if (!"be".equals(writeOrder) && !"le".equals(writeOrder))
       {
-        iAll = true;
+        throw new TinyVMException("Wrong write order: " + writeOrder);
       }
-      else if (pOpt.iOption.equals("-verbose"))
+
+      if (commandLine.getArgs().length == 0)
       {
-        int pLevel = 1;
-        try
-        {
-          pLevel = Integer.parseInt(pOpt.iArgument);
-        }
-        catch (Exception e)
-        {
-          if (Assertion.iTrace)
-          {
-            e.printStackTrace();
-          }
-        }
-        Assertion.setVerboseLevel(pLevel);
+        throw new TinyVMException("No classes specified");
       }
     }
-    if (!iDumpFile && !iDumpGameboyRom)
+    catch (TinyVMException e)
     {
-      iDoDownload = true;
-      iOutputFile = TEMP_FILE;
+      StringWriter writer = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(writer);
+      printWriter.println(e.getMessage());
+
+      String usage = getClass().getName() + " [options] class1[,class2,...]\n";
+      new HelpFormatter().printHelp(printWriter, 80, usage.toString(), null,
+          options, 0, 2, null);
+
+      throw new TinyVMException(writer.toString());
     }
   }
 
   /**
    * Execute tiny vm.
    * 
-   * @param aClassList
-   * @throws Exception
+   * @param classpath classpath
+   * @param classes main classes to compile
+   * @param all
+   * @param stream output stream to write binary to
+   * @param bigEndian write big endian output?
+   * @throws TinyVMException
    */
-  public void start (String aClassList) throws TinyVMException
+  public void link (String classpath, String[] classes, boolean all,
+      OutputStream stream, boolean bigEndian) throws TinyVMException
   {
-    Vector pVec = new Vector();
-    StringTokenizer pTok = new StringTokenizer(aClassList, ",");
-    while (pTok.hasMoreTokens())
-    {
-      String pClassName = pTok.nextToken();
-      pVec.addElement(pClassName.replace('.', '/').trim());
-    }
-
-    start(pVec);
+    Binary binary = link(classpath, classes, all);
+    dump(binary, stream, bigEndian);
   }
 
   /**
@@ -260,75 +223,85 @@ public class TinyVM implements Constants
    * @param aEntryClasses
    * @throws Exception
    */
-  public void start (Vector aEntryClasses) throws TinyVMException
+  public Binary link (String classpath, String[] classes, boolean all)
+      throws TinyVMException
   {
+    Binary result;
     try
     {
-      if (aEntryClasses.size() >= 256)
+      if (classes.length >= 256)
       {
         throw new TinyVMException("Too many entry classes (max is 255!)");
       }
-      ClassPath pCP = new ClassPath(iClassPath);
-      Binary pBin = Binary.createFromClosureOf(aEntryClasses, pCP, iAll);
-      int pNum = aEntryClasses.size();
-      for (int i = 0; i < pNum; i++)
+
+      ClassPath computedClasspath = new ClassPath(classpath);
+      // TODO refactor
+      Vector classVector = new Vector();
+      for (int i = 0; i < classes.length; i++)
       {
-        String pName = (String) aEntryClasses.elementAt(i);
-        if (!pBin.hasMain(pName))
+        classVector.addElement(classes[i].replace('.', '/').trim());
+      }
+      result = Binary.createFromClosureOf(classVector, computedClasspath, all);
+      for (int i = 0; i < classes.length; i++)
+      {
+        String clazz = classes[i].replace('.', '/').trim();
+        if (!result.hasMain(clazz))
         {
-          throw new TinyVMException("Class " + pName + " doesn't have a "
-              + "static void main(String[]) method");
+          throw new TinyVMException("Class " + clazz
+              + " doesn't have a static void main(String[]) method");
         }
       }
-      ByteArrayOutputStream pGbStream = null;
-      OutputStream pBaseStream;
-      if (iDumpGameboyRom)
-      {
-        pGbStream = new ByteArrayOutputStream(1024);
-        pBaseStream = pGbStream;
-      }
-      else
-      {
-        if (iOutputFile == null)
-        {
-          throw new TinyVMException("No ouput file specified. Use -d, -o or -gb");
-        }
-        pBaseStream = new FileOutputStream(iOutputFile);
-      }
-      OutputStream pOut = new BufferedOutputStream(pBaseStream, 4096);
-      ByteWriter pBW = null;
-      if ("BE".equals(iWriteOrder))
-        pBW = new BEDataOutputStream(pOut);
-      else if ("LE".equals(iWriteOrder))
-        pBW = new LEDataOutputStream(pOut);
-      else
-      {
-        throw new TinyVMException(WO_PROPERTY + " not BE or LE.");
-      }
-      pBin.dump(pBW);
-      pOut.close();
-      if (iDoDownload)
-      {
-        invokeTvm(TEMP_FILE);
-        new File(TEMP_FILE).delete();
-      }
-      if (iDumpGameboyRom)
-      {
-        GbMerger merger = new GbMerger(TEMP_DIR);
-        merger.dumpRom(pGbStream.toByteArray(), (String) aEntryClasses
-            .elementAt(0));
-      }
-    }
-    catch (FileNotFoundException e)
-    {
-      throw new TinyVMException(e);
-    }
-    catch (IOException e)
-    {
-      throw new TinyVMException(e);
     }
     catch (Exception e)
     {
+      // TODO make other classes throw TinyVMExceptions too
+      throw new TinyVMException(e);
+    }
+
+    return result;
+  }
+
+  /**
+   * Execute tiny vm.
+   * 
+   * @param aEntryClasses
+   * @throws Exception
+   */
+  public void dump (Binary binary, OutputStream stream, boolean bigEndian)
+      throws TinyVMException
+  {
+    try
+    {
+      OutputStream bufferedStream = new BufferedOutputStream(stream, 4096);
+      ByteWriter byteWriter = bigEndian ? (ByteWriter) new BEDataOutputStream(
+          bufferedStream) : (ByteWriter) new LEDataOutputStream(bufferedStream);
+      binary.dump(byteWriter);
+      bufferedStream.close();
+    }
+    catch (Exception e)
+    {
+      // TODO make other classes throw TinyVMExceptions too
+      throw new TinyVMException(e);
+    }
+  }
+
+  /**
+   * Execute tiny vm.
+   * 
+   * @param aEntryClasses
+   * @throws Exception
+   */
+  public void downloadGameboyRom (ByteArrayOutputStream stream, String mainClass)
+      throws TinyVMException
+  {
+    try
+    {
+      GbMerger merger = new GbMerger(TEMP_DIR);
+      merger.dumpRom(stream.toByteArray(), mainClass);
+    }
+    catch (Exception e)
+    {
+      // TODO make other classes throw TinyVMExceptions too
       throw new TinyVMException(e);
     }
   }
@@ -340,7 +313,7 @@ public class TinyVM implements Constants
    * @throws TinyVMException
    * @throws TinyVMException
    */
-  public static void invokeTvm (String aFileName) throws TinyVMException
+  public void invokeTvm (String aFileName) throws TinyVMException
   {
     if (TINYVM_HOME == null)
     {
@@ -358,7 +331,10 @@ public class TinyVM implements Constants
     {pTvmExec, aFileName};
     try
     {
-      Assertion.verbose(1, "Executing " + pTvmExec + " (downloading) ...");
+      if (_verbose)
+      {
+        _progress.log("Executing " + pTvmExec + " (downloading) ...");
+      }
       Process p = Runtime.getRuntime().exec(pParams);
       pipeStream(p.getInputStream(), System.out);
       pipeStream(p.getErrorStream(), System.err);
@@ -375,7 +351,8 @@ public class TinyVM implements Constants
     }
     catch (InterruptedException e)
     {
-      throw new TinyVMException("Execution of " + pTvmExec + " was interrupted.");
+      throw new TinyVMException("Execution of " + pTvmExec
+          + " was interrupted.");
     }
     catch (IOException e)
     {

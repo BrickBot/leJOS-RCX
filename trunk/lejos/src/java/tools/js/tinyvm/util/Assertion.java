@@ -58,7 +58,7 @@ public static boolean iTrace = Boolean.getBoolean ("trace");
    */
   public static void verbose (int aLevel, String aMsg)
   {
-    if (iVerboseLevel >= aLevel)
+//    if (iVerboseLevel >= aLevel)
       System.out.println (aMsg);
   }
 
@@ -76,6 +76,7 @@ public static boolean iTrace = Boolean.getBoolean ("trace");
    */
   public static boolean isVerbose (int aLevel)
   {
-    return iVerboseLevel >= aLevel;
+//    return iVerboseLevel >= aLevel;
+    return true;
   }
 }

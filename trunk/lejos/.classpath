@@ -4,5 +4,6 @@
 	<classpathentry including="**/*.java" kind="src" path="src/java/vision"/>
 	<classpathentry including="**/*.java" kind="src" path="src/java/tools"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.0.jar"/>
 	<classpathentry kind="output" path="build/bin"/>
 </classpath>
