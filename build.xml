@@ -19,7 +19,7 @@
   <property name="bin" value="${basedir}/bin"/>
   <property name="lib" value="${basedir}/lib"/>
 
-  <property name="org.lejos" value="${basedir}/../org.lejos/lib"/>
+  <property name="org.lejos" value="${basedir}/../org.lejos"/>
 
   <!--
     ==================================================
@@ -68,6 +68,7 @@
     <mkdir dir="${build}/classes"/>
     <javac srcdir="${javasrc}/classes" destdir="${build}/classes" fork="yes" optimize="on" debug="on" target="1.1"/>
     <jar destfile="${lib}/classes.jar" basedir="${build}/classes" update="false"/>
+    <zip destfile="${build}/classes-src.zip" basedir="${javasrc}/classes"/>
   </target>
 
   <!--
@@ -81,6 +82,7 @@
       <classpath location="${lib}/classes.jar"/>
     </javac>
     <jar destfile="${lib}/rcxcomm.jar" basedir="${build}/rcxcomm" update="false"/>
+    <zip destfile="${build}/rcxcomm-src.zip" basedir="${javasrc}/rcxcomm"/>
   </target>
 
   <!--
@@ -92,6 +94,7 @@
     <mkdir dir="${build}/pcrcxcomm"/>
     <javac srcdir="${javasrc}/pcrcxcomm" destdir="${build}/pcrcxcomm" fork="yes" optimize="on" debug="on" source="1.4"/>
     <jar destfile="${lib}/pcrcxcomm.jar" basedir="${build}/pcrcxcomm" update="false"/>
+    <zip destfile="${build}/pcrcxcomm-src.zip" basedir="${javasrc}/pcrcxcomm"/>
   </target>
 
   <!--
@@ -110,6 +113,7 @@
       <classpath path="${lib}/jmf.jar:${lib}/pcrcxcomm.jar" />
     </javac>
     <jar destfile="${lib}/vision.jar" basedir="${build}/vision" update="false"/>
+    <zip destfile="${build}/vision-src.zip" basedir="${javasrc}/vision"/>
   </target>
 
   <!--
@@ -142,15 +146,21 @@
     ==================================================
   -->
   <target name="all" depends="clean, classes, rcxcomm, pcrcxcomm, vision, jtools" description="generate all jar files">
-    <mkdir dir="${org.lejos}"/>
+    <mkdir dir="${org.lejos}/lib"/>
     <delete>
       <fileset dir="${org.lejos}">
         <include name="*.jar"/>
       </fileset>
     </delete>
-    <copy todir="${org.lejos}">
+    <copy todir="${org.lejos}/lib">
       <fileset dir="${lib}">
         <include name="*.jar"/>
+      </fileset>
+    </copy>
+    <mkdir dir="${org.lejos}/src"/>
+    <copy todir="${org.lejos}/src">
+      <fileset dir="${build}">
+        <include name="*.zip"/>
       </fileset>
     </copy>
   </target>
