@@ -48,8 +48,12 @@ package josx.platform.rcx;
  */
 public class Serial
 {
+  private static final byte[] buffer = new byte[6]; // opcode + at most 5 data 
   private static final byte[] iAuxBuffer = new byte[4];
   private static final int iAuxBufferAddr = Native.getDataAddress (iAuxBuffer);
+
+  private static SerialListener[] iListeners = null;
+  private static int iNumListeners;
 
   private Serial()
   {
@@ -167,6 +171,29 @@ public class Serial
     while (isSending())
     {
        Thread.sleep(20);
+    }
+  }
+
+  /**
+   * Adds a listener of receive events.  There can be at most
+   * 4 listeners.
+   */
+  public static synchronized void addSerialListener (SerialListener aListener)
+  {
+    if (iListeners == null)
+    {
+      iListeners = new SerialListener[4];
+    }
+    iListeners[iNumListeners++] = aListener;
+    ListenerThread.get().addSerialToMask();
+  }
+
+
+  static synchronized void callListeners()
+  {
+    int length = Serial.readPacket (buffer); 
+    for( int i = 0; i < iNumListeners; i++) {
+      iListeners[i].packetAvailable (buffer, length);
     }
   }
 }

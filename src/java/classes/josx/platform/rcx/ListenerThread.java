@@ -1,7 +1,7 @@
 package josx.platform.rcx;
 
 /**
- * Utiltity class for dispatching events to button and sensor listeners.
+ * Utility class for dispatching events to button, sensor and serial listeners.
  *
  * @author Paul Andrews
  */
@@ -42,13 +42,17 @@ class ListenerThread extends Thread
   void addSensorToMask(int id) {
       addToMask(1 << id);
   }
+
+  void addSerialToMask() {
+      addToMask(1 << Poll.SERIAL_SHIFT);
+  }
   
   public void run()
   {
       for (;;) {
           try  {
               int changed = poller.poll(mask, 0);
-              
+
               if ((changed & Poll.SENSOR1_MASK) != 0)
                   Sensor.S1.callListeners();
               if ((changed & Poll.SENSOR2_MASK) != 0)
@@ -61,6 +65,8 @@ class ListenerThread extends Thread
                   Button.VIEW.callListeners();
               if ((changed & Poll.PRGM_MASK) != 0)
                   Button.PRGM.callListeners();
+              if ((changed & Poll.SERIAL_MASK) != 0)
+                  Serial.callListeners();
           } catch (InterruptedException ie) {
           }
       }

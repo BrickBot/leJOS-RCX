@@ -43,3 +43,10 @@ void read_buttons(int dummy, short *output)
 {
   *output = 0;
 }
+
+
+void check_for_data (char *valid, char **nextbyte)
+{
+  *valid = 0;
+}
+

@@ -12,5 +12,6 @@ typedef struct {
 extern sensor_t sensors[3];
 extern void poll_sensors( void);
 extern void read_buttons(int, short*);
+extern void check_for_data (char *valid, char **nextbyte);
 
 #endif // _SENSORS_H
