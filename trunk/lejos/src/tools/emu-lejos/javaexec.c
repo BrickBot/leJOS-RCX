@@ -36,7 +36,10 @@
 
 #define TOOLS_JAR "/lib/jtools.jar"
 #define LIB_JAR   "/lib/classes.jar"
-#define LIB_COMM_JAR   "/lib/rcxrcxcomm.jar"
+#define LIB_COMM_JAR   "/lib/rcxcomm.jar"
+
+#define BCEL_JAR "/lib/bcel-5.1.jar"
+#define LIB_COMMONS_CLI_JAR "/lib/commons-cli-1.0.jar"
 
 #define DEFAULT_CLASSPATH  "."
 
@@ -50,6 +53,9 @@ void set_classpath (char *toolsPath)
 
   #ifdef __CYGWIN__
   auxstr = (char *) malloc (MAX_PATH);
+  #if TRACE
+  printf ("calling cygwin_conv_to_win32_path with %s\n", toolsPath);
+  #endif
   cygwin_conv_to_win32_path (toolsPath, auxstr);
   toolsPath = auxstr;
 
@@ -59,6 +65,9 @@ void set_classpath (char *toolsPath)
   
   #endif // __CYGWIN__
 
+  #if TRACE
+  printf ("setting classpath to %s\n", toolsPath);
+  #endif
   envasg = append ("CLASSPATH=", toolsPath);
   #if TRACE
   printf ("setting %s\n", envasg);
@@ -101,6 +110,9 @@ char *get_loader_classpath (char *libpath, char *libcommpath)
     cpath = append (cpath, PATH_SEPARATOR);
     cpath = append (cpath, oldcpath);
   }
+  #if TRACE
+  printf ("cpath set to %s\n", cpath);
+  #endif
   return cpath;
 }
 
@@ -139,7 +151,20 @@ int main (int argc, char *argv[])
   newargv = (char **) malloc (sizeof (char *) * (argc + 20));
   count = 0;
   toolsPath = append (tinyvmHome, TOOLS_JAR);
+
+  toolsPath = append (toolsPath,PATH_SEPARATOR);
+  toolsPath = append (toolsPath,tinyvmHome);
+  toolsPath = append (toolsPath,LIB_COMMONS_CLI_JAR);
+  toolsPath = append (toolsPath,PATH_SEPARATOR);
+  toolsPath = append (toolsPath,tinyvmHome);
+  toolsPath = append (toolsPath,BCEL_JAR);
+
   libPath = append (tinyvmHome, LIB_JAR);
+
+  libPath = append (libPath,PATH_SEPARATOR);
+  libPath = append (libPath,tinyvmHome);
+  libPath = append (libPath,BCEL_JAR);
+
   libCommPath = append(tinyvmHome,LIB_COMM_JAR);
 
   toolName = getenv (TOOL_ALT_VAR);
@@ -147,27 +172,39 @@ int main (int argc, char *argv[])
     toolName = TOOL_NAME;
   
   newargv[count++] = toolName;
-  newargv[count++] = "-Dtinyvm.linker=" LINKER_TOOL;
+  /*newargv[count++] = "-Dtinyvm.linker=" LINKER_TOOL;
   newargv[count++] = "-Dtinyvm.loader=" LOADER_TOOL;
   newargv[count++] = "-Dtinyvm.write.order=" WRITE_ORDER;
   newargv[count++] = "-Dtinyvm.loader=" LOADER_TOOL;
   newargv[count++] = append ("-Dtinyvm.home=", tinyvmHome); 
   newargv[count++] = CLASS_NAME;  
   newargv[count++] = "-classpath";
+  newargv[count++] = get_loader_classpath (libPath,libCommPath);*/
+
+  newargv[count++] = "-Dtinyvm.linker=" LINKER_TOOL;
+  newargv[count++] = "-Dtinyvm.loader=" LOADER_TOOL;
+  newargv[count++] = "-Dtinyvm.loader=" LOADER_TOOL;
+  newargv[count++] = append ("-Dtinyvm.home=", tinyvmHome); 
+  newargv[count++] = CLASS_NAME;  
+  newargv[count++] = "-cp";
   newargv[count++] = get_loader_classpath (libPath,libCommPath);
+  newargv[count++] = "-wo" ;
+  newargv[count++] = WRITE_ORDER;
+
   for (i = 1; i < argc; i++)
   {
     newargv[count++] = argv[i];	  
   }
   newargv[count++] = NULL;
     
+  set_classpath (toolsPath);  
+
   #if TRACE
-  printf ("toolName=%s\n", toolName);
+  printf (" calling %s with\n", toolName);
   for (i = 0; newargv[i] != NULL; i++)
     printf ("arg[%d]=%s\n", i, newargv[i]);
   #endif
 
-  set_classpath (toolsPath);  
   pStatus = execvp (toolName, newargv);
   fprintf (stderr, "Unable to execute %s. Return status of exec is %d.\n", toolName, (int) pStatus);
   fprintf (stderr, "Make sure %s is in the PATH, or define " TOOL_ALT_VAR ".\n", toolName);
