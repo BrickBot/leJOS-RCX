@@ -212,7 +212,12 @@ int rcxSend (void* port, void* send, int sendLength)
 	// Send message
 	rcxPurge(port);
 	int written = rcxWrite(port, message, messageLength);
-	if (written != messageLength) 
+	if (written < 0)
+	{
+		// pass error through		
+		return written;
+	}
+	else if (written != messageLength) 
 	{
       if (__comm_debug) printf("wrong number of bytes sent\n");
 		rcxPerror("write");
