@@ -208,7 +208,7 @@ Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
     }
 
     int size = env->GetArrayLength(arr);
-    jbyte* body = env->GetByteArrayElements(arr, 0);
+    jbyte* body = env->GetByteArrayElements(arr, NULL);
     int actual = rcxReceive(port, body, size, TIME_OUT);
     env->ReleaseByteArrayElements(arr, body, 1);
 
