@@ -3,11 +3,15 @@ package java.lang;
 /**
  * An expandable string of characters.
  */
-public class StringBuffer
+public final class StringBuffer
 {
   char[] characters;
   int size;
 
+  public StringBuffer () {
+  	characters = new char[0];
+  }
+  
   public StringBuffer (String aString)
   {
     characters = aString.toCharArray();

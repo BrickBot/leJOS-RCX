@@ -44,13 +44,15 @@ Thread *bootThread;
 #define TDATASIZE      100
 #define MAXNEXTBYTEPTR (MEM_END - TDATASIZE)
 
-#define HC_NONE            0
-#define HC_SHUTDOWN_POWER  1
-#define HC_EXIT_PROGRAM    2
+// Hook Commands
+#define HC_NONE            0	// No hook command
+#define HC_SHUTDOWN_POWER  1	// Shut down power
+#define HC_EXIT_PROGRAM    2	// Exit program
 
-#define HP_NO_PROGRAM      0
-#define HP_INTERRUPTED     1
-#define HP_NOT_STARTED     2
+// Program Status
+#define HP_NO_PROGRAM      0	// No program at all
+#define HP_INTERRUPTED     1	// Not used
+#define HP_NOT_STARTED     2	// Not started
 
 #define BUTTON_VIEW 0x02
 #define BUTTON_PRGM 0x04
@@ -171,6 +173,9 @@ void switch_thread_hook()
     // Power button pressed - wait for release
     wait_for_power_release (150);
     schedule_request (REQUEST_EXIT);
+    
+    // If power button is released whilst run button is down
+    // exit the program (once run button is released)
     if (st & BUTTON_RUN)
     {
       wait_for_release (BUTTON_RUN);
@@ -178,6 +183,7 @@ void switch_thread_hook()
     }
     else
     {
+      // Just shut down the power
       hookCommand = HC_SHUTDOWN_POWER;      
       play_system_sound (SOUND_QUEUED, 0);
       delay (40000);
@@ -193,32 +199,57 @@ void reset_rcx_serial()
 
 int main (void)
 {
- LABEL_FIRMWARE_ONE_TIME_INIT:
+// Main entry point for VM
+LABEL_FIRMWARE_ONE_TIME_INIT:
+  // If just downloaded VM, we have no program.
   hasProgram = HP_NO_PROGRAM;
- LABEL_POWERUP:
+  
+  // Default program number
+  set_program_number (0);
+  
+// Power up initializations
+LABEL_POWERUP:  
   // The following call always needs to be the first one.
   init_timer (&timerdata0, &timerdata1[0]);
-  sys_time = 0l;
-  set_program_number (0);
+
+  // Set sleep mode to 'standby' plus other stuff needed for init_serial()  
   init_power();
+  
+  // Initialize timer handler.
+  sys_time = 0l;
   systime_init();
+
+  // Not sure why this is done.  
   init_sensors();
+  
   // If power key pressed, wait until it's released.
   wait_for_power_release (600);
- LABEL_NEW_PROGRAM:
+  
+// Entry point for program exit (HC_EXIT_PROGRAM)
+LABEL_NEW_PROGRAM:
+  // No hook command to execute
   hookCommand = HC_NONE;
- LABEL_DOWNLOAD:
+  
+// Go into download mode
+LABEL_RESET_DOWNLOAD:
+  // Initialize serial I/O
   reset_rcx_serial();
- LABEL_DOWNLOAD_INIT:
+  
+// Initialize download
+LABEL_DOWNLOAD_INIT:
   isReadyToTransfer = false;
   play_system_sound (SOUND_QUEUED, 1);
   clear_display();
   get_power_status (POWER_BATTERY, &status);
   status = (status * 100L) / 355L;
   set_lcd_number (LCD_UNSIGNED, status, 3002);
- LABEL_SHOW_PROGRAM_NUMBER:
+  
+// Show program number
+LABEL_SHOW_PROGRAM_NUMBER:
   set_lcd_number (LCD_PROGRAM, get_program_number(), 0);
- LABEL_START_TRANSFER:
+
+// Entry point for download start
+LABEL_START_TRANSFER:
   powerOffTime = sys_time + POWER_OFF_TIMEOUT;
   clear_lcd_segment (LCD_WALKING);
   if (hasProgram != HP_NO_PROGRAM)
@@ -231,7 +262,9 @@ int main (void)
   }
   refresh_display();
   currentIndex = 1;
- LABEL_COMM_LOOP:
+
+// Loop downloading stuff
+LABEL_COMM_LOOP:
   for (;;)
   {
     check_for_data (&valid, &nextByte);
@@ -266,13 +299,13 @@ int main (void)
 	  send_data (SERIAL_NO_POINTER, 0, buffer, 2);
 	  if (!isReadyToTransfer)
 	  {
-  	    goto LABEL_DOWNLOAD;
+  	    goto LABEL_RESET_DOWNLOAD;
 	  }
           break;
 	case 0x12:
           // Get value -- used by TinyVM to initiate download
 	  if (isReadyToTransfer)
-            goto LABEL_DOWNLOAD;
+            goto LABEL_RESET_DOWNLOAD;
 	  buffer[0] = ~buffer[0];
 	  buffer[1] = (byte) (MAGIC >> 8);
 	  buffer[2] = (byte) (MAGIC & 0xFF);
@@ -286,11 +319,14 @@ int main (void)
           #if 0
           trace (2, (short) buffer[0], 7);
           #endif
-          goto LABEL_DOWNLOAD;
+          goto LABEL_RESET_DOWNLOAD;
       }
+      // Only gets here if we are transferring data
       set_lcd_number (LCD_UNSIGNED, (short) currentIndex, 3002);
       set_lcd_number (LCD_PROGRAM, (short) 0, 0);
       refresh_display();
+      
+      // Do we have all the data?
       if (currentIndex != 1 && seqNumber == 0)
       {
         // Reinitialize serial communications
@@ -301,7 +337,7 @@ int main (void)
         if (get_magic_number() != MAGIC)
         { 
           trace (1, MAGIC, 9);
-          goto LABEL_DOWNLOAD;
+          goto LABEL_RESET_DOWNLOAD;
         }
 	// Indicate that the RCX has a new program in it.
 	hasProgram = HP_NOT_STARTED;
@@ -317,31 +353,45 @@ int main (void)
         trace (4, (TWOBYTES) seqNumber, currentIndex);
         trace (4, (TWOBYTES) nextByte / 10, 5);
         #endif
-        goto LABEL_DOWNLOAD;
+        goto LABEL_RESET_DOWNLOAD;
       }
       currentIndex++;
     }
-    else
+    else	// No data to be received
     {
+      // Should we power off?
       if (sys_time >= powerOffTime)
       {
 	play_system_sound (SOUND_QUEUED, 0);
 	delay (30000);
 	goto LABEL_SHUTDOWN_POWER;
       }
+      
+      // Check for button presses
       switch_thread_hook();
+      
+      // Power off?
       if (hookCommand == HC_SHUTDOWN_POWER)
         goto LABEL_SHUTDOWN_POWER;
+        
+      // Stop program? But then we aren't running it!
       if (hookCommand != HC_NONE)
 	goto LABEL_START_TRANSFER;
+	
+      // If we have a program to run...
       if (hasProgram != HP_NO_PROGRAM)
       {
+      	// Check on a few more buttons
         read_buttons (0x3000, &status);
+        
+        // Run the program
 	if (status & BUTTON_RUN)
 	{
           wait_for_release (BUTTON_RUN);
 	  goto LABEL_PROGRAM_STARTUP;
 	}
+	
+	// Run a different program
 	else if (status & BUTTON_PRGM)
 	{
 	  play_system_sound (SOUND_QUEUED, 0);
@@ -350,10 +400,11 @@ int main (void)
 	  goto LABEL_SHOW_PROGRAM_NUMBER;
 	}
       }
-    }
-  }
+    } // End if(valid)else
+  } // End for
 
- LABEL_PROGRAM_STARTUP:
+// Run the program.
+LABEL_PROGRAM_STARTUP:
 
   // Reinitialize binary
   initialize_binary();
@@ -379,6 +430,7 @@ int main (void)
   #endif
   
   // Jump to this point to start executing main().
+  
   // Initialize the threading module.
   init_threads();
 
@@ -387,7 +439,7 @@ int main (void)
   if (!init_thread (bootThread))
   {
     // There isn't enough memory to even start the boot thread!!
-    trace (1, START_V, JAVA_LANG_OUTOFMEMORYERROR % 10);
+    trace (1, start_4_5V, JAVA_LANG_OUTOFMEMORYERROR % 10);
     // The program is useless now
     goto LABEL_FIRMWARE_ONE_TIME_INIT;
   }
@@ -397,37 +449,40 @@ int main (void)
   set_lcd_segment (LCD_WALKING);
   refresh_display();
   
-  //delay (200000);  
-
   // Execute the bytecode interpreter.
   engine();
 
-  // Engine returns when all threads are done or
-  // when power has been shut down. The following
-  // delay is so that motors get a chance to stop.
-  delay (20000);
+  // Program terminated.
+  clear_display();
+  refresh_display();
 
-  if (hookCommand == HC_EXIT_PROGRAM)
+  // Program terminated voluntarily
+  if (hookCommand != HC_SHUTDOWN_POWER)
   {
-    // Program must be deleted from memory
+    // We have a program but it isn't running.
+    hasProgram = HP_NOT_STARTED;
+    
+    // Stop motors.
+    control_motor(MOTOR_0,MOTOR_STOP,0);
+    control_motor(MOTOR_1,MOTOR_STOP,0);
+    control_motor(MOTOR_2,MOTOR_STOP,0);
     goto LABEL_NEW_PROGRAM;
   }
 
-  // Getting to this point means that the program
-  // finished voluntarily, or as a result of an
-  // assisted suicide.
-  hasProgram = HP_NOT_STARTED;
-  if (hookCommand != HC_SHUTDOWN_POWER)
-    goto LABEL_DOWNLOAD;
- LABEL_SHUTDOWN_POWER:
-  clear_display();
-  refresh_display();
+  // Power off has been pressed. Pause
+  // for some time to allow motors to spin down.
+  delay (20000);
+
+// Go in to standby mode  
+LABEL_SHUTDOWN_POWER:
   shutdown_sensors();
   shutdown_buttons();
   shutdown_timer();
-  shutdown_power();
+  shutdown_power();	// Presumably doesn't return again until power is pressed
   goto LABEL_POWERUP;
- LABEL_EXIT:
+
+// Erase VM  
+LABEL_EXIT:
   // Seems to be a good idea to shutdown timer before going back to ROM.
   shutdown_timer();
   return 0;

@@ -12,6 +12,10 @@ extern Object *nullPointerException;
 extern Object *classCastException;
 extern Object *arithmeticException;
 extern Object *arrayIndexOutOfBoundsException;
+extern Object *illegalArgumentException;
+extern Object *interruptedException;
+extern Object *illegalStateException;
+extern Object *error;
 
 extern void init_exceptions();
 extern void throw_exception (Object *throwable);

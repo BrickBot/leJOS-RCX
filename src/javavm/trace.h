@@ -50,18 +50,41 @@ extern void assert (boolean aCond, int aCode);
 
 #if 0
 
-#define DEBUG_STARTUP  1
-#define DEBUG_MEMORY   1
-#define DEBUG_THREADS  1
-#define DEBUG_METHODS  1
-#define DEBUG_BYTECODE 1
-#define DEBUG_FIELDS   1
-#define DEBUG_OBJECTS  1
+#define DEBUG_STARTUP     1
+#define DEBUG_MEMORY      1
+#define DEBUG_THREADS     1
+#define DEBUG_METHODS     1
+#define DEBUG_BYTECODE    1
+#define DEBUG_FIELDS      1
+#define DEBUG_OBJECTS     1
+#define DEBUG_EXCEPTIONS  1
+#define DEBUG_MONITOR     1
 
 #endif
 
-#define DEBUG_BYTECODE 0
-#define DEBUG_THREADS  0
+#ifndef DEBUG_EXCEPTIONS
+# define DEBUG_EXCEPTIONS 0
+#endif
+
+#ifndef DEBUG_MONITOR
+# define DEBUG_MONITOR 0
+#endif
+
+#ifndef DEBUG_METHODS
+# define DEBUG_METHODS 0
+#endif
+
+#ifndef DEBUG_BYTECODE
+# define DEBUG_BYTECODE 0
+#endif
+
+#ifndef DEBUG_THREADS
+# define DEBUG_THREADS  0
+#endif
+
+#ifndef DEBUG_MEMORY
+# define DEBUG_MEMORY  0
+#endif
 
 #if DEBUG_RCX
 extern void debug (short s, short n1, short n2);

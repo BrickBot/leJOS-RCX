@@ -118,13 +118,13 @@ char *get_meaning(STACKWORD *paramBase)
 		 * 2002	Control motor 2
 		 *******************************************/
 		switch (paramBase[1]) {
-		case 0x1000:
+		case 0x2000:
 			sprintf(outstring, "control_motor 0");
 			return outstring;
-		case 0x1001:
+		case 0x2001:
 			sprintf(outstring, "control_motor 1");
 			return outstring;
-		case 0x1002:
+		case 0x2002:
 			sprintf(outstring, "control_motor 2");
 			return outstring;
 		default:

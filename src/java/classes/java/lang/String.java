@@ -3,7 +3,7 @@ package java.lang;
 /**
  * An immutable string of characters.
  */
-public class String
+public final class String
 {
   // NOTE: The state of this class is mapped to
   // native code (see vmsrc/classes.h).

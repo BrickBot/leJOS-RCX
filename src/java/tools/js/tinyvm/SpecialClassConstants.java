@@ -8,7 +8,9 @@ public interface SpecialClassConstants {
     "java/lang/Object",
     "java/lang/Thread",
     "java/lang/String",
+    "java/lang/Runtime",
     "java/lang/Throwable",
+    "java/lang/Error",
     "java/lang/OutOfMemoryError",
     "java/lang/NoSuchMethodError",
     "java/lang/StackOverflowError",
@@ -16,6 +18,10 @@ public interface SpecialClassConstants {
     "java/lang/ClassCastException",
     "java/lang/ArithmeticException",
     "java/lang/ArrayIndexOutOfBoundsException",
-    "java/lang/ThreadDeath"
+    "java/lang/IllegalArgumentException",
+    "java/lang/InterruptedException",
+    "java/lang/IllegalStateException",
+    "java/lang/ThreadDeath",
+    "josx/util/Test"
   };
 }

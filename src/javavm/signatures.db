@@ -19,11 +19,40 @@ run()V
 # Native methods
 #--------------------------------------
 
+# Object
+notify()V
+notifyAll()V
+wait()V
+wait(J)V
+getDataAddress(Ljava/lang/Object;)I
+
+# Thread
 start()V
 yield()V
 sleep(J)V
-currentTimeMillis()J
+currentThread()Ljava/lang/Thread;
+getPriority()I
+setPriority(I)V
+interrupt()V
+interrupted()Z
+isInterrupted()Z
+setDaemon(Z)V
+isDaemon()Z
+join()V
+join(J)V
+
+# System
 #arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V
+currentTimeMillis()J
+exit(I)V
+
+# Runtime
+freeMemory()J
+totalMemory()J
+getRuntime()Ljava/lang/Runtime;
+
+# Throwable
+getMessage()Ljava/lang/String;
 
 callRom0(S)V
 callRom1(SS)V
@@ -32,9 +61,11 @@ callRom3(SSSS)V
 callRom4(SSSSS)V
 readMemoryByte(I)B
 writeMemoryByte(IB)V
-getDataAddress(Ljava/lang/Object;)I
 setMemoryBit(III)V
 resetSerial()V
 readSensorValue(II)I
 setSensorValue(III)V
+assert(Ljava/lang/String;Z)V
+assertEQ(Ljava/lang/String;II)V
+
 

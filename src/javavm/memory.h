@@ -18,7 +18,10 @@ extern Object *new_primitive_array (const byte primitiveType, STACKWORD length);
 extern Object *new_multi_array (byte elemType, byte totalDimensions, byte reqDimensions, STACKWORD *numElemPtr);
 extern void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr);
 extern void store_word (byte *ptr, byte aSize, STACKWORD aWord);
+extern STACKWORD get_word(byte *ptr, byte aSize);
 extern void zero_mem (TWOBYTES *ptr, TWOBYTES numWords);
+extern int getHeapSize();
+extern int getHeapFree();
 
 #if DEBUG_RCX_MEMORY
 extern void scan_memory (TWOBYTES *numNodes, TWOBYTES *biggest, TWOBYTES *freeMem);

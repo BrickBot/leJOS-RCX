@@ -1,10 +1,10 @@
 
-#include "interpreter.h"
-#include "threads.h"
 #include "trace.h"
 #include "types.h"
 #include "constants.h"
 #include "classes.h"
+#include "interpreter.h"
+#include "threads.h"
 #include "opcodes.h"
 #include "configure.h"
 #include "memory.h"
@@ -20,6 +20,20 @@
 #if DEBUG_BYTECODE
 extern char *OPCODE_NAME[];
 #endif
+
+/**
+ * Statically allocate the singleton Runtime. 
+ */
+static Runtime _runtime = {
+  // Object instance data
+  {
+    JAVA_LANG_RUNTIME, // class index
+    0                  // Syncinfo
+  }
+  // Nothing else at the moment
+};
+
+Runtime *runtime = &_runtime;
 
 // Interpreter globals:
 
@@ -103,7 +117,7 @@ static inline Object *create_string (ConstantRecord *constantRecord,
     return JNULL;
   }
   
-  //printf ("char array at %d\n", (int) arr);
+//  printf ("char array at %d\n", (int) arr);
   
   store_word ((byte *) &(((String *) ref)->characters), 4, obj2word(arr));
   
@@ -169,7 +183,7 @@ void engine()
     printf ("switching thread: %d\n", (int) numOpcodes);
     #endif
     schedule_request (REQUEST_SWITCH_THREAD);
-    #if DEBUB_THREADS
+    #if DEBUG_THREADS
     printf ("done switching thread\n");
     #endif
     numOpcodes = OPCODES_PER_TIME_SLICE;

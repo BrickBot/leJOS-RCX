@@ -2,7 +2,8 @@
 SHELL=/bin/sh
 CLASSPATH=jtools
 
-JAVAC=javac
+JAVAC=jikes -bootclasspath c:/jdk1.3/jre/lib/rt.jar
+#JAVAC=javac
 JAVADOC=javadoc
 JAVA=java
 TEMP=/usr/tmp

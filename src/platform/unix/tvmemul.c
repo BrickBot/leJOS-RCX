@@ -10,6 +10,7 @@
 #include "constants.h"
 #include "classes.h"
 #include "threads.h"
+#include "stack.h"
 #include "specialclasses.h"
 #include "specialsignatures.h"
 #include "language.h"

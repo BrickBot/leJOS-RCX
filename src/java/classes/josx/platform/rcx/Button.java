@@ -10,6 +10,8 @@ package josx.platform.rcx;
  */
 public class Button
 {
+  static final long SLEEP_TIME = 500;
+  
   /**
    * The View button.
    */
@@ -73,6 +75,8 @@ public class Button
       RUN.iNumListeners = 0;
       PRGM.iNumListeners = 0;      
       // Start thread
+      LISTENER_THREAD.setDaemon(true);
+	  LISTENER_THREAD.setPriority(Thread.MAX_PRIORITY);
       LISTENER_THREAD.start();
     }
     iListeners[iNumListeners++] = aListener;
@@ -98,6 +102,13 @@ public class Button
   {    
     static boolean[] WAS_PRESSED = new boolean[3];
     
+    void snooze(long millis) {
+    	try {
+    		sleep(SLEEP_TIME);
+    	} catch (InterruptedException ie) {
+    	}
+    }
+    
     public void run()
     {
       Button[] pButtons = BUTTONS;
@@ -119,7 +130,7 @@ public class Button
 	        for (int j = 0; j < pNumListeners; j++)
 	        {
 	          pListeners[j].buttonPressed (pButton);
-		  Thread.yield();
+		  snooze(SLEEP_TIME);
 	        }
 	      }
 	      else
@@ -127,13 +138,13 @@ public class Button
 	        for (int j = 0; j < pNumListeners; j++)
 	        {
 	          pListeners[j].buttonReleased (pButton);
-		  Thread.yield();
+		  snooze(SLEEP_TIME);
 	        } 		    
 	      }
 	    }
 	    pWasPressedArray[i] = pPressed;
   	  }
-	  Thread.yield();
+	  snooze(SLEEP_TIME);
         }
       }	    
     }

@@ -1,3 +1,23 @@
+leJOS 1.0.2:
+------------
+
+  - Added Runtime class so that heap size and free memory can be
+    returned.
+  - Added thread priorities. Scheduler will always run threads
+    of a greater priority in preference to those of a lower priority.
+  - Added daemon threads.
+  - Changed Sensor listener thread to be a daemon thread.
+  - Added ability to interrupt sleeping/waiting threads.
+  - Added System.exit().
+  - Modified native method name mangler so that native methods can
+    be overloaded.
+  - Added default constructor to StringBuffer so that expressions of the
+    form "string1" + "string2" will compile.
+  - Added Test class for performing assertions.
+  - Fixed bug in memory allocator that failed to detect a full heap.
+  - Added subsumption architcture examples using old and new threading.
+  - Added '-n' option to lejosfirmdl so that the JVM size can be checked.
+  
 leJOS 1.0.1:
 ------------
 

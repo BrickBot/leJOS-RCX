@@ -8,6 +8,11 @@
 #define REQUEST_EXIT          0
 #define REQUEST_SWITCH_THREAD 1
 
+/**
+ * The single instance of Runtime.
+ */
+extern Runtime *runtime;
+
 extern boolean gMakeRequest;
 extern byte    gRequestCode;
 
