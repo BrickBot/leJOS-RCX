@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import js.common.ToolProgressListener;
-import js.common.ToolProgressListenerImpl;
+import js.common.CLIToolProgressListenerImpl;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -33,7 +33,7 @@ public class Lejosdl extends LejosdlTool
 
     try
     {
-      Lejosdl lejosdl = new Lejosdl(new ToolProgressListenerImpl());
+      Lejosdl lejosdl = new Lejosdl(new CLIToolProgressListenerImpl());
       lejosdl.start(args);
     }
     catch (LejosdlException e)
@@ -72,7 +72,7 @@ public class Lejosdl extends LejosdlTool
     // files
     String[] binaries = commandLine.getArgs();
 
-    ((ToolProgressListenerImpl) getProgressListener()).setVerbose(verbose);
+    ((CLIToolProgressListenerImpl) getProgressListener()).setVerbose(verbose);
 
     try
     {

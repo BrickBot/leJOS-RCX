@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import js.common.ToolProgressListener;
-import js.common.ToolProgressListenerImpl;
+import js.common.CLIToolProgressListenerImpl;
 import js.tinyvm.Constants;
 import js.tinyvm.TinyVMException;
 import js.tools.FirmdlException;
@@ -37,7 +37,7 @@ public class Gameboydl implements Constants
   {
     try
     {
-      Gameboydl tinyVM = new Gameboydl(new ToolProgressListenerImpl());
+      Gameboydl tinyVM = new Gameboydl(new CLIToolProgressListenerImpl());
       tinyVM.start(args);
     }
     catch (TinyVMException e)

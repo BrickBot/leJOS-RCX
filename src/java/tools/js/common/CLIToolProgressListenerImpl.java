@@ -3,7 +3,7 @@ package js.common;
 /**
  * Simple implementation of ToolProgressListener woith output to System.out.
  */
-public class ToolProgressListenerImpl implements ToolProgressListener
+public class CLIToolProgressListenerImpl implements ToolProgressListener
 {
   private boolean _verbose = false;
   
