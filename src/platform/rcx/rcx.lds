@@ -3,6 +3,7 @@
  * -- _end is ALIGN(2) now.
  *
  * 2001-08-09 juergen: added extra0 with angle_state for rotation sensor
+ * 2002-07-05 paul: Many changes for code relocation
  */
 
 /*
@@ -39,63 +40,88 @@ OUTPUT(firmware.srec)
 OUTPUT_FORMAT(srec)
 OUTPUT_ARCH(h8300)
 ENTRY(__start)
+
+/*
+ Layout of each row is important as it is parsed by a none-to-smart
+ program
+*/
 MEMORY
 {
-    rom (r)     : o = 0x0000, l = 0x8000
-    mem         : o = 0x8000, l = 0x6f32
-    romdata1    : o = 0xef32, l = 0x00cf
-    extra1      : o = 0xf001, l = 0x0b7f
-    hwreserved1 : o = 0xfb80, l = 0x0200     /* reserved by hardware */
-    romdata2    : o = 0xfd80, l = 0x0010     /* used in init_timer */
-    intvectors  : o = 0xfd90, l = 0x0030     /* interrupt vectors */
-    stack       : o = 0xfdc0, l = 0x0220     /* grows down below 0xff80 */
-    extra2      : o = 0xff80, l = 0x0008
-    hwreserved2 : o = 0xff88, l = 0x0008     /* reserved by hardware */
-    hwregisters : o = 0xff90, l = 0x0070     /* hardware registers */
+    rom (r)     : o = 0x0000 , l = 0x8000
+    mem         : o = 0x8000 , l = 0x6f32
+    romdata1    : o = 0xef32 , l = 0x00cf
+    motorIO     : o = 0xf000 , l = 0x0004     /* Memory mapped motor I/O */
+    extra1      : o = 0xf004 , l = 0x0b7c     /* Aligned to a long word, just in case */
+    hwreserved1 : o = 0xfb80 , l = 0x0200     /* reserved by hardware */
+    romdata2    : o = 0xfd80 , l = 0x0010     /* used in init_timer */
+    intvectors  : o = 0xfd90 , l = 0x0030     /* interrupt vectors */
+    stack       : o = 0xfdc0 , l = 0x0220     /* grows down below 0xff80 */
+    extra2      : o = 0xff80 , l = 0x0008
+    hwreserved2 : o = 0xff88 , l = 0x0008     /* reserved by hardware */
+    hwregisters : o = 0xff90 , l = 0x0070     /* hardware registers */
 }
+
 SECTIONS
 {
-    .rom : {
+    /* The rom */
+    .rom 0x0000 : {
         _rom_ocia_handler = 0x36ba ;
     } > rom
-    .text : {
+    
+    /* Extra text segment. Has to be before the wildcard .mem section */
+    .extra1 0xf004 : {
+        __extra_start = . ;
+        __extra_end = . ;
+    }
+    /*
+       Note. When GNU LD computes the size of a section it uses the pre-relax
+       size of each piece of code, not the actual relaxed size. As a consequence
+       we don't define the size of this section as we know it will be correct in
+       the generated version (we perform our own packing).
+    */
+
+	/* Start of standard firmware memory */
+    .mem 0x8000 : {
         __text_begin = . ;
-	*(.init)
+        *(.init)
         *(.text)
         *(.rodata)
         *(.vectors)
         __text_end = . ;
     } > mem
-    .data : {
-        __data_begin = . ;
-        *(.data)
-        __data_end = . ;
-    } > mem
+    
+    /*
+       Need uninitialised data before initialised data so that the memory
+       relocator can work properly (i.e. there have to be records up to
+       __mem_start in the srec).
+    */
     .bss : {
         __bss_start = . ;
         *(.bss)
         *(COMMON)
-        __end = ALIGN(2) ;
+        __end = .;	/* Used by librcx.a(init.o) */
+    } > mem
+    
+    .data : {
+        __data_begin = . ;
+        *(.data)
+        __data_end = . ;
+        __mem_start = ALIGN(2);
     } > mem
 
+    /* Where the ROM keeps its variables */
     .romdata1 : {
         __romdata1 = . ;
         _angle_state = 0x00 ; /* 0xef32 */
         _transmitting = 0x61 ; /* 0xef93 */
     } > romdata1
 
-    .extra1 : {
-        _extra_memory_start = . ;
-    } > extra1
-
-    .hwreserved1 : {
-        _extra_memory_end = . ;
-    } > hwreserved1
-
+    /* Interrupt vectors */
     .intvectors : {
        _ocia_vector  = 0x12 ; /* 0xfda2 */
     } > intvectors
 
+    /* Hardware registers */
     .hwregisters : {
        _T_IER        = 0x00 ; /* 0xff90 */
     } > hwregisters

@@ -6,7 +6,7 @@ CC=$(shell ../cctest.sh)
 
 # No -O2 option below because gcc 2.95.2 crashes!
 #CFLAGS=-I../vmsrc -I. -Wall -Wno-unused -DDEBUG_BYTECODE=1
-CFLAGS=-I../vmsrc -I. -Wall -Wno-unused
+CFLAGS=-I../vmsrc -I. -Wall -Wno-unused -DDEBUG_BYTECODE=1 -DDEBUG_THREADS=1
 
 DUMP_OBJ=dump.o load.o
 

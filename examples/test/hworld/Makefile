@@ -1,32 +1,45 @@
-## modify the target, or call like: `make TARGET=NewName`
+LEJOSHOME = ../..
 
-TARGET = HelloWorld
+LEJOSC = $(LEJOSHOME)/bin/lejosc
+LEJOS = $(LEJOSHOME)/bin/lejos
+EMULEJOS = $(LEJOSHOME)/bin/emu-lejos
+LEJOSRUN = $(LEJOSHOME)/bin/lejosrun
+EMULEJOSRUN = $(LEJOSHOME)/bin/emu-lejosrun
+LEJOSFIRMDL = $(LEJOSHOME)/bin/lejosfirmdl
 
-# `make` or `make all`    compiles the $(TARGET).tvm 
-# `make auto`             compiles the $(TARGET).tvm, and downloads it
-# `make install`          downloads the $(TARGET).tvm file to the RCX
-# `make clean`            removes $(TARGET).class, and $(TARGET).tvm
-# `make File.tvm`         will compile File.tvm from File.java
-# `make inst_firmware`    downloads the firmware to the RCX.
+CLASSPATH = .
+CLASSLIB = $(LEJOSHOME)/lib/classes.jar
 
-## so that 'tvmld' can find the $(TARGET).class file:
-export CLASSPATH=.
+SOURCES = HelloWorld.java
+OBJECTS = HelloWorld.class
+PROGRAMS = HelloWorld
+BINARY = HelloWorld.bin
+EMUBINARY = HelloWorld.emu
+SIGNATURE = HelloWorld.sig
 
-all: $(TARGET).tvm
-	@echo  Run \'make install\' or 'tvm $@' to download the tvm file
+.EXPORT_ALL_VARIABLES :
 
-auto: $(TARGET).tvm install 
+.PHONY : run
 
-install:
-	tvm $(TARGET).tvm
+default : run
 
-clean:
-	rm -f $(TARGET).class $(TARGET).tvm core
+run : $(BINARY)
+	$(LEJOSRUN) $(BINARY)
 
-%.tvm: %.java
-	@echo Making: $@
-	tvmc $< 
-	tvmld $* -o $@
+emulate : $(EMUBINARY)
+	$(EMULEJOSRUN) $(EMUBINARY)
 
-inst_firmware:
-	tvmfirmdl
+firmdl :
+	$(LEJOSFIRMDL)
+
+$(BINARY) : $(OBJECTS)
+	$(LEJOS) -verbose $(PROGRAMS) -o $(BINARY) > $(SIGNATURE)
+
+$(EMUBINARY) : $(OBJECTS)
+	$(EMULEJOS) $(PROGRAMS) -o $(EMUBINARY)
+
+$(OBJECTS) : $(SOURCES) $(CLASSLIB)
+	$(LEJOSC) $(SOURCES)
+
+clean :
+	rm -f $(BINARY) $(SIGNATURE) *.class *~ core

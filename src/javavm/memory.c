@@ -36,18 +36,23 @@ byte typeSize[] = {
   8  // 11 == T_LONG
 };
 
-
 typedef struct MemoryRegion_S {
+#if SEGMENTED_HEAP
   struct MemoryRegion_S *next;  /* pointer to next region */
+#endif
   TWOBYTES *end;                /* pointer to end of region */
   TWOBYTES contents;            /* start of contents, even length */
 } MemoryRegion;
 
-
 /**
  * Beginning of heap.
  */
+#if SEGMENTED_HEAP
 static MemoryRegion *memory_regions; /* list of regions */
+#else
+static MemoryRegion *region; /* list of regions */
+#endif
+
 static TWOBYTES memory_size;    /* total number of words in heap */
 static TWOBYTES memory_free;    /* total number of free words in heap */
 
@@ -379,7 +384,9 @@ void memory_init ()
   memoryInitialized = true;
   #endif
 
+#if SEGMENTED_HEAP
   memory_regions = null;
+#endif
   memory_size = 0;
   memory_free = 0;
 }
@@ -390,18 +397,22 @@ void memory_init ()
  */
 void memory_add_region (byte *start, byte *end)
 {
+#if SEGMENTED_HEAP
   MemoryRegion *region;
+#endif
   TWOBYTES contents_size;
 
   /* word align upwards */
-  region = (MemoryRegion *) (((int)start+1) & ~1);
+  region = (MemoryRegion *) (((unsigned int)start+1) & ~1);
 
+#if SEGMENTED_HEAP
   /* initialize region header */
   region->next = memory_regions;
-  region->end = (TWOBYTES *) ((int)end & ~1); /* word align downwards */
 
   /* add to list */
   memory_regions = region;
+#endif
+  region->end = (TWOBYTES *) ((unsigned int)end & ~1); /* word align downwards */
 
   /* create free block in region */
   contents_size = region->end - &(region->contents);
@@ -411,6 +422,7 @@ void memory_add_region (byte *start, byte *end)
   memory_size += contents_size;
   memory_free += contents_size;
 
+#if SEGMENTED_HEAP
   #if DEBUG_MEMORY
   printf ("Added memory region\n");
   printf ("  start:          %5d\n", (int)start);
@@ -421,7 +433,7 @@ void memory_add_region (byte *start, byte *end)
   printf ("  memory_regions: %5d\n", (int)memory_regions);
   printf ("  contents_size:  %5d\n", (int)contents_size);
   #endif
-
+#endif
 }
 
 
@@ -430,13 +442,17 @@ void memory_add_region (byte *start, byte *end)
  */
 TWOBYTES *allocate (TWOBYTES size)
 {
+#if SEGMENTED_HEAP
   MemoryRegion *region;
+#endif
 
 #if DEBUG_MEMORY
   printf("Allocate %d - free %d\n", size, memory_free-size);
 #endif
 
+#if SEGMENTED_HEAP
   for (region = memory_regions; region != null; region = region->next) {
+#endif
     TWOBYTES *ptr = &(region->contents);
     TWOBYTES *regionTop = region->end;
 
@@ -499,7 +515,9 @@ TWOBYTES *allocate (TWOBYTES size)
         }
       }
     }
+#if SEGMENTED_HEAP
   }
+#endif
   /* couldn't allocate block */
   return JNULL;
 }

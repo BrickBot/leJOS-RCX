@@ -859,7 +859,7 @@ char *progname;
 #define WAKEUP_TIMEOUT  1000
 
 #define IMAGE_START     0x8000
-#define IMAGE_MAXLEN    0x4c00
+#define IMAGE_MAXLEN    0x8000	// Simple hack to allow writing to strange memory
 #define TRANSFER_SIZE   200
 
 /* Stripping zeros is not entirely legal if firmware expects trailing zeros */

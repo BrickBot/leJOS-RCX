@@ -1,5 +1,8 @@
 
 #include <rom.h>
+#ifdef VERIFY
+#include <setjmp.h>
+#endif
 
 #include "types.h"
 #include "constants.h"
@@ -18,7 +21,9 @@
 #include "sensors.h"
 #include "poll.h"
 
-extern char _end;
+extern byte _extra_start;
+extern byte _extra_end;
+extern char _mem_start;
 extern char _romdata1;
 extern char extra_memory_start;
 extern char extra_memory_end;
@@ -29,15 +34,17 @@ extern volatile byte transmitting;
  */
 Thread *bootThread;
 
-#if !EMULATE && VERIFY
-#error Should not VERIFY in RCX
-#endif
+//#if !EMULATE && VERIFY
+//#error Should not VERIFY in RCX
+//#endif
 
-#define MEM_START       (&_end)
+#define MEM_START       (&_mem_start)
 #define MEM_END         (&_romdata1)
 
+#if SEGMENTED_HEAP
 #define EXTRA_MEM_START (&extra_memory_start)
 #define EXTRA_MEM_END   (&extra_memory_end)
+#endif
 
 #define BUFSIZE        9
 #define TDATASIZE      100
@@ -61,9 +68,16 @@ Thread *bootThread;
  
 #ifdef VERIFY
 
+jmp_buf env;
+int assertCode = -1;
+
 void assert_hook (boolean aCond, int aCode)
 {
-  // TBD
+	if (!aCond)
+	{
+		assertCode = aCode;
+		longjmp(env, 1);
+	}
 }
 
 #endif
@@ -199,15 +213,51 @@ void switch_thread_hook()
 int main (void)
 {
   byte lastopcode = 0;
+  byte *to = &_extra_start;
+  byte *from = MEM_START;
+  byte *end = &_extra_end;
+  
+#if DEBUG_SEGMENTS
+  byte chksum1 = 0;
+  byte chksum2 = 0;
+  int size = end - to;
+  int i = 0;
+  byte chksum3 = 0;
+#endif
 
+  // Relocate segments
+  // memcpy(to, from, end-to);
+	while (to < end)
+	{
+#if DEBUG_SEGMENTS
+		chksum1 += *from;
+#endif
+		*to++ = *from++;
+	}
+
+#if DEBUG_SEGMENTS
+	for (i=0; i<size; i++)
+	{
+		chksum2 += *(((byte*)&_extra_start) + i);
+	}
+#endif
+  
 // Main entry point for VM
 LABEL_FIRMWARE_ONE_TIME_INIT:
+#ifdef VERIFY
+  if (setjmp(env) != 0)
+  {
+  	trace(4, assertCode, 0);
+  	goto LABEL_FIRMWARE_ONE_TIME_INIT;
+  }
+#endif
+
   // If just downloaded VM, we have no program.
   hasProgram = HP_NO_PROGRAM;
   
   // Default program number
   set_program_number (0);
-  
+    	
 // Power up initializations
 LABEL_POWERUP:  
   // The following call always needs to be the first one.
@@ -224,6 +274,21 @@ LABEL_POWERUP:
   
   // If power key pressed, wait until it's released.
   wait_for_power_release (600);
+
+#if DEBUG_SEGMENTS
+    chksum3 = 0;
+	for (i=0; i<size; i++)
+	{
+		chksum3 += *(((byte*)&_extra_start) + i);
+	}
+	
+	trace(3, size, 1);
+	trace(3, *((byte*)&_extra_start), 2);
+	trace(3, *(((byte*)&_extra_end)-1), 3);
+	trace(3, chksum1, 4);
+	trace(3, chksum2, 5);
+	trace(3, chksum3, 6);
+#endif
   
 // Entry point for program exit (HC_EXIT_PROGRAM)
 LABEL_NEW_PROGRAM:
@@ -237,6 +302,7 @@ LABEL_RESET_DOWNLOAD:
   isReadyToTransfer = false;
   play_system_sound (SOUND_QUEUED, 1);
   clear_display();
+  
   get_power_status (POWER_BATTERY, &status);
   status = (status * 100L) / 355L;
   set_lcd_number (LCD_SIGNED, status, LCD_DECIMAL_1);
@@ -433,10 +499,13 @@ LABEL_PROGRAM_STARTUP:
   // Initialize memory for object allocation.
   // This can only be done after initialize_binary().
   memory_init ();
-  memory_add_region (EXTRA_MEM_START, EXTRA_MEM_END);
-  memory_add_region (mmStart, MEM_END);
+  
+#if SEGMENTED_HEAP
   /* NOTE: the second, main memory, region will become the first region
            in the list, so allocation will start there */
+  memory_add_region (EXTRA_MEM_START, EXTRA_MEM_END);
+#endif
+  memory_add_region (mmStart, MEM_END);
 
   // Initialize special exceptions
   init_exceptions();
@@ -444,15 +513,16 @@ LABEL_PROGRAM_STARTUP:
   // Create the boot thread (bootThread is a special global).
   bootThread = (Thread *) new_object_for_class (JAVA_LANG_THREAD);
 
-  #if DEBUG_RCX_MEMORY
+#if DEBUG_RCX_MEMORY
   {
-    TWOBYTES numNodes, biggest, freeMem;        
-    scan_memory (&numNodes, &biggest, &freeMem);
-    trace (3, numNodes, 3);
-    trace (3, biggest, 4);
-    trace (3, freeMem, 5);
+    trace (3, getHeapSize() / 10, getHeapSize() % 10);
+    trace (3, getHeapFree() / 10, getHeapFree() % 10);
   }
-  #endif
+#endif
+
+#ifdef VERIFY
+  assert (get_magic_number() == MAGIC, BAD_MAGIC);
+#endif
   
   // Jump to this point to start executing main().
   

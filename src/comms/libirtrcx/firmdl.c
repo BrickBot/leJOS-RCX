@@ -107,8 +107,10 @@ int usb_flag = 0;
 #define WAKEUP_TIMEOUT  4000
 
 #define IMAGE_START     0x8000
-#define IMAGE_MAXLEN    0x7000
+#define IMAGE_MAXLEN    0x8000
 #define TRANSFER_SIZE   200
+
+#define SEGMENT_BREAK	1024
 
 /* Stripping zeros is not entirely legal if firmware expects trailing zeros */
 /* Define FORCE_ZERO_STRIPPING to force zero stripping for all files */
@@ -122,17 +124,34 @@ int usb_flag = 0;
 
 /* Functions */
 
-int srec_load (char *name, unsigned char *image, int maxlen, unsigned short *start)
+typedef struct
+{
+	int length;
+	int offset;
+} segment_t;
+
+typedef struct
+{
+	unsigned short entry;
+	segment_t *segments;
+} image_t;
+
+/*
+ * Returns number of image_def found.
+ */
+int srec_load (char *name, unsigned char *image, int maxlen, image_t *image_def, int numimage_def)
 {
     FILE *file;
     char buf[256];
     srec_t srec;
     int line = 0;
-    int length = 0;
+    int segStartAddr = 0;
+    int prevAddr = -SEGMENT_BREAK;
+    int prevCount = SEGMENT_BREAK;
+    int segIndex = -1;
     int strip = 0;
-
-    /* Initialize starting address */
-    *start = IMAGE_START;
+    int imageIndex = -SEGMENT_BREAK;
+    int i, length;
 
     /* Open file */
     if ((file = fopen(name, "r")) == NULL) {
@@ -169,25 +188,47 @@ int srec_load (char *name, unsigned char *image, int maxlen, unsigned short *sta
 	}
 	/* Process s-record data */
 	else if (srec.type == 1) {
+		/* Start of a new segment? */
+		if (srec.addr - prevAddr >= SEGMENT_BREAK) {
+		    // fprintf(stderr, "Found segment at 0x%x\n", srec.addr);
+		    segIndex++;
+		    if (segIndex >= numimage_def)
+		    {
+		    	fprintf(stderr, "%s: Expected number of image_def exceeded\n", name);
+		    	exit(1);
+		    }
+
+			image_def->segments[segIndex].length = 0;
+			segStartAddr = srec.addr;
+			prevAddr = srec.addr - prevCount;
+			image_def->segments[segIndex].offset = imageIndex + prevCount;
+		}
+		
 	    if (srec.addr < IMAGE_START ||
 		srec.addr + srec.count > IMAGE_START + maxlen) {
-		fprintf(stderr, "%s: address out of bounds on line %d\n",
+		fprintf(stderr, "%s: address out of bounds (srec) on line %d\n",
 			name, line);
 		exit(1);
-	    }
-	    if (srec.addr + srec.count - IMAGE_START > length)
-		length = srec.addr + srec.count - IMAGE_START;
-	    memcpy(&image[srec.addr - IMAGE_START], &srec.data, srec.count);
+		}
+
+		// Data is not necessarily contiguous so can't just accumulate srec.counts.
+	    image_def->segments[segIndex].length = srec.addr - segStartAddr + srec.count;
+	    
+		imageIndex += srec.addr - prevAddr;		
+	    memcpy(&image[imageIndex], &srec.data, srec.count);
+	    prevAddr = srec.addr;
+	    prevCount = srec.count;
 	}
-	/* Process image starting address */
+	/* Process image entry point */
 	else if (srec.type == 9) {
 	    if (srec.addr < IMAGE_START ||
 		srec.addr > IMAGE_START + maxlen) {
-		fprintf(stderr, "%s: address out of bounds on line %d\n",
+		fprintf(stderr, "%s: address out of bounds (image) on line %d\n",
 			name, line);
 		exit(1);
 	    }
-	    *start = srec.addr;
+		//fprintf(stderr, "Setting entry point to 0x%x\n", srec.addr);
+		image_def->entry = srec.addr;
 	}
     }
 
@@ -197,23 +238,35 @@ int srec_load (char *name, unsigned char *image, int maxlen, unsigned short *sta
 #endif
 
     if (strip) {
-	int pos;
-	for (pos = IMAGE_MAXLEN - 1; pos >= 0 && image[pos] == 0; pos--);
-	length = pos + 1;
+		int pos;
+    	//fprintf(stderr, "Stripping\n");
+		for (pos = IMAGE_MAXLEN - 1; pos >= 0 && image[pos] == 0; pos--)
+			image_def->segments[segIndex].length--;
     }
 
-    /* Check length */
+	for (i = 0; i <= segIndex; i++)
+		length += image_def->segments[segIndex].length;
+		
+	{
+		unsigned char chksum = 0;
+		for (i=0; i < image_def->segments[segIndex].length; i++)
+		{
+			chksum += image[image_def->segments[segIndex].offset + i];
+		}
+	}
+	
     if (length == 0) {
-	fprintf(stderr, "%s: image contains no data\n", name);
-	exit(1);
+		fprintf(stderr, "%s: image contains no data\n", name);
+		exit(1);
     }
 
-    return length;
+    return segIndex+1;
 }
 
-void image_dl(FILEDESCR fd, unsigned char *image, int len, unsigned short start,
+void download_firmware(FILEDESCR fd, unsigned char *image, int len, unsigned short start,
 	      int use_comp, char *filename)
 {
+	unsigned char ecksum = 0;
     unsigned short cksum = 0;
     unsigned char send[BUFFERSIZE];
     unsigned char recv[BUFFERSIZE];
@@ -225,19 +278,6 @@ void image_dl(FILEDESCR fd, unsigned char *image, int len, unsigned short start,
     for (i = 0; i < cksumlen; i++)
 	cksum += image[i];
 
-    /* Delete firmware */
-    send[0] = 0x65;
-    send[1] = 1;
-    send[2] = 3;
-    send[3] = 5;
-    send[4] = 7;
-    send[5] = 11;
-
-    if (rcx_sendrecv(fd, send, 6, recv, 1, 100, RETRIES, use_comp) != 1) {
-	fprintf(stderr, "%s: delete firmware failed\n", progname);
-	exit(1);
-    }
-
     /* Start firmware download */
     send[0] = 0x75;
     send[1] = (start >> 0) & 0xff;
@@ -246,7 +286,7 @@ void image_dl(FILEDESCR fd, unsigned char *image, int len, unsigned short start,
     send[4] = (cksum >> 8) & 0xff;
     send[5] = 0;
 
-    if (rcx_sendrecv(fd, send, 6, recv, 2, 100, RETRIES, use_comp) != 2) {
+    if (rcx_sendrecv(fd, send, 6, recv, 2, 200, RETRIES, use_comp) != 2) {
 	fprintf(stderr, "%s: start firmware download failed\n", progname);
 	exit(1);
     }
@@ -275,13 +315,38 @@ void image_dl(FILEDESCR fd, unsigned char *image, int len, unsigned short start,
 	    cksum += send[5 + i];
 	send[size + 5] = cksum & 0xff;
 
-	if (rcx_sendrecv(fd, send, size + 6, recv, 2, 100, RETRIES,
+	if (rcx_sendrecv(fd, send, size + 6, recv, 2, 200, RETRIES,
 			 use_comp) != 2 || recv[1] != 0) {
 	    fprintf(stderr, "%s: transfer data failed\n", progname);
 	    exit(1);
 	}
     }
     fputs("100%        \n",stderr);
+}
+
+void delete_firmware(FILEDESCR fd, int use_comp)
+{
+    unsigned char send[BUFFERSIZE];
+    unsigned char recv[BUFFERSIZE];
+
+    /* Delete firmware */
+    send[0] = 0x65;
+    send[1] = 1;
+    send[2] = 3;
+    send[3] = 5;
+    send[4] = 7;
+    send[5] = 11;
+
+    if (rcx_sendrecv(fd, send, 6, recv, 1, 200, RETRIES, use_comp) != 1) {
+		fprintf(stderr, "%s: delete firmware failed\n", progname);
+		exit(1);
+    }
+}
+
+void unlock_firmware(FILEDESCR fd, int use_comp)
+{
+    unsigned char send[BUFFERSIZE];
+    unsigned char recv[BUFFERSIZE];
 
     /* Unlock firmware */
     send[0] = 0xa5;
@@ -292,16 +357,23 @@ void image_dl(FILEDESCR fd, unsigned char *image, int len, unsigned short start,
     send[5] = 174;	// '®'
 
     /* Use longer timeout so ROM has time to checksum firmware */
-    if (rcx_sendrecv(fd, send, 6, recv, 26, 200, RETRIES, use_comp) != 26) {
-	fprintf(stderr, "%s: unlock firmware failed\n", progname);
-	exit(1);
+    if (rcx_sendrecv(fd, send, 6, recv, 26, 400, RETRIES, use_comp) != 26) {
+		fprintf(stderr, "%s: unlock firmware failed\n", progname);
+		exit(1);
     }
+}
+
+void install_firmware(FILEDESCR fd, unsigned char *image, int length,
+	      int entry, int use_comp, char *filename)
+{
+	delete_firmware(fd, use_comp);
+	download_firmware(fd, image, length, entry, use_comp, filename);
+	unlock_firmware(fd, use_comp);
 }
 
 int main (int argc, char **argv)
 {
     unsigned char image[IMAGE_MAXLEN];
-    unsigned short image_start;
     unsigned int image_len;
     char *tty = NULL;
     char *fileName = NULL;
@@ -311,6 +383,10 @@ int main (int argc, char **argv)
     int usage = 0;
     FILEDESCR fd;
     int status;
+    segment_t segments[2];
+	image_t image_def = { 0, &segments[0] };
+	int num_image_def = 0;
+    int i=0;
 
     progname = argv[0];
     dname = dirname (progname);
@@ -424,9 +500,15 @@ int main (int argc, char **argv)
     }
 
     /* Load the s-record file */
+    num_image_def = srec_load(fileName, image, IMAGE_MAXLEN, &image_def, 2);
+    image_len = image_def.segments[num_image_def-1].offset+image_def.segments[num_image_def-1].length;
 
-    image_len = srec_load(fileName, image, IMAGE_MAXLEN, &image_start);
-    fprintf(stderr, "Image size=%d (%dk)\n", image_len, image_len/1024+1);
+    for (i=0; i < num_image_def; i++)
+    {
+    	fprintf(stderr, "segment.length[%d] = %d (%dk)\n", i, image_def.segments[i].length, image_def.segments[i].length/1024+1);
+    }		
+    
+    fprintf(stderr, "Total image size=%d (%dk)\n", image_len, image_len/1024+1);
     if (no_download)
     	exit(0);
 
@@ -476,7 +558,7 @@ int main (int argc, char **argv)
 		exit(1);
 	    }
 
-	    image_dl(fd, fastdl_image, fastdl_len, fastdl_start, 1, "Fast Download Image");
+	    install_firmware(fd, fastdl_image, fastdl_len, fastdl_start, 1, "Fast Download Image");
 
 	    /* Go back to fast mode */
 	    rcx_close(fd);
@@ -485,7 +567,7 @@ int main (int argc, char **argv)
 
 	/* Download image in fast mode */
 
-	image_dl(fd, image, image_len, image_start, 0, fileName);
+	install_firmware(fd, image, image_len, image_def.entry, 0, fileName);
 	rcx_close(fd);
     }
     else {
@@ -519,7 +601,7 @@ int main (int argc, char **argv)
     	}
 
 	/* Download image */
-	image_dl(fd, image, image_len, image_start, 1, fileName);
+	install_firmware(fd, image, image_len, image_def.entry, 1, fileName);
 
 	rcx_close(fd);
     }

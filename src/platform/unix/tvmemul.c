@@ -95,9 +95,11 @@ void run(void)
     TWOBYTES size;
 
     memory_init ();
+#if SEGMENTED_HEAP
     size = EXTRA_MEMORY_SIZE;
     region = (byte *) malloc (size * sizeof (TWOBYTES));
     memory_add_region (region, region + size * sizeof (TWOBYTES));
+#endif
     size = MEMORY_SIZE;
     region = (byte *) malloc (size * sizeof (TWOBYTES));
     memory_add_region (region, region + size * sizeof (TWOBYTES));

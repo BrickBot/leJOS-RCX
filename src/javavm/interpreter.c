@@ -179,7 +179,7 @@ void engine()
   instruction_hook();
 
   assert( currentThread != null, INTERPRETER1);
-
+  
   while( gMakeRequest)
   {
     byte requestCode = gRequestCode;
@@ -190,7 +190,9 @@ void engine()
     tick_hook();
 
     if( requestCode == REQUEST_EXIT)
+    {
       return;
+    }
 
     if( requestCode == REQUEST_TICK)
       ticks_until_switch--;
@@ -242,6 +244,11 @@ void engine()
     #include "op_arithmetic.hc"
     #include "op_methods.hc"
 
+#ifdef VERIFY
+	default:
+		assert(false, (TWOBYTES)(pc-1) % 10000);
+		break;
+#endif
 
   }
 

@@ -46,6 +46,8 @@ public interface SpecialSignatureConstants {
     "setPoller()V",
     "setThrottle(I)V",
     "test(Ljava/lang/String;Z)V",
-    "testEQ(Ljava/lang/String;II)V"
+    "testEQ(Ljava/lang/String;II)V",
+    "floatToIntBits(F)I",
+    "intBitsToFloat(I)F"
   };
 }

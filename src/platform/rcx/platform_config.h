@@ -34,10 +34,6 @@ typedef unsigned long FOURBYTES;
 #define PLATFORM_HANDLES_SWITCH_THREAD 0
 #define TICKS_PER_TIME_SLICE          20
 
-// No extra assertion code
-
-#undef VERIFY
-
 // sensors
 
 #define ANGLE_DOUBLE_CHECK 1
