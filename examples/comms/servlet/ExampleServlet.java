@@ -2,26 +2,28 @@ import java.io.*;
 import javax.servlet.http.*;
 import josx.platform.rcx.*;
 
+/**
+ * An Example Servlet that returns the value of Sensor 2.
+ * If the request URI starts with "w", it also displays "Welcome from England".
+ * Change this to whatever country the server is running in.
+ */
 public class ExampleServlet extends HttpServlet implements SensorConstants {
-  OutputStream out;
+  private OutputStream out;
 
-  static final char [] html1 = {'<','H','T','M','L','>','<','B','O','D','Y','>'};
-  static final char [] html2 = {'<','P','>','W','e','l','o','m','e',' ','f','r','o','m',' ','E','n','g','l','a','n','d','<','/','P','>'};
-  static final char [] html3 = {'<','P','>','S','2',':',' '}; 
-  static final char [] html4 = {'<','/','P','>','<','/','B','O','D','Y','>','<','/','B','O','D','Y','>'};
-  static final char [] type = {'t','e','x','t','/','h','t','m','l'};
+  private static String html1 = "<HTML><BODY>";
+  private static String html2 = "<P>Welcome from England</P>"; 
+  private static String html3 = "<P>S2: "; 
+  private static String html4 = "</P></BODY></HTML>"; 
+  private static String type = "text/html";
 
-  static int hits = 0;
-
-  public ExampleServlet() throws IOException {
-    super();
-  }
+  private static int hits = 0;
 
   public void doGet (HttpServletRequest request,
                      HttpServletResponse response) 
               throws IOException {
+
     out = response.getOutputStream();
-    char [] path = request.getServletPath();
+    String path = request.getServletPath();
 
     // set content type
 
@@ -31,9 +33,9 @@ public class ExampleServlet extends HttpServlet implements SensorConstants {
 
     println(html1);
 
-    // Only ouput the Welcomeif the path name starts with w
+    // Only output the Welcome if the path name starts with w
 
-    if (path[0] == 'w') println(html2);
+    if (path.charAt(1) == 'w') println(html2);
 
     println(html3);
     
@@ -46,11 +48,12 @@ public class ExampleServlet extends HttpServlet implements SensorConstants {
 
     println(html4); 
 
-    // LCD.showNumber(++hits);
-    LCD.showNumber((int) System.getRuntime().freeMemory());
+    LCD.showNumber(++hits);
+    // LCD.showNumber((int) System.getRuntime().freeMemory());
   }
 
-  void println(char []ca) throws IOException {
+  void println(String s) throws IOException {
+    char [] ca = s.toCharArray();
     for(int i=0;i<ca.length;i++) out.write((byte) ca[i]);
   }
 
@@ -60,6 +63,7 @@ public class ExampleServlet extends HttpServlet implements SensorConstants {
     Sensor.S2.activate();
 
     ExampleServlet example = new ExampleServlet();
+    example.init();
   }
 }
 
