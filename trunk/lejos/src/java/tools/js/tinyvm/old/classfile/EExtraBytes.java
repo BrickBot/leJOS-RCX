@@ -6,4 +6,9 @@ public class EExtraBytes extends Exception
    {
       super(aMsg);
    }
+
+   /**
+    * Comment for <code>serialVersionUID</code>
+    */
+   private static final long serialVersionUID = 3257848762154891313L;
 }

@@ -12,7 +12,6 @@ import java.io.OutputStream;
  */
 public class RCXBean implements java.io.Serializable
 {
-
    private String comPort = null;
    private RCXPort port;
    private InputStream in;
@@ -257,5 +256,10 @@ public class RCXBean implements java.io.Serializable
    {
       close();
    }
+
+   /**
+    * Comment for <code>serialVersionUID</code>
+    */
+   private static final long serialVersionUID = 3544391413744809527L;
 }
 

@@ -6,4 +6,9 @@ public class EClassFileFormat extends Exception
    {
       super(aMsg);
    }
+
+   /**
+    * Comment for <code>serialVersionUID</code>
+    */
+   private static final long serialVersionUID = 3617856374076617784L;
 }

@@ -29,4 +29,9 @@ public class ToolException extends Exception
    {
       super(message, cause);
    }
+
+   /**
+    * Comment for <code>serialVersionUID</code>
+    */
+   private static final long serialVersionUID = 3905525994918785592L;
 }

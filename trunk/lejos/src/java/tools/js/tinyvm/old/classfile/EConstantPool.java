@@ -6,4 +6,9 @@ public class EConstantPool extends Exception
    {
       super(aMsg);
    }
+
+   /**
+    * Comment for <code>serialVersionUID</code>
+    */
+   private static final long serialVersionUID = 3977858471159018553L;
 }

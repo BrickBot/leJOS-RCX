@@ -31,4 +31,9 @@ public class LejosdlException extends ToolException
    {
       super(message, cause);
    }
+
+   /**
+    * Comment for <code>serialVersionUID</code>
+    */
+   private static final long serialVersionUID = 3617016338585760565L;
 }

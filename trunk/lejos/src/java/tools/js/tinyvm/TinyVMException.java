@@ -31,4 +31,9 @@ public class TinyVMException extends ToolException
    {
       super(message, cause);
    }
+
+   /**
+    * Comment for <code>serialVersionUID</code>
+    */
+   private static final long serialVersionUID = 3763098561520351026L;
 }

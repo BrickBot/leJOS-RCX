@@ -31,4 +31,9 @@ public class FirmdlException extends ToolException
    {
       super(message, cause);
    }
+
+   /**
+    * Comment for <code>serialVersionUID</code>
+    */
+   private static final long serialVersionUID = 3544953268330443576L;
 }
