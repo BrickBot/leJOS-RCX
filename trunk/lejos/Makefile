@@ -121,6 +121,9 @@ core_classes:
 rcx_comm:
 	cd rcxcomm; $(MAKE) $(MFLAGS)
 
+visionapi:
+	cd vision; $(MAKE) $(MFLAGS)
+
 javadoc:
 	if [ ! -d apidocs ]; then mkdir apidocs; fi
 	${JAVADOC} -protected -windowtitle "leJOS API documentation" -author -d apidocs -sourcepath $(JAVADOC_SOURCE) java.io java.lang java.util josx.platform.rcx josx.util josx.robotics josx.rcxcomm java.net javax.servlet.http
@@ -128,6 +131,10 @@ javadoc:
 pcjavadoc:
 	if [ ! -d pcapidocs ]; then mkdir pcapidocs; fi
 	${JAVADOC} -protected -windowtitle "leJOS PC API documentation" -author -d pcapidocs -sourcepath $(PC_JAVADOC_SOURCE) josx.rcxcomm
+
+visiondoc:
+	if [ ! -d visionapidocs ]; then mkdir visionapidocs; fi
+	javadoc -protected -windowtitle "leJOS Vision API documentation" -author -d visionapidocs -sourcepath vision josx.vision
 
 clean:
 	rm -f `find . -name '*.class'`
@@ -140,7 +147,7 @@ clean:
 	rm -f `find . -name '*.bak'`
 	rm -f `find . -name '*.stackdump'`
 	rm -f `find . -name '*.backtrace'`
-	-rm -rf apidocs pcapidocs
+	-rm -rf apidocs pcapidocs visionapidocs
 
 distclean: clean
 	rm -rf `find . -name 'CVS'`
