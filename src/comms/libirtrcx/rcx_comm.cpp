@@ -26,6 +26,7 @@
  *    - changed rcx_recv to expect explicit number of bytes rather than 4096
  */
 
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
