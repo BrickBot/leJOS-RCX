@@ -10,7 +10,7 @@ package josx.platform.rcx;
  */
 public class Button
 {
-  static final long SLEEP_TIME = 500;
+  static final long SLEEP_TIME = 20;
   
   /**
    * The View button.
@@ -104,7 +104,7 @@ public class Button
     
     void snooze(long millis) {
     	try {
-    		sleep(SLEEP_TIME);
+          sleep( millis);
     	} catch (InterruptedException ie) {
     	}
     }
