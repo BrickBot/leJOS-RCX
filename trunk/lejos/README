@@ -241,6 +241,9 @@ mind are:
   - The instanceof operation will always be true  
     for interfaces. In bytecode, CHECKCAST succeeds
     on all interface classes (which is a bit unsafe).
+  - All threads are non-deamon threads. (If you have
+    an infinite loop in one thread, the firmware will
+    not go back to program-download state).
   - There are no objects of type java.lang.Class, 
     which means that the ".class" construct won't
     work. Class.forName() throws NoSuchMethorError.
@@ -262,6 +265,13 @@ be able to obtain by running:
 
   javadoc -sourcepath $TINYVM_HOME/classes \
     java.lang tinyvm.rcx -d /tmp
+
+About the License
+-----------------
+
+I'm releasing under the Mozilla Public License (see LICENSE)
+for now, since librcx is under that same license, and TinyVM 
+is linked against -lrcx.
 
 Questions/Problems
 ------------------
