@@ -16,12 +16,11 @@ import josx.platform.rcx.*;
  *   Motors : forward (1), backward (2), or stop (0).
  * </ul>
  */
-public class View implements Segment
+public class View implements Segment, SensorConstants
 {
-  static Button[] iButtons = new Button[] { Button.VIEW, Button.PRGM, Button.RUN };
-  static Object[] iDevices = new Object[] { Sensor.S1, Sensor.S2, Sensor.S3,
-				     Motor.A, Motor.B, Motor.C };
-  static int iViewSegment[][] = 
+  static final Object[] DEVICES = new Object[] { Sensor.S1, Sensor.S2, Sensor.S3,
+				                 Motor.A, Motor.B, Motor.C };
+  static final int VIEW_SEGMENT[][] = 
   { 
      { SENSOR_1_VIEW, SENSOR_2_VIEW, SENSOR_3_VIEW,
        MOTOR_A_VIEW, MOTOR_B_VIEW, MOTOR_C_VIEW },
@@ -37,7 +36,7 @@ public class View implements Segment
   
   static void runPressed()
   {
-    Object pDevice = iDevices[iCurrentDevice];
+    Object pDevice = DEVICES[iCurrentDevice];
     int pTop = (pDevice instanceof Sensor) ? 2 : 3;
     iRunState[iCurrentDevice]++;
     if (iRunState[iCurrentDevice] >= pTop)
@@ -47,13 +46,13 @@ public class View implements Segment
   static void viewPressed()
   {
     iCurrentDevice++;
-    if (iCurrentDevice >= iDevices.length)
+    if (iCurrentDevice >= DEVICES.length)
       iCurrentDevice = 0;
   }
 
   static void prgmPressed()
   {
-    Object pDevice = iDevices[iCurrentDevice];
+    Object pDevice = DEVICES[iCurrentDevice];
     int pTop = (pDevice instanceof Sensor) ? 3 : 8;
     iRunMode[iCurrentDevice]++;
     if (iRunMode[iCurrentDevice] >= pTop)
@@ -62,11 +61,11 @@ public class View implements Segment
 
   static void updateRCX()
   {
-    Object pDevice = iDevices[iCurrentDevice];
+    Object pDevice = DEVICES[iCurrentDevice];
     int pRunState = iRunState[iCurrentDevice];
     int pRunMode = iRunMode[iCurrentDevice];
     LCD.clear();
-    LCD.setSegment (iViewSegment[pRunState][iCurrentDevice]);
+    LCD.setSegment (VIEW_SEGMENT[pRunState][iCurrentDevice]);
     updateValue();
     if (pDevice instanceof Sensor)
     {
@@ -75,6 +74,12 @@ public class View implements Segment
         s.passivate();
       else if (pRunState == 1)
         s.activate();
+      if (pRunMode == 0)
+	s.setTypeAndMode (SENSOR_TYPE_LIGHT, SENSOR_MODE_RAW);
+      else if (pRunMode == 1)
+	s.setTypeAndMode (SENSOR_TYPE_LIGHT, SENSOR_MODE_PCT);
+      else if (pRunMode == 2)
+	s.setTypeAndMode (SENSOR_TYPE_TOUCH, SENSOR_MODE_BOOL);	    
       LCD.showProgramNumber (pRunMode);
     }
     else
@@ -94,19 +99,11 @@ public class View implements Segment
 
   static void updateValue()
   {
-    Object pDevice = iDevices[iCurrentDevice];
+    Object pDevice = DEVICES[iCurrentDevice];
     int pRunMode = iRunMode[iCurrentDevice];
     if (pDevice instanceof Sensor)
     {
-      int value = 0;
-      Sensor s = (Sensor) pDevice;
-      if (pRunMode == 0)
-        value = s.readRawValue();
-      else if (pRunMode == 1)
-        value = s.readPercentage();
-      else if (pRunMode == 2)
-        value = s.readBooleanValue() ? 1 : 0;
-      LCD.showNumber (value);
+      LCD.showNumber (((Sensor) pDevice).readValue());
     }
   }
 
@@ -117,7 +114,7 @@ public class View implements Segment
     {
       for (int i = 0; i < 3; i++)
       {
-        Button b = iButtons[i];
+        Button b = Button.BUTTONS[i];
         if (b.isPressed())
 	{
           while (b.isPressed()) { }

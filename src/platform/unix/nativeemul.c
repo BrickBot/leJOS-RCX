@@ -72,13 +72,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       return;      
     case READMEMORYBYTE_B:
       printf ("& Attempt to read byte from 0x%lX\n", (paramBase[0] & 0xFFFF));
-      if ((paramBase[0] & 0x0001) == 0)
-        push_word (gSensorValue >> 8);
-      else
-      {
-        push_word (gSensorValue & 0xFF);
-        gSensorValue++;
-      }
+      push_word (0);
       return;
     case WRITEMEMORYBYTE_V:
       printf ("& Attempt to write byte [%lX] at 0x%lX (no effect)\n", paramBase[1] & 0xFF, paramBase[0] & 0xFFFF);

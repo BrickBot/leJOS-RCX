@@ -7,14 +7,12 @@ package josx.platform.rcx;
 public interface SensorListener
 {
   /**
-   * Called when the boolean state of the sensor changes.
+   * Called when the canonical value of the sensor changes.
+   * @param aSource The sensor that generated the event.
+   * @param aOldValue The old sensor value.
+   * @param aNewValue The new sensor value.
    */
-  public void stateChanged (Sensor aSource, boolean aBooleanValue);  
-
-  /**
-   * Called when the raw value of the sensor changes.
-   */
-  public void stateChanged (Sensor aSource, int aRawValue);
+  public void stateChanged (Sensor aSource, int aOldValue, int aNewValue);
 }
 
 

@@ -87,18 +87,23 @@ set_data_pointer (void *ptr)
   play_sound_or_set_data_pointer(0x1771, (short)ptr, 0);
 }
 
+void delay()
+{
+  int i;
+	
+  for (i = 0; i  < 30; i++) { }
+}
+
 void wait_for_power_release()
 {
-  TWOBYTES debouncer = 0;
-  
+  TWOBYTES debouncer;
+
+  delay();
   do
   {
     get_power_status (POWER_KEY, &status);
-    if (status == 0)
-      debouncer = 0;
-    else
-      debouncer++;
-  } while (debouncer < 20);
+  } while (status == 0);
+  delay();
 }
 
 void trace (short s, short n1, short n2)
@@ -133,12 +138,11 @@ void handle_uncaught_exception (Object *exception,
  */
 void switch_thread_hook()
 {
+  short i;
+  
   get_power_status (POWER_KEY, &status);
   if (status == 0)
   {
-    get_power_status (POWER_KEY, &status);
-    if (status != 0)
-      return;
     // Power button pressed - wait for release
     wait_for_power_release();
     read_buttons (0x3000, &status);

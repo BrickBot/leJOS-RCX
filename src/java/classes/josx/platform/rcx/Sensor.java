@@ -1,18 +1,18 @@
 package josx.platform.rcx;
 
 /**
- * Abstraction for a sensor. Example:<p>
+ * Abstraction for a sensor (<i>considerably changed in alpha5</i>). Example:<p>
  * <code><pre>
+ *   Sensor.S1.setTypeAndMode (3, 0x80);
  *   Sensor.S1.activate();
  *   Sensor.S1.addSensorListener (new SensorListener() {
- *     public void stateChanged (Sensor src, boolean value) {
- *       if (value)
- *         Sound.beep();
- *     }
- *
- *     public void stateChanged (Sensor src, int value) {
- *       LCD.showNumber (value);
- *       for (int k = 0; k < 10; k++) { }
+ *     public void stateChanged (Sensor src, int oldValue, int newValue) {
+ *       LCD.showNumber (newValue);
+ *       try {
+ *	   Thread.sleep (100);
+ *       } catch (InterruptedException e) {
+ *         // ignore
+ *       }
  *     }
  *   });
  *     
@@ -20,62 +20,68 @@ package josx.platform.rcx;
  */
 public class Sensor
 {
-  private short iRomId;
+  private int iSensorId;
   private short iNumListeners = 0;
-  private short iPrevRaw;
-  private boolean iPrevBoolean;
-//   private boolean iCheckRaw = false;
-//   private boolean iCheckBoolean = true;
-  private Thread iThread;
-  private final SensorListener[] iListeners = new SensorListener[4];
+  private final SensorListener[] iListeners = new SensorListener[8];
+  private static final SensorThread SENSOR_THREAD = new SensorThread();
+  
+  /**
+   * Array containing all three sensors [0..2].
+   */
+  public static final Sensor[] SENSORS = { Sensor.S1, Sensor.S2, Sensor.S3 };
 
   /**
-   * Sensor 1.
+   * Sensor labeled 1 on RCX.
    */
-  public static final Sensor S1 = new Sensor (1);
+  public static final Sensor S1 = new Sensor (0);
+
   /**
-   * Sensor 2.
-   */
-  public static final Sensor S2 = new Sensor (2);
+   * Sensor labeled 2 on RCX.
+   */   
+  public static final Sensor S2 = new Sensor (1);
+  
   /**
-   * Sensor 3.
+   * Sensor labeled 3 on RCX.
    */
-  public static final Sensor S3 = new Sensor (3);
+  public static final Sensor S3 = new Sensor (2);
+
+  /**
+   * Reads the canonical value of the sensor.
+   */
+  public final int readValue()
+  {
+    return readSensorValue (iSensorId, 1);
+  }
+
+  /**
+   * Reads the raw value of the sensor.
+   */
+  public final int readRawValue()
+  {
+    return readSensorValue (iSensorId, 0);
+  }
+
+  /**
+   * Reads the boolean value of the sensor.
+   */
+  public final boolean readBooleanValue()
+  {
+    return readSensorValue (iSensorId, 2) != 0;
+  }
 
   private Sensor (int aId)
   {
-    iRomId = (short) (0x1000 + aId - 1);
+    iSensorId = aId;
+    setTypeAndMode (3, 0x80);
   }
-
-//   /**
-//    * Sets a flag indicating whether listeners
-//    * should be informed when the raw valud of
-//    * the sensor changes. This is <code>false</code>
-//    * by default.
-//    */
-//   public final void setCheckRaw (boolean aValue)
-//   {
-//     iCheckRaw = aValue;
-//   }
-
-//   /**
-//    * Sets a flag indicating whether listeners
-//    * should be informed when the boolean value of
-//    * the sensor changes. This is <code>true</code>
-//    * by default.
-//    */
-//   public final void setCheckBoolean (boolean aValue)
-//   {
-//     iCheckBoolean = aValue;
-//   }
   
   /**
    * Adds a sensor listener.
    * <p>
    * <b>
-   * NOTE 1: You can add at most 4 listeners.<br>
-   * NOTE 2: Calling this method will result in the creation of
-   * a non-daemon thread (one per sensor at most), i.e. your 
+   * NOTE 1: You can add at most 8 listeners.<br>
+   * NOTE 2: Calling this method may result in the creation of
+   * a non-daemon thread (one for all sensors), i.e. your 
    * program will not terminate on its own.<br>
    * NOTE 3: Synchronizing inside listener methods could result
    * in a deadlock.
@@ -85,49 +91,13 @@ public class Sensor
   {
     // Hack: Make sure Native is initialized before thread is created.
     Native.getDataAddress (null);
-    if (iThread == null)
+    if (!SENSOR_THREAD.isAlive())
     {
-      iThread = new Thread()
+      SENSOR_THREAD.start();
+      for (int i = 0; i < 3; i++)
       {
-        public void run()
-	{
-          for (;;)
-	  {
-              int pRaw = readRawValue();
-              if (iPrevRaw != pRaw)
-	      {
-                // This kind of synchronization could
-                // interfere with user's monitors.
-                synchronized (Sensor.this)
-		{
-                  for (int i = 0; i < iNumListeners; i++)
-                    iListeners[i].stateChanged (Sensor.this, pRaw);
-		}
-	      }
-              iPrevRaw = (short) pRaw;
-              boolean pBoolean = readBooleanValue();
-              if (iPrevBoolean != pBoolean)
-	      {
-                synchronized (Sensor.this)
-		{
-	          Thread.yield();			
-                  for (int i = 0; i < iNumListeners; i++)
-		  {
-                    iListeners[i].stateChanged (Sensor.this, pBoolean);
-		  }
-		}
-	      }
-              iPrevBoolean = pBoolean;            
-	      for (short i = 10; i-- > 0; )
-		Thread.yield();
-	  }     
-	}
-      };
-    }
-    if (!iThread.isAlive())
-    {
-      iThread.start();
-      iNumListeners = 0;
+	SENSORS[i].iNumListeners = 0;
+      }
     }
     iListeners[iNumListeners++] = aListener;
   }
@@ -140,7 +110,7 @@ public class Sensor
    */
   public final void activate()
   {
-    Native.callRom1 ((short) 0x1946, (short) iRomId);
+    Native.callRom1 ((short) 0x1946, (short) (0x1000 + iSensorId));
   }
 
   /**
@@ -148,75 +118,83 @@ public class Sensor
    */
   public final void passivate()
   {
-    Native.callRom1 ((short) 0x19C4, (short) iRomId);
-  }
-
-  public final int readRawValue()
-  {
-    return (int) readSensorValue (iRomId, (byte) 0, (byte) 0x00);
-  }
-
-  public final boolean readBooleanValue()
-  {
-    return readSensorValue (iRomId, (byte) 1, (byte) 0x20) != 0;
-  }
-
-  public final int readPercentage()
-  {
-    return (int) readSensorValue (iRomId, (byte) 3, (byte) 0x80);
+    Native.callRom1 ((short) 0x19C4, (short) (0x1000 + iSensorId));
   }
 
   /**
-   * <i>Low-level API</i> for reading sensor values.
-   * @param aCode Sensor ID (0x1000 + num_in_rcx - 1).
-   * @param aType 0 = RAW, 1 = TOUCH, 3 = LIGHT.
-   * @param aMode 0x00 = RAW, 0x20 = BOOL, 0x80 = PERCENT.
+   * Sets the sensor's mode and type. If this method isn't called,
+   * the default mode is 3 (LIGHT) and the default type is 0x80 (PERCENT).
+   * @param aType 0 = RAW, 1 = TOUCH, 2 = TEMP, 3 = LIGHT, 4 = ROT.
+   * @param aMode 0x00 = RAW, 0x20 = BOOL, 0x40 = EDGE, 0x60 = PULSE, 0x80 = PERCENT,
+   *              0xA0 = DEGC,
+   *              0xC0 = DEGF, 0xE0 = ANGLE. Also, mode can be OR'd with slope (0..31).
+   * @see josx.platform.rcx.SensorConstants
    */
-  public static int readSensorValue (short aCode, byte aType, byte aMode)
+  public final void setTypeAndMode (int aType, int aMode)
   {
-    // In C: return __rcall2 (0x14c0, code, (short) sensor);
-    synchronized (Native.MEMORY_MONITOR)
-    {
-      byte[] pData = Native.iAuxData;
-      // Set type (1 byte)
-      pData[0] = aType;
-      // Set mode (1 byte)
-      pData[1] = aMode;
-      // Call read_sensor_value...
-      Native.callRom2 ((short) 0x14C0, aCode, (short) Native.iAuxDataAddr);
-      int pIntMode = aMode & 0xFF;
-      if (pIntMode == 0x00)
-        return ((pData[2] & 0xFF) << 8) | (pData[3] & 0xFF);
-      if (pIntMode == 0x20)
-        return (pData[6] & 0xFF);
-      if (pIntMode == 0x80)
-        return ((pData[4] & 0xFF) << 8) | (pData[5] & 0xFF);
-      return 0;
-    }
+    setSensorValue (iSensorId, aType, 1);
+    setSensorValue (iSensorId, aMode, 0);	  
   }
 
-//   public static int readSensorValue (short aCode, byte aType, byte aMode)
+  /**
+   * Resets the canonical sensor value. This may be useful for rotation sensors. 
+   */
+  public final void setPreviousValue (int aValue)
+  {
+    setSensorValue (iSensorId, aValue, 2);	  
+  }
+  
+//   /**
+//    * Sets type of sensor and default mode for type. 
+//    * @param aType 0 = RAW (mode RAW), 1 = TOUCH (mode BOOLEAN),
+//    * 2 = TEMPERATURE (mode DEGC), 3 = LIGHT (mode PERCENTAGE), 4 = ROTATION (mode ANGLE).
+//    */
+//   public final void setType (int aType)
 //   {
-//     // In C: return __rcall2 (0x14c0, code, (short) sensor);
-//     // Address 0xEEF8 is used to store sensor data.
-//     synchronized (Native.MEMORY_MONITOR)
-//     {
-//       // Set type (1 byte)
-//       Native.writeMemoryByte (0xEEF8 + 0, aType);
-//       // Set mode (1 byte)
-//       Native.writeMemoryByte (0xEEF8 + 1, aMode);
-//       // Call read_sensor_value...
-//       Native.callRom2 ((short) 0x14C0, aCode, (short) 0xEEF8);
-//       int pIntMode = aMode & 0xFF;
-//       if (pIntMode == 0x00)
-//         return Native.readMemoryShort (0xEEF8 + 2);
-//       if (pIntMode == 0x20)
-//         return Native.readMemoryByte (0xEEF8 + 6) & 0xFF;
-//       if (pIntMode == 0x80)
-//         return Native.readMemoryShort (0xEEF8 + 4);
-//       return 0;
-//     }
+//     setSensorValue (iSensorId, aType, 1);
 //   }
+
+  /**
+   * <i>Low-level API</i> for reading sensor values.
+   * @param aCode Sensor ID (0..2).
+   * @param aRequestType 0 = raw value, 1 = canonical value, 2 = boolean value.
+   */
+  public static native int readSensorValue (int aSensorId, int aRequestType);
+
+  private static native void setSensorValue (int aSensorId, int aVal, int aRequestType);
+  
+  private static class SensorThread extends Thread
+  {
+    int[] iPreviousValue = new int[3];
+    
+    public void run()
+    {
+      for (;;)
+      {
+	for (int pIdx = 0; pIdx < 3; pIdx++)
+	{
+	  int pOldValue = iPreviousValue[pIdx];
+          int pNewValue = readSensorValue (pIdx, 1);
+	  if (pOldValue != pNewValue)
+	  {
+	    Sensor pSensor = SENSORS[pIdx];
+            synchronized (pSensor)
+            {
+	      int pNumListeners = pSensor.iNumListeners;
+              for (int i = 0; i < pNumListeners; i++)
+	      {
+                pSensor.iListeners[i].stateChanged (pSensor, pOldValue, pNewValue);
+		Thread.yield();
+	      }
+              iPreviousValue[pIdx] = pNewValue;
+	    }
+	  }
+	  Thread.yield();
+	}
+      }	    
+    }     	  
+  }
+  
 }
 
 

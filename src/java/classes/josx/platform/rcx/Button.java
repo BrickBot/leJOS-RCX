@@ -26,20 +26,13 @@ public class Button
   /**
    * Array containing VIEW, PRGM and RUN, in that order.
    */
-  public static final Button[] BUTTONS = new Button[3];
+  public static final Button[] BUTTONS = { Button.VIEW, Button.PRGM, Button.RUN };
   
   private static final ButtonListenerThread LISTENER_THREAD = new ButtonListenerThread();
 
   private int iCode;
   private ButtonListener[] iListeners = new ButtonListener[4];
   private int iNumListeners;
-  
-  static
-  {
-    BUTTONS[0] = Button.VIEW; 
-    BUTTONS[1] = Button.PRGM; 
-    BUTTONS[2] = Button.RUN; 
-  }
   
   private Button (int aCode)
   {
