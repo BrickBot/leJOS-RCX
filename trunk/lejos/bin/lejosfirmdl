@@ -1,5 +1,0 @@
-#!/bin/sh
-
-TINYVM_HOME="`dirname $0`/.."
-export TINYVM_HOME
-aux-lejosfirmdl $@
