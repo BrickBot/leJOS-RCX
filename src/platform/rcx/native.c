@@ -13,8 +13,7 @@
 #include "interpreter.h"
 #include "exceptions.h"
 #include "systime.h"
-
-sensor_t sensors[3];
+#include "sensors.h"
 
 extern void reset_rcx_serial();
 
