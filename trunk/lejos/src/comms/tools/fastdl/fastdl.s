@@ -52,19 +52,19 @@ __start:
     jsr     @rom_init_handlers
 
     ; Double the baud rate
-
+#ifdef DOUBLE_BAUD_RATE
     mov.b   #103,r6l
     mov.b   r6l,@0xd9:8
 
     ; Turn off parity
 
     bclr    #5,@0xd8:8
-	
+#endif	
     ; Turn off complements
-
+#ifdef DISABLE_COMPLEMENTS
     sub.b   r6l,r6l
     mov.b   r6l,@rom_use_complements_flag
-	
+#endif	
     ; Hack the update function state so we don't hear two beeps
 
     mov.b   #2,r6l
