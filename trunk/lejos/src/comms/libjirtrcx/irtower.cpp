@@ -25,7 +25,7 @@ extern "C" {
 #define WAKEUP_TIME_OUT 4000
 
 #if !defined(_WIN32)
-extern int errno;
+#include <errno.h>
 
 int GetLastError() {
   return errno;
