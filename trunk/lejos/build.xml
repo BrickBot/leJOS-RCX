@@ -121,7 +121,7 @@
     <mkdir dir="${build}/tools"/>
     <!-- generate constants first -->
     <javac srcdir="${javasrc}/tools" destdir="${build}/tools" fork="yes" optimize="on" debug="on" source="1.4" includes="**/GenerateConstants.java"/>
-    <java classpath="${build}/tools" classname="js.tools.GenerateConstants">
+    <java classpath="${build}/tools" classname="js.tinyvm.GenerateConstants">
       <sysproperty key="tinyvm.home" value="${src}"/>
     </java>
     <!-- generate tools -->
