@@ -67,6 +67,19 @@ static int timerRead(timeval_t *timer)
 }
 
 //
+// Structures
+//
+
+typedef struct
+{
+	char symbolicName[32];
+	char deviceName[32];
+	FILEDESCR fileHandle;
+	int usb;
+	int fast;
+} Port;
+
+//
 // Prototypes for internal methods
 //
 
@@ -103,6 +116,47 @@ bool rcxCheckEcho (void* port, char* send, int sendLength);
 // Reset port. (Clear input and output buffers)
 // port: port handle
 void rcxReset (void* port);
+
+//
+// Prototypes for OS dependant interface
+//
+
+// Open tower on specific port.
+// tty: symbolic port name
+// fast: use fast mode?
+// Returns port handle.
+extern void* __rcx_open (char *tty, bool fast);
+
+// Close tower.
+// port: port handle
+extern void __rcx_close (void* port);
+
+// Read raw bytes.
+// port: port handle
+// buffer: buffer to read into
+// maxLength: maximum number of bytes to read
+// timeout_ms: timeout in ms
+// Returns number of read bytes or an error code.
+extern int __rcx_read(void* port, void* buffer, int maxLength, int timeout_ms);
+
+// Write raw bytes.
+// port: port handle
+// buffer: buffer to write from
+// length: number of bytes to write
+// Returns number of written bytes or an error code.
+extern int __rcx_write(void* port, void* buffer, int length);
+
+// Purge input buffers.
+// port: port handle
+extern void __rcx_purge(void* port);
+
+// Flush output buffers.
+// port: port handle
+extern void __rcx_flush(void* port);
+
+// Output an error message.
+// message: error message
+extern void __rcx_perror(char* message);
 
 //
 // getter functions

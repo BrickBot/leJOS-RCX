@@ -13,7 +13,9 @@
 
 #define WAKEUP_TIME_OUT 4000
 
-#if !defined(_WIN32)
+#if defined(_WIN32)
+#include <windows.h>
+#else
 #include <errno.h>
 
 int GetLastError() 

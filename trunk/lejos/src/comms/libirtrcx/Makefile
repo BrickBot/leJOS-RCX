@@ -16,62 +16,56 @@
 
 #
 # 2000.03.12 - Paolo Masetti <paolo.masetti@itlug.org>
-#	- Conditional make based on $OSTYPE variable for Windows NT (cygnwin32)
+#	- Conditional make based on $OSTYPE variable for Windows NT (cygwin32)
+# 2005.01.17 - Markus Heiden
+#	- reworked, adapted to refactorings
 #
-
-#include ../Makefile.common
 
 CC=$(shell $(LEJOS_HOME)/cctest.sh)
 
-CFLAGS = -O2 
+COPT = -O2 
 # For debugging:
-#CFLAGS = -O0
+# COPT = -O0
 
-ifndef OSTYPE
-	OSTYPE=$(MSDOS)
-endif
+# Default: Unix
+RCXCOMM=rcx_comm_linux.cpp
+CFLAGS=-I$(LEJOS_HOME)/src/tools/linux/legousbtower -shared -fpic	
+LFLAGS=-shared
+IRTRCX=$(LEJOS_HOME)/bin/libirtrcx.so
 
-ifneq (,$(findstring $(OSTYPE), linux LINUX linux-gnu))
-	RCXCOMM_OS_C=rcx_comm_linux.cpp
-	RCXCOMM_OS_H=rcx_comm_linux.h
-	CFLAGS+=-I$(LEJOS_HOME)/src/tools/linux/legousbtower -shared -fpic	
-	LIBIRTRCX=$(LEJOS_HOME)/bin/libirtrcx.so
-	LFLAGS=-shared
-endif
-
-ifneq (,$(findstring $(OSTYPE),cygwin32 cygwin_nt-5.0 cygwin_nt-5.1 CYGWIN_NT-4.0 WindowsNT Windows_NT))
-	RCXCOMM_OS_C=rcx_comm_win.cpp
-	RCXCOMM_OS_H=rcx_comm_win.h
-	EXT=.exe
-	LIBIRTRCX=$(LEJOS_HOME)/bin/irtrcx.dll
+# Windows with CygWin installed
+ifneq (,$(findstring cygwin,$(OSTYPE)))
+	RCXCOMM=rcx_comm_win.cpp
 	CFLAGS=-mno-cygwin -D__CYGWIN32__
 	LFLAGS=-mno-cygwin -Wl,--add-stdcall-alias -shared
+	IRTRCX=$(LEJOS_HOME)/bin/irtrcx.dll
 endif
 
-ifneq (,$(findstring $(OSTYPE), darwin))
-	RCXCOMM_OS_C=rcx_comm_osx.cpp osx_usb.cpp
-	RCXCOMM_OS_H=rcx_comm_osx.h osx_usb.h
-	CFLAGS += -g
-	LIBS += -framework IOKit -framework CoreFoundation
-	LFLAGS = -dynamiclib
-	LIBIRTRCX=$(LEJOS_HOME)/bin/libirtrcx.dylib
+# MacOS X
+ifneq (,$(findstring darwin,$(OSTYPE)))
+	RCXCOMM=rcx_comm_osx.cpp osx_usb.cpp
+	CFLAGS=-g
+	LFLAGS=-dynamiclib -framework IOKit -framework CoreFoundation
+	IRTRCX=$(LEJOS_HOME)/bin/libirtrcx.dylib
 endif
 
-SRCS = $(RCXCOMM_OS_C) rcx_comm.cpp
+SRCS = $(RCXCOMM)
 OBJS = $(addsuffix .o, $(basename $(SRCS)))
 
-all: $(LIBIRTRCX)
-	@echo Built $(LIBIRTRCX)
+default: all
+all: $(IRTRCX)
+	@echo Built $(IRTRCX)
 
-$(LIBIRTRCX): $(OBJS)
-	$(CC) -o $(LIBIRTRCX) $(OBJS) $(LFLAGS) $(LIBS)
+$(IRTRCX): $(OBJS)
+	$(CC) -o $(IRTRCX) $(OBJS) $(LFLAGS)
 
-$(OBJS): $(SRCS) $(RCXCOMM_OS_H)
+$(OBJS): $(SRCS)
 
 %.o: %.cpp
-	$(CC) -c -o $@ $(CFLAGS) "$<"
+	$(CC) -c -o $@ $(COPT) $(CFLAGS) "$<"
 
 .SUFFIXES: .cpp .o
 
 clean:
-	rm -f *.o *~ *.bak *.a $(LIBIRTRCX)
+	rm -f *.o
+	rm -f $(LIBIRTRCX)
