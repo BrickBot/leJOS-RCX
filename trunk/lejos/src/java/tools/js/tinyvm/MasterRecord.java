@@ -5,9 +5,7 @@ import java.io.IOException;
 import js.tinyvm.io.ByteWriter;
 import js.tinyvm.io.IOUtilities;
 
-import org.apache.bcel.Constants;
-
-public class MasterRecord implements WritableData, Constants
+public class MasterRecord implements WritableData
 {
    Binary iBinary;
 
