@@ -25,21 +25,24 @@
  */
 
 #include "osx_usb.h"
+#include <IOKit/IOKitLib.h>
+#include <IOKit/IOCFPlugIn.h>
+#include <IOKit/usb/IOUSBLib.h>
 
 /* The read buffer */
-unsigned char			gInBuffer[8];
-unsigned char*			gReadBufferPtr;
-unsigned char*			gInBufferStart;
-unsigned char* 			gInBufferEnd;
-int 				gReadRemain;
-int 				gReadDone;
-short 				LegoUSBVendorID = 1684;
-short 				LegoUSBProductID = 1;
+static unsigned char			gInBuffer[8];
+static unsigned char*			gReadBufferPtr;
+static unsigned char*			gInBufferStart;
+static unsigned char* 			gInBufferEnd;
+static int 				gReadRemain;
+static int 				gReadDone;
+static short 				LegoUSBVendorID = 1684;
+static short 				LegoUSBProductID = 1;
 
 extern int 			__comm_debug;
 
-mach_port_t			gMasterPort;
-IOUSBDeviceInterface		**dev = NULL;
+static mach_port_t			gMasterPort;
+static IOUSBDeviceInterface		**dev = NULL;
 
 int osx_usb_nbread (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int timeout);
 
@@ -50,6 +53,33 @@ void osx_usb_readComplete(void *refCon, IOReturn result, void *arg0);
  * Locates matching device. Returns resulting device count (zero, 1 or > 1). Only 1 is useful right now.
  */
 unsigned int FindDevice(void *refCon, io_iterator_t iterator);
+
+/* Hexdump routine */
+
+#define LINE_SIZE   16
+#define GROUP_SIZE  4
+#define UNPRINTABLE '.'
+
+void osx_hexdump(char *prefix, void *buf, int len)
+{
+    unsigned char *b = (unsigned char *)buf;
+    int i, j, w;
+
+    for (i = 0; i < len; i += w) {
+        w = len - i;
+        if (w > LINE_SIZE)
+            w = LINE_SIZE;
+        if (prefix)
+            printf("%s ", prefix);
+        printf("%04x: ", i);
+        for (j = 0; j < w; j++, b++) {
+            printf("%02x ", *b);
+            if ((j + 1) % GROUP_SIZE == 0)
+                putchar(' ');
+        }
+        putchar('\n');
+    }
+}
 
 IOReturn ConfigureDevice(IOUSBDeviceInterface **dev) {
     UInt8				numConfig;
@@ -70,7 +100,7 @@ IOReturn ConfigureDevice(IOUSBDeviceInterface **dev) {
     }
 
 #ifdef OSX_DEBUG
-    printf("Numer of Configurations: %d\n", numConfig);
+    printf("Number of Configurations: %d\n", numConfig);
 #endif
     
     // Configure the device
@@ -121,7 +151,7 @@ IOReturn FindInterfaces(IOUSBDeviceInterface **dev, IOUSBInterfaceInterface ***i
     }
 
     // I have the interface plugin. I need the interface interface
-    res = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID), (LPVOID) &intf);
+    res = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID), (LPVOID*) &intf);
     (*plugInInterface)->Release(plugInInterface);			// done with this
     if (res || !intf)
     {
@@ -237,6 +267,13 @@ unsigned int FindDevice(void *refCon, io_iterator_t iterator) {
     return count;
 }
 
+void osx_usb_rcx_wakeup (IOUSBInterfaceInterface** intf)
+{
+    char wakeup[] = {0xfe, 0x10, 0xfe, 0x10};
+    osx_usb_write(intf, &wakeup, 4);
+    usleep(20000);
+}
+
 IOUSBInterfaceInterface** osx_usb_rcx_init (int is_fast)
 {
     CFMutableDictionaryRef	matchingDict;
@@ -279,6 +316,7 @@ IOUSBInterfaceInterface** osx_usb_rcx_init (int is_fast)
             (*dev)->Release(dev);
             return NULL;
         }
+        osx_usb_rcx_wakeup(intf);
         return intf;
     } else if (device_count > 1) {
         printf("too many matching devices (%d) !\n", device_count);
@@ -312,7 +350,9 @@ void osx_usb_consumeInBuffer() {
 
 void osx_usb_startRead(IOUSBInterfaceInterface **intf) {
     IOReturn res;
-
+#ifdef OSX_DEBUG
+    printf("osx_usb_startRead called.\n");
+#endif
     // clear the input buffer
     gInBufferEnd = gInBuffer;
     gInBufferStart = gInBuffer;
@@ -328,8 +368,13 @@ void osx_usb_readComplete(void *refCon, IOReturn result, void *arg0) {
     IOUSBInterfaceInterface	**intf = (IOUSBInterfaceInterface **) refCon;
     UInt32 			read = (UInt32) arg0;
 
-    if (result == kIOReturnAborted) return;
-
+    if (result == kIOReturnAborted) {
+#ifdef OSX_DEBUG
+        printf("osx_usb_readComplete: IOReturnAborted!\n");
+#endif
+        return;
+    }
+    
     if (kIOReturnSuccess != result)
     {
         gReadDone = TRUE;
@@ -355,13 +400,17 @@ void osx_usb_readComplete(void *refCon, IOReturn result, void *arg0) {
 /* Timeout read routine */
 int osx_usb_nbread (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int timeout)
 {
+    IOReturn			kr;
     int len = 0;
     SInt32 reason;
-
     gReadBufferPtr = (unsigned char *)buf;
     gReadDone = FALSE;
     gReadRemain = maxlen;
+    CFRunLoopSourceRef		runLoopSource;
 
+#ifdef OSX_DEBUG
+    printf("Called osx_usb_nbread. Maxlen=%d\n", maxlen);
+#endif
     osx_usb_consumeInBuffer();
 
     if (!gReadDone) {
@@ -377,13 +426,31 @@ int osx_usb_nbread (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int t
 #endif
                 gReadDone = TRUE;
             }
+            else if (reason == kCFRunLoopRunFinished)
+            {
+                // oops, seems no event source is registered for this runloop
+                kr = (*intf)->CreateInterfaceAsyncEventSource(intf, &runLoopSource);
+                if (kIOReturnSuccess != kr)
+                {
+                    printf("unable to create async event source (%08x)\n", kr);
+                    (void) (*intf)->USBInterfaceClose(intf);
+                    (void) (*intf)->Release(intf);
+                    return -1;
+                }
+                CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopDefaultMode);
+                
+#ifdef OSX_DEBUG
+                printf("Finished.\n");
+#endif
+                gReadDone = TRUE;
+            }
         } while(!gReadDone);
     }
 
     len = gReadBufferPtr - (unsigned char*)buf;
     if (__comm_debug) {
         printf("Read %d Bytes\n", len);
-        hexdump("Read: ", buf, len);
+        osx_hexdump("Read: ", buf, len); 
     }
 
     return len;
@@ -407,7 +474,7 @@ int osx_usb_rcx_recv (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int
 
     if (__comm_debug == 1) {
         printf("recvlen = %d\n", msglen);
-        hexdump("R", msg, msglen);
+        /* hexdump("R", msg, msglen); */
     }
 
     /* Check for message */
@@ -505,9 +572,6 @@ int osx_usb_rcx_send(IOUSBInterfaceInterface **intf, void *buf, int len, int use
     char buflen = len;
     char msg[OSX_USB_BUFFERSIZE];
     int msglen;
-    int sum;
-    IOReturn			kr;
-
 
     /* drain buffer */
     while (osx_usb_nbread(intf, msg, 64, 100) > 0) 
@@ -539,7 +603,7 @@ int osx_usb_rcx_send(IOUSBInterfaceInterface **intf, void *buf, int len, int use
         msg[msglen++] = sum;
     }
     if (__comm_debug == 1)
-        hexdump("Sending: ", &msg, msglen);
+        osx_hexdump("Sending: ", &msg, msglen);
 
     kr = (*intf)->WritePipe(intf, LEGO_SEND_PIPE, &msg, msglen);
     if (kIOReturnSuccess != kr)
@@ -549,9 +613,6 @@ int osx_usb_rcx_send(IOUSBInterfaceInterface **intf, void *buf, int len, int use
         (void) (*intf)->Release(intf);
         return -1;
     }
-/* #ifdef OSX_DEBUG
-    printf(".\n");
-#endif */
     return len;
 }
 
@@ -565,13 +626,12 @@ int osx_usb_rcx_sendrecv (IOUSBInterfaceInterface **intf, void *send, int slen, 
     while (retries--) {
         if ((status = osx_usb_rcx_send(intf, send, slen, use_comp)) < 0) {
             if (__comm_debug == 1)
-                printf("status = %s\n", rcx_strerror(status));
+                /* printf("status = %s\n", rcx_strerror(status)) */ ;
             continue;
         }
-        /* printf("\n"); */
         if ((status = osx_usb_rcx_recv(intf, recv, rlen, timeout, use_comp)) < 0) {
             if (__comm_debug == 1)
-                printf("status = %s\n", rcx_strerror(status));
+                /* printf("status = %s\n", rcx_strerror(status))*/;
             continue;
         }
         break;
@@ -586,5 +646,38 @@ int osx_usb_rcx_is_alive (IOUSBInterfaceInterface **intf, int use_comp)
     unsigned char recv[1];
 
     return (osx_usb_rcx_sendrecv(intf, send, 1, recv, 1, 100, 5, use_comp) == 1);
+}
+
+int osx_usb_write(IOUSBInterfaceInterface **intf, void *buf, int len) {
+    IOReturn kr;
+    char msg[OSX_USB_BUFFERSIZE];
+    char *bufp = (char *)buf;
+    int msglen = 0;
+    char buflen = len;
+
+    while(buflen--) {
+        msg[msglen++] = *bufp++;
+    }
+
+#ifdef OSX_DEBUG
+    printf("osx_usb_write: Enter.\n");
+    osx_hexdump("Write: ", &msg, msglen);
+#endif
+   
+    kr = (*intf)->WritePipe(intf, LEGO_SEND_PIPE, &msg, msglen);
+
+    if (kIOReturnSuccess != kr)
+    {
+        printf("unable to do osx_usb_write (%08x)\n", kr);
+        (void) (*intf)->USBInterfaceClose(intf);
+        (void) (*intf)->Release(intf);
+        return -1;
+    }
+#ifdef OSX_DEBUG
+    kr = (*intf)->GetPipeStatus(intf, LEGO_SEND_PIPE);
+    printf("SEND PIPE status: %08x\n", kr);
+    printf("osx_usb_write: Exit.\n");
+#endif
+    return msglen;
 }
 

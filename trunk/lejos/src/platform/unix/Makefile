@@ -1,12 +1,12 @@
 
-VMSRC=../vmsrc
+VMSRC=$(LEJOS_HOME)/src/javavm
 LD=ld
 
-CC=$(shell ../cctest.sh)
+CC=$(shell $(LEJOS_HOME)/cctest.sh)
 
 # No -O2 option below because gcc 2.95.2 crashes!
 #CFLAGS=-I../vmsrc -I. -Wall -Wno-unused -DDEBUG_BYTECODE=1
-CFLAGS=-I../vmsrc -I. -Wall -Wno-unused
+CFLAGS=-I$(LEJOS_HOME)/src/javavm -I. -Wall -Wno-unused
 
 DUMP_OBJ=dump.o load.o
 
@@ -14,8 +14,8 @@ VMEMUL_OBJ=interpreter.o threads.o exceptions.o \
 	   memory.o language.o verbose.o sensors.o poll.o \
            tvmemul.o traceemul.o nativeemul.o load.o opcodeinfo.o
 
-DUMP_TARGET=../bin/emu-dump
-VMEMUL_TARGET=../bin/emu-lejosrun
+DUMP_TARGET=$(LEJOS_HOME)/bin/emu-dump
+VMEMUL_TARGET=$(LEJOS_HOME)/bin/emu-lejosrun
 
 # EXTRADEP used in vmsrc/Makefile.include
 
@@ -25,7 +25,7 @@ default: programs
 
 programs: ${VMEMUL_TARGET} ${DUMP_TARGET}
 
-include ../vmsrc/Makefile.include
+include $(LEJOS_HOME)/src/javavm/Makefile.include
 
 
 platform_config.h: dump_config
@@ -34,10 +34,10 @@ platform_config.h: dump_config
 dump_config: dump_config.c
 	${CC} ${CFLAGS} dump_config.c -o dump_config
 
-	
+
 %.o: %.c platform_config.h
 	${CC} ${CFLAGS} -c $*.c
-	
+
 ${DUMP_TARGET}: ${DUMP_OBJ}
 	${CC} ${DUMP_OBJ} -o ${DUMP_TARGET}
 
@@ -45,5 +45,5 @@ ${VMEMUL_TARGET}: ${VMEMUL_OBJ}
 	${CC} ${VMEMUL_OBJ} -o ${VMEMUL_TARGET}
 
 clean:
-	rm -rf ${VMSRC}/*.o *.o ../bin/emu-*.exe core platform_config.h ${DUMP_TARGET} ${VMEMUL_TARGET}
+	rm -rf ${VMSRC}/*.o *.o $(LEJOS_HOME)/bin/emu-*.exe core platform_config.h ${DUMP_TARGET} ${VMEMUL_TARGET}
 

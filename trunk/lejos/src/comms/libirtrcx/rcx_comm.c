@@ -32,37 +32,45 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
-#if !defined(_WIN32)
-#include <unistd.h>
-#include <termios.h>
-#include <sys/time.h>
-#endif
-
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
 #include <errno.h>
 
-#if defined(_WIN32) || defined(__CYGWIN32__)
+#if defined(_WIN32)
 #include <windows.h>
+#include "rcx_comm_win.h"
 #endif
 
 #include "rcx_comm.h"
-
-#if defined(LINUX) || defined(linux)
-#include <asm/ioctl.h>
-#include "legousbtower.h"
-#endif
 
 /* Defines */
 
 #define BUFFERSIZE  4096
 
+
+/* Machine-dependent defines */
+
+#if defined(LINUX) || defined(linux)
+#define TOWER_NAME "/dev/lego0"
+#define DEFAULTTTY   "usb"       /* Linux - USB */
+#define stricmp(x, y) strcmp(x, y)
+#elif defined(_WIN32) || defined(__CYGWIN32__)
+#define DEFAULTTTY   "usb"       /* Cygwin - USB */
+#define TOWER_NAME "\\\\.\\LEGOTOWER1"
+#elif defined (sun)
+#define DEFAULTTTY   "/dev/ttya"  /* Solaris - first serial port - untested */
+#elif defined (__APPLE__)
+#define DEFAULTTTY   "usb"	  /* Default to USB on MAC */
+#define TOWER_NAME ""
+#else
+#define DEFAULTTTY   "/dev/ttyd2" /* IRIX - second serial port */
+#endif
+
 /* Globals */
 
 int __comm_debug = 0;
-
-extern int usb_flag;
+int usb_flag = 1;
 
 /* Timer routines */
 
@@ -72,353 +80,132 @@ typedef struct timeval timeval_t;
 #define tvsec(tv)     ((tv)->tv_sec)
 #define tvmsec(tv)    ((tv)->tv_usec * 1e-3)
 
-static float
-timer_reset(timeval_t *timer)
+static float timer_reset(timeval_t *timer)
 {
 	tvupdate(timer);
 	return 0;
 }
 
-static float
-timer_read(timeval_t *timer)
+static float timer_read(timeval_t *timer)
 {
 	timeval_t now;
 	tvupdate(&now);
 	return tvsec(&now) - tvsec(timer) + (tvmsec(&now) - tvmsec(timer)) * 1e-3;
 }
 
-void myperror(char *str) {
-#if defined(_WIN32) || defined(__CYGWIN32__)
-	if (__comm_debug)fprintf(stderr, "Error %lu: %s\n", (unsigned long) GetLastError(), str);
-#else
-	if (__comm_debug) perror(str);
-#endif
-}
+// getter functions
 
-/* Timeout read routine */
-
-int nbread (FILEDESCR fd, void *buf, int maxlen, int timeout)
+int rcx_is_debug() 
 {
-    
-
-#if defined(_WIN32) || defined(__CYGWIN32__)
-	char *bufp = (char *)buf;
-	int len = 0;
-
-	while (len < maxlen) {
-
-		if ( usb_flag == 1) {
-			DWORD count = 0;
-			struct timeval timebegin ,now;
-			unsigned long elapsed;
-
-			gettimeofday(&timebegin,0);
-		
-			while ( count == 0 ) {
-				ReadFile( fd, &bufp[len], maxlen - len, &count, NULL);
-				gettimeofday(&now,0);
-				elapsed = (now.tv_sec - timebegin.tv_sec ) + now.tv_usec - timebegin.tv_usec;				
-				if  ( elapsed > timeout )
-					break;
-			}
-			if (count == 0) {
-				if ( __comm_debug  )
-					printf("usb mode: nbread .. time out break\n");
-				break;
-			}
-			len += count;
-
-		} else {
-			DWORD count = 0;
-			COMMTIMEOUTS CommTimeouts;
-        
-			GetCommTimeouts (fd, &CommTimeouts);
-
-			// Change the COMMTIMEOUTS structure settings.
-			CommTimeouts.ReadIntervalTimeout = MAXDWORD;
-			CommTimeouts.ReadTotalTimeoutMultiplier = 0;
-			CommTimeouts.ReadTotalTimeoutConstant = timeout;
-			CommTimeouts.WriteTotalTimeoutMultiplier = 10;
-			CommTimeouts.WriteTotalTimeoutConstant = 1000;
-
-			// Set the time-out parameters for all read and write operations
-			// on the port.
-			SetCommTimeouts(fd, &CommTimeouts);
-
-			if (ReadFile(fd, &bufp[len], maxlen - len, &count, NULL) == FALSE) {
-				myperror("ReadFile");
-				fprintf(stderr, "nb_read - error reading tty: %lu\n", (unsigned long) GetLastError());
-				return RCX_READ_FAIL;
-			}
-
-			len += count;
-
-			if (count == 0) {
-				//timeout
-				break;
-			}
-		}
-	}
-
-	return len;
-#else
-
-	long len = 0;
-    
-	if (usb_flag == 1) {
-
-		long timer = timeout;
-		long rc;
-		char *cptr;
-		static int last_timeout = 0;
-
-		if (__comm_debug) printf("nbread: enter timeout %d, maxlen %d\n", timer, maxlen);
-
-		cptr = (char *) buf;
-
-		if (last_timeout != timeout) {
-			if(__comm_debug) printf("attempting to set timeout to %d\n",timeout);
-
-			rc = ioctl(fd, LEGO_TOWER_SET_READ_TIMEOUT, timeout);
-
-			if (!rc) {
-				last_timeout = timeout;
-			}
-		}
-
-
-		if ((len = read(fd, cptr, maxlen)) < 0) {
-			if (errno != ETIMEDOUT) {
-				printf("error %d\n", errno);
-				perror("read");
-				exit(1);
-			}
-		}
-
-	} else {
-
-		char *bufp = (char *)buf;
-
-		int count;
-		fd_set fds;
-		struct timeval tv;
-	    
-		while (len < maxlen) {
-			FD_ZERO(&fds);
-			FD_SET(fd, &fds);
-
-			tv.tv_sec = timeout / 1000;
-			tv.tv_usec = (timeout % 1000) * 1000;
-		    
-			if (select(fd+1, &fds, NULL, NULL, &tv) < 0) {
-				perror("select");
-				return RCX_READ_FAIL;
-			}
-		    
-			if (!FD_ISSET(fd, &fds))
-				break;
-
-			if ((count = read(fd, &bufp[len], maxlen - len)) < 0) {
-				perror("read");
-				return RCX_READ_FAIL;
-			}
-	    
-			len += count;
-		}
-    
-	} 
-
-	return len;
-
-#endif
-
-
+	return __comm_debug;
 }
 
-/* discard all characters in the input queue of tty */
-static void rx_flush(FILEDESCR fd)
+void rcx_set_debug(int debug)
 {
-#if defined(_WIN32) || defined(__CYGWIN32__)
-	PurgeComm(fd, PURGE_RXABORT | PURGE_RXCLEAR);
-#else
-	char echo[BUFFERSIZE];
-	nbread(fd, echo, BUFFERSIZE, 200);
-#endif
+	__comm_debug = debug;
 }
 
-int mywrite(FILEDESCR fd, const void *buf, size_t len) {
-
-#if defined(_WIN32) || defined(__CYGWIN32__)
-
-	DWORD nBytesWritten=0;
-	if (!WriteFile(fd, buf, len, &nBytesWritten, NULL))
-		return RCX_WRITE_FAIL;
-	FlushFileBuffers(fd);
-	return nBytesWritten;
-
-#else
-	return write(fd, buf, len);
-
-#endif
+void rcx_set_usb(int usb)
+{
+	usb_flag = usb;
 }
 
-/* RCX routines */
+int rcx_is_usb()
+{
+	return usb_flag;
+}
+
+
+
+// RCX functions
+
+void rcx_perror(char *str) 
+{
+	__rcx_perror(str);
+}
+
+void rcx_flush(FILEDESCR fd)
+{
+	__rcx_flush(fd);
+}
 
 FILEDESCR rcx_init(char *tty, int is_fast)
 {
-	FILEDESCR fd;
+	char *comm_debug = NULL;
 
-#if defined(_WIN32) || defined(__CYGWIN32__)
-	DCB dcb;
-#else
-	struct termios ios;
-#endif
+	// if no port supplied, read RCXTTY environment variable
 
-	if (__comm_debug) printf("mode = %s\n", is_fast ? "fast" : "slow");
-	if (__comm_debug) printf("tty= %s\n", tty);
+	if ((!tty) || *tty == 0) tty = getenv("RCXTTY");
 
-#if defined(_WIN32) || defined(__CYGWIN32__)
-	if (__comm_debug) printf("Running under cygwin\n");
-	if ((fd = CreateFile(tty, GENERIC_READ | GENERIC_WRITE,
-			     0, NULL, OPEN_EXISTING,
-			     0, NULL)) == INVALID_HANDLE_VALUE) {
-		fprintf(stderr, "Error %lu: Opening %s\n", (unsigned long) GetLastError(), tty);
-		return NULL;
+	// If still no port, default to USB.
+	
+	if ( (!tty) || *tty == 0) tty = DEFAULTTTY;
+	
+	rcx_set_usb(0);
+	
+	if ((stricmp( tty , "usb" ) == 0) ) {
+		rcx_set_usb(1);
+		tty = TOWER_NAME;
 	}
 
-	// Serial settings
-	if (usb_flag == 0)
-		{
-			FillMemory(&dcb, sizeof(dcb), 0);
-			if (!GetCommState(fd, &dcb)) {	// get current DCB
-				// Error in GetCommState
-				myperror("GetCommState");
-				return NULL;
-			} else {
-				dcb.ByteSize = 8;
-				dcb.Parity   = (is_fast ? 0 : 1);	// 0-4=no,odd,even,mark,space
-				dcb.StopBits = 0;			// 0,1,2 = 1, 1.5, 2
-				dcb.fBinary  = TRUE ;
-				dcb.fParity  = (is_fast ? FALSE : TRUE) ;
-				dcb.fAbortOnError = FALSE ;
-				dcb.BaudRate = (is_fast ? CBR_4800 : CBR_2400);	// Update DCB rate.
+	// Set debugging if RCXCOMM_DEBUG=Y 
 
-				// Set new state.
-				if (!SetCommState(fd, &dcb)) {
-					// Error in SetCommState. Possibly a problem with the communications
-					// port handle or a problem with the DCB structure itself.
-					myperror("SetCommState");
-					return NULL;
-				}
-			}
-		}
-
-#else
-	if (usb_flag == 1) {
-
-		if ((fd = open(tty, O_RDWR)) < 0) { 
-			perror(tty);
-			exit(1);
-		}
-
-
-		if (is_fast) {
-			fprintf(stderr, "FAST mode not alowed with USB LINUX\n");
-		} 
-	} else {
-		if ((fd = open(tty, O_RDWR)) < 0) {
-			perror(tty);
-			exit(1);
-		}
-
-		if (!isatty(fd)) {
-			close(fd);
-			fprintf(stderr, "%s: not a tty\n", tty);
-			return BADFILE;
-		}
-
-		memset(&ios, 0, sizeof(ios));
-	    
-		if (is_fast) {
-			ios.c_cflag = CREAD | CLOCAL | CS8;
-			cfsetispeed(&ios, B4800);
-			cfsetospeed(&ios, B4800);
-		}
-		else {
-			ios.c_cflag = CREAD | CLOCAL | CS8 | PARENB | PARODD;
-			cfsetispeed(&ios, B2400);
-			cfsetospeed(&ios, B2400);
-		}
-	    
-		if (tcsetattr(fd, TCSANOW, &ios) == -1) {
-			perror("tcsetattr");
-			return BADFILE;
-		}
-	}
-#endif
-
-	return fd;
+	comm_debug = getenv("RCXCOMM_DEBUG");
+	
+	if (comm_debug != NULL && strcmp(comm_debug,"Y") == 0)
+		rcx_set_debug(1);
+	
+	return __rcx_init(tty, is_fast);
 }
 
 void rcx_close(FILEDESCR fd)
 {
-#if defined(_WIN32) || defined(__CYGWIN32__)
-	CloseHandle(fd);
-#else
-	close(fd);
-#endif
+	__rcx_close(fd);
+	return;
 }
 
 int rcx_wakeup_tower (FILEDESCR fd, int timeout)
 {
-#if defined(LINUX) || defined(linux)
-	if (usb_flag == 1) {
-		return RCX_OK;
-	} else {
-#endif
-  
-		char msg[] = { 0x10, 0xfe, 0x10, 0xfe };
-		char keepalive = 0xff;
-		char buf[BUFFERSIZE];
-		timeval_t timer;
-		int count = 0;
-		int len;
-
-		// First, I send a KeepAlive Byte to settle IR Tower...
-		mywrite(fd, &keepalive, 1);
-		usleep(20000);
-		rx_flush(fd);
-
-		timer_reset(&timer);
-
-		do {
-			if (__comm_debug) {
-				printf("writelen = %d\n", sizeof(msg));
-				hexdump("W", msg, sizeof(msg));
-			}
-			if (mywrite(fd, msg, sizeof(msg)) != sizeof(msg)) {
-				myperror("write");
-				return RCX_WRITE_FAIL;
-			}
-			count += len = nbread(fd, buf, BUFFERSIZE, 50);
-			if (len == sizeof(msg) && !memcmp(buf, msg, sizeof(msg)))
-				return RCX_OK; /* success */
-			if (__comm_debug) {
-				printf("recvlen = %d\n", len);
-				hexdump("R", buf, len);
-			}
-			rx_flush(fd);
-		} while (timer_read(&timer) < (float)timeout / 1000.0f);
-
-		if (!count)
-			return RCX_NO_TOWER; /* tower not responding */
-		else
-			return RCX_BAD_LINK; /* bad link */
-
-#if defined(LINUX) || defined(linux)
-	}
-#endif
+	char msg[] = { 0x10, 0xfe, 0x10, 0xfe };
+	char keepalive = 0xff;
+	char buf[BUFFERSIZE];
+	timeval_t timer;
+	int count = 0;
+	int len;
+	
+	// First, I send a KeepAlive Byte to settle IR Tower...
+	rcx_write(fd, &keepalive, 1);
+	usleep(20000);
+	rcx_flush(fd);
+	
+	timer_reset(&timer);
+	
+	do {
+		if (__comm_debug) {
+			printf("writelen = %d\n", sizeof(msg));
+			hexdump("W", msg, sizeof(msg));
+		}
+		if (rcx_write(fd, msg, sizeof(msg)) != sizeof(msg)) {
+			rcx_perror("write");
+			return RCX_WRITE_FAIL;
+		}
+		count += len = rcx_read(fd, buf, BUFFERSIZE, 50);
+		if (len == sizeof(msg) && !memcmp(buf, msg, sizeof(msg)))
+			return RCX_OK; /* success */
+		if (__comm_debug) {
+			printf("recvlen = %d\n", len);
+			hexdump("R", buf, len);
+		}
+		rcx_flush(fd);
+	} while (timer_read(&timer) < (float)timeout / 1000.0f);
+	
+	if (!count)
+		return RCX_NO_TOWER; /* tower not responding */
+	else
+		return RCX_BAD_LINK; /* bad link */
+	
 }
+
 
 /* Hexdump routine */
 
@@ -448,6 +235,17 @@ void hexdump(char *prefix, void *buf, int len)
 }
 
 
+int rcx_read (FILEDESCR fd, void *buf, int maxlen, int timeout)
+{
+	return __rcx_read(fd, buf, maxlen, timeout);
+}
+
+int rcx_write(FILEDESCR fd, const void *buf, size_t len) 
+{
+	return  __rcx_write(fd, buf, len);
+}
+
+
 int rcx_send (FILEDESCR fd, void *buf, int len, int use_comp)
 {
 	char *bufp = (char *)buf;
@@ -456,6 +254,13 @@ int rcx_send (FILEDESCR fd, void *buf, int len, int use_comp)
 	char echo[BUFFERSIZE];
 	int msglen, echolen;
 	int sum;
+	int result = 0;
+
+	// MAC OSX implements this itself
+
+	if ((result = __rcx_send(fd, buf, len, use_comp)) != RCX_NOT_IMPL) {
+	  return result;
+	}
 
 	/* Encode message */
 
@@ -485,15 +290,15 @@ int rcx_send (FILEDESCR fd, void *buf, int len, int use_comp)
 
 	/* Send message */
 
-	if (mywrite(fd, msg, msglen) != msglen) {
-		myperror("write");
+	if (rcx_write(fd, msg, msglen) != msglen) {
+		rcx_perror("write");
 		return RCX_WRITE_FAIL;
 	}
 
 	/* Receive echo */
 
 	if ( usb_flag == 0 ) {	// usb ir tower dos not echo!!
-		echolen = nbread(fd, echo, msglen, 100);
+		echolen = rcx_read(fd, echo, msglen, 100);
 
 		if (__comm_debug) {
 			printf("msglen = %d, echolen = %d\n", msglen, echolen);
@@ -505,7 +310,7 @@ int rcx_send (FILEDESCR fd, void *buf, int len, int use_comp)
 
 		if (echolen != msglen /* || memcmp(echo, msg, msglen) */ ) {
 			/* Flush connection if echo is bad */
-			rx_flush(fd);
+			rcx_flush(fd);
 			return RCX_BAD_ECHO;
 		}
 	}
@@ -522,6 +327,12 @@ int rcx_recv (FILEDESCR fd, void *buf, int maxlen, int timeout, int use_comp)
 	int pos;
 	int len;
 	int expected;
+	int result = 0;
+
+	if ((result = __rcx_recv(fd, buf, maxlen, timeout, use_comp)) != RCX_NOT_IMPL) {
+	  return result;
+	}
+	
 
 	/* Receive message */
 
@@ -531,7 +342,7 @@ int rcx_recv (FILEDESCR fd, void *buf, int maxlen, int timeout, int use_comp)
 		expected = BUFFERSIZE;
 	}
 
-	msglen = nbread(fd, msg, expected, timeout); 
+	msglen = rcx_read(fd, msg, expected, timeout); 
  
 	if (__comm_debug) {
 		printf("maxlen = %d\n", maxlen);
@@ -659,6 +470,13 @@ int rcx_is_alive (FILEDESCR fd, int use_comp)
 {
 	unsigned char send[1] = { 0x10 };
 	unsigned char recv[1];
+	int result = 0;
+
+	// Mac OSX implements this itself
+
+	if ((result = __rcx_sendrecv(fd, send, 1, recv, 1, 50, 5, use_comp)) != RCX_NOT_IMPL) {
+	  return result;
+	}
 
 	return (rcx_sendrecv(fd, send, 1, recv, 1, 50, 5, use_comp) == 1);
 }

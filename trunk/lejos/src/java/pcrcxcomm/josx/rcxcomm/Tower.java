@@ -123,6 +123,6 @@ public class Tower {
   }
 
   static {
-    System.loadLibrary("irtower");
+    System.loadLibrary("jirtrcx");
   }
 }

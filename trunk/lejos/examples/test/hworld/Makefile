@@ -1,11 +1,12 @@
-LEJOSHOME = ../..
+LEJOSHOME = ../../..
 
-LEJOSC = $(LEJOSHOME)/bin/lejosc
-LEJOS = $(LEJOSHOME)/bin/lejos
+LEJOSC     = $(LEJOSHOME)/bin/lejosjc
+LEJOSLINK = $(LEJOSHOME)/bin/lejoslink
+LEJOSDL    = $(LEJOSHOME)/bin/lejosdl
+
 EMULEJOS = $(LEJOSHOME)/bin/emu-lejos
-LEJOSRUN = $(LEJOSHOME)/bin/lejosrun
 EMULEJOSRUN = $(LEJOSHOME)/bin/emu-lejosrun
-LEJOSFIRMDL = $(LEJOSHOME)/bin/lejosfirmdl
+LEJOSFIRMDL = $(LEJOSHOME)/bin/firmdl
 
 CLASSPATH = .
 CLASSLIB = $(LEJOSHOME)/lib/classes.jar
@@ -24,16 +25,16 @@ SIGNATURE = HelloWorld.sig
 default : run
 
 run : $(BINARY)
-	$(LEJOSRUN) $(BINARY)
+	$(LEJOSDL) $(BINARY)
 
 emulate : $(EMUBINARY)
-	$(EMULEJOSRUN) $(EMUBINARY)
+	$(EMULEJOSDL) $(EMUBINARY)
 
 firmdl :
 	$(LEJOSFIRMDL)
 
 $(BINARY) : $(OBJECTS)
-	$(LEJOS) -verbose $(PROGRAMS) -o $(BINARY) > $(SIGNATURE)
+	$(LEJOSLINK) -verbose $(PROGRAMS) -o $(BINARY) > $(SIGNATURE)
 
 $(EMUBINARY) : $(OBJECTS)
 	$(EMULEJOS) $(PROGRAMS) -o $(EMUBINARY)

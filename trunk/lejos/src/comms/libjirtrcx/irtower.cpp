@@ -12,45 +12,16 @@
 #include <windows.h>
 #endif
 
-// extern "C" {
+extern "C" {
 #include "rcx_comm.h"
-// }
+}
 
-#ifdef __APPLE__
-#include <CoreFoundation/CoreFoundation.h>
-
-#include <IOKit/IOKitLib.h>
-#include <IOKit/IOCFPlugIn.h>
-#include <IOKit/usb/IOUSBLib.h>
-#include <IOKit/usb/USBSpec.h>
-
-#include "osx_usb.h"
-#endif /* __APPLE__ */
 
 #include <stdlib.h>
 
-/* Machine-dependent defines */
 
-#if defined(LINUX) || defined(linux)
-#define TOWER_NAME "/dev/lego0"
-#define DEFAULTTTY   "/dev/ttyS0" /* Linux - COM1 */
-#elif defined(_WIN32) || defined(__CYGWIN32__)
-#define DEFAULTTTY   "usb"       /* Cygwin - USB */
-#define TOWER_NAME "\\\\.\\LEGOTOWER1"
-#elif defined (sun)
-#define DEFAULTTTY   "/dev/ttya"  /* Solaris - first serial port - untested */
-#elif defined (__APPLE__)
-#define DEFAULTTTY   "usb"	  /* Default to USB on MAC */
-#define TOWER_NAME ""
-#else
-#define DEFAULTTTY   "/dev/ttyd2" /* IRIX - second serial port */
-#endif
+#define TIME_OUT 100
 
-#if defined(__APPLE__)
-    #define TIME_OUT 100
-#else
-    #define TIME_OUT 100
-#endif
 #define WAKEUP_TIME_OUT 4000
 
 #if !defined(_WIN32)
@@ -61,11 +32,6 @@ int GetLastError() {
 }
 #endif
 
-// extern "C" {
-extern int __comm_debug;
-// }
-
-int usb_flag;
 
 // open - Open the IR Tower
 
@@ -76,69 +42,29 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport)
   jfieldID fid;
   int err = 0;
   FILEDESCR fh;
-  char *tty = NULL;
-  char *comm_debug = NULL;
+
   int res = 0;
 
 #ifdef TRACE
-  __comm_debug = 1;
+  rcx_set_debug(1);
   printf("Entering open\n");
 #endif
 
    // Get the port parameter 
   
-  const char *port = env->GetStringUTFChars(jport,0);
-
-  tty = (char *) port;
-
-  // if no port supplied, read RCXTTY environment variable
-
-  if ((!tty) || *tty == 0) tty = getenv("RCXTTY");
-
-  // If still no port, default to USB on Windows, serial on Linux etc.
-
-  if ( (!tty) || *tty == 0) tty = DEFAULTTTY;
-
-  usb_flag = 0;
-
-#if defined(_WIN32) || defined(__CYGWIN32__)
-  /* stricmp not available on Linux */
-  if ((stricmp( tty , "usb" ) == 0) ) {
-    usb_flag = 1;
-    tty = TOWER_NAME;
-  }
-#endif
-
-#if defined(LINUX) || defined(linux) || defined(__APPLE__)
-  if ((strcmp( tty , "usb" ) == 0) ) {
-    usb_flag = 1;
-    tty = TOWER_NAME;
-  }
-#endif
-
-
-  // Set debugging if RCXCOMM_DEBUG=Y 
-
-  comm_debug = getenv("RCXCOMM_DEBUG");
-
-  if (comm_debug != NULL && strcmp(comm_debug,"Y") == 0)
-    __comm_debug = 1;
+  char * tty = (char *) env->GetStringUTFChars(jport,0);
 
   // Get a handle for the tower device
-#if defined(__APPLE__)
-    if (usb_flag) {
-        fh = (FILEDESCR) osx_usb_rcx_init(0);
-    } else {
-#endif
-        fh = rcx_init(tty,0);
-#if defined(__APPLE__)
-    }
-#endif
+
+  fh = rcx_init(tty,0);
 
   // USB Tower does not need wake-up
   
-  if (fh == BADFILE) res = RCX_OPEN_FAIL;
-  else if (!usb_flag) res = rcx_wakeup_tower(fh, WAKEUP_TIME_OUT);
+  if (fh == BADFILE) {
+	  res = RCX_OPEN_FAIL;
+  } else if (!rcx_is_usb()) {
+	  res = rcx_wakeup_tower(fh, WAKEUP_TIME_OUT);
+  }
 
   // Get the OS error, if a failure has occurred
   
@@ -175,7 +101,7 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport)
     return (jint) RCX_INTERNAL_ERR;
   }
 
-  env->SetIntField(obj,fid,usb_flag);
+  env->SetIntField(obj,fid,rcx_is_usb());
 
   // Set the handle
 
@@ -194,7 +120,7 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport)
 
   // Release the string parameter
 
-  env->ReleaseStringUTFChars(jport,port);
+  env->ReleaseStringUTFChars(jport, tty);
 
 #ifdef TRACE
   printf("Exiting open\n");
@@ -244,17 +170,7 @@ Java_josx_rcxcomm_Tower_close(JNIEnv *env, jobject obj)
       return (jint) RCX_ALREADY_CLOSED;
   }
   
-  // Close the handle
-
-#if defined(__APPLE__)
-  if (usb_flag) {
-    osx_usb_rcx_close((IOUSBInterfaceInterface**) fh);
-  } else {
-#endif
   rcx_close(fh);
-#if defined(__APPLE__)
-  }
-#endif
 
   // Write closed handle back
 
@@ -316,16 +232,9 @@ Java_josx_rcxcomm_Tower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 #ifdef TRACE
     hexdump("tower writes", body, n);
 #endif
-    // Write the bytes
-#if defined (__APPLE__)
-    if (usb_flag) {
-        actual = osx_usb_write((IOUSBInterfaceInterface **)fh, body, n);
-    } else {
-#endif
-        actual = mywrite(fh, body, n);
-#if defined (__APPLE__)
-    }
-#endif
+
+    actual = rcx_write(fh, body, n);
+
     if (actual < 0) {
         err = GetLastError();
     }
@@ -404,15 +313,7 @@ Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr)
     jsize = env->GetArrayLength(arr);
     jbyte *body = env->GetByteArrayElements(arr, 0);
 
-#if defined(__APPLE__)
-    if (usb_flag) {
-        actual = osx_usb_nbread((IOUSBInterfaceInterface **)fh, body, jsize, TIME_OUT);
-    } else {
-#endif
-    actual = nbread(fh,body,jsize,TIME_OUT);
-#if defined(__APPLE__)
-    }
-#endif
+    actual = rcx_read(fh,body,jsize,TIME_OUT);
 
     if (actual < 0) err = GetLastError();
 
@@ -492,15 +393,8 @@ Java_josx_rcxcomm_Tower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 
     // Write the bytes
 
-#if defined(__APPLE__)
-    if (usb_flag) {
-        actual = osx_usb_rcx_send((IOUSBInterfaceInterface**)fh, body, n, 1);
-    } else {
-#endif
     actual = rcx_send(fh,body,n,1);
-#if defined(__APPLE__)
-    }
-#endif
+
 
     if (actual < 0) {
         err = GetLastError();
@@ -588,15 +482,7 @@ Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr)
 
     // Receive a packet
 
-#if defined(__APPLE__)
-    if (usb_flag) {
-        actual = osx_usb_rcx_recv((IOUSBInterfaceInterface**)fh, body, jsize, TIME_OUT, 1);
-    } else {
-#endif
-        actual = rcx_recv(fh, body, jsize, TIME_OUT, 1);
-#if defined(__APPLE__)
-    }
-#endif
+    actual = rcx_recv(fh, body, jsize, TIME_OUT, 1);
 
     if (actual < 0) err = GetLastError();
 
@@ -694,15 +580,9 @@ Java_josx_rcxcomm_Tower_isAlive(JNIEnv *env, jobject obj)
     fh = (FILEDESCR) env->GetLongField(obj,fid);
   
     // Check if RCX is alive
-#if defined(__APPLE__)
-    if (usb_flag) {
-        alive = osx_usb_rcx_is_alive((IOUSBInterfaceInterface**)fh, 1);
-    } else {
-#endif
-        alive = rcx_is_alive(fh,1);
-#if defined (__APPLE__)
-    }
-#endif
+
+    alive = rcx_is_alive(fh,1);
+
     
 #ifdef TRACE
     printf("Exiting isAlive\n");

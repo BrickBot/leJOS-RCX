@@ -2,5 +2,5 @@ JAVAC=javac
 
 pcclasses:
 	${JAVAC} `find . -name '*.java'`
-	jar cf ../../lib/pcrcxcomm.jar `find . -name '*.class'`
+	jar cf $(LEJOS_HOME)/lib/pcrcxcomm.jar `find . -name '*.class'`
 

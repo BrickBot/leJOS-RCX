@@ -1,4 +1,4 @@
-CC=$(shell ../../cctest.sh)
+CC=$(shell $(LEJOS_HOME)/cctest.sh)
 
 JDK=$(shell dirname $(shell dirname $(shell which java)))
 
@@ -10,20 +10,13 @@ endif
 
 OSX_USB=
 
-# COMM_OSX_C=../../tools/firmdl/osx_usb.c
-# COMM_OBJ=../../tools/firmdl/rcx_comm.o
-# COMM_C=../../tools/firmdl/rcx_comm.c
-# COMM_H=../../tools/firmdl/rcx_comm.h
-# COMM_INCL=../../tools/firmdl
-COMM_OBJ=
-COMM_C=rcx_comm.cpp
-COMM_H=rcx_comm.h
-COMM_INCL=.
+IRTRCX_H=$(LEJOS_HOME)/src/comms/libirtrcx/rcx_comm.h
+IRTRCX_INCL=$(LEJOS_HOME)/src/comms/libirtrcx
 
 ifneq (,$(findstring cygwin,$(OSTYPE)))
     # Windows with CygWin installed
-    IRTOWER=../../bin/irtower.dll
-    CCOPT=-mno-cygwin -I$(COMM_INCL) -I${JDK}/include -I${JDK}/include/win32 -Wl,--add-stdcall-alias -shared
+    IRTOWER=$(LEJOS_HOME)/bin/jirtrcx.dll
+    CCOPT= -mno-cygwin -I$(IRTRCX_INCL) -I${JDK}/include -I${JDK}/include/win32 -Wl,--add-stdcall-alias -shared -L$(LEJOS_HOME)/bin -lirtrcx
 else
 ifneq (,$(findstring darwin,$(OSTYPE)))
     # Mac OS X
@@ -37,13 +30,13 @@ ifneq (,$(findstring darwin,$(OSTYPE)))
     endif
     # Mac OS X compiles PIC by default
     CCOPT = -g -O ${JNILIB_TYPE} -I$(COMM_INCL) -framework IOKit -framework CoreFoundation -I/System/Library/Frameworks/JavaVM.framework/Headers
-    IRTOWER=../../bin/libirtower.jnilib 
+    IRTOWER=$(LEJOS_HOME)/bin/libirtower.jnilib 
 
     OSX_USB=osx_usb.o
   else
     # Linux/Solaris/FreeBSD/other unices.
-    IRTOWER=../../bin/libirtower.so
-    CCOPT=-shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) -I$(COMM_INCL) -I../../tools/linux/legousbtower	
+    IRTOWER=$(LEJOS_HOME)/bin/libjirtrcx.so
+    CCOPT=-rdynamic -ldl -shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) -I$(IRTRCX_INCL) -I$(LEJOS_HOME)/src/tools/linux/legousbtower	
 
   endif
 endif
@@ -51,10 +44,8 @@ endif
 .EXPORT_ALL_VARIABLES :
 
 # Use CXX to get correct linkage (need C++ libraries)
-${IRTOWER}: irtower.cpp $(COMM_C) $(COMM_H) josx_rcxcomm_Tower.h $(OSX_USB)
-	$(CXX) $(CCOPT) $(OSX_USB) $(COMM_OBJ) -o $@ *.cpp
-osx_usb.o: $(COMM_OSX_C)
-	$(CC) -c -framework IOKit -framework CoreFoundation -I/System/Library/Frameworks/JavaVM.framework/Headers $(COMM_OSX_C)
+${IRTOWER}: irtower.cpp josx_rcxcomm_Tower.h $(OSX_USB)
+	$(CXX) $(CCOPT) $(COMM_OBJ) -o $@ *.cpp
 clean:
 	rm -rf *.o *~ core
 	rm -f ${IRTOWER}

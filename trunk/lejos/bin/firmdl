@@ -5,14 +5,20 @@
 #
 # 12/12/02  created L. Griffiths
 
+
+if [ -z "$LEJOS_HOME" ]; then 
+  echo LEJOS_HOME is not defined
+  exit
+fi
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LEJOS_HOME/bin
+export LD_PRELOAD=$LEJOS_HOME/bin/libirtrcx.so
+
 if [ $OSTYPE == "cygwin" ]; then
   SEPARATOR=";"
 else
   SEPARATOR=":"
 fi
 
-if [ -z "$LEJOS_HOME" ]; then 
-  echo LEJOS_HOME is not defined
-else
-  java -Djava.library.path="$LEJOS_HOME/bin" -classpath "$LEJOS_HOME/lib/jtools.jar$SEPARATOR$LEJOS_HOME/lib/pcrcxcomm.jar" js.tools.Firmdl $*
-fi
+java -Djava.library.path="$LEJOS_HOME/bin" -classpath "$LEJOS_HOME/lib/jtools.jar$SEPARATOR$LEJOS_HOME/lib/pcrcxcomm.jar" js.tools.Firmdl $*
+
