@@ -1,15 +1,29 @@
 package josx.platform.rcx;
 
 /**
- * Abstraction for a sensor (<i>considerably changed in alpha5</i>). Example:<p>
+ * Abstraction for a sensor (<i>considerably changed since alpha5</i>).
+ * There are three Sensor instances available: Sensor.S1, Sensor.S2 and
+ * Sensor.S3. They correspond to sensor inputs labeled 1, 2 and 3 in the
+ * RCX, respectively. Before using a sensor, you should set its mode
+ * and type with <code>setTypeAndMode</code> using constants defined in <code>SensorConstants</code>. 
+ * You should also activate the sensor.
+ * <p>
+ * You can poll for sensor values in a loop using the readValue method
+ * or one of the other read methods. There is also a low level method which
+ * can be used when maximum performance is required. Another way to
+ * monitor sensor values is to add a <code>SensorListener</code>. All sensor events
+ * are dispatched to listeners by a single thread.
+ * <p>
+ * Example:<p>
  * <code><pre>
  *   Sensor.S1.setTypeAndMode (3, 0x80);
  *   Sensor.S1.activate();
  *   Sensor.S1.addSensorListener (new SensorListener() {
  *     public void stateChanged (Sensor src, int oldValue, int newValue) {
+ *       // Will be called whenever sensor value changes
  *       LCD.showNumber (newValue);
  *       try {
- *	   Thread.sleep (100);
+ *         Thread.sleep (100);
  *       } catch (InterruptedException e) {
  *         // ignore
  *       }
@@ -17,6 +31,9 @@ package josx.platform.rcx;
  *   });
  *     
  * </pre></code>
+ *
+ * @see josx.platform.rcx.SensorConstants
+ * @see josx.platform.rcx.SensorListener
  */
 public class Sensor
 {
@@ -86,6 +103,7 @@ public class Sensor
    * NOTE 3: Synchronizing inside listener methods could result
    * in a deadlock.
    * </b>
+   * @see josx.platform.rcx.SensorListener
    */
   public synchronized void addSensorListener (SensorListener aListener)
   {

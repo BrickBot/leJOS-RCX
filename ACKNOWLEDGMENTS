@@ -63,6 +63,17 @@ After 1.0.0alpha4:
 
 - Brian Bagnall added the atan(double) method to Math.
 
+After 1.0.0beta2:
+-----------------
 
+- Thanks to Christophe Ponsard for his example. Added also
+  examples from TinyVM by Ryan Vander Bijl and Reinhard
+  Schiedermeier.
+
+- Copied the entire util/firmdl directory from legOS 0.2.4 
+  in order to fix "Permission Denied" bug. Thanks to Paolo
+  Masetti for his feedback regarding this problem.
+  
+  
 
 
