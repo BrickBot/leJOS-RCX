@@ -1,10 +1,12 @@
-package js.tools;
+package js.tinyvm;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.StringTokenizer;
 import java.util.Vector;
+
+import js.tools.ListReader;
 
 public class GenerateConstants
 {
