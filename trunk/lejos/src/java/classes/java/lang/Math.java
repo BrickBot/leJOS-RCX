@@ -3,21 +3,46 @@ package java.lang;
 /**
  * Mathematical functions.
  *
- * @author <a href="mailto:bbagnall@escape.ca">Brian Bagnall</a>
+ * @author <a href="bbagnall@escape.ca">Brian Bagnall</a>
  */
 public final class Math {
 
-	final static double [] DIGIT = {45.0, 26.56505118, 14.03624347, 7.125016349, 3.576334375, 1.789910608, 0.89517371, 0.447614171, 0.2238105, 0.111905677, 0.055952892, 0.027976453, 0.013988227, 0.006994114, 0.003497057};
+	private static final float[] DIGIT = {45.0f, 26.56505118f, 14.03624347f, 7.125016349f, 3.576334375f, 
+	                                      1.789910608f, 0.89517371f, 0.447614171f, 
+	                                      0.2238105f, 0.111905677f, 0.055952892f, 
+	                                      0.027976453f, 0.013988227f, 0.006994114f, 
+	                                      0.003497057f};
 	
 	// Math constants
 	public static final double E = 2.718281828459045;
 	public static final double PI = 3.141592653589793;
+	public static final double NaN = 0.0f / 0.0f;
 
 	// These constants are used for method trig()
 	private static final int SIN = 0;
 	private static final int COS = 1;
 	private static final int TAN = 2;
 
+	public static boolean isNaN (double d) {
+	  return d != d;
+	}
+	
+	/**
+	* Returns the absolute value of a double value. If the argument is not negative, the argument is
+  * returned. If the argument is negative, the negation of the argument is returned.
+	*/
+	public static double abs(double a) {
+		return ((a<0)?-a:a);
+	}
+
+	/**
+	* Returns the absolute value of an integer value. If the argument is not negative, the argument is
+  * returned. If the argument is negative, the negation of the argument is returned.
+	*/
+	public static int abs(int a) {
+		return ((a<0)?-a:a);
+	}
+	
 	/**
 	* Cosine function.
 	*/
@@ -30,25 +55,25 @@ public final class Math {
 	*/
 	// will redo pow() properly later to handle doubles for b.
 	public static double pow(double a, int b) {
-		double c = 1.0;
+		float c = 1.0f;
 		
 		if(b > 0) {
 			for(int i=0;i<b;i++) {
-				c = c * a;
+				c = c * (float) a;
 			}
 		}
 		else if(b < 0) {
 			for(int i=0;i>b;i--) {
-				c = c / a;
+				c = c / (float) a;
 			}	
 		}	
 		
 		return c;
 	}
 
-        /**
-	 * Sine function.
-	 */
+  /**
+	* Sine function.
+	*/
 	public static double sin(double a) {
 		return trig(a, SIN);
 	}
@@ -62,8 +87,9 @@ public final class Math {
 		double accuracy = 0.0000001; // Can't be smaller than this
 		
 		// Special situation if a < 0
-		if(a<0)
-			return 0; // ** Should return NaN
+		if(a<0) {
+			return NaN;
+		} 
 		
 		// Special situation if a < 1
 		if(a<1) {
@@ -97,7 +123,7 @@ public final class Math {
 	private static double trig(double a, int returnType) {
 	 	
    	// This method uses radians input, just like the official java.lang.Math
-   	a = toDegrees (a);
+   	a = (float) toDegrees (a);
    	
    	// ** When a=0, 90, 180, 270 should return even number probably
    	
@@ -132,15 +158,15 @@ public final class Math {
    	
    	// ** The core trig calculations to produce Cos & Sin **
 		int N = DIGIT.length - 1;
-		double x = 0.607252935;  // Absolute best accuracy available
-		double y = 0.0;
+		float x = 0.607252935f;  // Absolute best accuracy available
+		float y = 0.0f;
 		
 		for(int i = 0;i <= N;i++) {
 			// ** Temp code:
 			//System.out.println(i + "  " + "x = " + x + "  y = " + y + "  A = " + a + "  digit = " + digit[i]); 
-			double dx = x / Math.pow(2, i);
-    	double dy = y / Math.pow(2, i);
-    	double da = DIGIT[i];
+			float dx = x / (float) Math.pow(2, i);
+    	float dy = y / (float) Math.pow(2, i);
+    	float da = DIGIT[i];
     	
     	if(a >= 0) {
     		x = x - dy;
@@ -171,14 +197,15 @@ public final class Math {
 	 * Arc tangent function
 	 */
 	public static double atan(double a) {
-  	
    	int N = DIGIT.length - 1;
 		double x = 1.0;
 		double y = a;
 		double t = 0;
 		
-		for(int i = 0;i <= N;i++) {
-			
+		if(a==0)
+			return 0.0; // Otherwise returns tiny number
+		
+		for(int i = 0;i <= N;i++) {		
 			double dx = x / Math.pow(2, i);
     	double dy = y / Math.pow(2, i);
     	double da = DIGIT[i];
@@ -194,13 +221,75 @@ public final class Math {
     		y = y - dx;
     	}
 		}
-		
 		return toRadians(t);
 	}
+	/**
+	*Converts rectangular coordinates (b, a) to polar (r, theta). This method computes the phase
+  *theta by computing an arc tangent of a/b in the range of -pi to pi.
+	*/
+	public static double atan2(double y, double x) {
+		double result = 0.0;
+		if(x != 0.0)
+			result = atan(y/x);
+		else {
+			if(y>0)
+				return PI/2; // +,0
+			else
+				if(y<0)
+					return -PI/2; // -,0
+		}
+		
+		if(x<0) {
+			if(y==0)
+				return PI; // 0,-
+			else {
+				if(y>0)
+					return PI + result; // +,-
+				else
+					return -PI + result; // -,-
+			}
+		}
+		
+		return result; // +,+ or -,+ or 0,+
+	}
+	
+	/**
+  * Arc cosine function.
+	*/
+	public static double acos(double a) {
+		return atan(sqrt(1-pow(a,2))/a);
+	}
+	
+	/**
+  * Arc sine function.
+	*/
+	public static double asin(double a) {
+		return atan(a/sqrt(1-pow(a,2)));
+	}
 
-        /**
-         * Converts radians to degrees.
-	 */
+	/**
+  * Natural log function.
+	* !!BEWARE!! It is currently only accurate for about 0.01 to 1.0
+	* Numbers above 1.0 rapidly lose accuracy, 2.0 is ridiculous
+	* Below 0.01 it is close but useless ~0.0001
+	*/
+	
+	public static double log(double a) {
+		int loops = 50; // 50 seems about accurate enough.
+		double seriesSum = 0;
+		
+		for(int n = 1;n<loops;n++) {
+			double taylor = pow(a-1,n) * (pow(-1, n+1)/n);
+			seriesSum = seriesSum + taylor;
+			//System.out.println(n + " Taylor=" + taylor + " seriesSum=" + seriesSum);
+		}
+		
+		return seriesSum;
+	}
+
+  /**
+  * Converts radians to degrees.
+	*/
 	public static double toDegrees(double angrad) {
 		return (angrad * 360)/(2 * PI);
 	}

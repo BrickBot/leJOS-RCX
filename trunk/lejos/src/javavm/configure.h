@@ -5,13 +5,13 @@
 /**
  * Maximum level of recursion.
  */
-#define MAX_STACK_FRAMES                 12
+#define MAX_STACK_FRAMES                 10
  
 /**
  * Maximum number of words in a thread's stack
  * (for both locals and operands).
  */
-#define STACK_SIZE                       48
+#define STACK_SIZE                       54
 
 /**
  * Should always be 1.

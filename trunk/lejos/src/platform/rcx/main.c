@@ -96,7 +96,7 @@ void delay()
 
 void wait_for_power_release()
 {
-  TWOBYTES debouncer;
+  //TWOBYTES debouncer;
 
   delay();
   do
@@ -138,28 +138,28 @@ void handle_uncaught_exception (Object *exception,
  */
 void switch_thread_hook()
 {
-  short i;
-  
   get_power_status (POWER_KEY, &status);
   if (status == 0)
   {
+    short st;
+    
+    read_buttons (0x3000, &st);
     // Power button pressed - wait for release
     wait_for_power_release();
-    read_buttons (0x3000, &status);
-    if (status & 0x01)
+    schedule_request (REQUEST_EXIT);
+    if (st & 0x01)
     {
+      do
+      {
+	read_buttons (0x3000, &status);
+      } while ((status & 0x01) != 0); 
       hookCommand = HC_EXIT_PROGRAM;
-      // Force interpreter to exit. 
-      gMustExit = true;
     }
     else
     {
-      hookCommand = HC_SHUTDOWN_POWER;
-      gRequestSuicide = true;
-      // The following sound should not be heard unless
-      // the program did not commit suicide (dealock or
-      // cathing of Throwable around infinite loop).
-      play_system_sound (SOUND_QUEUED, 2);
+      hookCommand = HC_SHUTDOWN_POWER;      
+      play_system_sound (SOUND_QUEUED, 0);
+      for (status = 0; status < 100; status++) { }
     }
   }
 }
@@ -182,7 +182,7 @@ int main (void)
   systime_init();
   init_sensors();
   // If power key pressed, wait until it's released.
-  for (status = 0; status < 100; status++) { }
+  for (status = 0; status < 200; status++) { }
   get_power_status (POWER_KEY, &status);
   if (status == 0)  
     wait_for_power_release();
@@ -208,7 +208,6 @@ int main (void)
     clear_lcd_segment (LCD_STANDING);
   }
   refresh_display();
- LABEL_RESET_TRANSFER:
   currentIndex = 1;
  LABEL_COMM_LOOP:
   while (1)

@@ -23,7 +23,9 @@ extern char *OPCODE_NAME[];
 
 // Interpreter globals:
 
-boolean gMustExit;
+boolean gMakeRequest;
+byte    gRequestCode;
+
 byte *pc;
 STACKWORD *localsBase;
 STACKWORD *stackTop;
@@ -39,7 +41,7 @@ ConstantRecord *tempConstRec;
 STACKWORD tempStackWord;
 STACKWORD *tempWordPtr;
 JINT tempInt;
-
+  
 /**
  * Assumes pc points to 2-byte offset, and jumps.
  */
@@ -149,8 +151,6 @@ void engine()
 {
   register short numOpcodes;
   
-  gMustExit = false;
-  gRequestSuicide = false;
   switch_thread();
   numOpcodes = OPCODES_PER_TIME_SLICE;
  LABEL_ENGINELOOP: 
@@ -159,14 +159,25 @@ void engine()
     #if DEBUG_THREADS
     printf ("switching thread: %d\n", (int) numOpcodes);
     #endif
-    switch_thread();
+    schedule_request (REQUEST_SWITCH_THREAD);
     #if DEBUB_THREADS
     printf ("done switching thread\n");
     #endif
     numOpcodes = OPCODES_PER_TIME_SLICE;
   }
-  if (gMustExit)
-    return;
+  if (gMakeRequest)
+  {
+    gMakeRequest = false;
+    switch (gRequestCode)
+    {
+      case REQUEST_SWITCH_THREAD:
+        if (!switch_thread())
+          return;
+	break;
+      case REQUEST_EXIT:
+        return;
+    }
+  }
 
   //-----------------------------------------------
   // SWITCH BEGINS HERE

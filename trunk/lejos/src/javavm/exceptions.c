@@ -21,7 +21,7 @@ Object *nullPointerException;
 Object *classCastException;
 Object *arithmeticException;
 Object *arrayIndexOutOfBoundsException;
-Object *threadDeath;
+//Object *threadDeath;
 
 // Temporary globals:
 
@@ -42,7 +42,7 @@ void init_exceptions()
   classCastException = new_object_for_class (JAVA_LANG_CLASSCASTEXCEPTION);
   arithmeticException = new_object_for_class (JAVA_LANG_ARITHMETICEXCEPTION);
   arrayIndexOutOfBoundsException = new_object_for_class (JAVA_LANG_ARRAYINDEXOUTOFBOUNDSEXCEPTION);
-  threadDeath = new_object_for_class (JAVA_LANG_THREADDEATH);
+//  threadDeath = new_object_for_class (JAVA_LANG_THREADDEATH);
 }
 
 /**

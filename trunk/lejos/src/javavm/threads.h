@@ -37,7 +37,7 @@ extern boolean init_thread (Thread *thread);
 extern StackFrame *current_stackframe();
 extern void enter_monitor (Object* obj);
 extern void exit_monitor (Object* obj);
-extern void switch_thread();
+extern boolean switch_thread();
 
 #define stackframe_array_ptr()   (word2ptr(currentThread->stackFrameArray))
 #define stack_array_ptr()        (word2ptr(currentThread->stackArray))
@@ -60,7 +60,7 @@ static inline void sleep_thread (const FOURBYTES time)
 {
   #ifdef VERIFY
   assert (currentThread != JNULL, THREADS3);
-  assert (currentThread->state != MON_WAITING, THREADS4);
+  assert (currentThread->state != MON_WAITING, THREADS9);
   #endif
 
   currentThread->state = SLEEPING;

@@ -111,7 +111,6 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       // Parameters: int romId (0..2), int requestedValue (0..2).
       {
 	short pId;
-        byte pAction;
 	
 	pId = paramBase[0];
 	if (pId >= 0 && pId < 3)
