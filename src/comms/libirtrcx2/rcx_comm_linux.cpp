@@ -117,7 +117,7 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 	return len;
 }
 
-int __rcx_write(void* port, const void *buf, int len) 
+int __rcx_write(void* port, void* buf, int len) 
 {
 	return write(((Port*) port)->fileHandle, buf, len);
 }
