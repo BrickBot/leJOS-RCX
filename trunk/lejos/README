@@ -1,3 +1,4 @@
+leJOS, a Java system for the Lego Mindstorms RCX
 
 Summary
 -------
@@ -31,7 +32,7 @@ and run Java programs. These are some of the features
 offered by leJOS:
 
 - Object oriented language (Java).
-- Preemtive threads (tasks).
+- Preemptive threads (tasks).
 - Arrays, including multi-dimensional ones.
 - Recursion.
 - Synchronization.
@@ -53,6 +54,15 @@ to these, leJOS also offers:
 
 TinyVM is still around simply as a low-footprint alternative
 to leJOS. TinyVM is about 7 Kb smaller in the RCX.
+
+Compatibility
+-------------
+
+RCX 1.0 in RIS 1.0/1.5: yes
+RCX 2.0 in RIS 2.0: probably, if not we'll fix it
+
+Serial IR Tower in RIS 1.0/1.5: yes
+USB IR Tower in RIS 2.0: no, but we intend to support it
 
 How do you pronounce leJOS?
 ---------------------------
@@ -88,8 +98,8 @@ Building the Tools (UNIX ONLY):
 
 Downloading the Firmware:
   Run the lejosfirmdl utility. When the firmware
-  starts, the LCD shows the power level as a
-  percentage, and you should hear a double beep.
+  starts, the LCD shows the battery voltage, and
+  you should hear a double beep.
   
   The firmware only needs to be downloaded once.
   It is also easy to replace, say, with the official
@@ -138,7 +148,7 @@ class files can be located in CLASSPATH, and execute
 'lejos' a you would execute 'java', e.g.
 
   lejos MyMainClass
-  
+
 The above links and resolves all classes that could
 be used by a program with entry point in MyMainClass.
 The resulting linked binary is downloaded to the
@@ -246,8 +256,8 @@ Documentation
 -------------
 
 The latest API Reference should be available at
-lejos.sourceforge.net. The API Reference for this release
-can be obtained with 'make javadoc'.
+http://lejos.sourceforge.net/. The API Reference
+for this release can be obtained with 'make javadoc'.
 
 About the License
 -----------------
@@ -258,12 +268,23 @@ license, and leJOS is linked against -lrcx and -lfloat, which
 are part of librcx. No changes have been made to those libraries, 
 so they haven't been redistributed. They are only needed if you 
 are planning to modify the native C source code. See docs/hacking.
-The founder and maintainer of leJOS is Jose Solorzano. 
+
+The founder of leJOS is Jose Solorzano.  Jose has announced
+he will be leaving the leJOS project so he can spend more
+time with his other baby, Mark Humberto.  Paul Andrews and
+Juergen Stuber will be taking over as project leaders.
 
 Questions/Problems
 ------------------
 
-Please direct feedback to Jose Solorzano at jhsolorz@yahoo.com. 
+Please direct feedback to
+Paul Andrews <mpandrews@users.sourceforge.net> and
+Juergen Stuber <starblue@users.sourceforge.net>.
+
 You can also subscribe to the tinyvm-discussion mailing list. Look 
 for the "Mailing Lists" section at http://sourceforge.net/projects/tinyvm.
 
+Take a look at the leJOS website at http://lejos.sourceforge.net/ .
+
+Finally, there is a newsgroup at LUGNET for Java on the RCX,
+see http://www.lugnet.com/robotics/rcx/java/ .
