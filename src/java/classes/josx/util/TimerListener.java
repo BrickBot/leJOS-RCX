@@ -3,7 +3,7 @@ package josx.util;
 /**
  * Listener used with Timer.
  * 
- * @see josx.platform.rcx.Timer
+ * @see josx.util.Timer
  * @author <a href="mailto:rvbijl39<at>calvin<dot>edu">Ryan VanderBijl</a> 
  */
 

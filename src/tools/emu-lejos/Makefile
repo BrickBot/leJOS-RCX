@@ -22,11 +22,12 @@ LEJOSRCXDEFS=-DWRITE_ORDER=\"BE\" -DLOADER_TOOL=\"lejosrun\"
 
 LEJOSUNIXDEFS=-DWRITE_ORDER=\"LE\" -DLOADER_TOOL=\"emu-lejosrun\"
 
-PROGRAMS=${TVMFIRMDL} ${TVM} ${TVMC} ${TVMP} ${TVMC1} ${TVMP1} ${RCXLOADER} ${UNIXLOADER}
+PROGRAMS=${TVM} ${TVMC} ${TVMP} ${TVMC1} ${TVMP1} ${RCXLOADER} ${UNIXLOADER}
 
 default: programs
 
 programs: ${PROGRAMS}
+	cd firmdl; make
 
 %.o: %.c
 	${CC} ${CCOPT} -c $*.c
@@ -63,6 +64,7 @@ ${UNIXLOADER}: javaexec.c util.o
 	
 clean:
 	rm -rf *.o *~ core ${PROGRAMS}
+	cd firmdl; make clean
 
 
 
