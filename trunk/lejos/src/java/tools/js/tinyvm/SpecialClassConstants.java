@@ -11,6 +11,10 @@ public interface SpecialClassConstants {
     "java/lang/Boot_Thread",
     "java/lang/Throwable",
     "java/lang/OutOfMemoryError",
-    "java/lang/NoSuchMethodError"
+    "java/lang/NoSuchMethodError",
+    "java/lang/StackOverflowError",
+    "java/lang/NullPointerException",
+    "java/lang/ClassCastException",
+    "java/lang/ArithmeticException"
   };
 }

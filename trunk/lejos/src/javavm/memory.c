@@ -35,7 +35,6 @@ extern char _end;
 
 #define NULL_OFFSET 0xFFFF
 
-#define HEADER_SIZE (sizeof(Object))
 // Size of object header in 2-byte words
 #define NORM_OBJ_SIZE ((HEADER_SIZE + 1) / 2)
 // Size of stack frame in 2-byte words
@@ -43,7 +42,7 @@ extern char _end;
 
 byte typeSize[] = { 
   4, // 0 == T_REFERENCE
-  NORM_SF_SIZE * 2, // 1 == T_STACKFRAME
+  SF_SIZE, // 1 == T_STACKFRAME
   0, // 2
   0, // 3
   1, // 4 == T_BOOLEAN
@@ -66,9 +65,6 @@ extern Object *memcheck_allocate (TWOBYTES size);
 extern void initialize_state (Object *objRef, TWOBYTES numWords);
 extern void deallocate (TWOBYTES *ptr, TWOBYTES size);
 extern TWOBYTES *allocate (TWOBYTES size);
-extern void set_array_element (byte *aRef, byte aSize, TWOBYTES aIndex, STACKWORD aWord);
-extern STACKWORD make_word (byte *ptr, byte aSize);
-extern void copy_word (byte *ptr, byte aSize, STACKWORD aWord);
 
 inline void set_class (Object *obj, byte classIndex)
 {
@@ -93,7 +89,7 @@ inline void set_array (Object *obj, byte elemSize, byte length)
  */
 Object *new_object_checked (byte classIndex, byte *btAddr)
 {
-  if (dispatch_static_initializer (classIndex, btAddr))
+  if (dispatch_static_initializer (get_class_record(classIndex), btAddr))
     return null;
   return new_object_for_class (classIndex);
 }
@@ -204,30 +200,18 @@ Object *new_multi_array (byte elemType, byte totalDimensions,
     return null;
   while (--numElements >= 0)
   {
-    set_array_element ((byte *) ref, 4, numElements, 
+    set_array_word ((byte *) ref, 4, numElements, 
       (STACKWORD) new_multi_array (elemType, 
          totalDimensions - 1, reqDimensions - 1));
   }
   return ref;
 }
 
-STACKWORD get_array_element (byte *aRef, byte aSize, TWOBYTES aIndex)
-{
-  return make_word (aRef + aIndex * aSize + HEADER_SIZE, aSize); 
-}
-
-void set_array_element (byte *aRef, byte aSize, TWOBYTES aIndex, 
-                        STACKWORD aWord)
-{
-  copy_word (aRef + aIndex * aSize + HEADER_SIZE, aSize, aWord);
-}
-
 STACKWORD make_word (byte *ptr, byte aSize)
 {
   STACKWORD result = 0;
-  byte i;
 
-  for (i = 0; i < aSize; i++)
+  while (aSize--)
   {
     result = result << 8;
     result |= *ptr++;
@@ -237,11 +221,9 @@ STACKWORD make_word (byte *ptr, byte aSize)
 
 void copy_word (byte *ptr, byte aSize, STACKWORD aWord)
 {
-  byte i;
-
-  for (i = aSize; i-- > 0;)
+  while (aSize--)
   {
-    ptr[i] = (byte) (aWord & 0xFF);
+    ptr[aSize] = (byte) (aWord & 0xFF);
     aWord = aWord >> 8;
   }
 }

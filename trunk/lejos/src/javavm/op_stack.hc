@@ -22,7 +22,7 @@ case OP_LDC:
   // TBD: strings
 
   #ifdef VERIFY
-  assert (gConstRec->constantSize <= 4);
+  assert (gConstRec->constantSize <= 4, INTERPRETER5);
   #endif VERIFY
 
   *(++stackTop) = make_word (get_constant_ptr(gConstRec), 
@@ -34,10 +34,10 @@ case OP_LDC2_W:
   gConstRec = get_constant_record (((TWOBYTES) pc[0] << 8) | pc[1]);
 
   #ifdef VERIFY
-  assert (gConstRec->constantSize == 8);
+  assert (gConstRec->constantSize == 8, INTERPRETER6);
   #endif VERIFY
 
-  gBytePtr = get_constant_ptr (gBytePtr);
+  gBytePtr = get_constant_ptr (gConstRec);
   *(++stackTop) = make_word (gBytePtr, sizeof(STACKWORD));
   *(++stackTop) = make_word (gBytePtr + sizeof(STACKWORD), sizeof(STACKWORD));
   pc += 2;
@@ -73,16 +73,14 @@ case OP_FCONST_1:
 case OP_FCONST_2:
   // Stack size: +1
   // Arguments: 0
-  gFloat = (float) (*(pc-1) - OP_FCONST_0);
-  *(++stackTop) = jfloat2word(gFloat);
+  *(++stackTop) = jfloat2word((JFLOAT) (*(pc-1) - OP_FCONST_0));
   goto LABEL_ENGINELOOP;
 case OP_DCONST_0:
 case OP_DCONST_1:
   // Stack size: +2
   // Arguments: 0
-  gFloat = (float) (*(pc-1) - OP_DCONST_0);
   *(++stackTop) = 0;
-  *(++stackTop) = jfloat2word(gFloat);
+  *(++stackTop) = jfloat2word((JFLOAT) (*(pc-1) - OP_DCONST_0));
   goto LABEL_ENGINELOOP;
 case OP_POP2:
   // Stack size: -2
@@ -153,7 +151,7 @@ case OP_SWAP:
 
 // Notes:
 // - LDC_W should not occur in tinyvm.
-// - Arguments or LDC and LDC2_W are postprocessed.
+// - Arguments of LDC and LDC2_W are postprocessed.
 // - NOOP is in op_skip.hc.
 
 /*end*/

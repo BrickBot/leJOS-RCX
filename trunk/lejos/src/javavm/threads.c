@@ -18,10 +18,20 @@
  * Thread currently being executed by engine().
  */
 #ifdef SAFE
-static Thread* currentThread = null;
+Thread* currentThread = null;
 #else
-static Thread* currentThread;
+Thread* currentThread;
 #endif
+
+StackFrame *current_stackframe()
+{
+  byte arraySize;
+
+  arraySize = currentThread->stackFrameArraySize;
+  if (arraySize == 0)
+    return null;
+  return stackframe_array() + (arraySize - 1);
+}
 
 inline byte get_thread_id (Object *obj)
 {
@@ -49,7 +59,7 @@ void init_thread (Thread *thread)
 {
   thread->stackFrameArray = (REFERENCE) new_primitive_array (T_STACKFRAME, MAX_STACK_FRAMES);
   thread->stackArray = (REFERENCE) new_primitive_array (T_INT, STACK_SIZE);
-  thread->currentStackFrame = JNULL;
+  thread->stackFrameArraySize = 0;
   thread->state = STARTED;
   if (currentThread == null)
   {
@@ -81,7 +91,7 @@ void switch_thread()
   anchorThread = currentThread;
   liveThreadExists = false;
   // Save context information
-  stackFrame = get_stack_frame();
+  stackFrame = current_stackframe();
   stackFrame->pc = pc;
   stackFrame->stackTop = stackTop;
   // Loop until a RUNNING frame is found
@@ -135,7 +145,7 @@ void switch_thread()
   }
   if (currentThread->state != RUNNING)
     goto LABEL_TASKLOOP;
-  stackFrame = get_stack_frame();
+  stackFrame = current_stackframe();
   pc = stackFrame->pc;
   stackTop = stackFrame->stackTop;
   localsBase = stackFrame->localsBase;

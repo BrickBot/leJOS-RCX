@@ -52,7 +52,7 @@ typedef struct S_Thread
   REFERENCE waitingOn;
   REFERENCE stackFrameArray;
   REFERENCE stackArray;
-  REFERENCE currentStackFrame;
+  byte stackFrameArraySize;
   byte threadId;
   byte state;
 } Thread;

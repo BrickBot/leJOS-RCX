@@ -14,17 +14,11 @@
 #define C_HASCLINIT   0x04
 #define C_INTERFACE   0x08
 
-extern byte get_class_index (Object *obj);
-extern void dispatch_special (byte classIdx, byte methodIndex, byte *rAddr);
-extern void dispatch_virtual (Object *obj, TWOBYTES signature, byte *rAddr);
-extern short find_method (byte classIndex, TWOBYTES signature);
-extern STACKWORD instance_of (Object *obj, byte classIndex);
-extern void do_return (byte numWords);
-
 typedef struct S_MasterRecord
 {
   TWOBYTES magicNumber;
   TWOBYTES constantTableOffset;
+  TWOBYTES staticFieldsOffset;
   TWOBYTES staticStateOffset;
 } MasterRecord;
 
@@ -71,7 +65,7 @@ typedef struct S_MethodRecord
   byte numLocals;
   // Maximum size of local operand stack, in 32-bit words.
   byte maxOperands;
-  // Number of parameters, including receiver.
+  // Number of parameter words, including receiver.
   byte numParameters;
   // Number of exception handlers
   byte numExceptionHandlers;
@@ -99,10 +93,22 @@ typedef struct S_ConstantRecord
   byte constantSize;
 } ConstantRecord;
 
-extern MasterRecord *installedBinary;
+typedef TWOBYTES STATICFIELD;
+
+extern void *installedBinary;
+
+extern byte get_class_index (Object *obj);
+extern void dispatch_virtual (Object *obj, TWOBYTES signature, byte *rAddr);
+extern MethodRecord *find_method (ClassRecord *classRec, TWOBYTES signature);
+extern STACKWORD instance_of (Object *obj, byte classIndex);
+extern void do_return (byte numWords);
+extern boolean dispatch_static_initializer (ClassRecord *aRec, byte *rAddr);
+extern boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord, byte *retAddr);
+void dispatch_special_checked (byte classIndex, byte methodIndex, byte *retAddr, byte *btAddr);
+extern void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStatic, byte *btAddr);
 
 #define install_binary(PTR_)        (installedBinary=(PTR_))
-#define get_master_record()         (installedBinary)
+#define get_master_record()         ((MasterRecord *) installedBinary)
 #define get_binary_base()           ((byte *) installedBinary)
 #define get_class_base()            ((ClassRecord *) (get_binary_base() + sizeof(MasterRecord)))
 
@@ -115,9 +121,10 @@ extern MasterRecord *installedBinary;
 
 #define get_method_record(CR_,I_)   (get_method_table(CR_) + (I_)) 
 
-#define get_constant_base()         ((ConstantRecord *) (get_binary_base() + installedBinary->constantTableOffset))
+#define get_constant_base()         ((ConstantRecord *) (get_binary_base() + get_master_record()->constantTableOffset))
 
 #define get_constant_record(IDX_)   (get_constant_base() + (IDX_))
+#define get_constant_ptr(CR_)       (get_binary_base() + (CR_)->offset)
 
 #define class_size(CLASSIDX_)       (get_class_record(CLASSIDX_)->classSize)
 
@@ -127,6 +134,14 @@ extern MasterRecord *installedBinary;
 #define is_interface(CLASSREC_)     ((CLASSREC_)->cflags & C_INTERFACE)
 
 #define set_initialized(CLASSREC_)  ((CLASSREC_)->cflags |= C_INITIALIZED)
+
+#define is_synchronized(MREC_)      ((MREC_)->mflags & M_SYNCHRONIZED)
+#define is_native(MREC_)            ((MREC_)->mflags & M_NATIVE)
+
+#define get_static_fields_base()    (get_binary_base() + get_master_record()->staticFieldsOffset)
+#define get_static_state_base()     (get_binary_base() + get_master_record()->staticStateOffset)
+#define get_static_field_offset(R_) ((R_) & 0x0FFF)
+#define get_static_field_size(R_)   (((R_) >> 12) + 1)
 
 #endif
 

@@ -16,11 +16,18 @@ typedef boolean JBOOLEAN;
 typedef long JINT;
 typedef float JFLOAT;
 
-#define jfloat2word(FLOAT_) (*((STACKWORD *) &(FLOAT_)))
+typedef union
+{
+  JFLOAT fnum;
+  STACKWORD sword;
+} AuxConvUnion1;
+
+#define jfloat2word(FLOAT_) (((AuxConvUnion1) (FLOAT_)).sword)
+#define word2jfloat(WORD_)  (((AuxConvUnion1) (WORD_)).fnum)
 #define byte2jint(BYTE_)    ((JINT) (signed char) (BYTE_))
 #define word2jint(WORD_)    ((JINT) (WORD_))
-#define word2jfloat(WORD_)  (*((JFLOAT *) &(WORD_)))
 #define word2obj(WORD_)     ((Object *) (WORD_))
+#define obj2word(OBJ_)      ((STACKWORD) (OBJ_))
 
 #endif _TYPES_H
 

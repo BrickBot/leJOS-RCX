@@ -16,6 +16,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
   final EnumerableSet iConstantTable = new EnumerableSet();
   final RecordTable iMethodTables = new Sequence();
   final RecordTable iInstanceFieldTables = new Sequence();
+  final RecordTable iStaticFields = new Sequence();
   final RecordTable iExceptionTables = new EnumerableSet();
   final RecordTable iStaticState = new Sequence();
   final RecordTable iCodeSequences = new Sequence();
@@ -122,7 +123,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     for (int pIndex = 0; pIndex < pSize; pIndex++)
     {
       ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
-      pRec.storeFields (iInstanceFieldTables, iStaticState);
+      pRec.storeFields (iInstanceFieldTables, iStaticFields, iStaticState);
     }        
   }
 
@@ -144,6 +145,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     iEntireBinary.add (iConstantTable);
     iEntireBinary.add (iMethodTables);
     iEntireBinary.add (iExceptionTables);
+    iEntireBinary.add (iStaticFields);
     // 4 unaligned components:
     iEntireBinary.add (iInstanceFieldTables);
     iEntireBinary.add (iStaticState);

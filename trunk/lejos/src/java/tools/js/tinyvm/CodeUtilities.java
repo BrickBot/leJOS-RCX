@@ -139,18 +139,30 @@ implements OpCodeConstants, OpCodeInfo, Constants
                        " from class " + iCF.getThisClass().getName());
     }
     String pName = pFieldEntry.getNameAndType().getName();
-    int pOffset = aStatic ? pClassRecord.getStaticFieldOffset (pName) :
-                            pClassRecord.getInstanceFieldOffset (pName);
-    if (pOffset == -1)
+    if (aStatic)
     {
-      Utilities.fatal ("Error: Didn't find field " + pClass + ":" + pName +
-                       " from class " + iCF.getThisClass().getName());
+      int pClassIndex = iBinary.getClassIndex (pClassRecord);
+      Utilities.assert (pClassIndex >= 0);
+      Utilities.assert (pClassIndex <= 0xFF);
+      int pFieldIndex = pClassRecord.getStaticFieldIndex (pName);
+      Utilities.assert (pFieldIndex >= 0);
+      Utilities.assert (pFieldIndex <= 0xFF);
+      return (pClassIndex << 8) | pFieldIndex;
     }
-    Utilities.assert (pOffset <= MAX_FIELD_OFFSET);
-    int pFieldType = InstanceFieldRecord.descriptorToType (
-                     pFieldEntry.getNameAndType().getDescriptor());
-    int pFieldSize = InstanceFieldRecord.getTypeSize (pFieldType);
-    return ((pFieldSize - 1) << F_SIZE_SHIFT) | pOffset;
+    else
+    {
+      int pOffset = pClassRecord.getInstanceFieldOffset (pName);
+      if (pOffset == -1)
+      {
+        Utilities.fatal ("Error: Didn't find field " + pClass + ":" + pName +
+                         " from class " + iCF.getThisClass().getName());
+      }
+      Utilities.assert (pOffset <= MAX_FIELD_OFFSET);
+      int pFieldType = InstanceFieldRecord.descriptorToType (
+                       pFieldEntry.getNameAndType().getDescriptor());
+      int pFieldSize = InstanceFieldRecord.getTypeSize (pFieldType);
+      return ((pFieldSize - 1) << F_SIZE_SHIFT) | pOffset;
+    }
   }
 
   /**

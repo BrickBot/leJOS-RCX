@@ -10,20 +10,30 @@
 #define DEAD    2
 #define STARTED 3
 
-extern Thread *currentThread;
+#define SF_SIZE (sizeof(StackFrame))
 
-extern void start_thread (Thread *thread);
-extern void init_thread (Thread *thread);
-extern void switch_thread();
+extern Thread *currentThread;
 
 typedef struct S_StackFrame
 {
   MethodRecord *methodRecord;
-  FOURBYTES *localsBase;
-  FOURBYTES *stackTop;
+  STACKWORD *localsBase;
+  STACKWORD *stackTop;
   byte *pc;
+  Object *monitor;
 } StackFrame;
 
-#define current_stack_frame() ((StackFrame *) currentThread->currentStackFrame)
+extern void start_thread (Thread *thread);
+extern void init_thread (Thread *thread);
+extern void switch_thread();
+extern StackFrame *current_stackframe();
+extern void enter_monitor (Object* obj);
+extern void exit_monitor (Object* obj);
+
+#define stackframe_array()   ((StackFrame *) ((byte *) currentThread->stackFrameArray + HEADER_SIZE))
+#define stack_array()        ((STACKWORD *) ((byte *) currentThread->stackArray + HEADER_SIZE))
 
 #endif
+
+
+

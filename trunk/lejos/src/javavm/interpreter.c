@@ -6,6 +6,9 @@
 #include "threads.h"
 #include "opcodes.h"
 #include "configure.h"
+#include "memory.h"
+#include "language.h"
+#include "exceptions.h"
 
 // Interpreter globals:
 
@@ -17,8 +20,11 @@ STACKWORD *stackTop = null;
 // Temporary globals:
 
 byte gByte;
+byte *gBytePtr;
+JFLOAT gFloat;
 ConstantRecord *gConstRec;
 STACKWORD gStackWord;
+int gInt;
 
 /* byte *current_code_base() */
 /* { */
@@ -66,10 +72,6 @@ void engine()
   #endif
 
   gMustExit = false;
-  switch_thread();
-  #ifdef VERIFY
-  assert (gMustExit == false, INTERPRETER2);
-  #endif VERIFY
   numOpcodes = 1;
  LABEL_ENGINELOOP: 
   if (!(--numOpcodes))
@@ -84,12 +86,24 @@ void engine()
 
   switch (*pc++)
   {
-
+    #include "op_stack.hc"
+    #include "op_locals.hc"
+    #include "op_arrays.hc"
+    #include "op_objects.hc"
+    #include "op_arithmetic.hc"
+    #include "op_logical.hc"
+    #include "op_conversions.hc"
+    #include "op_control.hc"
+    #include "op_methods.hc"
+    #include "op_other.hc"
+    #include "op_skip.hc"
   }
 
   //-----------------------------------------------
   // SWITCH ENDS HERE
   //-----------------------------------------------
+
+  // This point should never be reached
 
   #ifdef VERIFY
   assert (false, 1000 + *pc);

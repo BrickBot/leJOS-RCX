@@ -26,5 +26,10 @@ public class Sequence extends RecordTable
   {
     return iVector.elementAt(aIndex);
   }
+
+  public int indexOf (Object aObj)
+  {
+    return iVector.indexOf (aObj);
+  }
 }
 

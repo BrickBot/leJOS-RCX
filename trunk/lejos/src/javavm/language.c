@@ -1,4 +1,4 @@
-**
+/**
  * The language datastructures.
  */
 
@@ -14,13 +14,13 @@
 #include "configure.h"
 #include "interpreter.h"
 #include "exceptions.h"
-
+#include "native.h"
 
 #define F_SIZE_MASK    0xE0
 #define F_SIZE_SHIFT   5
 #define F_OFFSET_MASK  0x1F
 
-ClassRecord* classesBinary;
+void *installedBinary;
 
 #ifdef VERIFY
 boolean classesInitialized = false;
@@ -42,52 +42,64 @@ byte get_class_index (Object *obj)
  * Puts or gets field.
  */
 void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStatic,
-                   byte *btAddr) 
+                   byte *btAddr)
+{
+  ClassRecord *classRecord;
   byte *sourcePtr;
   byte *destPtr;
   byte *fieldBase;
+  STATICFIELD fieldRecord;
   TWOBYTES offset;
+  byte fieldSize;
+  byte numWordsMinus1;
 
   if (aStatic)
   {
-    pRec = get_class_record (hiByte);
-    if (dispatch_static_initializer (pRec, btAddr))
-      return;     
+    classRecord = get_class_record (hiByte);
+    if (dispatch_static_initializer (classRecord, btAddr))
+      return;
+    fieldRecord = ((STATICFIELD *) get_static_fields_base())[loByte];
+    fieldSize = get_static_field_size (fieldRecord);
+    fieldBase = get_static_state_base() + get_static_field_offset (fieldRecord);
   }
-
-  // TBD: Check for class initialization (in statics only?)
-  // TBD: byte alignment not right
-  
-  fieldSize = (hiByte >> F_SIZE_SHIFT) + 1;
-  offset = (TWOBYTES) (hiByte & F_OFFSET_MASK) * 0x100 + loByte;
-  numWordsMinus1 = (fieldSize <= 4) ? 0 : 1;
-  fieldBase = (aStatic ? get_static_base() : (byte *) mk_pobject(*stackTop))
-              + offset;  
-  if (doPut)
-  {
-    stackTop -= numWordsMinus1;
-    sourcePtr = (byte *) stackTop;
-    // Pop the object reference
-    stackTop--;
-    destPtr = fieldBase;
-  }  
   else
   {
-    sourcePtr = fieldBase;
-    destPtr = (byte *) stackTop;
-    stackTop += numWordsMinus1;
-    // Clear one word in the stack
-    *((FOURBYTES *) destPtr) = 0L;
+    if (stackTop[0] == JNULL)
+    {
+      throw_exception (nullPointerException);
+      return;
+    }
+    fieldSize = (hiByte >> F_SIZE_SHIFT) + 1;
+    offset = ((TWOBYTES) (hiByte & F_OFFSET_MASK) << 8) | loByte;
+    fieldBase = ((byte *) (stackTop[0])) + offset;
+    // Pop object reference
+    stackTop--;
   }
-  // Copy state byte for byte
-  for (ctr = fieldSize; ctr-- > 0;)
-    *destPtr++ = sourcePtr++;    
+
+  numWordsMinus1 = (fieldSize <= 4) ? 0 : 1;
+  if (numWordsMinus1)
+  {
+    // Adjust field size for one word only 
+    fieldSize = 4;
+    // Backtrack stack pointer
+    stackTop--;
+  }  
+  while (true)
+  {
+    if (doPut)
+      copy_word (fieldBase, fieldSize, *stackTop++);
+    else
+      *(++stackTop) = make_word (fieldBase, fieldSize);
+    if (numWordsMinus1-- == 0)
+      break;
+    fieldBase += fieldSize;
+  }
 }
 
 /**
  * @return Method index or -1.
  */
-short find_method (ClassRecord *classRecord, TWOBYTES methodSignature)
+MethodRecord *find_method (ClassRecord *classRecord, TWOBYTES methodSignature)
 {
   MethodRecord *methodRecord;
   byte i;
@@ -96,10 +108,9 @@ short find_method (ClassRecord *classRecord, TWOBYTES methodSignature)
   {
     methodRecord = get_method_record (classRecord, i);
     if (methodRecord->signatureId == methodSignature)
-      return (short) i;
-    // TBD: Check if cast preservs sign
+      return methodRecord;
   }
-  return -1;
+  return null;
 }
 
 boolean dispatch_static_initializer (ClassRecord *aRec, byte *retAddr)
@@ -109,19 +120,26 @@ boolean dispatch_static_initializer (ClassRecord *aRec, byte *retAddr)
   set_initialized (aRec);
   if (!has_clinit (aRec))
     return false;
-  dispatch_special (aRec, find_method (aRec, __CLINIT_V), retAddr);
+  dispatch_special (aRec, find_method (aRec, _CLINIT__V), retAddr);
   return true;
 }
 
-void dispatch_virtual (Object *ref, TWOBYTES signature)
+void dispatch_virtual (Object *ref, TWOBYTES signature, byte *retAddr)
 {
   ClassRecord *classRecord;
+  MethodRecord *methodRecord;
+  byte classIndex;
 
+  if (ref == JNULL)
+  {
+    throw_exception (nullPointerException);
+    return;
+  }
   classIndex = get_class_index(ref);
  LABEL_METHODLOOKUP:
   classRecord = get_class_record (classIndex);
-  methodIndex = find_method (classRecord, signature);
-  if (methodIndex == -1)
+  methodRecord = find_method (classRecord, signature);
+  if (methodRecord == null)
   {
     if (classIndex == JAVA_LANG_OBJECT)
     {
@@ -129,117 +147,126 @@ void dispatch_virtual (Object *ref, TWOBYTES signature)
       return;
     }
     classIndex = classRecord->parentClass;
-    goto LABEL_METHODLOOP;
+    goto LABEL_METHODLOOKUP;
   }
-  dispatch_special (classRecord, methodIndex);
+  if (dispatch_special (classRecord, methodRecord, retAddr))
+  {
+    if (is_synchronized(methodRecord))
+    {
+      current_stackframe()->monitor = ref;
+      enter_monitor (ref);
+    }
+  }
 }
 
 /**
- * @param hiByte Class index.
- * @param loByte Method index.
+ * Calls static initializer if necessary before
+ * dispatching with dispatch_special().
+ * @param retAddr Return bytecode address.
+ * @param btAddr Backtrack bytecode address (in case
+ *               static initializer is executed).
  */
-void dispatch_special (byte classIndex, byte methodIndex)
+void dispatch_special_checked (byte classIndex, byte methodIndex,
+                               byte *retAddr, byte *btAddr)
 {
   ClassRecord *classRecord;
-  MethodRecord *methodRecord;
-  StackFrame *stackFrame;
-  Object *obj;
-  boolean isStatic;
 
-  classRecord = get_class_record(classIndex);
-  if (!initialized (classRecord))
-  {
-    set_initialized (classRecord);
-    // Note that pc hasn't moved yet
-    // TBD: Case where static initializer throws an exception
-    // TBD: Does every class have a static initializer?
-    dispatch_special (classIndex, STATIC_INITIALIZER);
+  classRecord = get_class_record (classIndex);
+  if (dispatch_static_initializer (classRecord, btAddr))
     return;
-  }
-  methodRecord = ((MethodRecord *) (binary_base() + classRecord->methodTableOffset)) + methodIndex;
-  // Update stack and pc of caller
-  pc += 3;
-  stackTop -= methodRecord->numParameters;
-  // Get the receiver
-  // TBD: Handle null objects (throw exception before pc is updated)
-  if (!(isStatic = is_static (methodRecord)))
-    obj = get_stack_object(methodRecord);
-  // Handle native methods
+  dispatch_special (classRecord, get_method_record (classRecord, methodIndex),
+                    retAddr);
+}
+
+boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord, 
+                          byte *retAddr)
+{
+  STACKWORD *paramBase;
+  StackFrame *stackFrame;
+  byte newStackFrameIndex;
+
+  paramBase = stackTop - methodRecord->numParameters + 1;
+  newStackFrameIndex = currentThread->stackFrameArraySize;
   if (is_native (methodRecord))
   {
-    dispatch_native (obj, methodRecord);
-    return;
+    #ifdef VERIFY
+    assert (newStackFrameIndex != 0, LANGUAGE0);
+    #endif
+    // TBD: This will only work if dispatch_native doesn't itself dispatch.
+    dispatch_native (methodRecord->signatureId, paramBase);
+    pc = retAddr;
+    return true;
   }
-  stackFrame = (StackFrame *) currentThread->currentStackFrame;
-  // TBD: native
-  // TBD: Handle stackFrame == null
-  // Save current context in current stack frame
-  stackFrame->pc = pc;
-  stackFrame->stackTop = stackTop;
-  // Get some info from calling method
-  callingMethod = stackFrame->methodRecord;
-  // Note that some of the operand stack of the caller is used by the callee.
-  newLocalsBase = stackFrame->localsBase + callingMethod->numLocals + callingMethod->maxOperands - methodRecord->numParameters;
-  stackFrame++;
-  #if STACK_CHECKING
-  if (stackFrame - ((StackFrame *) currentThread->stackFrameArray) >= MAX_STACK_FRAMES)
+  if (newStackFrameIndex >= MAX_STACK_FRAMES)
   {
-    throw_exception (...);
-    // TBD: Cleanup here?
-    return;
+    throw_exception (stackOverflowError);
+    return false;
   }
-  #endif
-  // Initialize new stack frame
-  stackFrame->localsBase = newLocalsBase;
-  stackFrame->methodRecord = methodRecord;
-  // TBD: Initialize locals
-  // Note that stackTop always points to the top word in the stack
-  localsBase = newLocalsBase;
-  stackTop = newLocalsBase + methodRecord->numLocals - 1;
-  pc = binary_base() + methodRecord->codeOffset;  
-  // Check synchronized methods
-  if (is_synchronized(methodRecord) && !isStatic)
+  if (newStackFrameIndex == 0)
   {
-    stackFrame->monitor = obj;
-    enter_monitor (obj);
+    stackFrame = stackframe_array();
+    stackFrame->localsBase = stack_array();
   }
   else
   {
-    stackFrame->monitor = null;
+    // Save stackFrame state
+    stackFrame = stackframe_array() + (newStackFrameIndex - 1);
+    stackFrame->stackTop = stackTop;
+    stackFrame->pc = retAddr;
+    stackFrame++;
+    stackFrame->localsBase = paramBase;
   }
+  // Increment size of stack frame array
+  currentThread->stackFrameArraySize++;
+  // Initialize rest of new stack frame
+  stackFrame->methodRecord = methodRecord;
+  // TBD: assigning to stackFrame->pc may not be necessary
+  stackFrame->pc = get_binary_base() + methodRecord->codeOffset;
+  stackFrame->stackTop = stackFrame->localsBase + methodRecord->numLocals - 1;
+  stackFrame->monitor = null;
+  // Initialize auxiliary globals
+  pc = stackFrame->pc;
+  localsBase = stackFrame->localsBase;
+  stackTop = stackFrame->stackTop;
+  // Check for stack overflow
+  if ((stackTop + methodRecord->maxOperands) >= (stack_array() + STACK_SIZE))
+  {
+    throw_exception (stackOverflowError);
+    return false;
+  } 
+  return true;
 }
 
 /**
- * @return false iff the current thread is done
- *         and there are no more threads.
  */
 void do_return (byte numWords)
 {
   StackFrame *stackFrame;
   STACKWORD *sourcePtr;
-  // Place sourcePtr below data to be copied up the stack
+
+  // Place source ptr below data to be copied up the stack
   sourcePtr = stackTop - numWords;
-  stackFrame = (StackFrame *) currentThread->currentStackFrame;
+  stackFrame = current_stackframe();
   #ifdef VERIFY
-  assert (stackFrame != null, LANGUAGE7);
+  assert (stackFrame != null, LANGUAGE3);
   #endif
   if (stackFrame->monitor != null)
     exit_monitor (stackFrame->monitor);
-  if (is_first_stackframe (stackFrame))
+  if (currentThread->stackFrameArraySize == 1)
   {
     currentThread->state = DEAD;
     switch_thread();
     return;
   }
-  currentThread->currentStackFrame = (REFERENCE) --stackFrame;
+  currentThread->stackFrameArraySize--;
+  stackFrame--;
   pc = stackFrame->pc;
   stackTop = stackFrame->stackTop;
   localsBase = stackFrame->localsBase;
-  for (i = numWords; i-- > 0;)
+  while (numWords--)
   {
     *(++stackTop) = *(++sourcePtr);
   }  
-  return;
 }
 
 /**
@@ -247,9 +274,10 @@ void do_return (byte numWords)
  */
 STACKWORD instance_of (Object *obj, byte classIndex)
 {
-  // TBD: consider arrays
-
   byte rtType;
+
+  if (obj == null)
+    return 0;
   rtType = get_class_index(obj);
  LABEL_INSTANCE:
   if (rtType == classIndex)
@@ -259,4 +287,8 @@ STACKWORD instance_of (Object *obj, byte classIndex)
   rtType = get_class_record(rtType)->parentClass;
   goto LABEL_INSTANCE;
 }
+
+
+
+
 
