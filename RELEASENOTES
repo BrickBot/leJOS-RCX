@@ -1,13 +1,17 @@
 
-leJOS 1.0.0:
-------------
+leJOS 1.0.0alpha1:
+------------------
 
-  - CompactVM is born out of TinyVM. Versions starting
+  - leJOS is born out of TinyVM. Versions starting
     with 0 are TinyVM versions, whereas versions starting
-    with 1 are CompactVM versions.
-  - Catching up with TinyVM. This is ongoing. Refer to
+    with 1 are leJOS versions.
+  - Marking references in stack.
+  - String constants.
+  - Caught up with TinyVM. This is ongoing. Refer to
     TinyVM release notes for 0.1.4 and up.
-  
+  - Scripts converted into executables. 
+  - Native Thread.sleep() and System.currentTimeMillis().
+  - Various other enhancements.
 
 TinyVM 0.1.3:
 --------------

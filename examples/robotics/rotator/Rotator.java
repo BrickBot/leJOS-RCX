@@ -1,4 +1,5 @@
-import tinyvm.rcx.*;
+
+import josx.platform.rcx.*;
 
 /**
  * DESCRIPTION

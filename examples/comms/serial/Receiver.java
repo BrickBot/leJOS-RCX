@@ -1,4 +1,4 @@
-import tinyvm.rcx.*;
+import josx.platform.rcx.*;
 
 /**
  * This program listens for messages from your PC.
