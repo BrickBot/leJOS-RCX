@@ -44,7 +44,6 @@
 #include <string.h>
 
 #include "rcx_comm_linux.h"
-#include "rcx_comm.h"
 #include "rcx_comm.cpp"
 
 //

@@ -40,7 +40,6 @@
 #define USB_TOWER_NAME "\\\\.\\LEGOTOWER1"
 
 #include "rcx_comm_win.h"
-#include "rcx_comm.h"
 #include "rcx_comm.cpp"
 
 //
@@ -307,7 +306,7 @@ void __rcx_close(void* port)
 	free(port);
 }
 
-void gettimeofday(timeval_t *tv, void *tzp) 
+void gettimeofday(timeval *tv, void *tzp) 
 {
 	SYSTEMTIME st;
 	GetSystemTime(&st);

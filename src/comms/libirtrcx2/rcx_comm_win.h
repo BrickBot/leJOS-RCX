@@ -31,5 +31,7 @@
 
 #define usleep(x) Sleep(x/1000)
 
+void gettimeofday(timeval *tv, void *tzp);
+
 #endif /* RCX_COMM_WIN_H_INCLUDED */
 
