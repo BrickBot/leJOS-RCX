@@ -45,7 +45,7 @@ public class Sound
   }
 
   /**
-   * Beeps twice.
+   * Downward tones.
    * @param aQueued Whether the sound is queued.
    */
   public static void beepSequence()
