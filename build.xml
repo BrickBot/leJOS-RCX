@@ -1,0 +1,103 @@
+<!--
+  ==================================================
+  Buildfile for java part of leJOS.
+  $Id$
+  ==================================================
+-->
+<project name="leJOS java part" default="jar" basedir=".">
+
+  <!--
+    ==================================================
+    Setting up the global properties for the build
+    all paths should be relative
+    ==================================================
+  -->
+
+  <property name="src" value="${basedir}/src"/>
+  <property name="javasrc" value="${src}/java"/>
+  <property name="build" value="${basedir}/build"/>
+
+  <path id="lejos.classpath">
+    <pathelement location="${build}/classes"/>
+    <pathelement location="${build}/pcrcxcomm"/>
+    <pathelement location="${build}/rcxcomm"/>
+    <pathelement location="${build}/vision"/>
+    <fileset file="${javasrc}/vision/jmf.jar"/>
+    <pathelement location="${build}/tools"/>
+  </path>
+
+  <!--
+    ==================================================
+    Target clean removes the class directory
+    ==================================================
+  -->
+  <target name="clean" description="clean up all generated files">
+    <!-- delete generated files -->
+  	<delete file="${javasrc}/tools/js/tinyvm/SpecialClassConstants.java"/>
+  	<delete file="${javasrc}/tools/js/tinyvm/SpecialSignatureConstants.java"/>
+  	<!-- delete classes -->
+    <delete dir="${build}/classes"/>
+    <delete dir="${build}/pcrcxcomm"/>
+    <delete dir="${build}/rcxcomm"/>
+    <delete dir="${build}/vision"/>
+    <delete dir="${build}/tools"/>
+  	<!-- delete jars -->
+  	<delete>
+      <fileset dir="${build}">
+        <include name="*.jar"/>
+      </fileset>  	
+  	</delete>	
+  </target>
+
+  <!--
+    ==================================================
+    Target init: makes a timestamp and the build
+                 directory
+    ==================================================
+  -->
+  <target name="init" description="setup build">
+    <tstamp/>
+    <mkdir dir="${build}"/>
+    <mkdir dir="${build}/classes"/>
+    <mkdir dir="${build}/pcrcxcomm"/>
+    <mkdir dir="${build}/rcxcomm"/>
+    <mkdir dir="${build}/vision"/>
+  	<copy todir="${build}/vision">
+  	  <fileset dir="${javasrc}/vision">
+  	  	<include name="**/*.properties"/>
+  	  </fileset>
+  	</copy>
+    <mkdir dir="${build}/tools"/>
+  </target>
+
+  <!--
+    ==================================================
+    Target compile: compile all sources
+    ==================================================
+  -->
+  <target name="compile" depends="init" description="compile all sources">
+    <javac srcdir="${javasrc}/tools" destdir="${build}/tools" fork="yes" optimize="on" debug="on" source="1.3" target="1.1" classpathref="lejos.classpath" includes="**/GenerateConstants.java"/>
+  	<java classpathref="lejos.classpath" classname="js.tools.GenerateConstants">
+      <sysproperty key="tinyvm.home" value="${src}"/>
+  	</java>
+    <javac srcdir="${javasrc}/classes" destdir="${build}/classes" fork="yes" optimize="on" debug="on" source="1.3" target="1.1" classpathref="lejos.classpath"/>
+    <javac srcdir="${javasrc}/pcrcxcomm" destdir="${build}/pcrcxcomm" fork="yes" optimize="on" debug="on" source="1.3" target="1.1" classpathref="lejos.classpath"/>
+    <javac srcdir="${javasrc}/rcxcomm" destdir="${build}/rcxcomm" fork="yes" optimize="on" debug="on" source="1.3" target="1.1" classpathref="lejos.classpath"/>
+    <javac srcdir="${javasrc}/vision" destdir="${build}/vision" fork="yes" optimize="on" debug="on" source="1.3" target="1.1" classpathref="lejos.classpath"/>
+    <javac srcdir="${javasrc}/tools" destdir="${build}/tools" fork="yes" optimize="on" debug="on" source="1.3" target="1.1" classpathref="lejos.classpath"/>
+  </target>
+
+  <!--
+    ==================================================
+    Target jar: create all jar files
+    ==================================================
+  -->
+  <target name="jar" depends="clean, compile" description="generate all jar files">
+    <jar destfile="${build}/classes.jar" basedir="${build}/classes"/>
+    <jar destfile="${build}/pcrcxcomm.jar" basedir="${build}/pcrcxcomm"/>
+    <jar destfile="${build}/rcxcomm.jar" basedir="${build}/rcxcomm"/>
+    <jar destfile="${build}/vision.jar" basedir="${build}/vision"/>
+    <jar destfile="${build}/tools.jar" basedir="${build}/tools"/>
+  </target>
+
+</project>
