@@ -22,9 +22,15 @@ public class ClassRecord implements WritableData, Constants
   final Hashtable iStaticValues = new Hashtable();
   final Hashtable iStaticFields = new Hashtable();
   final Hashtable iMethods = new Hashtable();
+  final Vector iUsedMethods = new Vector();
   int iParentClassIndex;
   int iArrayElementType;
   int iFlags;
+  boolean iUseAllMethods = false;
+
+  public void useAllMethods() {
+    iUseAllMethods = true;
+  }
 
   public String getName()
   {
@@ -178,7 +184,7 @@ public class ClassRecord implements WritableData, Constants
     }
   }
 
-  public void storeReferredClasses (Hashtable aClasses, RecordTable aClassRecords, ClassPath aClassPath)
+  public void storeReferredClasses (Hashtable aClasses, RecordTable aClassRecords, ClassPath aClassPath, Vector aInterfaceMethods)
   throws Exception
   {
     Assertion.trace ("Processing CONSTANT_Class entries in " + iName);
@@ -203,8 +209,33 @@ public class ClassRecord implements WritableData, Constants
           aClasses.put (pClassName, pRec);
           aClassRecords.add (pRec);
 	}
+      } else if (pEntry instanceof JCPE_Methodref) {
+        // System.out.println(iName + " calls " + pEntry); 
+        JCPE_Class pClass = ((JCPE_Methodref) pEntry).getClassEntry();
+        ClassRecord pClassRec = (ClassRecord) aClasses.get(pClass.getName());
+        if (pClassRec == null) {
+          pClassRec = ClassRecord.getClassRecord (pClass.getName(), 
+                             aClassPath, iBinary);
+          aClasses.put (pClass.getName(), pClassRec);
+          aClassRecords.add (pClassRec);
+        }
+        pClassRec.addUsedMethod(((JCPE_Methodref) pEntry).getNameAndType().getName()+":"+((JCPE_Methodref) pEntry).getNameAndType().getDescriptor());
+      } else if (pEntry instanceof JCPE_InterfaceMethodref) {
+        // System.out.println(iName + " calls interface method " + pEntry);
+        aInterfaceMethods.add (((JCPE_InterfaceMethodref) pEntry).getNameAndType().getName()+":"+((JCPE_InterfaceMethodref) pEntry).getNameAndType().getDescriptor());
+      } else if (pEntry instanceof JCPE_NameAndType) {
+        if (((JCPE_NameAndType) pEntry).getDescriptor().substring(0,1).equals("(")) {
+          if (!((JCPE_NameAndType) pEntry).getName().substring(0,1).equals("<")) {
+            // System.out.println("Method by variable: " + ((JCPE_NameAndType) pEntry).getName()+":"+((JCPE_NameAndType) pEntry).getDescriptor());
+            aInterfaceMethods.add (((JCPE_NameAndType) pEntry).getName()+":"+((JCPE_NameAndType) pEntry).getDescriptor());
+          }  
+        }
       }
     }
+  }
+
+  public void addUsedMethod(String aRef) {
+    iUsedMethods.add(aRef);
   }
 
   public static String cpEntryId (JConstantPoolEntry aEntry)
@@ -308,7 +339,8 @@ public class ClassRecord implements WritableData, Constants
 
   public void storeMethods (RecordTable aMethodTables,
                             RecordTable aExceptionTables, 
-                            HashVector aSignatures)
+                            HashVector aSignatures,
+                            boolean aAll)
   {
     Assertion.trace ("Processing methods in " + iName);
     Enumeration pEntries = iCF.getMethods().elements();
@@ -317,10 +349,16 @@ public class ClassRecord implements WritableData, Constants
       JMethod pMethod = (JMethod) pEntries.nextElement();
       Signature pSignature = new Signature (pMethod.getName(), 
                                          pMethod.getDescriptor());
-      MethodRecord pMethodRecord = new MethodRecord (pMethod, pSignature, 
-        this, iBinary, aExceptionTables, aSignatures);
-      iMethodTable.add (pMethodRecord);
-      iMethods.put (pSignature, pMethodRecord);
+      String meth = pMethod.getName() + ":" +pMethod.getDescriptor();
+
+      if (aAll || iUseAllMethods || iUsedMethods.indexOf(meth) >= 0 || 
+          pMethod.getName().substring(0,1).equals("<") || meth.equals("run:()V")) {
+        //System.out.println("Adding Method " + meth + " for class " + iName + " length " + iName.length() + " used " + iUsedMethods.indexOf(meth)); 
+        MethodRecord pMethodRecord = new MethodRecord (pMethod, pSignature, 
+          this, iBinary, aExceptionTables, aSignatures);
+        iMethodTable.add (pMethodRecord);
+        iMethods.put (pSignature, pMethodRecord);
+      } else Assertion.verbose(1, "Omitting " + meth + " for class " + iName);
     }
     aMethodTables.add (iMethodTable);
   }
