@@ -141,6 +141,8 @@ void dispatch_special_checked (byte classIndex, byte methodIndex,
 boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord, 
                           byte *retAddr)
 {
+ TBD: isReferenceBase needs to be initialized here
+
   #if DEBUG_METHODS
   int debug_ctr;
   #endif

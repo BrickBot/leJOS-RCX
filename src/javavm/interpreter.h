@@ -15,4 +15,11 @@ extern byte gByte;
 
 extern void engine();
 
+static inline void push
+
 #endif
+
+
+
+
+

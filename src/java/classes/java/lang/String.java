@@ -5,6 +5,9 @@ package java.lang;
  */
 public class String
 {
+  // NOTE: The state of this class is mapped to
+  // native code (see vmsrc/classes.h).
+
   private char[] characters;
 
   public String (char[] c, int off, int len)

@@ -25,6 +25,7 @@ public interface Constants
   public static final int MAX_CODE = 0xFFFF;
   public static final int MAX_CONSTANTS = 256;
   public static final int MAX_FIELD_OFFSET = F_OFFSET_MASK;
+  public static final int MAX_STRING_CONSTANT_LENGTH = 255;
   
   public static final int C_INITIALIZED = 0x01;
   public static final int C_ARRAY       = 0x02;

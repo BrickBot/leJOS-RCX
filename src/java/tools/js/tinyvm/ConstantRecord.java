@@ -14,7 +14,15 @@ public class ConstantRecord implements WritableData, Constants
   {
     iEntry = aEntry;
     if (aEntry instanceof JCPE_String)
+    {
       iSize = ((JCPE_String) aEntry).getSize();
+      if (iSize > MAX_STRING_CONSTANT_LENGTH)
+      {
+        Utilities.fatal ("String constant of length more than " +
+        MAX_STRING_CONSTANT_LENGTH + " not accepted: " +
+        aEntry);
+      }
+    }  
     else if (aEntry instanceof JCPE_Double || aEntry instanceof JCPE_Long)
       iSize = 8;
     else if (aEntry instanceof JCPE_Integer || aEntry instanceof JCPE_Float)

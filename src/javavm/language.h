@@ -84,9 +84,12 @@ typedef struct S_ConstantRecord
    */
   TWOBYTES offset;
   /**
-   * Size of constant. Length of Utf8 entry for strings.
+   * Type of constant.
    */
   byte constantType;
+  /**
+   * Size of constant. Length of Utf8 entry for strings.
+   */
   byte constantSize;
 } ConstantRecord;
 

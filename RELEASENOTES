@@ -1,4 +1,11 @@
 
+Version 1.0.0:
+--------------
+
+  - CompactVM is born out of TinyVM. Versions starting
+    with 0 are TinyVM versions, whereas versions starting
+    with 1 are CompactVM versions.
+
 Version 0.1.3:
 --------------
 
