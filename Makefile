@@ -102,32 +102,33 @@ javadoc:
 	${JAVADOC} -author -d apidocs -sourcepath classes java.io java.lang java.util josx.platform.rcx
 
 clean:
-	rm -rf `find . -name '*.class'`
-	rm -rf `find . -name 'core'`
-	rm -rf `find . -name '*.o'`
-	rm -rf `find . -name '*~'`
-	rm -rf `find . -name '*.bak'`
-	rm -rf `find . -name '*.stackdump'`
+	rm -f `find . -name '*.class'`
+	rm -f `find . -name 'core'`
+	rm -f `find . -name '*.o'`
+	rm -f `find . -name '*~'`
+	rm -f `find . -name '*.bak'`
+	rm -f `find . -name '*.stackdump'`
+	rm -f `find . -name '*.backtrace'`
 
 distclean: clean
 	rm -rf `find . -name 'CVS'`
-	rm -rf `find . -name '.#*'`
-	rm -rf `find . -name '*.tvm'`
-	rm -rf `find . -name '*.bin'`
-	rm -rf `find . -name '*.core'`
-	rm -rf `find . -name '*.lst'`
-	rm -rf `find . -name '*.log'`
+	rm -f `find . -name '.#*'`
+	rm -f `find . -name '*.tvm'`
+	rm -f `find . -name '*.bin'`
+	rm -f `find . -name '*.core'`
+	rm -f `find . -name '*.lst'`
+	rm -f `find . -name '*.log'`
 
 distclean_src: distclean
-	cd bin ; rm -f lejos lejosc lejosc1 lejosfirmdl lejosp lejosp1 lejosrun emu-dump emu-lejos emu-lejosrun
-	cd unix_impl ; rm -f dump_config
-	cd tools/firmdl ; rm -f mkimg
+	rm -f bin/lejos bin/lejosc bin/lejosc1 bin/lejosfirmdl bin/lejosp bin/lejosp1 bin/lejosrun bin/emu-dump bin/emu-lejos bin/emu-lejosrun
+	rm -f unix_impl/dump_config
+	rm -f tools/firmdl/mkimg
 	rm -f bin/cygwin.dll
-	rm -rf `find . -name '*.exe'`
-	rm -rf `find . -name '*.jar'`
+	rm -f `find . -name '*.exe'`
+	rm -f `find . -name '*.jar'`
 
 distclean_win: distclean
 	/bin/strip `find . -name '*.exe'`
 
 realclean: distclean_src
-	rm -rf `find . -name '*.srec'`
+	rm -f `find . -name '*.srec'`
