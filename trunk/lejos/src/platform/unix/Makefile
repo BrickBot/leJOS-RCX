@@ -23,12 +23,14 @@ programs: ${VMEMUL_TARGET} ${DUMP_TARGET}
 
 include ../vmsrc/Makefile.include
 
-dump_config: dump_config.c
-	${CC} ${CFLAGS} dump_config.c -o dump_config
 
 platform_config.h: dump_config
 	./dump_config > platform_config.h
 
+dump_config: dump_config.c
+	${CC} ${CFLAGS} dump_config.c -o dump_config
+
+	
 %.o: %.c platform_config.h
 	${CC} ${CFLAGS} -c $*.c
 	
@@ -39,5 +41,5 @@ ${VMEMUL_TARGET}: ${VMEMUL_OBJ}
 	${CC} ${VMEMUL_OBJ} -o ${VMEMUL_TARGET}
 
 clean:
-	rm -rf ${VMSRC}/*.o *.o core ${DUMP_TARGET} ${VMEMUL_TARGET}
+	rm -rf ${VMSRC}/*.o *.o *.exe core platform_config.h ${DUMP_TARGET} ${VMEMUL_TARGET}
 

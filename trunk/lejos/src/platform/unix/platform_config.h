@@ -3,6 +3,11 @@
 #define _PLATFORM_CONFIG_H
 
 #include <stdio.h>
+typedef signed char JBYTE;
+typedef signed short JSHORT;
+typedef signed long JINT;
+typedef unsigned short TWOBYTES;
+typedef unsigned long FOURBYTES;
 #include "systime.h"
 #define ptr2word(PTR_) ((STACKWORD) (PTR_))
 #define word2ptr(WRD_) ((void *) (WRD_))

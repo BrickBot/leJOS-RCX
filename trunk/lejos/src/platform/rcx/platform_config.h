@@ -3,6 +3,14 @@
 
 #include "systime.h"
 
+// Basic types
+
+typedef signed char JBYTE;
+typedef signed short JSHORT;
+typedef signed long JINT;
+typedef unsigned short TWOBYTES;
+typedef unsigned long FOURBYTES;
+
 // Converting words to pointers
 
 #define ptr2word(PTR_)  ((STACKWORD) (TWOBYTES) (PTR_))

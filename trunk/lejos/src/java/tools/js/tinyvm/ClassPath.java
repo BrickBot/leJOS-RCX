@@ -23,7 +23,11 @@ public class ClassPath
       String pEntry = (String) pTokens.elementAt(i);
       if (pEntry.endsWith (".zip") || pEntry.endsWith (".jar"))
       {
-        iEntries[i] = new ZipFile (pEntry);
+	try {
+          iEntries[i] = new ZipFile (pEntry);
+	} catch (ZipException e) {
+          System.err.println ("Warning: Can't open zip/jar file: " + pEntry);
+	}
       }
       else
       {
@@ -50,9 +54,8 @@ public class ClassPath
         if (pClassFile.exists())
           return new FileInputStream (pClassFile);
       }
-      else
+      else if (iEntries[i] instanceof ZipFile)
       {
-        Utilities.assert (iEntries[i] instanceof ZipFile);
         ZipFile pZipFile = (ZipFile) iEntries[i];
         ZipEntry pEntry = pZipFile.getEntry (pRelName);
         if (pEntry != null)

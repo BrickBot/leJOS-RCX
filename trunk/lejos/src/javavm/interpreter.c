@@ -14,6 +14,7 @@
 #include "fields.h"
 #include "stack.h"
 
+
 #define F_OFFSET_MASK  0x0F
 
 #if DEBUG_BYTECODE
@@ -178,6 +179,9 @@ void engine()
 
   switch (*pc++)
   {
+
+#if 0
+	  
     #include "op_stack.hc"
     #include "op_locals.hc"
     #include "op_arrays.hc"
@@ -189,6 +193,9 @@ void engine()
     #include "op_conversions.hc"
     #include "op_logical.hc"
     #include "op_arithmetic.hc"
+    
+#endif
+    
   }
 
   //-----------------------------------------------
@@ -201,7 +208,4 @@ void engine()
   assert (false, 1000 + *pc);
   #endif VERIFY
 }
-
-
-
 

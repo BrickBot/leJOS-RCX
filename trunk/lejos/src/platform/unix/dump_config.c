@@ -33,7 +33,15 @@ int main (int argc, char **argv)
   printf ("#define _PLATFORM_CONFIG_H\n");
   printf ("\n");
   printf ("#include <stdio.h>\n");
+
+  printf ("typedef signed char JBYTE;\n");
+  printf ("typedef signed short JSHORT;\n");
+  printf ("typedef signed long JINT;\n");
+  printf ("typedef unsigned short TWOBYTES;\n");
+  printf ("typedef unsigned long FOURBYTES;\n");
   printf ("#include \"systime.h\"\n");
+
+  
   printf ("#define ptr2word(PTR_) ((STACKWORD) (PTR_))\n");	
   printf ("#define word2ptr(WRD_) ((void *) (WRD_))\n");
   printf ("#define get_sys_time() get_sys_time_impl()\n");
