@@ -14,7 +14,7 @@ import js.common.ToolProgressMonitor;
 public class Download extends AbstractTool
 {
    public static final int CHECKSUM_WAIT = 1000;
-   private static final int WRITE_MAX = 256;
+   private static final int WRITE_MAX = 200;
    private static final int MAX_ZEROS = 32;
    private static final int MAGIC = 0xCAF6;
    private Tower _tower;
