@@ -95,8 +95,7 @@ public class SensorServlet extends HttpServlet implements SensorConstants {
   }
 
   private void println(String s) throws IOException {
-    char [] ca = s.toCharArray();
-    for(int i=0;i<ca.length;i++) out.write((byte) ca[i]);
+    for(int i=0;i<s.length();i++) out.write((byte) s.charAt(i));
   }
 
   public static void main(String [] args) throws IOException {
