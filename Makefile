@@ -8,6 +8,12 @@ JAVADOC=javadoc
 JAVA=java
 TEMP=/usr/tmp
 
+ifneq (,$(findstring $(OSTYPE),cygwin))
+  JAVADOC_SOURCE="classes;rcxcomm/rcxclasses;rcxcomm/classes"
+else
+  JAVADOC_SOURCE="classes:rcxcomm/rcxclasses:rcxcomm/classes"
+endif
+
 export CLASSPATH
 
 default: check all_jtools all_ctools core_classes rcx_comm tinyvm_emul
@@ -102,7 +108,7 @@ rcx_comm:
 
 javadoc:
 	if [ ! -d apidocs ]; then mkdir apidocs; fi
-	${JAVADOC} -windowtitle "leJOS API documentation" -author -d apidocs -sourcepath classes java.io java.lang java.util josx.platform.rcx josx.robotics
+	${JAVADOC} -windowtitle "leJOS API documentation" -author -d apidocs -sourcepath $(JAVADOC_SOURCE) java.io java.lang java.util josx.platform.rcx josx.robotics josx.rcxcomm java.net
 
 clean:
 	rm -f `find . -name '*.class'`
