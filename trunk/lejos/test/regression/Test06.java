@@ -1,7 +1,7 @@
 
 // Test for motor control & exception catching
 
-import tinyvm.rcx.ROM;
+import tinyvm.rcx.*;
 
 public class Test06
 {
@@ -12,11 +12,11 @@ public class Test06
 
   public static void main (String[] aArg)
   {
-    ROM.controlMotor ('A', 1, 1);
-    ROM.controlMotor ('C', 1, 7);
+    Motor.controlMotor ('A', 1, 1);
+    Motor.controlMotor ('C', 1, 7);
     for (int i = 0; i < 10000; i++) {}
-    ROM.controlMotor ('A', 3, 1);
-    ROM.controlMotor ('C', 3, 1);
+    Motor.controlMotor ('A', 3, 1);
+    Motor.controlMotor ('C', 3, 1);
     try {
       (new int[1])[1] = 0;
     } catch (ArrayIndexOutOfBoundsException e) {
@@ -40,9 +40,9 @@ public class Test06
     } catch (ArrayIndexOutOfBoundsException e) {
       ROM.playTone (3000, 200);
     } finally {
-      ROM.controlMotor ('A', 1, 1);
+      Motor.controlMotor ('A', 1, 1);
       for (int i = 0; i < 10000; i++) {}
-      ROM.controlMotor ('A', 3, 1);
+      Motor.controlMotor ('A', 3, 1);
     }
   }
 }
