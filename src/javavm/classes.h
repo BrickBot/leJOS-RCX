@@ -16,7 +16,7 @@
 #define is_array(OBJ_)          (((OBJ_)->flags & ARRAY_MASK) != 0)
 #define get_element_size(ARR_)  ((((ARR_)->flags >> ELEM_SIZE_SHIFT) & ELEM_SIZE_MASK) + 1)
 #define get_array_length(ARR_)  ((ARR_)->flags & LENGTH_MASK)
-#define get_monitor_count(OBJ_) ((OBJ_)->flags & COUNT_MASK)
+#define get_monitor_count(OBJ_) ((OBJ_)->syncInfo & COUNT_MASK)
 
 // Double-check these data structures
 // with the Java declaration of each.

@@ -41,10 +41,6 @@ typedef struct S_ClassRecord
   byte numInstanceFields;
   byte numMethods;
   byte parentClass;
-  /**
-   * Class index of array element.
-   */
-  byte arrayElementType;
   byte cflags;
 } ClassRecord;
 
