@@ -48,7 +48,7 @@ implements Constants
 	{
 	  if (pData instanceof RecordTable)
 	    System.err.println ("Aligned sequence: " + ((RecordTable) pData).iAlign);
-          Utilities.fatal ("Bug RT-1: Written=" + (aOut.size() - pPrevSize) + 
+          Assertion.fatal ("Bug RT-1: Written=" + (aOut.size() - pPrevSize) + 
                            " Length=" + pLength + " Class=" +
                            pData.getClass().getName());
 	}
@@ -68,7 +68,7 @@ implements Constants
     {
       iLength += ((WritableData) pEnum.nextElement()).getLength();
     }
-    Utilities.trace ("RT.getLength: " + iLength);
+    Assertion.trace ("RT.getLength: " + iLength);
     if (iAlign)
       iLength = IOUtilities.adjustedSize (iLength, 2); 
     return iLength;
@@ -76,7 +76,7 @@ implements Constants
 
   public void initOffset (int aStart)
   {
-    Utilities.trace ("RT.initOffset: " + aStart);
+    Assertion.trace ("RT.initOffset: " + aStart);
     super.initOffset (aStart);
     Enumeration pEnum = elements();
     while (pEnum.hasMoreElements())

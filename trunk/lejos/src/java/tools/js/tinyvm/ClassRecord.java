@@ -47,7 +47,7 @@ public class ClassRecord implements WritableData, Constants
   public void dump (ByteWriter aOut) throws Exception
   {
     int pAllocSize = getAllocationSize();
-    Utilities.assert (pAllocSize != 0);
+    Assertion.test (pAllocSize != 0);
     aOut.writeU2 (pAllocSize);
     int pMethodTableOffset = iMethodTable.getOffset();
     aOut.writeU2 (pMethodTableOffset);
@@ -55,14 +55,14 @@ public class ClassRecord implements WritableData, Constants
     int pNumFields = iInstanceFields.size();
     if (pNumFields > MAX_FIELDS)
     {
-      Utilities.fatal ("Class " + iName + ": No more than " + MAX_FIELDS + 
+      Assertion.fatal ("Class " + iName + ": No more than " + MAX_FIELDS + 
         " fields expected.");
     }
     aOut.writeU1 (pNumFields);
     int pNumMethods = iMethodTable.size();
     if (pNumMethods > MAX_METHODS)
     {
-      Utilities.fatal ("Class " + iName + ": No more than " + MAX_METHODS + 
+      Assertion.fatal ("Class " + iName + ": No more than " + MAX_METHODS + 
         " methods expected.");
     }
     aOut.writeU1 (pNumMethods);
@@ -168,20 +168,20 @@ public class ClassRecord implements WritableData, Constants
     ClassRecord pRec = getParent();
     if (pRec == null)
     {
-      Utilities.assert (iCF.getName().equals ("java/lang/Object"));
+      Assertion.test (iCF.getName().equals ("java/lang/Object"));
       iParentClassIndex = 0;
     }
     else
     {
       iParentClassIndex = iBinary.getClassIndex (pRec);
-      Utilities.assert (iParentClassIndex != -1);
+      Assertion.test (iParentClassIndex != -1);
     }
   }
 
   public void storeReferredClasses (Hashtable aClasses, RecordTable aClassRecords, ClassPath aClassPath)
   throws Exception
   {
-    Utilities.trace ("Processing CONSTANT_Class entries in " + iName);
+    Assertion.trace ("Processing CONSTANT_Class entries in " + iName);
     JConstantPool pPool = iCF.getConstantPool();
     Enumeration pEntries = pPool.elements();
     while (pEntries.hasMoreElements())
@@ -193,7 +193,7 @@ public class ClassRecord implements WritableData, Constants
         String pClassName = ((JCPE_Class) pEntry).getName();
         if (pClassName.startsWith ("["))
 	{
-          Utilities.trace ("Skipping array: " + pClassName);
+          Assertion.trace ("Skipping array: " + pClassName);
           continue;
 	}
         if (aClasses.get (pClassName) == null)
@@ -278,7 +278,7 @@ public class ClassRecord implements WritableData, Constants
 
   public void storeConstants (RecordTable aConstantTable, RecordTable aConstantValues)
   {
-    Utilities.trace ("Processing other constants in " + iName);
+    Assertion.trace ("Processing other constants in " + iName);
     EnumerableSet pConstantSet = (EnumerableSet) aConstantTable;
     JConstantPool pPool = iCF.getConstantPool();
     Enumeration pEntries = pPool.elements();
@@ -310,7 +310,7 @@ public class ClassRecord implements WritableData, Constants
                             RecordTable aExceptionTables, 
                             HashVector aSignatures)
   {
-    Utilities.trace ("Processing methods in " + iName);
+    Assertion.trace ("Processing methods in " + iName);
     Enumeration pEntries = iCF.getMethods().elements();
     while (pEntries.hasMoreElements())
     {
@@ -330,7 +330,7 @@ public class ClassRecord implements WritableData, Constants
                            RecordTable aStaticFields,
                            RecordTable aStaticState)
   {
-    Utilities.trace ("Processing methods in " + iName);
+    Assertion.trace ("Processing methods in " + iName);
     Enumeration pEntries = iCF.getFields().elements();
     while (pEntries.hasMoreElements())
     {
@@ -340,7 +340,7 @@ public class ClassRecord implements WritableData, Constants
         StaticValue pValue = new StaticValue (pField);
         StaticFieldRecord pRec = new StaticFieldRecord (pField, this);
         String pName = pField.getName().toString();
-        Utilities.assert (!iStaticValues.containsKey (pName));
+        Assertion.test (!iStaticValues.containsKey (pName));
         iStaticValues.put (pName, pValue);
         iStaticFields.put (pName, pRec);
         aStaticState.add (pValue);
@@ -376,7 +376,7 @@ public class ClassRecord implements WritableData, Constants
     InputStream pIn = aCP.getInputStream (aName);
     if (pIn == null)
     {
-      Utilities.fatal ("Class " + aName.replace ('/', '.') + 
+      Assertion.fatal ("Class " + aName.replace ('/', '.') + 
         " (file " + aName + 
         ".class) not found in CLASSPATH: " + aCP);
     }

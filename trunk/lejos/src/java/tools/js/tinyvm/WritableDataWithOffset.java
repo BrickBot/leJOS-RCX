@@ -13,7 +13,7 @@ public abstract class WritableDataWithOffset implements WritableData
     {
       new Error().printStackTrace();
       System.out.println ("--------------------------");
-      Utilities.fatal ("Bug WDWO-1: Premature getOffset call: Class=" + 
+      Assertion.fatal ("Bug WDWO-1: Premature getOffset call: Class=" + 
                        getClass().getName());
     }
     return iOffset;
@@ -21,7 +21,7 @@ public abstract class WritableDataWithOffset implements WritableData
 
   public void initOffset (int aStart)
   {
-    Utilities.assert (aStart != -1);
+    Assertion.test (aStart != -1);
     iOffset = aStart;
   }
 }

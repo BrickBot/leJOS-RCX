@@ -33,13 +33,13 @@ implements Constants
 
   public static void invokeTvm (String aFileName)
   {
-    Utilities.assert (TINYVM_HOME != null);
-    Utilities.assert (TINYVM_LOADER != null);
+    Assertion.test (TINYVM_HOME != null);
+    Assertion.test (TINYVM_LOADER != null);
     String pTvmExec = TINYVM_HOME + File.separator + "bin" +
                       File.separator + TINYVM_LOADER; 
     String[] pParams = new String[] { pTvmExec, aFileName };
     try {
-      Utilities.verbose (1, "Executing " + pTvmExec + " (downloading) ...");
+      Assertion.verbose (1, "Executing " + pTvmExec + " (downloading) ...");
       Process p = Runtime.getRuntime().exec (pParams);
       pipeStream (p.getInputStream(), System.out);
       pipeStream (p.getErrorStream(), System.err);
@@ -53,9 +53,9 @@ implements Constants
       System.out.flush();
       System.err.flush();      
     } catch (InterruptedException e) {
-      Utilities.fatal ("Execution of " + pTvmExec + " was interrupted.");
+      Assertion.fatal ("Execution of " + pTvmExec + " was interrupted.");
     } catch (IOException e) {
-      Utilities.fatal ("Problem executing " + pTvmExec + ". " +
+      Assertion.fatal ("Problem executing " + pTvmExec + ". " +
                        "Apparently, the program was not found. ");
     }
   }
@@ -103,7 +103,7 @@ implements Constants
   throws Exception
   {
     if (aEntryClasses.size() >= 256)
-      Utilities.fatal ("Too many entry classes (max is 255!)");
+      Assertion.fatal ("Too many entry classes (max is 255!)");
     ClassPath pCP = new ClassPath (iClassPath);
     Binary pBin = Binary.createFromClosureOf (aEntryClasses, pCP);
     int pNum = aEntryClasses.size();
@@ -111,7 +111,7 @@ implements Constants
     {
       String pName = (String) aEntryClasses.elementAt (i);
       if (!pBin.hasMain (pName))
-        Utilities.fatal ("Class " + pName + " doesn't have a " +
+        Assertion.fatal ("Class " + pName + " doesn't have a " +
                          "static void main(String[]) method");
     }
     ByteArrayOutputStream pGbStream = null;
@@ -124,7 +124,7 @@ implements Constants
     else
     {
         if (iOutputFile == null)
-            Utilities.fatal ("No ouput file specified. Use -d, -o or -gb");
+            Assertion.fatal ("No ouput file specified. Use -d, -o or -gb");
         pBaseStream = new FileOutputStream (iOutputFile);
     }
     OutputStream pOut =
@@ -135,7 +135,7 @@ implements Constants
     else if ("LE".equals (iWriteOrder))
       pBW = new LEDataOutputStream (pOut);
     else
-      Utilities.fatal (WO_PROPERTY + " not BE or LE.");
+      Assertion.fatal (WO_PROPERTY + " not BE or LE.");
     pBin.dump (pBW);
     pOut.close();
     if (iDoDownload)
@@ -156,7 +156,7 @@ implements Constants
     for (int i = 0; i < pSize; i++)
     {
       Option pOpt = (Option) aOptions.elementAt(i);
-      Utilities.trace ("Option " + i + ": " + pOpt);
+      Assertion.trace ("Option " + i + ": " + pOpt);
       if (pOpt.iOption.equals ("-classpath"))
       {
         iClassPath =  pOpt.iArgument;
@@ -164,7 +164,7 @@ implements Constants
       if (pOpt.iOption.equals ("-o"))
       {
         if (iDoDownload)
-          Utilities.fatal ("You cannot specify both -d and -o options.");
+          Assertion.fatal ("You cannot specify both -d and -o options.");
         iDumpFile = true;
         iOutputFile = pOpt.iArgument;
       }
@@ -178,10 +178,10 @@ implements Constants
         try {
           pLevel = Integer.parseInt (pOpt.iArgument);
 	} catch (Exception e) {
-          if (Utilities.iTrace)
+          if (Assertion.iTrace)
             e.printStackTrace();
 	}
-        Utilities.setVerboseLevel (pLevel);
+        Assertion.setVerboseLevel (pLevel);
       }     
     }
     if (!iDumpFile && !iDumpGameboyRom)
@@ -206,7 +206,7 @@ implements Constants
     processOptions (aOptions);
     if (iClassPath == null)
     {
-      Utilities.fatal ("Internal error: Classpath not defined. " +
+      Assertion.fatal ("Internal error: Classpath not defined. " +
         "Use either -classpath or property " + CP_PROPERTY);
     }
     main ((String) aArgs.elementAt (0)); 
@@ -230,12 +230,12 @@ implements Constants
         else if (arg[i].equals ("-classpath"))
 	{
           pOption.iArgument = arg[++i];
-          Utilities.trace ("Got -classpath option: " + pOption.iArgument);
+          Assertion.trace ("Got -classpath option: " + pOption.iArgument);
 	}
         else if (arg[i].equals ("-o"))
 	{
           pOption.iArgument = arg[++i];
-          Utilities.trace ("Got -o option: " + pOption.iArgument);
+          Assertion.trace ("Got -o option: " + pOption.iArgument);
 	}
         pOptions.addElement (pOption);
       }

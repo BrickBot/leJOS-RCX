@@ -33,7 +33,7 @@ public class ClassPath
       {
         iEntries[i] = new File (pEntry);
         if (!((File) iEntries[i]).isDirectory())
-          Utilities.fatal (pEntry + " is not a directory.");
+          Assertion.fatal (pEntry + " is not a directory.");
       }
     }
   }

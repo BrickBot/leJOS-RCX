@@ -28,11 +28,11 @@ public class StaticFieldRecord implements WritableData, Constants
   public void dump (ByteWriter aOut) throws Exception
   {
     int pType = JClassName.descriptorToType (iField.getDescriptor().toString());
-    Utilities.assert (pType <= 0xF);
-    Utilities.assert (pType >= 0);
+    Assertion.test (pType <= 0xF);
+    Assertion.test (pType >= 0);
     int pOffset = iClassRecord.getStaticFieldOffset (iField.getName());
-    Utilities.assert (pOffset >= 0);
-    Utilities.assert (pOffset <= 0x0FFF);
+    Assertion.test (pOffset >= 0);
+    Assertion.test (pOffset <= 0x0FFF);
     aOut.writeU2 ((pType << 12) | pOffset);
   }
 

@@ -18,21 +18,21 @@ public class MasterRecord implements WritableData, Constants
     int pConstantTableOffset = iBinary.iConstantTable.getOffset();
     if (pConstantTableOffset <= 0 || pConstantTableOffset > 0xFFFF)
     {
-      Utilities.fatal ("Bug MR-1: Offset=" + pConstantTableOffset + 
+      Assertion.fatal ("Bug MR-1: Offset=" + pConstantTableOffset + 
                        " CTSize=" + iBinary.iConstantTable.size());
     }
     int pStaticFieldsOffset = iBinary.iStaticFields.getOffset();
-    Utilities.assert (pStaticFieldsOffset >= 0 && pStaticFieldsOffset <= 0xFFFF);
+    Assertion.test (pStaticFieldsOffset >= 0 && pStaticFieldsOffset <= 0xFFFF);
     int pStaticStateOffset = iBinary.iStaticState.getOffset();
-    Utilities.assert (pStaticStateOffset >= 0 && pStaticStateOffset <= 0xFFFF);
+    Assertion.test (pStaticStateOffset >= 0 && pStaticStateOffset <= 0xFFFF);
     int pStaticStateLength = (iBinary.iStaticState.getLength() + 1) / 2;
-    Utilities.assert (pStaticStateLength >= 0 && pStaticStateLength <= 0xFFFF);
+    Assertion.test (pStaticStateLength >= 0 && pStaticStateLength <= 0xFFFF);
     int pNumStaticFields = iBinary.iStaticFields.size();
     int pEntryClassesOffset = iBinary.iEntryClassIndices.getOffset();
     int pNumEntryClasses = iBinary.iEntryClassIndices.size();
-    Utilities.assert (pNumEntryClasses < MAX_CLASSES);
+    Assertion.test (pNumEntryClasses < MAX_CLASSES);
     int pLastClass = iBinary.iClassTable.size() - 1;
-    Utilities.assert (pLastClass >= 0 && pLastClass < MAX_CLASSES);
+    Assertion.test (pLastClass >= 0 && pLastClass < MAX_CLASSES);
     
     aOut.writeU2 (pMagicNumber);    
     aOut.writeU2 (pConstantTableOffset);

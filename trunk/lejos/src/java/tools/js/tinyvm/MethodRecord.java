@@ -28,19 +28,19 @@ public class MethodRecord implements WritableData, Constants
     iMethod = aEntry;
     JCodeAttribute pCodeAttrib = iMethod.getCode();
     boolean pNoBody = iMethod.isAbstract() || iMethod.isNative();
-    Utilities.assert (pCodeAttrib != null || pNoBody);
-    Utilities.assert (pCodeAttrib == null || !pNoBody);
+    Assertion.test (pCodeAttrib != null || pNoBody);
+    Assertion.test (pCodeAttrib == null || !pNoBody);
     aSignatures.addElement (aSignature);
     iSignatureId = aSignatures.indexOf (aSignature);
     if (iSignatureId >= MAX_SIGNATURES)
     {
-      Utilities.fatal ("The total number of unique signatures exceeds " + 
+      Assertion.fatal ("The total number of unique signatures exceeds " + 
                        MAX_SIGNATURES);
     }
     iNumLocals = pCodeAttrib == null ? 0 : pCodeAttrib.getMaxLocals();
     if (iNumLocals > MAX_LOCALS)
     {
-      Utilities.fatal ("Method " + aClassRec.getName() + "." +
+      Assertion.fatal ("Method " + aClassRec.getName() + "." +
                        iMethod.getName() + " has " + iNumLocals + 
                        " local words. Only " + MAX_LOCALS + 
                        " are allowed.");
@@ -48,7 +48,7 @@ public class MethodRecord implements WritableData, Constants
     iNumOperands = pCodeAttrib == null ? 0 : pCodeAttrib.getMaxStack();
     if (iNumOperands > MAX_OPERANDS)
     {
-      Utilities.fatal ("Method " + aClassRec.getName() + "." +
+      Assertion.fatal ("Method " + aClassRec.getName() + "." +
                        iMethod.getName() + " has an operand stack " + 
                        " whose potential size is " + iNumOperands + ". " +
                        "Only " + MAX_OPERANDS + " are allowed.");
@@ -58,7 +58,7 @@ public class MethodRecord implements WritableData, Constants
     iNumParameters = getNumParamWords (iMethod, pParams);
     if (iNumParameters > MAX_PARAMETER_WORDS)
     {
-      Utilities.fatal ("Method " + aClassRec.getName() + "." +
+      Assertion.fatal ("Method " + aClassRec.getName() + "." +
                        iMethod.getName() + " has " + iNumParameters + 
                        " parameter words. Only " + MAX_PARAMETER_WORDS + 
                        " are allowed.");
@@ -77,7 +77,7 @@ public class MethodRecord implements WritableData, Constants
       iNumExceptionHandlers = pExcepTable.size();
       if (iNumExceptionHandlers > MAX_EXCEPTION_HANDLERS)
       {
-        Utilities.fatal ("Method " + aClassRec.getName() + "." +
+        Assertion.fatal ("Method " + aClassRec.getName() + "." +
                          iMethod.getName() + " has " + iNumExceptionHandlers + 
                          " exception handlers. Only " + MAX_EXCEPTION_HANDLERS +
                          " are allowed.");

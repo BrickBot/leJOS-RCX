@@ -38,7 +38,7 @@ public class ConstantValue extends WritableDataWithOffset
     }
     else
     {
-      Utilities.assert (false);
+      Assertion.test (false);
       return 0;
     }
   }
@@ -86,7 +86,7 @@ public class ConstantValue extends WritableDataWithOffset
     }
     else
     {
-      Utilities.assert (false);
+      Assertion.test (false);
     }
   }
 
