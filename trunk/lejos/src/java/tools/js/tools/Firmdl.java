@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import js.common.ToolException;
 import js.common.ToolProgressListener;
 import js.common.ToolProgressListenerImpl;
 
@@ -54,7 +53,7 @@ public class Firmdl extends FirmdlTool
    * Execute firmware download.
    * 
    * @param args command line
-   * @throws ToolException
+   * @throws FirmdlException
    */
   public void start (String[] args) throws FirmdlException
   {
@@ -83,7 +82,7 @@ public class Firmdl extends FirmdlTool
       }
       catch (FileNotFoundException e)
       {
-        throw new FirmdlException(e);
+        throw new FirmdlException(e.getMessage(), e);
       }
     }
   }

@@ -42,7 +42,7 @@ public class TinyVMTool extends AbstractTool
     assert classpath != null : "Precondition: classpath != null";
     assert classes != null : "Precondition: classes != null";
     assert stream != null : "Precondition: stream != null";
-    
+
     Binary binary = link(classpath, classes, all);
     dump(binary, stream, bigEndian);
   }
@@ -61,37 +61,29 @@ public class TinyVMTool extends AbstractTool
   {
     assert classpath != null : "Precondition: classpath != null";
     assert classes != null : "Precondition: classes != null";
-    
-    Binary result;
-    try
-    {
-      if (classes.length >= 256)
-      {
-        throw new TinyVMException("Too many entry classes (max is 255!)");
-      }
 
-      ClassPath computedClasspath = new ClassPath(classpath);
-      // TODO refactor
-      Vector classVector = new Vector();
-      for (int i = 0; i < classes.length; i++)
-      {
-        classVector.addElement(classes[i].replace('.', '/').trim());
-      }
-      result = Binary.createFromClosureOf(classVector, computedClasspath, all);
-      for (int i = 0; i < classes.length; i++)
-      {
-        String clazz = classes[i].replace('.', '/').trim();
-        if (!result.hasMain(clazz))
-        {
-          throw new TinyVMException("Class " + clazz
-              + " doesn't have a static void main(String[]) method");
-        }
-      }
-    }
-    catch (TinyVMException e)
+    if (classes.length >= 256)
     {
-      // TODO make other classes throw TinyVMExceptions too
-      throw new TinyVMException(e);
+      throw new TinyVMException("Too many entry classes (max is 255!)");
+    }
+
+    ClassPath computedClasspath = new ClassPath(classpath);
+    // TODO refactor
+    Vector classVector = new Vector();
+    for (int i = 0; i < classes.length; i++)
+    {
+      classVector.addElement(classes[i].replace('.', '/').trim());
+    }
+    Binary result = Binary.createFromClosureOf(classVector, computedClasspath,
+        all);
+    for (int i = 0; i < classes.length; i++)
+    {
+      String clazz = classes[i].replace('.', '/').trim();
+      if (!result.hasMain(clazz))
+      {
+        throw new TinyVMException("Class " + clazz
+            + " doesn't have a static void main(String[]) method");
+      }
     }
 
     assert result != null : "Postconditon: result != null";
@@ -111,7 +103,7 @@ public class TinyVMTool extends AbstractTool
   {
     assert binary != null : "Precondition: binary != null";
     assert stream != null : "Precondition: stream != null";
-    
+
     try
     {
       OutputStream bufferedStream = new BufferedOutputStream(stream, 4096);
@@ -122,12 +114,12 @@ public class TinyVMTool extends AbstractTool
     }
     catch (IOException e)
     {
-      throw new TinyVMException(e);
+      throw new TinyVMException(e.getMessage(), e);
     }
   }
-  
+
   private static final Logger _logger = Logger.getLogger("TinyVM");
-  static 
+  static
   {
     _logger.setLevel(Level.OFF);
   }

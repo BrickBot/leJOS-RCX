@@ -64,7 +64,7 @@ public class ExceptionRecord implements WritableData, Constants
     }
     catch (IOException e)
     {
-      throw new TinyVMException(e);
+      throw new TinyVMException(e.getMessage(), e);
     }
   }
 

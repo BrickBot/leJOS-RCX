@@ -83,7 +83,7 @@ public class Gameboydl implements Constants
     }
     catch (FileNotFoundException e)
     {
-      throw new TinyVMException(e);
+      throw new TinyVMException(e.getMessage(), e);
     }
   }
 
@@ -161,7 +161,7 @@ public class Gameboydl implements Constants
     catch (Exception e)
     {
       // TODO make other classes throw TinyVMExceptions too
-      throw new TinyVMException(e);
+      throw new TinyVMException(e.getMessage(), e);
     }
   }
 }

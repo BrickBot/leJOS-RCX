@@ -76,11 +76,11 @@ public class ClassPath
     }
     catch (FileNotFoundException e)
     {
-      throw new TinyVMException(e);
+      throw new TinyVMException(e.getMessage(), e);
     }
     catch (IOException e)
     {
-      throw new TinyVMException(e);
+      throw new TinyVMException(e.getMessage(), e);
     }
 
     return null;

@@ -27,7 +27,7 @@ public class LejosdlTool extends AbstractTool
    * @param program reader with program to download
    * @param tty serial port
    * @param fastMode use fast mode?
-   * @throws ToolException
+   * @throws LejosdlException
    */
   public void start (InputStream program, String tty, boolean fastMode)
       throws LejosdlException
@@ -42,7 +42,7 @@ public class LejosdlTool extends AbstractTool
    * @param tty serial port
    * @param download download program?
    * @param fastMode use fast mode?
-   * @throws ToolException
+   * @throws LejosdlException
    */
   public void start (InputStream program, String tty, boolean download,
       boolean fastMode) throws LejosdlException
