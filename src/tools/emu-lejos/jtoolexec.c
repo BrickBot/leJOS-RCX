@@ -9,8 +9,6 @@
 #include "util.h"
 #ifdef __CYGWIN__
 #include <sys/cygwin.h>
-#else
-#warning CYGWIN not defined
 #endif
 
 #define TRACE 0
@@ -30,7 +28,7 @@
 #define PATH_SEPARATOR ":"
 #endif
 
-#define REL_JAR_PATH "/../lib/lejos.jar"
+#define REL_JAR_PATH "/../lib/classes.jar"
 
 char *get_classpath (char *program)
 {
