@@ -99,22 +99,27 @@ core_classes:
 
 javadoc:
 	if [ ! -d apidocs ]; then mkdir apidocs; fi
-	${JAVADOC} -author -d apidocs -sourcepath classes java.io java.lang java.util josx.platform.rcx josx.robotics
+	${JAVADOC} -windowtitle "leJOS API documentation" -author -d apidocs -sourcepath classes java.io java.lang java.util josx.platform.rcx josx.robotics
 
 clean:
 	rm -f `find . -name '*.class'`
 	rm -f `find . -name 'core'`
 	rm -f `find . -name '*.o'`
 	rm -f `find . -name '*~'`
+	rm -f `find . -name '*.tvm'`
+	rm -f `find . -name '*.bin'`
+	rm -f `find . -name '*.sig'`
 	rm -f `find . -name '*.bak'`
 	rm -f `find . -name '*.stackdump'`
 	rm -f `find . -name '*.backtrace'`
+	rm -r apidocs
 
 distclean: clean
 	rm -rf `find . -name 'CVS'`
 	rm -f `find . -name '.#*'`
 	rm -f `find . -name '*.tvm'`
 	rm -f `find . -name '*.bin'`
+	rm -f `find . -name '*.sig'`
 	rm -f `find . -name '*.core'`
 	rm -f `find . -name '*.lst'`
 	rm -f `find . -name '*.log'`
