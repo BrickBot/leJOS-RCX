@@ -12,7 +12,9 @@ typedef unsigned long FOURBYTES;
 #define ptr2word(PTR_) ((STACKWORD) (PTR_))
 #define word2ptr(WRD_) ((void *) (WRD_))
 #define get_sys_time() get_sys_time_impl()
+#ifndef LITTLE_ENDIAN
 #define LITTLE_ENDIAN 1
+#endif
 #define FP_ARITHMETIC 1
 #define PLATFORM_HANDLES_SWITCH_THREAD 0
 #define OPCODES_PER_TIME_SLICE 148
