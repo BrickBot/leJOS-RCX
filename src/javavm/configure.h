@@ -37,13 +37,6 @@
 #define REMOVE_DEAD_THREADS              1
 
 /**
- * Whether floating-point arithmetic is
- * supported for floats. (doubles are treated
- * as floats always).
- */
-#define FP_ARITHMETIC                    0
-
-/**
  * Slightly safer code (?)
  */
 #define SAFE                             1

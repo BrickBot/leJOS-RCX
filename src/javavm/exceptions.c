@@ -24,7 +24,7 @@ Object *arrayIndexOutOfBoundsException;
 
 static TWOBYTES gCurrentOffset;
 static MethodRecord *gMethodRecord = null;
-static StackFrame *gStackFrame;
+static StackFrame *tempStackFrame;
 static ExceptionRecord *gExceptionRecord;
 static byte gNumExceptionHandlers;
 static MethodRecord *gExcepMethodRec = null;
@@ -78,8 +78,8 @@ void throw_exception (Object *exception)
     #endif EMULATE
     return;
   }
-  gStackFrame = current_stackframe();
-  gMethodRecord = gStackFrame->methodRecord;
+  tempStackFrame = current_stackframe();
+  gMethodRecord = tempStackFrame->methodRecord;
 
   if (gExcepMethodRec == null)
     gExcepMethodRec = gMethodRecord;
@@ -99,13 +99,11 @@ void throw_exception (Object *exception)
       if (instance_of (exception, gExceptionRecord->classIndex))
       {
         // Clear operand stack:
-        stackTop = gStackFrame->localsBase + gMethodRecord->numLocals;
-        *stackTop = ptr2word(exception);
-        //gStackFrame->stackTop = stackTop;
+        init_stack_ptr (tempStackFrame, gMethodRecord);
+        set_top_word (ptr2word (exception));
         // Jump to handler:
         pc = get_binary_base() + gMethodRecord->codeOffset + 
              gExceptionRecord->handler;
-        //gStackFrame->pc = pc;
         return;
       }
     }

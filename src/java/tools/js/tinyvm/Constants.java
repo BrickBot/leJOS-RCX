@@ -6,10 +6,10 @@ public interface Constants
   public static final String VERSION = "0.1.2";
   public static final int VERIFY_LEVEL = 2;
 
-  public static final int MAGIC_MASK = 0x0CAF;
+  public static final int MAGIC_MASK = 0xCAF0;
 
-  public static final int F_SIZE_SHIFT = 13;
-  public static final int F_OFFSET_MASK = 0x1FFF;
+  public static final int F_SIZE_SHIFT = 12;
+  public static final int F_OFFSET_MASK = 0x0FFF;
 
   public static final int M_ARGS_SHIFT = 12;
   public static final int M_SIG_MASK = 0x0FFF;

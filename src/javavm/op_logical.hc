@@ -5,28 +5,32 @@
 case OP_ISHL:
   // Arguments: 0
   // Stack: -2 +1
-  stackTop--;
-  *stackTop = word2jint(*stackTop) << (*(stackTop+1) & 0x1F);
+  tempStackWord = pop_word();
+  just_set_top_word (word2jint(get_top_word()) << (tempStackWord & 0x1F));
   goto LABEL_ENGINELOOP;
 case OP_ISHR:
-  stackTop--;
-  *stackTop = word2jint(*stackTop) >> (*(stackTop+1) & 0x1F);
+  // Arguments: 0
+  // Stack: -2 +1
+  tempStackWord = pop_word();
+  just_set_top_word (word2jint(get_top_word()) >> (tempStackWord & 0x1F));
   goto LABEL_ENGINELOOP;
 case OP_IUSHR:
-  stackTop--;
-  *stackTop = *stackTop >> (*(stackTop+1) & 0x1F);
+  // Arguments: 0
+  // Stack: -2 +1
+  tempStackWord = pop_word();
+  just_set_top_word (get_top_word() >> (tempStackWord & 0x1F));
   goto LABEL_ENGINELOOP;
 case OP_IAND:
-  stackTop--;
-  *stackTop = *stackTop & *(stackTop+1);
+  tempStackWord = pop_word();
+  just_set_top_word (get_top_word() & tempStackWord);
   goto LABEL_ENGINELOOP;
 case OP_IOR:
-  stackTop--;
-  *stackTop = *stackTop | *(stackTop+1);
+  tempStackWord = pop_word();
+  just_set_top_word (get_top_word() | tempStackWord);
   goto LABEL_ENGINELOOP;
 case OP_IXOR:
-  stackTop--;
-  *stackTop = *stackTop ^ *(stackTop+1);
+  tempStackWord = pop_word();
+  just_set_top_word (get_top_word() ^ tempStackWord);
   goto LABEL_ENGINELOOP;
 
 // Notes:

@@ -3,22 +3,19 @@
  */
 
 case OP_ATHROW:
-  // REMOVE: 
-  #if 0
-  trace (-1, get_class_index(word2obj(*stackTop)), 2);
-  #endif
-  if (word2obj(*stackTop) == JNULL)
+  tempStackWord = pop_ref();
+  if (tempStackWord == JNULL)
   {
     throw_exception (nullPointerException);
-    return;
+    goto LABEL_ENGINELOOP;
   }
-  throw_exception (word2obj(*stackTop--));
+  throw_exception (word2obj (tempStackWord));
   goto LABEL_ENGINELOOP;
 case OP_MONITORENTER:
-  enter_monitor (word2obj(*stackTop--));
+  enter_monitor (word2obj(pop_ref()));
   goto LABEL_ENGINELOOP;
 case OP_MONITOREXIT:
-  exit_monitor (word2obj(*stackTop--));
+  exit_monitor (word2obj(pop_ref()));
   goto LABEL_ENGINELOOP;
 
 // Notes:

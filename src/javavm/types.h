@@ -22,6 +22,12 @@ typedef union
   STACKWORD sword;
 } AuxConvUnion1;
 
+typedef struct
+{
+  STACKWORD hi;
+  STACKWORD lo;
+} JLONG;
+
 #define jfloat2word(FLOAT_) (((AuxConvUnion1) (FLOAT_)).sword)
 #define word2jfloat(WORD_)  (((AuxConvUnion1) (WORD_)).fnum)
 #define byte2jint(BYTE_)    ((JINT) (signed char) (BYTE_))
@@ -40,6 +46,13 @@ typedef union
 #define word2ptr(WRD_)  ((void *) (TWOBYTES) (WRD_))
 
 #endif
+
+static inline JINT jlong_compare (JLONG a1, JLONG a2)
+{
+  if (a1.hi == a2.hi)
+    return a1.low - a2.low;
+  return a1.hi - a2.hi;
+}
 
 #endif _TYPES_H
 

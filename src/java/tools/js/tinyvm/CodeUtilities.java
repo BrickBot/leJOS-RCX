@@ -178,8 +178,9 @@ implements OpCodeConstants, OpCodeInfo, Constants
       Utilities.assert (pOffset <= MAX_FIELD_OFFSET);
       int pFieldType = InstanceFieldRecord.descriptorToType (
                        pFieldEntry.getNameAndType().getDescriptor());
-      int pFieldSize = InstanceFieldRecord.getTypeSize (pFieldType);
-      return ((pFieldSize - 1) << F_SIZE_SHIFT) | pOffset;
+      Utilities.assert (pFieldType >= 0);
+      Utilities.assert (pFieldType <= 0xF);
+      return (pFieldType << F_SIZE_SHIFT) | pOffset;
     }
   }
 
@@ -330,19 +331,12 @@ implements OpCodeConstants, OpCodeInfo, Constants
         case OP_JSR_W:
         case OP_LDC_W:
         case OP_LDC2_W:
-        case OP_I2L:
-        case OP_F2L:
-        case OP_D2L:
-        case OP_L2I:
-        case OP_L2F:
-        case OP_L2D:
         case OP_LADD:
         case OP_LSUB:
         case OP_LMUL:
         case OP_LDIV:
         case OP_LREM:
         case OP_LNEG:
-        case OP_LCMP:
         case OP_FREM:
         case OP_DREM:
         case OP_LSHL:
