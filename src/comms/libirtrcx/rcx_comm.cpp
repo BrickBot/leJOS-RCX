@@ -155,11 +155,9 @@ int rcxWakeupTower (void* port, int timeout_ms)
 		// read response
 		int read = rcxRead(port, buf, BUFFERSIZE, 50);
 		count += read;
-		if (__comm_debug) 
-		{
-			printf("read = %d\n", read);
-			hexdump("R", buf, read);
-		}
+
+		if (__comm_debug) printf("read = %d\n", read);
+		if (__comm_debug) hexdump("R", buf, read);
 
 		// test response
 		if (read == sizeof(msg) && !memcmp(buf, msg, sizeof(msg)))
