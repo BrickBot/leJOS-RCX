@@ -29,7 +29,11 @@
   	<delete file="${javasrc}/tools/js/tinyvm/SpecialClassConstants.java"/>
   	<delete file="${javasrc}/tools/js/tinyvm/SpecialSignatureConstants.java"/>
   	<!-- delete classes -->
-    <delete dir="${build}"/>
+    <delete dir="${build}/classes"/>
+    <delete dir="${build}/rcxcomm"/>
+    <delete dir="${build}/pcrcxcomm"/>
+    <delete dir="${build}/tools"/>
+    <delete dir="${build}/vision"/>
   	<!-- delete jars -->
   	<delete>
       <fileset dir="${lib}">
