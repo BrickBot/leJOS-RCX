@@ -26,8 +26,8 @@ EMU_SRC="src/tools/emu-lejos"
 PLAT_RCX_SRC="src/platform/rcx"
 PLAT_UNIX_SRC="src/platform/unix"
 PLAT_GBOY_SRC="src/platform/gameboy"
-IRTRCX_LIB_SRC=src/comms/libirtrcx
-JIRTRCX_LIB_SRC=src/comms/libjirtrcx
+IRTRCX_LIB_SRC="src/comms/libirtrcx"
+JIRTRCX_LIB_SRC="src/comms/libjirtrcx"
 
 export JAVA
 
