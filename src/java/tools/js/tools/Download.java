@@ -19,12 +19,12 @@ public class Download {
     tower = new Tower();
     int r;
     if ((r=tower.open(port)) < 0) {
-      System.out.println("Open failed: " + tower.strerror(-r) +
+      System.err.println("Open failed: " + tower.strerror(-r) +
                  ", errno = " + tower.getError());
       System.exit(1);
     }
     if (tower.isAlive() == 0) {
-      System.out.println("Tower not responding");
+      System.err.println("Tower not responding");
       System.exit(1);
     }
   }
@@ -75,11 +75,11 @@ public class Download {
 
     if (r >=0 && response[1] == 3)
     {
-      System.out.println("Checksum failed");
+      System.err.println("Checksum failed");
       r = -3;
     }
     if (r < 0) {
-      System.out.println("Response = " + r);
+      System.err.println("Response = " + r);
       System.exit(1);
     }
     return r;
@@ -106,9 +106,9 @@ public class Download {
 
     if (numRead != 3)
     {
-      System.out.println (numRead == -4 ? "No response from RCX. " : "Bad response from RCX. ");
-      System.out.println("Status = " + numRead + " : " + tower.strerror(-numRead));
-      System.out.println("Please make sure RCX has leJOS firmware " +
+      System.err.println (numRead == -4 ? "No response from RCX. " : "Bad response from RCX. ");
+      System.err.println("Status = " + numRead + " : " + tower.strerror(-numRead));
+      System.err.println("Please make sure RCX has leJOS firmware " +
               "and is in range. The firmware must be in program download mode. " +
 	      "Turn RCX off and on if necessary.\n");
       System.exit (1);
@@ -116,7 +116,7 @@ public class Download {
         
     if (recv[1] != send[1] || recv[2] != send[2])
     {
-      System.out.println("Unexpected response from RCX. The RCX either doesn't have valid leJOS firmware or " +
+      System.err.println("Unexpected response from RCX. The RCX either doesn't have valid leJOS firmware or " +
               "it is not in program-download mode. (lejosfirmdl downloads firmware).");
       System.exit (1);
     }
@@ -126,18 +126,18 @@ public class Download {
     numToWrite = TOWRITEMAX;
     for(index = 1; numToWrite == TOWRITEMAX; index++) {
       numToWrite = (len - offset > TOWRITEMAX ? TOWRITEMAX : len - offset);
-      System.out.print("\r  " + (int) (((float) offset/(float) len)*100f) + "%\r");
+      System.err.print("\r  " + (int) (((float) offset/(float) len)*100f) + "%\r");
       if ((status = Download.transfer_data (opcode, len - offset <= TOWRITEMAX ? 0 : index, 
                                    buffer, offset, numToWrite)) < 0)
       {
-          System.out.println("Unexpected response from RCX whilst downloading: " + status);
+          System.err.println("Unexpected response from RCX whilst downloading: " + status);
           System.exit(1);
       }
       opcode ^= 0x08;
       offset += numToWrite;
     };
     
-    System.out.print("\r  100%\r");
+    System.err.print("\r  100%\r");
   }
 
   /**
@@ -152,9 +152,9 @@ public class Download {
     byte opcode = 0x45;
     int numToWrite, status;
 
-    System.out.println("Downloading firmware");
-    System.out.println("Total image size = " + len + "(" + (len+1023)/1024 + "k)");
-    // System.out.println("start = " + start);
+    System.err.println("Downloading firmware");
+    System.err.println("Total image size = " + len + "(" + (len+1023)/1024 + "k)");
+    // System.err.println("start = " + start);
 
     /* Compute image checksum */
     int cksumlen = (start + len < 0xcc00) ? len : 0xcc00 - start;
@@ -162,7 +162,7 @@ public class Download {
     for (i = 0; i < cksumlen; i++)
 	cksum += (image[i] < 0 ? image[i] + 256 : image[i]);
 
-    // System.out.println("Checksum = " + cksum);
+    // System.err.println("Checksum = " + cksum);
 
     /* Start firmware download */
     send[0] = 0x75;
@@ -174,32 +174,32 @@ public class Download {
 
     tower.send(send,6);
     if (tower.receive(recv) < 0) {
-      System.out.println("Start firmware download failed");
+      System.err.println("Start firmware download failed");
       System.exit(1);
     }
 
     // Transfer the data
 
-    // System.out.println("Length = " + len);
-    // System.out.println("TOWRITEMAX " + TOWRITEMAX);
+    // System.err.println("Length = " + len);
+    // System.err.println("TOWRITEMAX " + TOWRITEMAX);
  
     numToWrite = TOWRITEMAX;
     for(index = 1; numToWrite == TOWRITEMAX; index++) {
       numToWrite = (addr + TOWRITEMAX > len ? len - addr : TOWRITEMAX);
-      System.out.print("\r  " + (int) (((float) addr/(float) len)*100f) + "%\r");
+      System.err.print("\r  " + (int) (((float) addr/(float) len)*100f) + "%\r");
       String s = "Transfer = ";
       if ((status = transfer_data (opcode, numToWrite < TOWRITEMAX ? index : index, 
                                    image, addr, numToWrite)) < 0)
       {
-          System.out.println("Unexpected response from RCX whilst downloading: " + status);
+          System.err.println("Unexpected response from RCX whilst downloading: " + status);
           System.exit(1);
       }
       for(i=0;i<numToWrite;i++) s += " " + image[addr + i];
-      // System.out.println(s);
+      // System.err.println(s);
       opcode ^= 0x08;
       addr += numToWrite;
     }
-    System.out.println("Firmware downloaded");
+    System.err.println("Firmware downloaded");
   }
 
   /**
@@ -210,7 +210,7 @@ public class Download {
     byte [] send = new byte[6];
     byte [] recv = new byte[1];
 
-    System.out.println("Deleting firmware");
+    System.err.println("Deleting firmware");
     /* Delete firmware */
     send[0] = 0x65;
     send[1] = 1;
@@ -222,16 +222,16 @@ public class Download {
     // Needs at least 2 goes to delete firmware 
 
     for(int i=0;i<5;i++) {
-      // System.out.println("Try " + i);
+      // System.err.println("Try " + i);
       tower.send(send,6);
       if (tower.receive(recv) != 1) {
         if (i == 4) {
-          System.out.println("Delete firmware failed");
+          System.err.println("Delete firmware failed");
           System.exit(1);
         }
       } else break;
     }
-    System.out.println("Firmware deleted");
+    System.err.println("Firmware deleted");
   }
 
   /**
@@ -243,7 +243,7 @@ public class Download {
     byte [] recv = new byte[26];
     int r;
 
-    System.out.println("Unlocking firmware");
+    System.err.println("Unlocking firmware");
 
     /* Unlock firmware */
     send[0] = (byte) 0xa5;
@@ -258,11 +258,11 @@ public class Download {
     tower.send(send,6);
     try {Thread.sleep(1000);} catch (InterruptedException ie) {}
     if ((r=tower.receive(recv)) < 0) {
-      System.out.println("Unlock firmware failed " + r);
+      System.err.println("Unlock firmware failed " + r);
       System.exit(1);
     }
 
-    System.out.println("Firmware unlocked");
+    System.err.println("Firmware unlocked");
   }
 
   /**

@@ -17,7 +17,7 @@ public class Firmdl {
 
   private static char [] readRecord() throws IOException {
     String s = br.readLine();
-    // System.out.println("Line = " + s);
+    // System.err.println("Line = " + s);
     if (s == null) return null;
     else return s.toCharArray();
   }
@@ -52,7 +52,7 @@ public class Firmdl {
       try {
         srec = new SRec(buf, buf.length);
       } catch (IOException ioe) {
-        System.out.println("Error on line " + line + " : " + ioe.getMessage());
+        System.err.println("Error on line " + line + " : " + ioe.getMessage());
         System.exit(1);
       }
         
@@ -60,7 +60,7 @@ public class Firmdl {
       if (srec.type == 0) {
         if (srec.count == 16)
           if ((new String(srec.data)).equals("?LIB_VERSION_L00")) {
-            System.out.println("Setting strip");
+            System.err.println("Setting strip");
             strip = true;
           }
       }
@@ -76,20 +76,20 @@ public class Firmdl {
           image.segments[segIndex] = new Segment();
           if (segIndex >= numimage_def)
           {
-            System.out.println("Expected number of image_def exceeded"); 
+            System.err.println("Expected number of image_def exceeded"); 
             System.exit(1);
           }
           image.segments[segIndex].length = 0;
           segStartAddr = srec.addr;
           prevAddr = srec.addr - prevCount;
-          // System.out.println("Setting offset to " + (imageIndex + prevCount));
+          // System.err.println("Setting offset to " + (imageIndex + prevCount));
           image.segments[segIndex].offset = imageIndex + prevCount;
         }
 		
         if (srec.addr < IMAGE_START || srec.addr + srec.count > IMAGE_START + maxlen) {
-          System.out.println("Address (" +  srec.addr + ")out of bounds (srec) on line " + line);
-          System.out.println("Count = " + srec.count);
-          System.out.println("maxlen = " + maxlen);
+          System.err.println("Address (" +  srec.addr + ")out of bounds (srec) on line " + line);
+          System.err.println("Count = " + srec.count);
+          System.err.println("maxlen = " + maxlen);
           System.exit(1);
         }
 
@@ -98,12 +98,12 @@ public class Firmdl {
         image.segments[segIndex].length = srec.addr - segStartAddr + srec.count;
 	    
         imageIndex += srec.addr - prevAddr;	
-        // System.out.println("Image index = " + imageIndex);
-        // System.out.println("Count = " + srec.count);
+        // System.err.println("Image index = " + imageIndex);
+        // System.err.println("Count = " + srec.count);
         for(i=0;i<srec.count;i++) image.data[imageIndex+i] = (byte) srec.data[i];
         String s = "Line = ";
         for(i=0;i<srec.count;i++) s += " " + (byte) srec.data[i] ;
-        // System.out.println(s);
+        // System.err.println(s);
         prevAddr = srec.addr;
         prevCount = srec.count;
       }
@@ -112,17 +112,17 @@ public class Firmdl {
 
       else if (srec.type == 9) {
         if (srec.addr < IMAGE_START || srec.addr > IMAGE_START + maxlen) {
-          System.out.println("Address out of bounds (image) on line" + line);
+          System.err.println("Address out of bounds (image) on line" + line);
           System.exit(1);
         }
-        // System.out.println("Setting image entry point to " + srec.addr);
+        // System.err.println("Setting image entry point to " + srec.addr);
         image.entry = srec.addr;
       }
     }
 
     if (strip) {
       int pos;
-      System.out.println("Stripping");
+      System.err.println("Stripping");
       for (pos = IMAGE_MAXLEN - 1; pos >= 0 && image.data[pos] == 0; pos--)
         image.segments[segIndex].length--;
     }
@@ -131,7 +131,7 @@ public class Firmdl {
       length += image.segments[segIndex].length;
 		
     if (length == 0) {
-      System.out.println("Image contains no data");
+      System.err.println("Image contains no data");
       System.exit(1);
     }
 
@@ -151,7 +151,7 @@ public class Firmdl {
       int i = s.indexOf("lib/jtools.jar");
       return s.substring(6,i);
     } else {
-      System.out.println("Cannot locate lejos.srec");
+      System.err.println("Cannot locate lejos.srec");
       System.exit(1);
       return null;
     }
@@ -167,37 +167,37 @@ public class Firmdl {
    
     String dir = which("js.tools.Firmdl");
     fileName = dir + "bin/lejos.srec";
-    // System.out.println(fileName);
+    // System.err.println(fileName);
 
     // Process args
 
     for(int i=0; i < args.length;i++) {
       if (args[i].equals("--tty") && i < args.length - 1) {
         tty = args[++i];
-        System.out.println("Setting tty = " + tty);
+        System.err.println("Setting tty = " + tty);
       } else if(args[i].length() > 6 && args[i].substring(0,6).equals("--tty=")) {
         tty = args[i].substring(6);
-        System.out.println("Setting tty = " + tty);
+        System.err.println("Setting tty = " + tty);
       } else if (args[i].equals("--help") || args[i].equals("-h")) {
         usage = true;
       } else if (args[i].equals("--nodl") || args[i].equals("-n")) {
         download = false;
       } else if (args[i].equals("--debug")) {
-        System.out.println("For debug output set RCXCOMM_DEBUG=Y");
+        System.err.println("For debug output set RCXCOMM_DEBUG=Y");
         System.exit(1);
       } else if (args[i].equals("--fast") || args[i].equals("-f")) {
-        System.out.println("Fast mode not yet supported");
+        System.err.println("Fast mode not yet supported");
         System.exit(1);
       } else usage = true;
     }
 
     if (usage) {
-      System.out.println("usage: firmdl [options]");
-      System.out.println("--tty=<tty>   assume tower connected to <tty>");
-      System.out.println("--tty=usb     assume tower connected to usb");
-      System.out.println("-n, --nodl    do not download image");
-      System.out.println("-h, --help    display this message and exit");
-      System.out.println("For debug output set RCXCOMM_DEBUG=Y");
+      System.err.println("usage: firmdl [options]");
+      System.err.println("--tty=<tty>   assume tower connected to <tty>");
+      System.err.println("--tty=usb     assume tower connected to usb");
+      System.err.println("-n, --nodl    do not download image");
+      System.err.println("-h, --help    display this message and exit");
+      System.err.println("For debug output set RCXCOMM_DEBUG=Y");
       System.exit(1);
     }
 
@@ -209,7 +209,7 @@ public class Firmdl {
       fr = new FileReader(fileName);
       br = new BufferedReader(fr);
     } catch (FileNotFoundException fe) {
-      System.out.println("File " + fileName + " not found");
+      System.err.println("File " + fileName + " not found");
       System.exit(1);
     }
 
@@ -219,7 +219,7 @@ public class Firmdl {
     int length = 0;
 
     for (int i=0; i < numImageDef; i++) {
-      System.out.println("Segment " + i + " length = " + image.segments[i].length);
+      System.err.println("Segment " + i + " length = " + image.segments[i].length);
       length += image.segments[i].length; 
     }
 
