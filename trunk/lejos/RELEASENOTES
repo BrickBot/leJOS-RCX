@@ -1,3 +1,9 @@
+  Brian Bagnall and Lawrie Griffihs have added:
+  - the josx.rcxcomm package for stream-based communication between PC and RCX
+
+  Lawrie Griffiths has added:
+  - a version of java.net building on josx.rcxcomm
+
   Brian Bagnall has added:
   - MacOSX support
 
