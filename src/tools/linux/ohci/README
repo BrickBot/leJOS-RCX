@@ -4,5 +4,19 @@ and reinstall the modules. If you don't, you can get the usb-ohci.c and usb-ohci
 files and move them into this directory to build them locally with the provided
 Makefile.
 
-If you haven't built the kernel before, it is probably worth just buying a PCI USB 
-card which supports UHCI - it is a whole lot easier. 
+To do this:
+[1] cp the files usb-ochi.c and usb-ohci.h into this directory from 
+/usr/src/linux/drivers/usb/
+[2] patch the file with the command:
+patch -l -p0 < usb-ohci.patch
+(Note that if this fails for any reason, you can manually edit the file to add the 
+changes).
+[3] build the module using 'make'
+(Note this Makefile was designed to work with Red Hat distributions and should work
+with others but you may have to play with the paths to get it working on your machine).
+[4] To test, 'rmmmod usb-ohci' and then 'insmod ./usb-ohci.o' as root
+[5] If this works, you can move the usb-ohci.o file into the 
+/lib/modules/your kernel version/kernel/drivers/usb directory.
+
+
+An alternative is to buy a PCI USB card which supports UHCI. 
