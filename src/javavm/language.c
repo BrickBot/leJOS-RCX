@@ -140,8 +140,10 @@ void dispatch_special_checked (byte classIndex, byte methodIndex,
 }
 
 /**
- * @return true iff the method was dispatched; false
- *         if an exception was thrown.
+ * @param classRecord Record for method class.
+ * @param methodRecord Calle's method record.
+ * @param retAddr What the PC should be upon return.
+ * @return true iff the stack frame was pushed.
  */
 boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord, 
                           byte *retAddr)
@@ -150,7 +152,6 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   int debug_ctr;
   #endif
 
-  STACKWORD *paramBase;
   StackFrame *stackFrame;
   byte newStackFrameIndex;
 
@@ -170,8 +171,15 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   #endif
 
   pop_words (methodRecord->numParameters);
-  paramBase = get_stack_ptr() + 1;
- 
+  pc = retAddr;
+
+  if (is_native (methodRecord))
+  {
+    dispatch_native (methodRecord->signatureId, get_stack_ptr() + 1);
+    // Stack frame not pushed
+    return false;
+  }
+
   newStackFrameIndex = currentThread->stackFrameArraySize;
   if (newStackFrameIndex >= MAX_STACK_FRAMES)
   {
@@ -187,11 +195,10 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   {
     #if DEBUG_METHODS
     for (debug_ctr = 0; debug_ctr < methodRecord->numParameters; debug_ctr++)
-      printf ("-- param[%d]    = %ld\n", debug_ctr, (long) paramBase[debug_ctr]);  
+      printf ("-- param[%d]    = %ld\n", debug_ctr, (long) get_stack_ptr()[debug_ctr+1]);  
     #endif
 
     // Save OLD stackFrame state
-    pc = retAddr;
     stackFrame = stackframe_array() + (newStackFrameIndex - 1);
     update_stack_frame (stackFrame);
     // Push NEW stack frame
@@ -202,7 +209,7 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   // Initialize rest of new stack frame
   stackFrame->methodRecord = methodRecord;
   stackFrame->monitor = null;
-  stackFrame->localsBase = paramBase;
+  stackFrame->localsBase = get_stack_ptr() + 1;
   stackFrame->isReferenceBase = get_is_ref_ptr() + 1;
   // Initialize auxiliary global variables (registers)
   pc = get_code_ptr(methodRecord);
@@ -219,8 +226,6 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
     throw_exception (stackOverflowError);
     return false;
   } 
-  if (is_native (methodRecord))
-    dispatch_native (methodRecord->signatureId, paramBase);
   return true;
 }
 

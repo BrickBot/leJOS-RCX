@@ -1,3 +1,10 @@
+
+#include "configure.h"
+#include "threads.h"
+#include "interpreter.h"
+#include "memory.h"
+#include "language.h"
+
 #ifndef _STACK_H
 #define _STACK_H
 
