@@ -7,6 +7,10 @@ public class Test13
 { 
   public static void main (String[] argv)
   {
+    // This statement is to ensure that static
+    // initializations in LCD are performed
+    // before we run out of memory.
+    LCD.showNumber (0);
     int i = 0;
     try {
       for (;;)

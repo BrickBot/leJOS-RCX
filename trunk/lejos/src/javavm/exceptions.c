@@ -99,12 +99,13 @@ void throw_exception (Object *exception)
       if (instance_of (exception, gExceptionRecord->classIndex))
       {
         // Clear operand stack:
-        stackTop = gStackFrame->localsBase + gMethodRecord->numLocals - 1;
-        gStackFrame->stackTop = stackTop;
+        stackTop = gStackFrame->localsBase + gMethodRecord->numLocals;
+        *stackTop = ptr2word(exception);
+        //gStackFrame->stackTop = stackTop;
         // Jump to handler:
         pc = get_binary_base() + gMethodRecord->codeOffset + 
              gExceptionRecord->handler;
-        gStackFrame->pc = pc;
+        //gStackFrame->pc = pc;
         return;
       }
     }

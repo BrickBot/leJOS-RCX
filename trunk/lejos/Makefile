@@ -6,6 +6,10 @@ COMMON_FOLDER=${TINYVM_HOME}/common
 CLASSES_DIR=${TINYVM_HOME}/classes
 LIB_DIR=${TINYVM_HOME}/lib
 
+RELEASE_PREFIX=tinyvm_`cat VERSION`
+RELEASE_DIR=${TEMP}/${RELEASE_DIRNAME}
+RELEASE_FILE=${TEMP}/${RELEASE_DIRNAME}.zip
+
 JAVAC=javac
 JAVADOC=javadoc
 JAVA=java
@@ -22,9 +26,6 @@ release:
 	cd regression; ./run.sh
 	cvs commit
 	cvs tag RELEASE_`cat VERSION`
-	export RELEASE_PREFIX=tinyvm_`cat VERSION`
-	export RELEASE_DIR=${TEMP}/${RELEASE_DIRNAME}
-	export RELEASE_FILE=${TEMP}/${RELEASE_DIRNAME}.zip
 	rm -rf ${RELEASE_DIR}
 	cvs export -d ${RELEASE_DIR} tinyvm
 	zip -r ${RELEASE_FILE} ${RELEASE_DIR}

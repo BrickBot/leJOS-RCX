@@ -34,4 +34,9 @@ public class Signature
     Signature pSig = (Signature) aOther;
     return pSig.iImage.equals (iImage);
   }
+
+  public String getImage()
+  {
+    return iImage;
+  }
 }
