@@ -1,4 +1,4 @@
-package js.tools;
+package js.common;
 
 /**
  * Listener for progress of long running operations.

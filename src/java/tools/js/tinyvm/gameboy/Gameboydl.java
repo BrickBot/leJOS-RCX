@@ -6,10 +6,10 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import js.common.ToolProgressListener;
+import js.common.ToolProgressListenerImpl;
 import js.tinyvm.Constants;
 import js.tinyvm.TinyVMException;
-import js.tools.ToolProgressListener;
-import js.tools.ToolProgressListenerImpl;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
