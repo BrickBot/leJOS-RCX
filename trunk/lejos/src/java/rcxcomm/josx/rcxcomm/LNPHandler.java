@@ -49,8 +49,8 @@ public class LNPHandler extends PacketHandler {
   }
 
   /**
-   * Search for the next paket or ack and read it into the relevent buffer
-   * an set the flag to say we've got it. Implements the keep-alive sends.
+   * Search for the next packet or ack and read it into the relevent buffer
+   * an set the flag to say we've got it. 
    **/
   private void getOp() {
     while (true) {
@@ -58,11 +58,15 @@ public class LNPHandler extends PacketHandler {
       if (r < 0) return;
       op = (byte) r;
       if (op == (byte) 0xf0 || op == (byte) 0xf1) {
+        int len = LLC.receive();
+
+        // If can't read the length byte, discard the packet
+        if (len < 0) return;
         gotPacket = true;
         isAddressing = (op == (byte) 0xf1);
         inPacket[0] = op;
-        inPacket[1] = (byte) LLC.receive();
-        int extra = inPacket[1] + 1; // Add 1 for the checksum
+        inPacket[1] = (byte) len;
+        int extra = (len & 0xff) + 1; // Add 1 for the checksum
         for(int i=0;i<extra;i++) inPacket[i+2] = (byte) LLC.receive();
         inPacketLength = extra+2;
         return;
