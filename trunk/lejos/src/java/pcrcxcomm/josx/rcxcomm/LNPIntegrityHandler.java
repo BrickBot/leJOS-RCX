@@ -9,10 +9,32 @@ public class LNPIntegrityHandler extends PacketHandler {
   private byte [] outPacket = new byte[259];
   private int inPacketLength = 0;
   private byte op;
+  private boolean isAddressing;
   private boolean debug = true;
 
+  /**
+   * Create a packet handler for broadcast or addressing integrity packets
+   * @param handler the lower level LNP packet handler
+   * @param op the opcode to use for writes: 0xf0 for broadcasts, 0xf1 for addressing packets
+   **/
   public LNPIntegrityHandler(PacketHandler handler, byte op) {
     super(handler);
+    this.op = op;
+  }
+
+  /**
+   * Test if last packet is an adressing (or integrity) packet
+   * @return true if addressing packet, false if a broadcast
+   **/
+  public boolean isAddressing() {
+    return isAddressing;
+  }
+
+  /**
+   * Set the opcode for the next write
+   * @param op oxf0 for a broadcast, oxf1 for an adressing write
+   */
+  public void setOp(byte op) {
     this.op = op;
   }
 
@@ -56,6 +78,7 @@ public class LNPIntegrityHandler extends PacketHandler {
       for(int i=0; i<len-1; i++) sum += inPacket[i];
       if ((byte) sum == inPacket[len-1]) {
         inPacketLength = len;
+        isAddressing = ((LNPHandler) lowerHandler).isAddressing();
         return true;
       } else {
         if (debug) System.out.println("Checksum error");
