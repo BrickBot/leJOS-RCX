@@ -15,6 +15,7 @@ public class SensorReader {
       port = new RCXPort();
       DataOutputStream out = new DataOutputStream(port.getOutputStream());   
       while (true) {
+        port.reset(); // As PC closes port for each message
         sensorID = port.getInputStream().read();
         sensorValue = Sensor.readSensorValue(sensorID, 0);
         LCD.showNumber(sensorValue);
