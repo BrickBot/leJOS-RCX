@@ -1,3 +1,10 @@
+#!/bin/sh
+
+#
+# lejoslink: Java tool to link java programs for LeJOS
+#
+# 12/12/02  created L. Griffiths
+
 if [ $OSTYPE == "cygwin" ]; then
   SEPARATOR=";"
 else
@@ -7,6 +14,6 @@ fi
 if [ -z "$LEJOS_HOME" ]; then 
   echo LEJOS_HOME is not defined
 else 
-  export CLASSPATH="$LEJOS_HOME/lib/jtools.jar$SEPARATOR$CLASSPATH"
+  export CLASSPATH="$LEJOS_HOME/lib/jtools.jar$SEPARATOR$CLASSPATH$SEPARATOR."
   java -Djava.library.path="$LEJOS_HOME/bin" -Dtinyvm.home="$LEJOS_HOME" -Dtinyvm.write.order=BE -Dtinyvm.loader=lejosrun js.tinyvm.TinyVM -classpath "$LEJOS_HOME/lib/classes.jar$SEPARATOR$LEJOS_HOME/lib/rcxrcxcomm.jar$SEPARATOR$CLASSPATH" $*
 fi
