@@ -7,7 +7,7 @@ import js.tinyvm.io.ByteWriter;
 import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.Field;
 
-public class InstanceFieldRecord implements WritableData, Constants
+public class InstanceFieldRecord implements WritableData
 {
    Field iField;
    byte iType;
