@@ -298,7 +298,7 @@ void rcx_close(FILEDESCR fd)
 
 int rcx_wakeup_tower (FILEDESCR fd, int timeout)
 {
-    char msg[] = { 0x55, 0xff, 0x00, 0x10, 0xfe, 0x10, 0xfe };
+    char msg[] = { 0x10, 0xfe, 0x10, 0xfe };
     char keepalive = 0xff;
     char buf[BUFFERSIZE];
     timeval_t timer;
@@ -323,7 +323,7 @@ int rcx_wakeup_tower (FILEDESCR fd, int timeout)
 		}
 		count += len = nbread(fd, buf, BUFFERSIZE, 50);
 		if (len < 0) return len;
-		if (len >= sizeof(msg) && !memcmp(buf, msg, sizeof(msg)))
+		if (len == sizeof(msg) && !memcmp(buf, msg, sizeof(msg)))
 			return RCX_OK; /* success */
 		if (__comm_debug) {
 			printf("recvlen = %d\n", len);
