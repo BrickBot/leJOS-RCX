@@ -43,8 +43,8 @@ public class ClassRecord implements WritableData
    int iClassSize = -1;
    JavaClass iCF;
    Binary iBinary;
-   final RecordTable iMethodTable = new RecordTable(false, false);
-   final RecordTable iInstanceFields = new RecordTable(true, false);
+   final RecordTable iMethodTable = new RecordTable("methods", false, false);
+   final RecordTable iInstanceFields = new RecordTable("instance fields", true, false);
    final Hashtable iStaticValues = new Hashtable();
    final Hashtable iStaticFields = new Hashtable();
    final Hashtable iMethods = new Hashtable();
@@ -389,7 +389,7 @@ public class ClassRecord implements WritableData
             || pEntry instanceof ConstantLong)
          {
             ConstantRecord pRec = new ConstantRecord(pPool, pEntry);
-            if (!aConstantTable.contains(pRec))
+            if (aConstantTable.indexOf(pRec) == -1)
             {
                aConstantTable.add(pRec);
                aConstantValues.add(pRec.constantValue());

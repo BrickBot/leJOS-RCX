@@ -9,21 +9,48 @@ import java.util.logging.Logger;
 import js.tinyvm.io.ByteWriter;
 import js.tinyvm.io.IOUtilities;
 
+/**
+ * Record table.
+ */
 public class RecordTable extends WritableDataWithOffset
 {
-   private boolean _align;
+   /**
+    * Descriptive name of this record table.
+    */
+   private String _name;
+
+   /**
+    * Allow duplicates in table?
+    */
    private boolean _duplicates;
+
+   /**
+    * Align output?
+    */
+   private boolean _align;
+
+   /**
+    * List of all writable element.
+    */
    private ArrayList _list;
-   int _length;
+
+   /**
+    * Length of output.
+    */
+   private int _length;
 
    /**
     * Constructor.
     * 
+    * @param name description of this record table
     * @param allowDuplicates allow duplicates?
     * @param align align output?
     */
-   public RecordTable (boolean allowDuplicates, boolean align)
+   public RecordTable (String name, boolean allowDuplicates, boolean align)
    {
+      assert name != null: "Precondition: name != null";
+
+      _name = name;
       _duplicates = allowDuplicates;
       _align = align;
       _list = new ArrayList();
@@ -33,52 +60,80 @@ public class RecordTable extends WritableDataWithOffset
    //
    // public interface
    //
-   
-   public Iterator iterator ()
-   {
-      return _list.iterator();
-   }
 
-   public int size ()
-   {
-      return _list.size();
-   }
-
-   public boolean contains (WritableData element)
-   {
-      assert element != null: "Precondition: element != null";
-      
-      return _list.contains(element);
-   }
-
-   public WritableData get (int index)
-   {
-      return (WritableData) _list.get(index);
-   }
-
-   public int indexOf (WritableData element)
-   {
-      assert element != null: "Precondition: element != null";
-      
-      return _list.indexOf(element);
-   }
-
+   /**
+    * Add a writable element.
+    * 
+    * @param element
+    */
    public void add (WritableData element)
    {
       assert element != null: "Precondition: element != null";
-      
+
       if (_duplicates || !_list.contains(element))
       {
          _list.add(element);
       }
    }
 
+   /**
+    * Get writable element by its index.
+    * 
+    * @param index index
+    */
+   public WritableData get (int index)
+   {
+      assert index >= 0 && index < size(): "Precondition: index >= 0 && index < size()";
+
+      WritableData result = (WritableData) _list.get(index);
+
+      assert result != null: "Postconditon: result != null";
+      return result;
+   }
+
+   /**
+    * Get index of writable element.
+    * 
+    * @param element
+    * @return index or -1 if not found
+    */
+   public int indexOf (WritableData element)
+   {
+      assert element != null: "Precondition: element != null";
+
+      return _list.indexOf(element);
+   }
+
+   /**
+    * Iterator.
+    */
+   public Iterator iterator ()
+   {
+      Iterator result = _list.iterator();
+
+      assert result != null: "Postconditon: result != null";
+      return result;
+   }
+
+   /**
+    * Number of entries.
+    */
+   public int size ()
+   {
+      return _list.size();
+   }
+
    //
    // Writable interface
    //
 
+   /**
+    * Dump all elements.
+    */
    public void dump (ByteWriter writer) throws TinyVMException
    {
+      assert writer != null: "Precondition: writer != null";
+
       try
       {
          boolean pDoVerify = TinyVMConstants.VERIFY_LEVEL > 0;
@@ -117,43 +172,47 @@ public class RecordTable extends WritableDataWithOffset
       }
    }
 
+   /**
+    * Length.
+    */
    public int getLength () throws TinyVMException
    {
-      if (_length != -1)
+      if (_length == -1)
       {
-         return _length;
-      }
+         _length = 0;
+         for (Iterator iter = _list.iterator(); iter.hasNext();)
+         {
+            _length += ((WritableData) iter.next()).getLength();
+         }
 
-      _length = 0;
-      for (Iterator iter = _list.iterator(); iter.hasNext();)
-      {
-         _length += ((WritableData) iter.next()).getLength();
-      }
+         _logger.log(Level.INFO, "length of " + _name + ": " + _length);
 
-      _logger.log(Level.INFO, "RT.getLength: " + _length);
-
-      if (_align)
-      {
-         _length = IOUtilities.adjustedSize(_length, 2);
+         if (_align)
+         {
+            _length = IOUtilities.adjustedSize(_length, 2);
+         }
       }
 
       return _length;
    }
 
-   public void initOffset (int start) throws TinyVMException
+   /**
+    * Init offset of record table and all of its elements.
+    */
+   public void initOffset (int startOffset) throws TinyVMException
    {
-      _logger.log(Level.INFO, "RT.initOffset: " + start);
+      _logger.log(Level.INFO, "init offset of " + _name + ": " + startOffset);
 
-      super.initOffset(start);
+      super.initOffset(startOffset);
 
       for (Iterator iter = _list.iterator(); iter.hasNext();)
       {
          WritableData element = (WritableData) iter.next();
          if (element instanceof WritableDataWithOffset)
          {
-            ((WritableDataWithOffset) element).initOffset(start);
+            ((WritableDataWithOffset) element).initOffset(startOffset);
          }
-         start += element.getLength();
+         startOffset += element.getLength();
       }
    }
 

@@ -14,20 +14,25 @@ import js.tinyvm.util.HashVector;
 public class Binary
 {
    // State that is written to the binary:
-   final RecordTable iEntireBinary = new RecordTable(true, false);
+   final RecordTable iEntireBinary = new RecordTable("binary", true, false);
 
    // Contents of binary:
    final MasterRecord iMasterRecord = new MasterRecord(this);
-   final RecordTable iClassTable = new RecordTable(false, false);
-   final RecordTable iConstantTable = new RecordTable(false, false);
-   final RecordTable iEntryClassIndices = new RecordTable(true, false);
-   final RecordTable iMethodTables = new RecordTable(true, false);
-   final RecordTable iInstanceFieldTables = new RecordTable(true, false);
-   final RecordTable iStaticFields = new RecordTable(true, false);
-   final RecordTable iExceptionTables = new RecordTable(false, false);
-   final RecordTable iStaticState = new RecordTable(true, true);
-   final RecordTable iCodeSequences = new RecordTable(true, false);
-   final RecordTable iConstantValues = new RecordTable(true, false);
+   final RecordTable iClassTable = new RecordTable("class table", false, false);
+   final RecordTable iStaticState = new RecordTable("static state", true, true);
+   final RecordTable iStaticFields = new RecordTable("static fields", true,
+      false);
+   final RecordTable iConstantTable = new RecordTable("constants", false, false);
+   final RecordTable iMethodTables = new RecordTable("methods", true, false);
+   final RecordTable iExceptionTables = new RecordTable("exceptions", false,
+      false);
+   final RecordTable iInstanceFieldTables = new RecordTable("instance fields",
+      true, false);
+   final RecordTable iCodeSequences = new RecordTable("code", true, false);
+   final RecordTable iConstantValues = new RecordTable("constant values", true,
+      false);
+   final RecordTable iEntryClassIndices = new RecordTable(
+      "entry class indices", true, false);
 
    // Other state:
    final Hashtable iSpecialSignatures = new Hashtable();
@@ -38,8 +43,7 @@ public class Binary
     * Constructor.
     */
    public Binary ()
-   {
-   }
+   {}
 
    /**
     * Dump.
@@ -51,6 +55,14 @@ public class Binary
    {
       iEntireBinary.dump(writer);
    }
+
+   //
+   // TODO public interface
+   //
+
+   //
+   // TODO protected interface
+   //
 
    //
    // classes
@@ -225,8 +237,8 @@ public class Binary
       for (int i = 0; i < entryClassNames.length; i++)
       {
          String className = entryClassNames[i];
-         ClassRecord classRecord = ClassRecord.getClassRecord(className, classPath,
-            this);
+         ClassRecord classRecord = ClassRecord.getClassRecord(className,
+            classPath, this);
          addClassRecord(className, classRecord);
          classRecord.useAllMethods();
          // Update table of indices to entry classes
@@ -296,7 +308,8 @@ public class Binary
       for (int pIndex = 0; pIndex < pSize; pIndex++)
       {
          ClassRecord classRecord = (ClassRecord) iClassTable.get(pIndex);
-         classRecord.storeMethods(iMethodTables, iExceptionTables, iSignatures, iAll);
+         classRecord.storeMethods(iMethodTables, iExceptionTables, iSignatures,
+            iAll);
       }
    }
 

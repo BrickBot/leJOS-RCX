@@ -5,49 +5,63 @@ import java.io.IOException;
 import js.tinyvm.io.ByteWriter;
 import js.tinyvm.io.IOUtilities;
 
+/**
+ * Master record.
+ */
 public class MasterRecord implements WritableData
 {
-   Binary iBinary;
+   /**
+    * The binary.
+    */
+   Binary _binary;
 
-   public MasterRecord (Binary aBinary)
+   /**
+    * Constructor.
+    * 
+    * @param binary
+    */
+   public MasterRecord (Binary binary)
    {
-      iBinary = aBinary;
+      assert binary != null: "Precondition: binary != null";
+
+      _binary = binary;
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   //
+   // Writable interface
+   //
+
+   /**
+    * Dump.
+    */
+   public void dump (ByteWriter writer) throws TinyVMException
    {
+      assert writer != null: "Precondition: writer != null";
+
       int pMagicNumber = TinyVMConstants.MAGIC_MASK;
-      int pConstantTableOffset = iBinary.iConstantTable.getOffset();
-      if (pConstantTableOffset <= 0 || pConstantTableOffset > 0xFFFF)
-      {
-         throw new TinyVMException("Bug MR-1: Offset=" + pConstantTableOffset
-            + " CTSize=" + iBinary.iConstantTable.size());
-      }
-      int pStaticFieldsOffset = iBinary.iStaticFields.getOffset();
-      assert pStaticFieldsOffset >= 0 && pStaticFieldsOffset <= 0xFFFF: "Check: static field offset in range";
-      int pStaticStateOffset = iBinary.iStaticState.getOffset();
-      assert pStaticStateOffset >= 0 && pStaticStateOffset <= 0xFFFF: "Check: static state offset in range";
-      int pStaticStateLength = (iBinary.iStaticState.getLength() + 1) / 2;
-      assert pStaticStateLength >= 0 && pStaticStateLength <= 0xFFFF: "Check: state length in range";
-      int pNumStaticFields = iBinary.iStaticFields.size();
-      int pEntryClassesOffset = iBinary.iEntryClassIndices.getOffset();
-      int pNumEntryClasses = iBinary.iEntryClassIndices.size();
+      int pConstantTableOffset = _binary.iConstantTable.getOffset();
+      int pStaticFieldsOffset = _binary.iStaticFields.getOffset();
+      int pStaticStateOffset = _binary.iStaticState.getOffset();
+      int pStaticStateLength = (_binary.iStaticState.getLength() + 1) / 2;
+      int pNumStaticFields = _binary.iStaticFields.size();
+      int pEntryClassesOffset = _binary.iEntryClassIndices.getOffset();
+      int pNumEntryClasses = _binary.iEntryClassIndices.size();
       assert pNumEntryClasses < TinyVMConstants.MAX_CLASSES: "Check: not too much classes";
-      int pLastClass = iBinary.iClassTable.size() - 1;
+      int pLastClass = _binary.iClassTable.size() - 1;
       assert pLastClass >= 0 && pLastClass < TinyVMConstants.MAX_CLASSES: "Check: class index in range";
 
       try
       {
-         aOut.writeU2(pMagicNumber);
-         aOut.writeU2(pConstantTableOffset);
-         aOut.writeU2(pStaticFieldsOffset);
-         aOut.writeU2(pStaticStateOffset);
-         aOut.writeU2(pStaticStateLength);
-         aOut.writeU2(pNumStaticFields);
-         aOut.writeU2(pEntryClassesOffset);
-         aOut.writeU1(pNumEntryClasses);
-         aOut.writeU1(pLastClass);
-         IOUtilities.writePadding(aOut, 2);
+         writer.writeU2(pMagicNumber);
+         writer.writeU2(pConstantTableOffset);
+         writer.writeU2(pStaticFieldsOffset);
+         writer.writeU2(pStaticStateOffset);
+         writer.writeU2(pStaticStateLength);
+         writer.writeU2(pNumStaticFields);
+         writer.writeU2(pEntryClassesOffset);
+         writer.writeU1(pNumEntryClasses);
+         writer.writeU1(pLastClass);
+         IOUtilities.writePadding(writer, 2);
       }
       catch (IOException e)
       {
@@ -55,6 +69,9 @@ public class MasterRecord implements WritableData
       }
    }
 
+   /**
+    * Length.
+    */
    public int getLength ()
    {
       return IOUtilities.adjustedSize(16, 2);
