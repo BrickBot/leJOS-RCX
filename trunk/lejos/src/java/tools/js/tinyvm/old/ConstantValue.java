@@ -1,6 +1,5 @@
 package js.tinyvm.old;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,22 +52,21 @@ public class ConstantValue extends WritableDataWithOffset
       }
    }
 
-   public void dump (IByteWriter aOut) throws TinyVMException
+   public void dump (IByteWriter writer) throws TinyVMException
    {
       try
       {
          // Constant values must be dumped in Big Endian order.
-         DataOutputStream pDataOut = (DataOutputStream) aOut;
          if (iEntry instanceof JCPE_String)
          {
             JCPE_Utf8 pValue = ((JCPE_String) iEntry).getValue();
             byte[] pBytes = pValue.getBytes();
-            pDataOut.write(pBytes, 0, pBytes.length);
+            writer.write(pBytes);
          }
          else if (iEntry instanceof JCPE_Integer)
          {
             int pValue = ((JCPE_Integer) iEntry).getValue();
-            pDataOut.writeInt(pValue);
+            writer.writeInt(pValue);
          }
          else if (iEntry instanceof JCPE_Long)
          {
@@ -79,8 +77,8 @@ public class ConstantValue extends WritableDataWithOffset
                _logger.log(Level.WARNING, "Long " + pValue + "L truncated to "
                   + pIntValue + ".");
             }
-            pDataOut.writeInt(0);
-            pDataOut.writeInt(pIntValue);
+            writer.writeInt(0);
+            writer.writeInt(pIntValue);
          }
          else if (iEntry instanceof JCPE_Double)
          {
@@ -92,13 +90,13 @@ public class ConstantValue extends WritableDataWithOffset
                _logger.log(Level.WARNING, "Double " + pDoubleValue
                   + " truncated to " + pValue + "f.");
             }
-            pDataOut.writeInt(0);
-            pDataOut.writeInt(Float.floatToIntBits(pValue));
+            writer.writeInt(0);
+            writer.writeInt(Float.floatToIntBits(pValue));
          }
          else if (iEntry instanceof JCPE_Float)
          {
             float pValue = (float) ((JCPE_Float) iEntry).getValue();
-            pDataOut.writeInt(Float.floatToIntBits(pValue));
+            writer.writeInt(Float.floatToIntBits(pValue));
          }
          else
          {
