@@ -1,8 +1,9 @@
 package josx.vision;
 
-import java.awt.*;
-import javax.media.*;
-import javax.media.format.*;
+import java.awt.Dimension;
+
+import javax.media.Buffer;
+import javax.media.format.RGBFormat;
 
 /**
  * Title: Big fonts

@@ -1,10 +1,16 @@
 package josx.vision;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.media.Control;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Title: Lejos Vision System
@@ -45,8 +51,8 @@ public class ColorDetectionControl implements Control, ActionListener, ChangeLis
 
       threshold = new JSlider(JSlider.HORIZONTAL,
                                0,
-                               effect.MAX_PIXEL_THRESHOLD / 4,
-                               effect.pixelThreshold / 4);
+                               ColorEffect.MAX_PIXEL_THRESHOLD / 4,
+                               ColorEffect.pixelThreshold / 4);
 
       threshold.setMajorTickSpacing(1);
       threshold.setPaintLabels(true);
@@ -54,8 +60,8 @@ public class ColorDetectionControl implements Control, ActionListener, ChangeLis
 
       proportionThreshold = new JSlider(JSlider.HORIZONTAL,
                                         0,
-                                        (int) (effect.MAX_PROPORTION / effect.PROPORTION_INC),
-                                        (int) (effect.requiredProportion / effect.PROPORTION_INC));
+                                        (int) (ColorEffect.MAX_PROPORTION / ColorEffect.PROPORTION_INC),
+                                        (int) (ColorEffect.requiredProportion / ColorEffect.PROPORTION_INC));
 
       proportionThreshold.setMajorTickSpacing(1);
       proportionThreshold.setPaintLabels(true);
@@ -91,10 +97,10 @@ public class ColorDetectionControl implements Control, ActionListener, ChangeLis
   public void stateChanged(ChangeEvent e) {
     Object o = e.getSource();
     if (o == threshold) {
-      effect.pixelThreshold = threshold.getValue()*4;
+      ColorEffect.pixelThreshold = threshold.getValue()*4;
     }
      if (o == proportionThreshold) {
-      effect.requiredProportion = proportionThreshold.getValue()*effect.PROPORTION_INC;
+       ColorEffect.requiredProportion = proportionThreshold.getValue()* ColorEffect.PROPORTION_INC;
     }
  }
 }

@@ -6,10 +6,12 @@ package josx.vision;
  * This code is freely distributed. You can use as you want.
  */
 
-import javax.media.*;
-import javax.media.format.*;
-import java.awt.*;
-import java.io.*;
+import java.awt.Dimension;
+
+import javax.media.Buffer;
+import javax.media.Control;
+import javax.media.format.RGBFormat;
+import javax.media.format.VideoFormat;
 
 /**
  * Motion detection effect.
