@@ -1,3 +1,8 @@
+  Lawrie Griffiths has added:
+  - a version of javax.servlet.html for writing lejos Web servers
+  - example servlets 
+  - an Integer class that imlements toString(int)
+
 leJOS 1.0.5:
 ------------
 
