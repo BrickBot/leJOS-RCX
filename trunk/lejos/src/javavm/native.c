@@ -58,6 +58,10 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       #endif
       *((byte *) word2ptr(paramBase[0])) = (byte) (paramBase[1] & 0xFF);
       break;
+    case GETDATAADDRESS_I:
+      *(++stackTop) = ptr2word (((byte *) word2ptr (paramBase[0])) + HEADER_SIZE);
+      do_return (1);
+      return;
   }  
   do_return (0);
 } 

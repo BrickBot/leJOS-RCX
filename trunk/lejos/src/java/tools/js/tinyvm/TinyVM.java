@@ -9,9 +9,13 @@ implements Constants
 {
   static final String CP_PROPERTY = "tinyvm.class.path";
   static final String WO_PROPERTY = "tinyvm.write.order";
+  static final String TINYVM_HOME = System.getProperty ("tinyvm.home");
+  static final String TEMP_FILE = "__tinyvm__temp.tvm__";
   static String iClassPath = System.getProperty (CP_PROPERTY);
   static String iWriteOrder = System.getProperty (WO_PROPERTY);
   static String iOutputFile;
+  static boolean iDoDownload = false;
+  static boolean iDumpFile = false;
 
   private static class Option
   {
@@ -21,6 +25,25 @@ implements Constants
     public String toString()
     {
       return iOption + " " + iArgument;
+    }
+  }
+
+  public static void invokeTvm (String aFileName)
+  {
+    Utilities.assert (TINYVM_HOME != null);
+    String pTvmExec = TINYVM_HOME + File.separator + "bin" +
+                      File.separator + "tvm"; 
+    String[] pParams = new String[] { pTvmExec, aFileName };
+    try {
+      Utilities.verbose (1, "Executing " + pTvmExec + " (downloading) ...");
+      Process p = Runtime.getRuntime().exec (pParams);
+      p.waitFor();
+    } catch (InterruptedException e) {
+      Utilities.fatal ("Execution of " + pTvmExec + " was interrupted.");
+    } catch (IOException e) {
+      Utilities.fatal ("Problem executing " + pTvmExec + ". " +
+                       "Apparently, the program was not found. " +
+                       "Make sure your TINYVM_HOME setting is right.");
     }
   }
   
@@ -38,12 +61,20 @@ implements Constants
     else if ("LE".equals (iWriteOrder))
     {
       pBW = new LEDataOutputStream (pOut);
+      if (iDoDownload)
+        Utilities.fatal ("The -d option cannot be used with tvmld-emul. " +
+                         "Use -o <file> instead.");
       System.out.println ("Warning: Output for emulation only.");
     }
     else
       Utilities.fatal (WO_PROPERTY + " not BE or LE.");
     pBin.dump (pBW);
     pOut.close();
+    if (iDoDownload)
+    {
+      invokeTvm (TEMP_FILE);
+      new File (TEMP_FILE).delete();
+    }
   }
 
   public static void processOptions (Vector aOptions)
@@ -59,7 +90,17 @@ implements Constants
       }
       if (pOpt.iOption.equals ("-o"))
       {
+        if (iDoDownload)
+          Utilities.fatal ("You cannot specify both -d and -o options.");
+        iDumpFile = true;
         iOutputFile = pOpt.iArgument;
+      }
+      if (pOpt.iOption.equals ("-d"))
+      {
+        if (iDumpFile)
+          Utilities.fatal ("You cannot specify both -d and -o options.");
+        iDoDownload = true;
+        iOutputFile = TEMP_FILE;
       }
       else if (pOpt.iOption.equals ("-verbose"))
       {
@@ -81,22 +122,23 @@ implements Constants
     if (aArgs.size() != 1)
     {
       System.out.println (TOOL_NAME + " " + VERSION + 
-                          ". Copyright (c) 1999-2000 Jose Solorzano.");
+                          ". Copyright (c) 2000 Jose Solorzano.");
       System.out.println ("Use: " + TOOL_NAME + " [options] className");
       System.out.println ("Options:");
       System.out.println ("  -o <path>         Dump binary into path");
+      System.out.println ("  -d                Download to RCX");
       System.out.println ("  -verbose[=<n>]    Print additional messages");
       System.exit (1);
     }
     processOptions (aOptions);
     if (iClassPath == null)
     {
-      Utilities.fatal ("Error: Classpath not defined. " +
+      Utilities.fatal ("Internal error: Classpath not defined. " +
         "Use either -classpath or property " + CP_PROPERTY);
     }
     if (iOutputFile == null)
     {
-      Utilities.fatal ("Error: No output file specified.");
+      Utilities.fatal ("No output file specified. Use -d or -o.");
     }
     main ((String) aArgs.elementAt (0)); 
   }
@@ -127,6 +169,10 @@ implements Constants
           pOption.iArgument = arg[++i];
           Utilities.trace ("Got -o option: " + pOption.iArgument);
 	}
+        else if (arg[i].equals ("-d"))
+	{
+          pOption.iOption = "-d";
+        }
         pOptions.addElement (pOption);
       }
       else

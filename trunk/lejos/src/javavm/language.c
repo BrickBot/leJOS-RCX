@@ -150,7 +150,8 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   byte newStackFrameIndex;
 
   #if DEBUG_BYTECODE
-  printf ("\n------ dispatch special --------------------\n\n");
+  printf ("\n------ dispatch special - %d ------------------\n\n",
+          methodRecord->signatureId);
   #endif
   #if DEBUG_METHODS
   printf ("dispatch_special: %d, %d, %d\n", 

@@ -14,6 +14,9 @@ TEMP=/usr/tmp
 export CLASSPATH
 
 default: check all_jtools all_ctools core_classes tinyvm_emul
+	@echo ------ TinyVM installed successfully.
+	@echo ------ The README file has information
+	@echo ------ about running a example program.
 
 all: default tinyvm_bin
 

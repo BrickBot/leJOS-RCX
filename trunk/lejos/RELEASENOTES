@@ -8,6 +8,46 @@ Version 0.1.2 (latest):
     serial communications right after a program is
     downloaded).
 
+  - Added a couple dummy classes to satisfy the
+    jikes compiler. Users simply have to set JAVAC
+    to "jikes". (Jikes is a really fast Java compiler
+    by IBM).
+
+  - Changed implementation of Sensor.readSensorValue.
+    Reading values from sensors should be more
+    efficient now. (I might have to adjust the rotator
+    example a bit).
+
+  - Publicized the SensorListener interface and
+    Sensor.addListener. It probably still needs to
+    be optimized for performance.
+
+  - Added examples to some classes in the API
+    documentation.
+
+  - Removed "queued" parameter from most methods in
+    Sound. It really didn't make sense to have it 
+    in some APIs. Hopefully that won't be much of a 
+    problem for anyone.
+
+  - Removed previously deprecated APIs from ROM.
+    Again, sorry if this affects you.
+
+  - Fixed MONITORENTER bug. (It was not throwing
+    NPE on null monitors - it was crashing instead).
+
+  - Discovered an additional nuance of this Java
+    implementation. I'll add it to the Known Bugs
+    list.
+
+  - TinyVM's linker is now also a loader: The -d
+    option will download the program to the RCX.
+
+  - TinyVM's firmware is now listening for the 
+    standard "Delete Firmware" opcode (0x65/0x6d).
+    Consequently, Prgm-Run On/Off is no longer
+    useful, so it has been removed.
+
 Version 0.1.1:
 
   - Fixed PUTSTATIC bug. (Setting a static field

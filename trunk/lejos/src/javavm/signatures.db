@@ -25,6 +25,6 @@ callRom0(S)V
 callRom1(SS)V
 callRom2(SSS)V
 callRom3(SSSS)V
-readMemoryByte(S)B
-writeMemoryByte(SB)V
-getDataAddress(Ljava/lang/Object;)S
+readMemoryByte(I)B
+writeMemoryByte(IB)V
+getDataAddress(Ljava/lang/Object;)I

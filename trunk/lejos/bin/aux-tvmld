@@ -6,6 +6,7 @@ then
 fi
 
 JAVAVM=java
+TINYVMOPTIONS="${TINYVMOPTIONS} -Dtinyvm.home=${TINYVM_HOME}"
 
 TINYVMPATH=${TINYVMPATH}:${TINYVM_HOME}/lib/classes.jar
 export CLASSPATH=$CLASSPATH:${TINYVM_HOME}/lib/jtools.jar
