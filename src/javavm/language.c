@@ -165,6 +165,7 @@ boolean dispatch_special (MethodRecord *methodRecord, byte *retAddr)
   printf ("-- flags        = %d\n", methodRecord->mflags);
   printf ("-- num params   = %d\n", methodRecord->numParameters);
   printf ("-- stack ptr    = %d\n", (int) get_stack_ptr());
+  printf ("-- max stack ptr= %d\n", (int) (currentThread->stackArray + (get_array_size(currentThread->stackArray))*2));
   #endif
 
   pop_words (methodRecord->numParameters);
@@ -172,17 +173,44 @@ boolean dispatch_special (MethodRecord *methodRecord, byte *retAddr)
 
   if (is_native (methodRecord))
   {
+  #if DEBUG_METHODS
+  printf ("-- native\n");
+  #endif 
     dispatch_native (methodRecord->signatureId, get_stack_ptr() + 1);
     // Stack frame not pushed
     return false;
   }
 
   newStackFrameIndex = currentThread->stackFrameArraySize;
-  if (newStackFrameIndex >= MAX_STACK_FRAMES)
+  
+  if (newStackFrameIndex >= get_array_length((Object *) word2ptr (currentThread->stackFrameArray)))
   {
-    throw_exception (stackOverflowError);
-    return false;
+#if !FIXED_STACK_SIZE
+  	// int len = get_array_length((Object *) word2ptr (currentThread->stackFrameArray));
+  	int newlen = get_array_length((Object *) word2ptr (currentThread->stackFrameArray)) * 3 / 2;
+  	JINT newStackFrameArray = JNULL;
+
+	// Stack frames are indexed by a byte value so limit the size.  	
+  	if (newlen <= 255)
+  	{
+  	    // increase the stack frame size
+  		newStackFrameArray = ptr2word(reallocate_array(word2ptr(currentThread->stackFrameArray), newlen));
+  	}
+  	
+  	// If can't allocate new stack, give in!
+    if (newStackFrameArray == JNULL)
+    {
+#endif
+      throw_exception (stackOverflowError);
+      return false;
+#if !FIXED_STACK_SIZE
+    }
+      	
+  	// Assign new array
+  	currentThread->stackFrameArray = newStackFrameArray;
+#endif
   }
+  
   if (newStackFrameIndex == 0)
   {
     // Assign NEW stack frame
@@ -220,10 +248,57 @@ boolean dispatch_special (MethodRecord *methodRecord, byte *retAddr)
   //printf ("m %d stack = %d\n", (int) methodRecord->signatureId, (int) (localsBase - stack_array())); 
   
   // Check for stack overflow
+  // (stackTop + methodRecord->maxOperands) >= (stack_array() + STACK_SIZE);
   if (is_stack_overflow (methodRecord))
   {
-    throw_exception (stackOverflowError);
-    return false;
+#if !FIXED_STACK_SIZE
+    StackFrame *stackBase;
+    
+    // Roughly speaking, need at least this many bytes
+    // int len = (int)(stackTop + methodRecord->maxOperands) - (int)(stack_array());
+    
+    int i;
+    // Need to compute new array size (as distinct from number of bytes in array).
+  	int newlen = (((int)(stackTop + methodRecord->maxOperands) - (int)(stack_array()) / 4) + 1) * 3 / 2;
+  	JINT newStackArray = JNULL;
+#if DEBUG_MEMORY
+	printf("thread=%d, stackTop(%d), localsBase(%d)=%d\n", currentThread->threadId, (int)stackTop, (int)localsBase, (int)(*localsBase));
+#endif
+
+    // increase the stack frame size
+	newStackArray = ptr2word(reallocate_array(word2ptr(currentThread->stackArray), newlen));
+  	
+  	// If can't allocate new stack, give in!
+    if (newStackArray == JNULL)
+    {
+#endif
+      throw_exception (stackOverflowError);
+      return false;
+#if !FIXED_STACK_SIZE
+    }
+      	
+    // Adjust pointers.
+    newlen = newStackArray - currentThread->stackArray;
+    stackBase = stackframe_array();
+    stackTop = word2ptr(ptr2word(stackTop) + newlen);
+    localsBase = word2ptr(ptr2word(localsBase) + newlen);
+#if DEBUG_MEMORY
+	printf("thread=%d, stackTop(%d), localsBase(%d)=%d\n", currentThread->threadId, (int)stackTop, (int)localsBase, (int)(*localsBase));
+#endif
+    for (i=currentThread->stackFrameArraySize-1;
+         i >= 0;
+         i--)
+    {
+    	stackBase[i].localsBase = word2ptr(ptr2word(stackBase[i].localsBase) + newlen);
+   		stackBase[i].stackTop = word2ptr(ptr2word(stackBase[i].stackTop) + newlen);
+#if DEBUG_MEMORY
+	printf("stackBase[%d].localsBase(%d) = %d\n", len, (int)stackBase[i].localsBase, (int)(*stackBase[i].localsBase));
+#endif
+    }
+    
+  	// Assign new array
+  	currentThread->stackArray = newStackArray;
+#endif
   } 
   return true;
 }

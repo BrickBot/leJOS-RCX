@@ -112,16 +112,21 @@ case OP_GETFIELD:
                 get_pgfield_offset(pc[0], pc[1]);
 
     #ifdef DEBUG_FIELDS
-    printf ("--- PUTFIELD ---\n");
+    printf ("--- GETFIELD ---\n");
     printf ("fieldType: %d\n", (int) fieldType);
     printf ("fieldSize: %d\n", (int) fieldSize);
     printf ("wideWord: %d\n", (int) wideWord);
     printf ("reference: %d\n", (int) tempStackWord);
+    printf ("stackTop: %d\n", (int) stackTop);
+    #endif
+
+    #ifdef DEBUG_FIELDS
+    printf ("### get_field base=%d size=%d pushed=%d\n", (int) fbase2, (int) fieldSize, (int) tempStackWord);
     #endif
 
     make_word (fbase2, fieldSize, &tempStackWord);
    
-    #if 0
+    #ifdef DEBUG_FIELDS
     printf ("### get_field base=%d size=%d pushed=%d\n", (int) fbase2, (int) fieldSize, (int) tempStackWord);
     #endif
 
@@ -131,6 +136,11 @@ case OP_GETFIELD:
     else
 #endif
     set_top_word (tempStackWord);
+    #ifdef DEBUG_FIELDS
+    printf("Set top word done\n");
+    if (wideWord)
+    	printf("Wide word\n");
+    #endif
     if (wideWord)
     {
       make_word (fbase2 + 4, 4, &tempStackWord);
@@ -138,6 +148,9 @@ case OP_GETFIELD:
     }
     pc += 2;
   }
+#ifdef DEBUG_FIELDS
+	printf("Going home\n");
+#endif
   goto LABEL_ENGINELOOP;
 case OP_PUTFIELD:
   {

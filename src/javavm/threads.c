@@ -113,13 +113,13 @@ boolean init_thread (Thread *thread)
     return false;
   }
   
-  // Allocate space for stack frames. Can only recurse MAX_STACK_FRAMES times.
-  thread->stackFrameArray = ptr2word (new_primitive_array (T_STACKFRAME, MAX_STACK_FRAMES));
+  // Allocate space for stack frames.
+  thread->stackFrameArray = ptr2word (new_primitive_array (T_STACKFRAME, INITIAL_STACK_FRAMES));
   if (thread->stackFrameArray == JNULL)
     return false;
     
-  // Allocate actual stack storage (STACK_SIZE * 4 bytes)
-  thread->stackArray = ptr2word (new_primitive_array (T_INT, STACK_SIZE));
+  // Allocate actual stack storage (INITIAL_STACK_SIZE * 4 bytes)
+  thread->stackArray = ptr2word (new_primitive_array (T_INT, INITIAL_STACK_SIZE));
   if (thread->stackArray == JNULL)
   {
     free_array (ref2obj(thread->stackFrameArray));

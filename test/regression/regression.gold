@@ -57,7 +57,7 @@
 ----------------- Run of Test13.tvm
 > set_lcd_number (unsigned) 0
 > refresh_display
-> set_lcd_number (unsigned) 3953
+> set_lcd_number (unsigned) 4034
 > refresh_display
 > set_lcd_number program number=5
 > refresh_display
@@ -68,14 +68,22 @@
 --  Root method sig.  : 0
 --  Bytecode offset   : 29
 ----------------- Run of Test14.tvm
-> set_lcd_number (unsigned) 9
+*** UNCAUGHT EXCEPTION/ERROR: 
+--  Exception class   : 7
+--  Thread            : 2
+--  Method signature  : 1
+--  Root method sig.  : 1
+--  Bytecode offset   : 19
+> set_lcd_number (unsigned) 210
 > refresh_display
 *** UNCAUGHT EXCEPTION/ERROR: 
 --  Exception class   : 7
---  Thread            : 1
---  Method signature  : 0
---  Root method sig.  : 0
---  Bytecode offset   : 15
+--  Thread            : 3
+--  Method signature  : 1
+--  Root method sig.  : 1
+--  Bytecode offset   : 23
+> set_lcd_number (unsigned) 59
+> refresh_display
 ----------------- Run of Test26.tvm
 > set_lcd_number (unsigned) 0
 > refresh_display
@@ -600,11 +608,11 @@
 > set_lcd_number (unsigned) 15
 > refresh_display
 ----------------- Run of TestRuntime.tvm
-> set_lcd_number (unsigned) 96
+> set_lcd_number (unsigned) 98
 > refresh_display
-> set_lcd_number (unsigned) 96
+> set_lcd_number (unsigned) 98
 > refresh_display
-> set_lcd_number (unsigned) 15804
+> set_lcd_number (unsigned) 16100
 > refresh_display
 > set_lcd_number (unsigned) 16380
 > refresh_display
