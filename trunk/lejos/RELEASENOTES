@@ -1,7 +1,12 @@
   Lawrie Griffiths has added:
   - a version of javax.servlet.html for writing lejos Web servers
   - example servlets 
-  - an Integer class that imlements toString(int)
+  - an Integer class that implements toString(int)
+  - additional String methods and a new StringUtils class
+  - removal of memory leaks in Button.waitForPressAndRelease and TextLCD.print 
+  - new floatToIntBits and intBitsToFloat native methods to support data streams
+  - fixes and minor enhancements to josx.rcxcomm
+  - improvements to apidocs including inclusion of josx.utils 
 
 leJOS 1.0.5:
 ------------
