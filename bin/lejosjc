@@ -1,0 +1,12 @@
+if [ $OSTYPE == "cygwin" ]; then
+  SEPARATOR=";"
+else
+  SEPARATOR=":"
+fi
+
+if [ -z "$LEJOS_HOME" ]; then
+  echo LEJOS_HOME not defined
+else
+  javac -target 1.1 -bootclasspath "$LEJOS_HOME/lib/classes.jar$SEPARATOR$LEJOS_HOME/lib/rcxrcxcomm.jar$SEPARATOR$CLASSPATH" $*
+fi
+
