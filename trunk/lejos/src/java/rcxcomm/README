@@ -53,15 +53,16 @@ only serial towers are supported for Linux and Mac OS X.
 To compile the RCX program, you use lejosc. An extra jar 
 (rcxrcxcomm.jar) is used automatically.
 
-On the PC or Mac you compile with javac and add pcrcxclasses.jar 
+On the PC or Mac you compile with javac and add pcrcxcomm.jar 
 from the lejos lib directory to your CLASSPATH.
 
 The serial or USB tower is accessed by a dynamically linked library 
 using the Java Native Interface (JNI). On Windows this is irtower.dll
-and needs to be on you path. As it is in the $LEJOS/bin directory, it
+and needs to be on you path. As it is in the lejos bin directory, it
 will normally already be on your PATH. On Linux or Mac OSX, it is a
 shared library, irtower.so, which needs to be on your shared library 
-path. This can be achieved by adding $LEJOS/bin to LD_LIBRARY_PATH.
+path. This can be achieved by adding the lejos bin directory to 
+LD_LIBRARY_PATH.
 
 The port used for the IR Tower can be set in two ways:
 
