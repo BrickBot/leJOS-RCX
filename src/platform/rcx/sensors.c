@@ -13,24 +13,25 @@ sensor_t sensors[3];
 void poll_sensors( void)
 {
   byte i;
-  for( i=0; i<3; i++){
+  sensor_t *pSensor;
+  for( i=0,pSensor=sensors; i<3; i++,pSensor++){
 
 #ifdef ANGLE_DOUBLE_CHECK
     /* we accept a state as valid only if it occurs at least twice in a row */
-    if( ( sensors[i].mode & SENSOR_MODE_MASK ) == SENSOR_MODE_ANGLE){
+    if( ( pSensor->mode & SENSOR_MODE_MASK ) == SENSOR_MODE_ANGLE){
       byte state = angle_state[i];
       angle_state[i] = -1;                 /* prevent value change */
 
-      read_sensor( 0x1000+i, &sensors[i]); /* puts state in angle_state[i] */
+      read_sensor( 0x1000+i, pSensor);   /* puts state in angle_state[i] */
 
       if( angle_state[i] == state          /* state is valid */
           && state != old_angle_state[i]){ /* and has changed */
-        sensors[i].value += (int)delta[old_angle_state[i]][state];
+        pSensor->value += (int)delta[old_angle_state[i]][state];
         old_angle_state[i] = state;
       }
       return;
     }
 #endif
-    read_sensor( 0x1000+i, &sensors[i]);
+    read_sensor( 0x1000+i, pSensor);
   }
 }

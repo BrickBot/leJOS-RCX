@@ -291,10 +291,9 @@ void store_word (byte *ptr, byte aSize, STACKWORD aWord)
 STACKWORD get_word(byte *ptr, byte aSize)
 {
   STACKWORD aWord = 0;
-  byte ctr = 0;
   while (aSize--)
   {
-    aWord = (aWord << 8) | (STACKWORD)(ptr[ctr++]);
+    aWord = (aWord << 8) | (STACKWORD)(*ptr++);
   }
   
   return aWord;
@@ -302,9 +301,10 @@ STACKWORD get_word(byte *ptr, byte aSize)
 
 void store_word (byte *ptr, byte aSize, STACKWORD aWord)
 {
+  ptr += aSize-1;
   while (aSize--)
   {
-    ptr[aSize] = (byte) aWord;
+    *ptr-- = (byte) aWord;
     aWord = aWord >> 8;
   }
 }
@@ -330,10 +330,10 @@ void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr)
   switch (aSize)
   {
     case 1:
-      *aWordPtr = (JINT) (JBYTE) ptr[0];
+      *aWordPtr = (JINT) (JBYTE) (ptr[0]);
       return;
     case 2:
-      *aWordPtr = (JINT) (JSHORT) (((TWOBYTES) ptr[0] << 8) | ptr[1]);
+      *aWordPtr = (JINT) (JSHORT) (((TWOBYTES) ptr[0] << 8) | (ptr[1]));
       return;
     #ifdef VERIFY
     default:
@@ -341,15 +341,15 @@ void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr)
     #endif // VERIFY
   }
   #if LITTLE_ENDIAN
-  ((AuxStackUnion *) aWordPtr)->st.byte0 = ptr[3];  
-  ((AuxStackUnion *) aWordPtr)->st.byte1 = ptr[2];  
-  ((AuxStackUnion *) aWordPtr)->st.byte2 = ptr[1];  
-  ((AuxStackUnion *) aWordPtr)->st.byte3 = ptr[0];  
+  ((AuxStackUnion *) aWordPtr)->st.byte3 = *ptr++;  
+  ((AuxStackUnion *) aWordPtr)->st.byte2 = *ptr++;  
+  ((AuxStackUnion *) aWordPtr)->st.byte1 = *ptr++;  
+  ((AuxStackUnion *) aWordPtr)->st.byte0 = *ptr;  
   #else
-  ((AuxStackUnion *) aWordPtr)->st.byte0 = ptr[0];  
-  ((AuxStackUnion *) aWordPtr)->st.byte1 = ptr[1];  
-  ((AuxStackUnion *) aWordPtr)->st.byte2 = ptr[2];  
-  ((AuxStackUnion *) aWordPtr)->st.byte3 = ptr[3];  
+  ((AuxStackUnion *) aWordPtr)->st.byte0 = *ptr++;  
+  ((AuxStackUnion *) aWordPtr)->st.byte1 = *ptr++;  
+  ((AuxStackUnion *) aWordPtr)->st.byte2 = *ptr++;  
+  ((AuxStackUnion *) aWordPtr)->st.byte3 = *ptr;  
   #endif
 }
 
@@ -396,7 +396,7 @@ TWOBYTES *allocate (TWOBYTES size)
   ptr = allocPtr;
   for (;;)
   {
-    blockHeader = ptr[0];
+    blockHeader = *ptr;
     if (blockHeader & IS_ALLOCATED_MASK)
     {
       TWOBYTES s = (blockHeader & IS_ARRAY_MASK) ? get_array_size ((Object *) ptr) :
@@ -409,7 +409,7 @@ TWOBYTES *allocate (TWOBYTES size)
       {
         allocPtr = ptr + size;
 	if (size < blockHeader)
-          allocPtr[0] = blockHeader - size;
+          *allocPtr = blockHeader - size;
         if (allocPtr >= memoryTop)
           allocPtr = startPtr;
         free -= size;
@@ -439,7 +439,7 @@ void deallocate (TWOBYTES *ptr, TWOBYTES size)
   #endif
 
   free += size;  
-  ptr[0] = size;
+  *ptr = size;
 }
 
 int getHeapSize() {

@@ -43,8 +43,8 @@ case OP_LLOAD:
 case OP_DLOAD:
   // Arguments: 1
   // Stack: +2
-  push_word (get_local_word(pc[0]));
-  push_word (get_local_word(pc[0]+1));
+  push_word (get_local_word(*pc));
+  push_word (get_local_word((*pc)+1));
   pc++;
   goto LABEL_ENGINELOOP;
 case OP_LLOAD_0:
@@ -112,9 +112,8 @@ case OP_LSTORE:
 case OP_DSTORE:
   // Arguments: 1
   // Stack: -1
-  set_local_word (pc[0]+1, pop_word());
-  set_local_word (pc[0], pop_word());
-  pc++;
+  set_local_word ((*pc)+1, pop_word());
+  set_local_word (*pc++, pop_word());
   goto LABEL_ENGINELOOP;
 case OP_LSTORE_0:
 case OP_LSTORE_1:
@@ -138,7 +137,7 @@ case OP_IINC:
   // Arguments: 2
   // Stack: +0
   inc_local_word (pc[0], byte2jint(pc[1]));
-  pc += 2; 
+  pc += 2;
   goto LABEL_ENGINELOOP;
 
 // Notes:

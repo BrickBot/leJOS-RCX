@@ -165,6 +165,7 @@ boolean init_thread (Thread *thread)
 boolean switch_thread()
 {
   Thread *anchorThread, *previousThread, *threadToRun = null, *lastRunnableThread = null;
+  Thread **pThreadQ;
   boolean interruptMe = false;
   boolean nonDaemonRunnable = false;
   StackFrame *stackFrame;
@@ -198,9 +199,9 @@ boolean switch_thread()
   do
   {
     // Loop until a frame is found that can be made to run.
-    for (i=MAX_PRIORITY-1; i >= 0; i--)
+    for (i=MAX_PRIORITY-1, pThreadQ=&threadQ[MAX_PRIORITY-1]; i >= 0; i--, pThreadQ--)
     {
-      previousThread = anchorThread = threadQ[i];
+      previousThread = anchorThread = *pThreadQ;
       if (!previousThread)
         continue;
         
@@ -326,7 +327,7 @@ boolean switch_thread()
   
         // May not be any more threads left of priority 'i' but
         // currentThread should always point at a valid thread.
-        if (threadQ[i] == null) {
+        if (*pThreadQ == null) {
           currentThread = lastRunnableThread;
           break;
         }
@@ -352,7 +353,7 @@ boolean switch_thread()
         {
           threadToRun = currentThread;
           // Move thread to end of queue
-          threadQ[i] = currentThread;
+          *pThreadQ = currentThread;
         }
         
         // Keep looping: cull dead threads, check there's at least one non-daemon thread
@@ -489,9 +490,10 @@ void dequeue_thread(Thread *thread)
 {
   // First take it out of its current queue
   int cIndex = thread->priority-1;
+  Thread **pThreadQ = &threadQ[cIndex];
   
   // Find the previous thread at the old priority
-  Thread *previous = threadQ[cIndex];
+  Thread *previous = *pThreadQ;
   #if DEBUG_THREADS
   printf("Previous thread %ld\n", ptr2word(previous));
   #endif
@@ -506,12 +508,12 @@ void dequeue_thread(Thread *thread)
   #if DEBUG_THREADS
   printf("No more threads of priority %d\n", thread->priority);
   #endif
-    threadQ[cIndex] = null;
+    *pThreadQ = null;
   }
   else
   {
     previous->nextThread = thread->nextThread;
-    threadQ[cIndex] = previous;
+    *pThreadQ = previous;
   }  
 }
 

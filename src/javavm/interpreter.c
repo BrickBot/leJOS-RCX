@@ -63,7 +63,7 @@ void do_goto (boolean aCond)
 {
   if (aCond)
   {
-    pc += (JSHORT) (((TWOBYTES) pc[0] << 8) | pc[1]);
+    pc += (JSHORT) (((TWOBYTES) *pc << 8) | *(pc+1));
     pc--;
   }
   else
