@@ -72,6 +72,7 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 {
 	char *bufp = (char*) buf;
 
+   int fd = fileno(((Port*) port)->fileHandle);
 	fd_set fds;
 
 	struct timeval tv;
@@ -82,12 +83,12 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 	while (len < maxlen) 
 	{
 		FD_ZERO(&fds);
-		FD_SET(((Port*) port)->fileHandle, &fds);
+		FD_SET(fd, &fds);
 
       int selected = TEMP_FAILURE_RETRY (select(FD_SETSIZE, &fds, NULL, NULL, &tv));
 		if (selected > 0)
 		{
-			int count = read(((Port*) port)->fileHandle, &bufp[len], maxlen - len);
+			int count = read(fd, &bufp[len], maxlen - len);
 			if (count < 0) 
 			{
 				perror("read");
@@ -112,18 +113,20 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 
 int __rcx_write(void* port, void* buf, int len) 
 {
-	return write(((Port*) port)->fileHandle, buf, len);
+   int fd = fileno(((Port*) port)->fileHandle);
+	return write(fd, buf, len);
 }
 
 void __rcx_purge(void* port)
 {
-	char echo[BUFFERSIZE];
-	__rcx_read(port, echo, BUFFERSIZE, 1);
+   int fd = fileno(((Port*) port)->fileHandle);
+	_fpurge(fd)
 }
 
 void __rcx_flush(void* port)
 {
-	fsync(((Port*) port)->fileHandle);
+   int fd = fileno(((Port*) port)->fileHandle);
+	fflush(fd);
 }
 
 void* __rcx_open(char *tty, bool fast)
@@ -139,8 +142,8 @@ void* __rcx_open(char *tty, bool fast)
    if (__comm_debug) printf("device = %s\n", result->deviceName);
 	if (__comm_debug) printf("port type = %s\n", result->usb? "usb" : "serial");
 
-	result->fileHandle = open(result->deviceName, O_RDWR);
-	if (result->fileHandle < 0) 
+	result->fileHandle = fopen(result->deviceName, O_RDWR);
+	if (result->fileHandle == BADFILE) 
 	{ 
 		if (__comm_debug) printf("Error %lu: Opening %s\n", errno, result->deviceName);
 		success = false;
@@ -154,9 +157,9 @@ void* __rcx_open(char *tty, bool fast)
 
 	if (!success)
 	{
-		if (result->fileHandle >= 0)
+		if (result->fileHandle != BADFILE)
 		{
-			close(result->fileHandle);
+			fclose(result->fileHandle);
 		}
 		free(result);
 		return NULL;
@@ -195,6 +198,8 @@ void __rcx_open_setDevice (Port* port, char* symbolicName, bool fast)
 
 bool __rcx_open_setSerialPortParameters (Port* port)
 {
+   int fd = fileno(((Port*) port)->fileHandle);
+
 	struct termios ios;
 	memset(&ios, 0, sizeof(ios));
     
@@ -211,11 +216,11 @@ bool __rcx_open_setSerialPortParameters (Port* port)
 		cfsetospeed(&ios, B2400);
 	}
     
-	return tcsetattr(port->fileHandle, TCSANOW, &ios) != -1;
+	return tcsetattr(fd, TCSANOW, &ios) != -1;
 }
 
 void __rcx_close(void* port)
 {
-	close(((Port*) port)->fileHandle);
+	fclose(((Port*) port)->fileHandle);
 	free(port);
 }
