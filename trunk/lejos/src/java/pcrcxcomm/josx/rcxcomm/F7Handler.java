@@ -62,21 +62,36 @@ public class F7Handler extends PacketHandler {
       for(int i=0;i<bytesRead;i++) s += " " + buffer[i];
       System.out.println(s);
     }
-    if (bytesRead < 9) {
-      if (debug) System.out.println("Less than 9 bytes");
+
+    // ignore leading 0x55
+    int start = buffer[0] == (byte)0x55 ? 1 : 0;
+
+    if (bytesRead-start < 8) {
+      if (debug) System.out.println("Packet too short");
       bytesRead = 0;
       return 0;
     }
-    if (buffer[0]==(byte)0x55 && buffer[1]==(byte)0xff && buffer[2]==(byte)0x00)
-      if (buffer[3] == ~buffer[4] && buffer[3] == (byte)0xf7)
-        if (buffer[5] == ~buffer[6]) {
-          packet[0] = buffer[3];
-          packet[1] = buffer[5];
-          if (debug) System.out.println("Read " + packet[1]);
-          bytesRead = 0;
-          return 2;
-        }
-    return -1;
+
+    // check complements
+    for (int i = start; i < bytesRead-1; i += 2) {
+      if (buffer[i] != ~buffer[i+1]) {
+        return -1;
+      }
+    }
+    bytesRead = 0;
+
+    // check for format and send message command
+    if (buffer[start] != (byte)0xff
+        || buffer[start+2] != (byte)0xf7) {
+      return -1;
+    }
+    // extract payload
+    packet[0] = buffer[start+2];
+    packet[1] = buffer[start+4];
+    if (debug) {
+       System.out.println("Read " + packet[1]);
+    }
+    return 2;
   }
 
   /**
