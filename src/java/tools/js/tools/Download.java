@@ -65,7 +65,7 @@ public class Download
     }
     catch (TowerException e)
     {
-      throw new ToolException("Unable to open tower: +" + e.getMessage(), e);
+      throw new ToolException(e.getMessage(), e);
     }
 
     if (!_tower.isRCXAlive())
