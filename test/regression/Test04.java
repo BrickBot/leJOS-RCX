@@ -1,7 +1,7 @@
 
 // Basic object creation and field access
 
-import tinyvm.rcx.*;
+import josx.platform.rcx.*;
 
 public class Test04
 {

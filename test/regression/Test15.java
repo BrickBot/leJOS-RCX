@@ -1,7 +1,7 @@
 
 // Sensor test
 
-import tinyvm.rcx.*;
+import josx.platform.rcx.*;
 
 public class Test15
 { 

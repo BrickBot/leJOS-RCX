@@ -1,7 +1,7 @@
 
 // Test for motor control & exception catching
 
-import tinyvm.rcx.*;
+import josx.platform.rcx.*;
 
 public class Test06
 {

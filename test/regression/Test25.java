@@ -1,4 +1,4 @@
-import tinyvm.rcx.*;
+import josx.platform.rcx.*;
 
 public class Test25
 {

@@ -1,7 +1,7 @@
 
 // Throw exception inside synchronized block
 
-import tinyvm.rcx.ROM;
+import josx.platform.rcx.ROM;
 
 public class Test10
 {

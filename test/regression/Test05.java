@@ -1,7 +1,7 @@
 
 // Test for arrays
 
-import tinyvm.rcx.*
+import josx.platform.rcx.*
 ;
 
 public class Test05

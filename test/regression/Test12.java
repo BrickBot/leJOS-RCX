@@ -1,7 +1,7 @@
 
 // Simple anonymous threads
 
-import tinyvm.rcx.*;
+import josx.platform.rcx.*;
 
 public class Test12
 { 

@@ -1,7 +1,7 @@
 
 // Memory overflow test
 
-import tinyvm.rcx.*;
+import josx.platform.rcx.*;
 import josx.util.Test;
 
 public class Test13
