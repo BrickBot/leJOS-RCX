@@ -24,6 +24,8 @@ case OP_NEW:
 // (Work-around for bug)
 
 case OP_GETSTATIC:
+case OP_PUTSTATIC:
+  // Stack: +1 or +2 for GETSTATIC, -1 or -2 for PUTSTATIC
   {
     byte *fieldBase;
     STATICFIELD fieldRecord;
@@ -31,8 +33,7 @@ case OP_GETSTATIC:
     byte numWordsMinus1;
 
     #if DEBUG_FIELDS
-    printf ("  OP_GETSTATIC: %d, %d, %d, %d\n", (int) pc[0], (int) pc[1], 
-            (int) doPut, (int) aStatic);
+    printf ("  OP_GET/PUTSTATIC: %d, %d\n", (int) pc[0], (int) pc[1]);
     #endif
 
     if (dispatch_static_initializer (get_class_record (pc[0]), pc - 1))
@@ -47,9 +48,18 @@ case OP_GETSTATIC:
     printf ("-- fieldBase  = %d\n", (int) fieldBase);
     #endif
 
-    make_word (fieldBase, fieldSize, ++stackTop);
-    if (numWordsMinus1)
-      make_word (fieldBase + 4, fieldSize, ++stackTop);
+    if (*(pc-1) == OP_GETSTATIC)
+    {
+      make_word (fieldBase, fieldSize, ++stackTop);
+      if (numWordsMinus1)
+        make_word (fieldBase + 4, 4, ++stackTop);
+    }
+    else
+    {
+      if (numWordsMinus1)
+        save_word (fieldBase + 4, 4, *stackTop--);
+      save_word (fieldBase, fieldSize, *stackTop--);
+    }
     pc += 2;
   }
   goto LABEL_ENGINELOOP;
@@ -58,12 +68,58 @@ case OP_GETSTATIC:
 
 case OP_GETFIELD:
 case OP_PUTFIELD:
-case OP_PUTSTATIC:
-  // Stack: (see method)
   // Arguments: 2
-  pc--;
-  handle_field (pc[1], pc[2], (pc[0] & 0x01), (pc[0] < OP_GETFIELD), pc);
-  pc += 3;
+  {
+    byte *fieldBase;
+    byte fieldSize;
+    byte numWordsMinus1;
+    boolean doPut;
+
+    #if DEBUG_FIELDS
+    printf ("OP_GET/PUTFIELD: %d, %d\n", (int) pc[0], (int) pc[1]);
+    #endif
+
+    doPut = (*(pc-1) == OP_PUTFIELD);
+    fieldSize = ((pc[0] >> F_SIZE_SHIFT) & 0x03) + 1;
+    numWordsMinus1 = pc[0] >> 7;
+    if (doPut)
+      stackTop -= (numWordsMinus1 + 1);
+
+    #if DEBUG_FIELDS
+    printf ("-- numWords-1    = %d\n", (int) numWordsMinus1);
+    printf ("-- stackTop[0,1] = %d, %d\n", (int) stackTop[0], (int) stackTop[1]);
+    #endif
+
+    if (stackTop[0] == JNULL)
+    {
+      throw_exception (nullPointerException);
+      goto LABEL_ENGINELOOP;
+    }
+    fieldBase = ((byte *) word2ptr (stackTop[0])) + 
+                (((TWOBYTES) (pc[0] & F_OFFSET_MASK) << 8) | pc[1]);
+    if (doPut)
+      stackTop++;
+
+    #if DEBUG_FIELDS
+    printf ("-- fieldSize  = %d\n", (int) fieldSize);
+    printf ("-- fieldBase  = %d\n", (int) fieldBase);
+    #endif
+
+    if (doPut)
+    {
+      if (numWordsMinus1)
+        save_word (fieldBase + 4, 4, stackTop[1]);
+      save_word (fieldBase, fieldSize, stackTop[0]);
+      stackTop -= 2;
+    }
+    else
+    {
+      make_word (fieldBase, fieldSize, stackTop);
+      if (numWordsMinus1)
+        make_word (fieldBase + 4, 4, ++stackTop);
+    }
+    pc += 2;
+  }
   goto LABEL_ENGINELOOP;
 case OP_INSTANCEOF:
   // Stack: unchanged
