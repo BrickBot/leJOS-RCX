@@ -23,45 +23,20 @@ public class RCXInputStream extends InputStream {
   private Listener listener;
   private boolean portOpen = true;
   private int timeout = DEFAULT_TIMEOUT;
+  private PacketHandler packetHandler;
   
   /** Creates new RCXInputStream
    */
   public RCXInputStream() {
     super();
+    packetHandler = (PacketHandler) new LLCReliableHandler(
+                       (PacketHandler) new LLCHandler());
     buffer = new byte[bufferSize];
     ioe = new IOException();
     listener = new Listener();
     listener.setDaemon(true);
     listener.start();
   }
-
-  /** Send a byte using Serial.sendPacket.
-   * The 0xf7 (internal message) byte-code is used to send the byte.
-   * This is the only Lego-defined packet that can be sent in either direction, 
-   * and has no response.
-   * @param b a byte  to send
-   * @throws IOException is not thrown.
-   */
-  private byte[] packet = {(byte)0xf7, (byte)0x00};
-  private void sendByte(byte b) throws IOException {
-    packet[1] = b;
-    Serial.sendPacket(packet, 0, 2);
-  }
-
-  /** Check if data is available using RCX Serial Class.
-   */
-  private boolean dataAvailable() {
-    return Serial.isPacketAvailable();
-  }
-
-  /** Receive a byte using Serial.readPacket.
-   * @throws IOException is not thrown.
-   */
-  private static byte[] buff = new byte[2];
-  private byte receiveByte() throws IOException {
-    Serial.readPacket(buff);
-    return buff[1];
-  }  
 
   /** Setter for timeout
    * @param timeout the timeout
@@ -70,19 +45,17 @@ public class RCXInputStream extends InputStream {
     this.timeout = timeout;
   }
 
+   private byte [] inPacket = new byte[2];
+
   /** Listener class runs a thread that reads and buffers bytes.
    *  It send a complement of the byte as an acknowledgement.
    */
   private class Listener extends Thread {
-    byte in;
     public void run() {
       while (portOpen) {
-        if (dataAvailable()) {
-          try {
-            in = receiveByte();
-            sendByte((byte)~in); 
-            add(in);
-          } catch (IOException ioE) { }
+        if (packetHandler.isPacketAvailable()) {
+          int r = packetHandler.receivePacket(inPacket);
+          for(int i=0;i<r;i++) add(inPacket[i]);
         }
         try {
           Thread.sleep(10);
