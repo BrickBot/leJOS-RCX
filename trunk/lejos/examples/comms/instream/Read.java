@@ -1,5 +1,6 @@
 import java.io.*;
 import josx.rcxcomm.*;
+import josx.platform.rcx.*;
 
 /** Very simple example of using RCXInputStream on the RCX
  * Communicates with Write.java on the PC
@@ -8,7 +9,7 @@ import josx.rcxcomm.*;
 public class Read {
   public static void main (String [] args) throws IOException {
     RCXInputStream in = new RCXInputStream();
-    in.read();
+    LCD.showNumber(in.read());
     try {
       Thread.sleep(1000);
     }
