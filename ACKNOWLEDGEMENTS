@@ -1,0 +1,40 @@
+
+Jose's comments (02/28/00):
+---------------------------
+
+- TinyVM is linked with Kekoa Proudfoot's rcx library.
+
+- TinyVM sources include "rom.h" from Kekoa Proudfoot's
+  librcx.
+
+- Several files were copied from Kekoa's librcx, 
+  and modified slightly.
+
+- I've read Kekoa's RCX internals page, especially
+  the ROM disassembly and the bytecode specification,
+  without which I couldn't have written the code necessary
+  to download Java programs into the RCX.
+
+- Dave Baum's email dated 29 Aug 1998, with subject
+  "RE: Lego Mindstorms Page," describing the packet
+  format, was very helpful in understanding how
+  RCX communication works.
+
+- An article that appeared in Dr. Dobb's Journal a
+  few months ago by Markus Noga about legOS, is what
+  led me to purchase the RIS and later to write
+  this firmware replacement program. (The name TinyVM
+  probably came from a comment about his tiny OS).
+
+- Needless to say, I've read some of the legOS
+  files.
+
+- I'd like to thank anyone else who has played
+  a part in understanding the workings of the RCX.
+
+- SPECIAL THANKS to my wife, Erika, for putting up 
+  with me during the development of this project.
+
+
+
+

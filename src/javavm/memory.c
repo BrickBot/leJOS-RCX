@@ -44,7 +44,7 @@ byte typeSize[] = {
 /**
  * Top of the free block list.
  */
-static TWOBYTES freeOffset = NULL_OFFSET;
+static TWOBYTES freeOffset;
 
 /**
  * Beginning of heap.
@@ -288,6 +288,8 @@ void init_memory (void *ptr, TWOBYTES size)
   #endif
 
   startPtr = ptr;
+  freeOffset = NULL_OFFSET;
+  currentThread = null;
   #if DEBUG_MEMORY
   printf ("Setting start of memory to %d\n", (int) startPtr);
   printf ("Going to reserve %d words\n", size);
@@ -303,6 +305,9 @@ TWOBYTES *allocate (TWOBYTES size)
   register TWOBYTES *ptr;
   TWOBYTES *anchorOffsetRef;
 
+  #if DEBUG_MEMORY
+  printf ("Allocating %d words.\n", size);
+  #endif
   anchorOffsetRef = &freeOffset;
   while (*anchorOffsetRef != NULL_OFFSET)
   { 

@@ -4,12 +4,14 @@ Summary
 
 TINYVM_HOME=<installation directory>
 TINYVMPATH=<like classpath>
+RCXTTY=<serial device>
 PATH=$PATH:$TINYVM_HOME/bin
-Build      : cd $TINYVM_HOME; make
+
+Tools      : cd $TINYVM_HOME; make
 Firmware   : tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
 Compilation: tvmc <class>.java
 Linking    : tvmld <class> -o <class>.tvm
-Loading    : tvm <class>.tvm
+Running    : tvm <class>.tvm
 
 What is TinyVM?
 ---------------
@@ -28,21 +30,27 @@ How does it work?
 
 The virtual machine (tinyvm.srec) contains all
 the code necessary to execute (post-processed)
-Java bytecodes. This is essentially a firmware
-replacement program.
+Java bytecodes. It's yet another firmware
+replacement, like Markus Noga's legOS.
 
 To keep the VM's footprint as small as possible,
 no class-loading code was included in it. Instead,
 classes are linked together into a compact and
 resolved binary format, which is downloaded into
-the RCX for execution.
+the RCX for execution. (See vmsrc/language.h and
+jtools/js/tinyvm/Binary.java for details on the
+format).
+
+The RCX is controlled from Java through native
+APIs. (See common/signatures.db and vmsrc/native.c).
 
 Limitations
 -----------
 
 Due to size constraints, some language features
-have been omitted. Others haven't been implemented 
-yet. The limitations that come to mind are:
+have been omitted. Others just haven't been 
+implemented yet. The limitations that come to 
+mind are:
 
   - Garbage collection is not performed.
     (The number of objects in your program
@@ -52,6 +60,9 @@ yet. The limitations that come to mind are:
   - Operations on variables of type long are not 
     suported.
   - Strings aren't totally supported.
+  - There are no objects of type java.lang.Class, 
+    which means that the ".class" construct won't
+    work. Class.forName() throws NoSuchMethorError.
   - Most JDK APIs are unavailable, of course.
 
 Requirements
@@ -76,19 +87,32 @@ Environment:
   - You should adjust your PATH so that the 
     scripts under $TINYVM_HOME/bin can be
     easily executed.
+  - RCXTTY must be defined to point to the
+    IR device file. For example, in my system
+    it's /dev/ttyS1. I suspect that in most
+    Linux systems you have to define it as
+    /dev/ttyS0. In Windows (assuming TinyVM
+    has been ported) it would be COM1, COM2,
+    etc.
   - Before linking, TINYVMPATH should contain
     entries for locating class files, jar files
     or zip files. It works pretty much like
     CLASSPATH does for the JDK.
 
 Building the Tools:
-  - If the setup is right, simply typing 'make'
-    while at $TINYVM_HOME, should build all the
-    tools necessary to start using TinyVM.
+  If the setup is right, simply typing 'make'
+  while at $TINYVM_HOME, should build all the
+  tools necessary to start using TinyVM.
 
 Downloading the Firmware:
-  - Simply run:
-    tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
+  Simply run:
+  tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
+
+Deleting the Firmware:
+  When the TinyVM firmware is ready to download 
+  linked binaries, you can remove the firmware
+  by holding both the Prgm and Run buttons down
+  while you press the On-Off button. 
 
 Running a Example
 -----------------
@@ -103,19 +127,53 @@ Running a Example
 
   3. Compile the program.
 
-     javac *.java
+     tvmc *.java
+
+     Note that this is equivalent to
+
+     javac -classpath .:$TINYVM_HOME/lib/classes.jar *.java 
 
   4. Link the program.
 
      tvmld HelloRCX -o HelloRCX.tvm
 
+     This will create the HelloRCX.tvm file,
+     which can be downloaded into the RCX.
+
   5. Download firmware, if necessary.
 
      tvmfirmdl $TINYVM_HOME/bin/tinyvm.srec
 
+     This may take a minute or so. When the
+     firmware is done getting downloaded, you
+     should hear a beep, and the LCD should 
+     show look pretty much like this: [ 0000 0]
+
   6. Download the program.
 
      tvm HelloRCX.tvm
+ 
+     The LCD will show the download count as 
+     the number of bytes divided by 100. Then 
+     TinyVM will execute the program. As soon 
+     as all threads are finished, the firmware 
+     will return to program-download state.
+
+Emulation
+---------
+
+You should be able to run linked programs in the 
+development machine. All you need to do is use
+tvmld-emul instead of tvmld, and tvm-emul instead
+of tvm.
+
+Questions/Problems
+------------------
+
+Please contact Jose at jhsolorz@yahoo.com if you 
+have any questions, problems, or if you'd like to
+contribute to TinyVM in any way.
+
 
 
 

@@ -39,7 +39,7 @@ OUTPUT_ARCH(h8300)
 ENTRY(__start)
 MEMORY
 {
-    mem : o = 0x8000, l = 0x6f30
+    mem : o = 0x8000, l = 0x6f00
 }
 SECTIONS
 {

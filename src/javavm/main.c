@@ -29,9 +29,9 @@ Thread *bootThread;
 
 #define MEM_START      (&_end)
 #define RAM_START_ADDR 0x8000
-#define RAM_SIZE       0x6F30
+#define RAM_SIZE       0x6F00
 #define MEM_END_ADDR   (RAM_START_ADDR + RAM_SIZE)
-#define MEM_END        ((void *) MEM_END_ADDR)
+#define MEM_END        ((char *) MEM_END_ADDR)
 #define BUFSIZE        6
 #define TDATASIZE      100
 #define MAXNEXTBYTEPTR (MEM_END - TDATASIZE)
@@ -109,12 +109,12 @@ int main (void)
   init_timer (&timerdata0, &timerdata1[0]);
   init_power();
   init_serial (&state0, &state1, 1, 1);
-  set_data_pointer (MEM_START);
  LABEL_DOWNLOAD:
+  set_data_pointer (MEM_START);
   set_lcd_number (LCD_UNSIGNED, (short) 0, 3002);
   set_lcd_number (LCD_PROGRAM, (short) 0, 0);
   refresh_display();
-  continueFlag = false;
+  continueFlag = true;
   i = 1;
   do {
     check_for_data (&valid, &nextByte);
@@ -175,7 +175,7 @@ int main (void)
   #endif
   init_memory (nextByte, ((TWOBYTES) MEM_END - (TWOBYTES) nextByte) / 2);
   // Initialize special exceptions
-  #if DEBUG_RCX
+  #if 0
   debug (-1, ((TWOBYTES) MEM_END - (TWOBYTES) nextByte) / 2, 2);
   #endif
   init_exceptions();
@@ -192,10 +192,6 @@ int main (void)
   #endif
   engine();
   // Engine returns when all threads are done
-  #if DEBUG_RCX
-  wait_for_power_press();
-  debug (-1, (short) get_class_record(0)->classSize, 5);
-  #endif
   if (continueFlag)
     goto LABEL_DOWNLOAD;
  LABEL_EXIT:

@@ -14,5 +14,4 @@
 #define CALLROM1_V 7
 #define CALLROM2_V 8
 #define CALLROM3_V 9
-#define _TVM_MAIN_METHOD_V 10
 #endif _SPECIALSIGNATURES_H

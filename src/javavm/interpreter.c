@@ -17,9 +17,9 @@ extern char *OPCODE_NAME[];
 // Interpreter globals:
 
 boolean gMustExit;
-byte *pc = null;
-STACKWORD *localsBase = null;
-STACKWORD *stackTop = null;
+byte *pc;
+STACKWORD *localsBase;
+STACKWORD *stackTop;
 
 // Temporary globals:
 
