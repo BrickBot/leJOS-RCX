@@ -7,5 +7,5 @@ fi
 if [ -z "$LEJOS_HOME" ]; then 
   echo LEJOS_HOME is not defined
 else
-  java -classpath "$LEJOS_HOME/lib/jtools.jar$SEPARATOR$LEJOS_HOME/lib/pcrcxcomm.jar" js.tools.Firmdl $*
+  java -Djava.library.path="$LEJOS_HOME/bin" -classpath "$LEJOS_HOME/lib/jtools.jar$SEPARATOR$LEJOS_HOME/lib/pcrcxcomm.jar" js.tools.Firmdl $*
 fi
