@@ -28,11 +28,7 @@ CC=$(shell ../../cctest.sh)
 
 OS=$(shell echo $$OSTYPE)
 
-ifeq ($(OS),linux-gnu)
-CFLAGS = -O2 -DLINUX
-else
 CFLAGS = -O2 
-endif
 
 FIRMDL_OBJ = firmdl.o srec.o rcx_comm.o util.o
 

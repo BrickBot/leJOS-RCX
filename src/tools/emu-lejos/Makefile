@@ -15,11 +15,7 @@ CC=$(shell ../cctest.sh)
 
 OS=$(shell echo $$OSTYPE)
 
-ifeq ($(OS),linux-gnu)
-CCOPT=-I../vmsrc -Wall -Wno-unused -O2 -DLINUX
-else
-CCOPT=-I../vmsrc -Wall -Wno-unused -O2
-endif
+CCOPT=-I../vmsrc -Wall -Wno-unused -O2 
 
 LIBS=
 ifneq (,$(findstring darwin,$(OSTYPE)))

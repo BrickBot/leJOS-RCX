@@ -667,7 +667,7 @@ int main (int argc, char **argv)
         usb_flag = 1;
         if ( __comm_debug) fprintf(stderr, "USB IR Tower mode.\n");
 
-#if defined(LINUX) 
+#if defined(LINUX) || defined(linux)
 	tty = "/dev/lego0";
 #endif
     }
