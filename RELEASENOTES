@@ -1,12 +1,15 @@
 
-Version 1.0.0:
---------------
+leJOS 1.0.0:
+------------
 
   - CompactVM is born out of TinyVM. Versions starting
     with 0 are TinyVM versions, whereas versions starting
     with 1 are CompactVM versions.
+  - Catching up with TinyVM. This is ongoing. Refer to
+    TinyVM release notes for 0.1.4 and up.
+  
 
-Version 0.1.3:
+TinyVM 0.1.3:
 --------------
 
   - Found that the hello example did not compile in
@@ -41,7 +44,7 @@ Version 0.1.3:
     Test13 creates 4238 objects.
     Firmware download count: ~1020
 
-Version 0.1.2:
+TinyVM 0.1.2:
 --------------
 
   - Fixed serial comm bug. (If you tried to download
@@ -95,7 +98,7 @@ Version 0.1.2:
     Test13 creates 4262 objects.
     The firmware download count is about 1000.    
 
-Version 0.1.1:
+TinyVM 0.1.1:
 --------------
 
   - Fixed PUTSTATIC bug. (Setting a static field

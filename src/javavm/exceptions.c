@@ -64,6 +64,9 @@ void throw_exception (Object *exception)
  LABEL_PROPAGATE:
   if (currentThread->state == DEAD)
   {
+    // TBD: There seems to be a problem here: do_return must have
+    // switched the currentThread already.
+
     #ifdef EMULATE
     printf ("*** UNCAUGHT EXCEPTION: \n");
     printf ("--  Exception class   : %d\n", (int) get_class_index (exception));

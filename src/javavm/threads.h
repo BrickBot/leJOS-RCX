@@ -5,9 +5,9 @@
 #ifndef _THREADS_H
 #define _THREADS_H
 
-#define RUNNING 0
-#define WAITING 1
-#define DEAD    2
+#define DEAD    0 /* Must be zero; see java.lang.Thread#isAlive */
+#define RUNNING 1
+#define WAITING 2
 #define STARTED 3
 
 #define SF_SIZE (sizeof(StackFrame))

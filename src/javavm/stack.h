@@ -72,19 +72,19 @@ static inline void update_constant_registers (StackFrame *stackFrame)
   isReferenceBase = stackFrame->isReferenceBase;
 }
 
-static inline void push_word (STACKWORD word)
+static inline void push_word (const STACKWORD word)
 {
   *(++stackTop) = word;
   *(++isReference) = false;
 }
 
-static inline void push_ref (REFERENCE word)
+static inline void push_ref (const REFERENCE word)
 {
   *(++stackTop) = word;
   *(++isReference) = true;
 }
 
-static inline void push_word_or_ref (REFERENCE word, boolean aIsReference)
+static inline void push_word_or_ref (const REFERENCE word, const boolean aIsReference)
 {
   *(++stackTop) = word;
   *(++isReference) = aIsReference;
@@ -108,7 +108,7 @@ static inline JINT pop_jint (void)
   return word2jint(*stackTop--);
 }
 
-static inline STACKWORD pop_word_or_ref (boolean aIsReference)
+static inline STACKWORD pop_word_or_ref (const boolean aIsReference)
 {
   --isReference;
   return *stackTop--;

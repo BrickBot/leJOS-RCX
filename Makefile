@@ -76,7 +76,7 @@ core_classes:
 
 javadoc:
 	if [ ! -d apidocs ]; then mkdir apidocs; fi
-	${JAVADOC} -d apidocs -sourcepath classes java.lang tinyvm.rcx
+	${JAVADOC} -author -d apidocs -sourcepath classes java.io java.lang java.util josx.platform.rcx
 
 clean:
 	rm -rf `find . -name '*.class'`
