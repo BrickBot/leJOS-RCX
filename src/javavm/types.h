@@ -1,20 +1,27 @@
 
+#include "platform_config.h"
+
 #ifndef _TYPES_H
 #define _TYPES_H
 
 typedef unsigned char byte;
 typedef byte boolean;
-typedef unsigned short TWOBYTES;
-typedef unsigned long FOURBYTES;
-typedef FOURBYTES REFERENCE;
-typedef FOURBYTES STACKWORD;
 
-typedef signed char JBYTE;
-typedef signed short JCHAR;
-typedef JCHAR JSHORT;
-typedef boolean JBOOLEAN;
-typedef signed long JINT;
-typedef float JFLOAT;
+/*
+ * The following types must be defined in platform_config.h:
+ * JBYTE
+ * JSHORT
+ * JINT
+ * TWOBYTES
+ * FOURBYTES
+ */
+
+
+typedef float        JFLOAT;
+typedef JBYTE        JBOOLEAN;
+typedef JSHORT       JCHAR;
+typedef FOURBYTES    REFERENCE;
+typedef FOURBYTES    STACKWORD;
 
 typedef union
 {
@@ -28,7 +35,6 @@ typedef struct
   STACKWORD lo;
 } JLONG;
 
-#include "platform_config.h"
 
 #ifndef LITTLE_ENDIAN
 #error LITTLE_ENDIAN not defined in platform_config.h

@@ -71,14 +71,18 @@ public class Button
    */
   public synchronized void addButtonListener (ButtonListener aListener)
   {
-    iListeners[iNumListeners++] = aListener;
     if (!LISTENER_THREAD.isAlive())
     {
       // Hack: Force initialization of Native
-      Native.getDataAddress (null);    
+      Native.getDataAddress (null);
+      // Initialize each button
+      VIEW.iNumListeners = 0;
+      RUN.iNumListeners = 0;
+      PRGM.iNumListeners = 0;      
       // Start thread
       LISTENER_THREAD.start();
     }
+    iListeners[iNumListeners++] = aListener;
   }
 
   /**
