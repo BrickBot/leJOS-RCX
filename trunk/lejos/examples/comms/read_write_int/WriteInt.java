@@ -16,16 +16,16 @@ public class WriteInt {
 
   public static void main(String[] args) {
 
-    RCXPort port = new RCXPort();
+    try {
 
-    InputStream is = port.getInputStream();
-    OutputStream os = port.getOutputStream();
-    DataInputStream dis = new DataInputStream(is);
-    DataOutputStream dos = new DataOutputStream(os);
+      RCXPort port = new RCXPort();
 
-    for(int i=0;i<5;i++) {
-      try {
+      InputStream is = port.getInputStream();
+      OutputStream os = port.getOutputStream();
+      DataInputStream dis = new DataInputStream(is);
+      DataOutputStream dos = new DataOutputStream(os);
 
+      for(int i=0;i<5;i++) {
         System.out.println("Sending " + i);
 
         dos.writeInt(i);
@@ -36,8 +36,8 @@ public class WriteInt {
         System.out.println("Received " + n);
 
       }
-      catch (Exception e) {
-      }
+    }
+    catch (Exception e) {
     }
   }
 }

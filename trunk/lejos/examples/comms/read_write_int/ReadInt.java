@@ -16,15 +16,15 @@ public class ReadInt {
 
   public static void main(String[] args) {
 
-    RCXPort port = new RCXPort();
+    try {
+      RCXPort port = new RCXPort();
 
-    InputStream is = port.getInputStream();
-    OutputStream os = port.getOutputStream();
-    DataInputStream dis = new DataInputStream(is);
-    DataOutputStream dos = new DataOutputStream(os);
+      InputStream is = port.getInputStream();
+      OutputStream os = port.getOutputStream();
+      DataInputStream dis = new DataInputStream(is);
+      DataOutputStream dos = new DataOutputStream(os);
 
-    while (true) {
-      try {
+      while (true) {
 
         int n = dis.readInt();
 
@@ -32,8 +32,8 @@ public class ReadInt {
         dos.flush();
 
       }
-      catch (Exception e) {
-      }
+    }     
+    catch (Exception e) {
     }
   }
 }
