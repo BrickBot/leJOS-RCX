@@ -17,6 +17,8 @@ public class Tower
    // java implementation
    //
 
+   public static final int DEFAULT_READ_TIMEOUT = 100;
+   
    private String _tty;
    private boolean _isOpen;
 
@@ -115,9 +117,22 @@ public class Tower
     */
    public int readBytes (byte[] data) throws TowerException
    {
-      assert data != null: "Precondition: data != null";
+      return readBytes(data, DEFAULT_READ_TIMEOUT);
+   }
 
-      int result = read(data);
+   /**
+    * Low-level read.
+    * 
+    * @param data buffer to receive bytes
+    * @param timeout read timeout in ms
+    * @return number of bytes read
+    */
+   public int readBytes (byte[] data, int timeout) throws TowerException
+   {
+      assert data != null: "Precondition: data != null";
+      assert timeout > 0: "Precondition: timeout > 0";
+
+      int result = read(data, timeout);
       if (result < 0)
       {
          throw new TowerException(result);
@@ -135,7 +150,22 @@ public class Tower
     */
    public int receivePacket (byte[] data) throws TowerException
    {
-      int result = receive(data);
+      return receivePacket(data, DEFAULT_READ_TIMEOUT);
+   }
+
+   /**
+    * Receive a packet.
+    * 
+    * @param data buffer to receive packet
+    * @param timeout read timeout in ms
+    * @return number of bytes read
+    */
+   public int receivePacket (byte[] data, int timeout) throws TowerException
+   {
+      assert data != null: "Precondition: data != null";
+      assert timeout > 0: "Precondition: timeout > 0";
+
+      int result = receive(data, timeout);
       if (result < 0)
       {
          throw new TowerException(result);
@@ -155,6 +185,20 @@ public class Tower
    public int sendPacketReceivePacket (byte[] data, byte[] response, int retries)
       throws TowerException
    {
+      return sendPacketReceivePacket(data, response, retries, DEFAULT_READ_TIMEOUT);
+   }
+
+   /**
+    * Send a packet and retrieve answer.
+    * 
+    * @param data bytes to send
+    * @param response buffer to receive packet
+    * @param timeout read timeout in ms
+    * @return number of bytes read
+    */
+   public int sendPacketReceivePacket (byte[] data, byte[] response, int retries, int timeout)
+      throws TowerException
+   {
       TowerException towerException = null;
       int numRead = -1;
       for (; retries > 0; retries--)
@@ -163,7 +207,7 @@ public class Tower
          try
          {
             sendPacket(data);
-            numRead = receivePacket(response);
+            numRead = receivePacket(response, timeout);
             break;
          }
          catch (TowerException e)
@@ -285,6 +329,7 @@ public class Tower
     * @param b bytes to send
     * @param n number of bytes
     * @return error number
+    * @deprecated do not call native methods, use #writeBytes instead
     */
    protected final native int write (byte b[], int n);
 
@@ -294,6 +339,7 @@ public class Tower
     * @param b packet to send
     * @param n number of bytes
     * @return error number
+    * @deprecated do not call native methods, use #sendPacket instead
     */
    protected final native int send (byte b[], int n);
 
@@ -301,17 +347,21 @@ public class Tower
     * Low-level read.
     * 
     * @param b buffer to receive bytes
+    * @param timeout read timeout in ms
     * @return number of bytes read
+    * @deprecated do not call native methods, use #readBytes instead
     */
-   protected final native int read (byte b[]);
+   protected final native int read (byte b[], int timeout);
 
    /**
     * Receive a packet.
     * 
     * @param b buffer to receive packet
+    * @param timeout read timeout in ms
     * @return number of bytes read
+    * @deprecated do not call native methods, use #receivePacket instead
     */
-   protected final native int receive (byte b[]);
+   protected final native int receive (byte b[], int timeout);
 
    /**
     * JNI init.

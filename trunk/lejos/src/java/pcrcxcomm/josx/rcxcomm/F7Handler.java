@@ -139,7 +139,7 @@ public class F7Handler extends PacketHandler
          return true;
 
       // Read 9 bytes into the buffer
-      bytesRead = tower.read(buffer);
+      bytesRead = tower.read(buffer, Tower.DEFAULT_READ_TIMEOUT);
 
       // If its a serial tower and we are in listen mode,
       // send a keep alive byte every 3 seconds
@@ -152,7 +152,7 @@ public class F7Handler extends PacketHandler
             if (debug)
                System.out.println("Sending keep-alive");
             tower.write(keepAlive, 1);
-            tower.read(trash); // discard
+            tower.read(trash, Tower.DEFAULT_READ_TIMEOUT); // discard
             sendTime = currTime;
          }
       }
