@@ -10,11 +10,15 @@ endif
 
 OSX_USB=
 
-COMM_OSX_C=../../tools/firmdl/osx_usb.c
-COMM_OBJ=../../tools/firmdl/rcx_comm.o
-COMM_C=../../tools/firmdl/rcx_comm.c
-COMM_H=../../tools/firmdl/rcx_comm.h
-COMM_INCL=../../tools/firmdl
+# COMM_OSX_C=../../tools/firmdl/osx_usb.c
+# COMM_OBJ=../../tools/firmdl/rcx_comm.o
+# COMM_C=../../tools/firmdl/rcx_comm.c
+# COMM_H=../../tools/firmdl/rcx_comm.h
+# COMM_INCL=../../tools/firmdl
+COMM_OBJ=
+COMM_C=rcx_comm.cpp
+COMM_H=rcx_comm.h
+COMM_INCL=.
 
 ifneq (,$(findstring cygwin,$(OSTYPE)))
     # Windows with CygWin installed
