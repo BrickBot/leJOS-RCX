@@ -2,6 +2,10 @@ leJOS 1.0.0alpha3:
 ------------------
   
   - ButtonListener support.
+  - Fixed a linker bug: it was dumping a stack trace if
+    one of the zip/jar entries in the classpath wasn't found.
+    This bug was reported by E. Harshbarger.
+  
   
 leJOS 1.0.0alpha2:
 ------------------
