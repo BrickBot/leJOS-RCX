@@ -253,10 +253,10 @@ void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr)
   switch (aSize)
   {
     case 1:
-      *aWordPtr = ptr[0];
+      *aWordPtr = (JINT) (JBYTE) ptr[0];
       return;
     case 2:
-      *aWordPtr = ((TWOBYTES) ptr[0] << 8) | ptr[1];
+      *aWordPtr = (JINT) (JSHORT) (((TWOBYTES) ptr[0] << 8) | ptr[1]);
       return;
     #ifdef VERIFY
     default:

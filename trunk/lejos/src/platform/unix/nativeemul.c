@@ -15,6 +15,7 @@
 #include "configure.h"
 #include "interpreter.h"
 #include "exceptions.h"
+#include "platform_config.h"
 
 static TWOBYTES gSensorValue = 0;
 
@@ -34,6 +35,16 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       // Switch current thread
       switch_thread();
       // Go back and continue
+      return;
+    case SLEEP_V:
+      sleep_thread (paramBase[1]);
+      do_return (0);
+      switch_thread();
+      return;
+    case CURRENTTIMEMILLIS_J:
+      *(++stackTop) = 0;
+      *(++stackTop) = get_sys_time();
+      do_return (2);
       return;
     case CALLROM0_V:
       printf ("& ROM call 0: 0x%lX\n", paramBase[0]);
@@ -83,7 +94,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       *(++stackTop) = ptr2word (((byte *) word2ptr (paramBase[0])) + HEADER_SIZE);
       do_return (1);
       return;
-    case RESETRCX_V:
+    case RESETSERIAL_V:
       printf ("& Call to resetRcx");
       break;
     default:

@@ -49,10 +49,10 @@ typedef struct S_Thread
   Object _super;
 
   REFERENCE nextThread;
-  REFERENCE waitingOn;
-  REFERENCE stackFrameArray;
-  REFERENCE stackArray;
-  REFERENCE isReferenceArray;
+  JINT waitingOn;
+  JINT stackFrameArray;
+  JINT stackArray;
+  JINT isReferenceArray;
   JBYTE stackFrameArraySize;
   JBYTE threadId;
   JBYTE state;

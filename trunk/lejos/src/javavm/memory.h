@@ -21,9 +21,10 @@ extern void store_word (byte *ptr, byte aSize, STACKWORD aWord);
 // Size of object header in 2-byte words
 #define NORM_OBJ_SIZE ((HEADER_SIZE + 1) / 2)
 
+#define get_array_element_ptr(ARR_,ESIZE_,IDX_) ((byte *) (ARR_) + (IDX_) * (ESIZE_) + HEADER_SIZE)
+
 #if 0
 
-#define get_array_element_ptr(ARR_,ESIZE_,IDX_) ((byte *) (ARR_) + (IDX_) * (ESIZE_) + HEADER_SIZE)
 #define get_array_word(ARR_,ESIZE_,IDX_,WPT_)        (make_word (get_array_element_ptr(ARR_,ESIZE_,IDX_), ESIZE_, WPT_))
 #define set_array_word(ARR_,ESIZE_,IDX_,WRD_)   (save_word (get_array_element_ptr(ARR_,ESIZE_,IDX_), ESIZE_, WRD_))
 

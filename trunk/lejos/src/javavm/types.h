@@ -9,11 +9,11 @@ typedef unsigned long FOURBYTES;
 typedef FOURBYTES REFERENCE;
 typedef FOURBYTES STACKWORD;
 
-typedef char JBYTE;
-typedef short JCHAR;
-typedef short JSHORT;
+typedef signed char JBYTE;
+typedef signed short JCHAR;
+typedef JCHAR JSHORT;
 typedef boolean JBOOLEAN;
-typedef long JINT;
+typedef signed long JINT;
 typedef float JFLOAT;
 
 typedef union

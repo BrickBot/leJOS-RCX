@@ -171,7 +171,7 @@ void switch_thread()
   #endif
   switch (currentThread->state)
   {
-    case WAITING:
+    case MON_WAITING:
       #ifdef VERIFY
       assert (currentThread->waitingOn != JNULL, THREADS3);
       #endif
@@ -185,6 +185,15 @@ void switch_thread()
         #ifdef SAFE
         currentThread->waitingOn = JNULL;
         #endif
+      }
+      break;
+    case SLEEPING:
+      if (get_sys_time() >= (FOURBYTES) currentThread->waitingOn)
+      {
+	currentThread->state = RUNNING;
+	#ifdef SAFE
+	currentThread->waitingOn = JNULL;
+	#endif SAFE
       }
       break;
     case DEAD:
@@ -300,7 +309,7 @@ void enter_monitor (Object* obj)
   if (owner != NO_OWNER && tid != owner)
   {
     // Make thread wait until the monitor is relinquished.
-    currentThread->state = WAITING;
+    currentThread->state = MON_WAITING;
     currentThread->waitingOn = ptr2word (obj);
     // Gotta yield
     switch_thread();    

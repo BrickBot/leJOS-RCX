@@ -83,11 +83,11 @@ public class Serial
   }
 
   /**
-   * Resets serial communications, sensors, etc.
+   * Resets serial communications.
    * <p>
    * NOTE: This method will passivate all sensors.
    */
-  public native static void resetRcx();
+  public native static void resetSerial();
 
 }
 

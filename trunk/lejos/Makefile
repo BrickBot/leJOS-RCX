@@ -46,7 +46,7 @@ check_release:
 	cd regression; ./run.sh
 
 all_jtools: java_tools generated_files java_loader
-	cd jtools; jar cf ../lib/jtools.jar `find . -name '*.class' -printf "%h/%f " `
+	cd jtools; jar cf ../lib/jtools.jar `find . -name '*.class'`
 
 java_tools:
 	@echo "====> Making tools"
