@@ -7,9 +7,9 @@ package josx.platform.rcx;
  * The magic number should be different for each application
  * (use a random integer).
  * At the moment there can be only one PersistentMemoryArea,
- * that will be reinitialized if you change magic.
+ * that will be reinitialized if you change the magic number.
  * This may change in the future, with more than one area and
- * magic used to distinguish them.
+ * magic number used to distinguish them.
  */
 
 public class PersistentMemoryArea
