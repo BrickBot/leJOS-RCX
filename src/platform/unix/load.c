@@ -59,8 +59,8 @@ void readBinary (char *fileName)
   #endif
   if (get_master_record()->magicNumber != MAGIC)
   {
-    printf ("Fatal: bad magic number: 0x%X. This program accepts only "
-            "tvmld-emul binaries.\n", get_master_record()->magicNumber);
+    printf ("Fatal: bad magic number: 0x%X. Linked for RCX?"
+            "\n", get_master_record()->magicNumber);
     exit(1); 
   }
 }

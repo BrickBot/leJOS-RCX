@@ -1,6 +1,7 @@
 
 #include "types.h"
 #include "trace.h"
+#include "platform_hooks.h"
 #include "constants.h"
 #include "specialsignatures.h"
 #include "specialclasses.h"
@@ -22,6 +23,7 @@
  */
 Thread* currentThread;
 byte gThreadCounter;
+boolean gRequestSuicide;
 
 StackFrame *current_stackframe()
 {
@@ -55,19 +57,37 @@ inline void set_monitor_count (Object *obj, byte count)
   obj->syncInfo = (obj->syncInfo & ~COUNT_MASK) | count;
 }
 
-void init_thread (Thread *thread)
+boolean init_thread (Thread *thread)
 {
-  thread->threadId = ++gThreadCounter;
-  thread->stackFrameArray = ptr2word (new_primitive_array (T_STACKFRAME, MAX_STACK_FRAMES));
-  thread->stackArray = ptr2word (new_primitive_array (T_INT, STACK_SIZE));
-  thread->isReferenceArray = ptr2word (new_primitive_array (T_BOOLEAN, STACK_SIZE));
-  if (thread->threadId == NO_OWNER || thread->stackFrameArray == JNULL ||
-      thread->stackArray == JNULL || thread->isReferenceArray == JNULL)
+  thread->threadId = gThreadCounter + 1;
+  if (thread->state != DEAD || thread->threadId == NO_OWNER)
   {
+    // Thread already initialized?
+    // This assumes object creation sets state field to zero (DEAD).
     throw_exception (outOfMemoryError);
-    return;
+    return false;
   }
-
+  thread->stackFrameArray = ptr2word (new_primitive_array (T_STACKFRAME, MAX_STACK_FRAMES));
+  if (thread->stackFrameArray == JNULL)
+    return false;
+  thread->stackArray = ptr2word (new_primitive_array (T_INT, STACK_SIZE));
+  if (thread->stackArray == JNULL)
+  {
+    free_array (ref2obj(thread->stackFrameArray));
+    thread->stackFrameArray = JNULL;
+    return false;    
+  }
+  thread->isReferenceArray = ptr2word (new_primitive_array (T_BOOLEAN, STACK_SIZE));
+  if (thread->isReferenceArray == JNULL)
+  {
+    free_array (ref2obj(thread->stackFrameArray));
+    free_array (ref2obj(thread->stackArray));
+    thread->stackFrameArray = JNULL;
+    thread->stackArray = JNULL;
+    return false;
+  }
+  gThreadCounter++;
+  
   #ifdef VERIFY
   assert (is_array (word2obj (thread->stackFrameArray)), THREADS0);
   assert (is_array (word2obj (thread->stackArray)), THREADS1);
@@ -89,6 +109,7 @@ void init_thread (Thread *thread)
     thread->nextThread = currentThread->nextThread;
   }
   currentThread->nextThread = ptr2word (thread);
+  return true;
 }
 
 /**
@@ -111,8 +132,6 @@ void switch_thread()
   assert (currentThread != null, THREADS0);
   #endif
   
-  switch_thread_hook();
-
   anchorThread = currentThread;
   liveThreadExists = false;
   // Save context information
@@ -134,95 +153,97 @@ void switch_thread()
 
   // Loop until a RUNNING frame is found
  LABEL_TASKLOOP:
-  nextThread = (Thread *) word2ptr (currentThread->nextThread);
-  if (nextThread->state == WAITING)
+  switch_thread_hook();
+  if (gMustExit)
+    return;
+  currentThread = (Thread *) word2ptr (currentThread->nextThread);
+  switch (currentThread->state)
   {
-    #ifdef VERIFY
-    assert (nextThread->waitingOn != JNULL, THREADS3);
-    #endif
+    case WAITING:
+      #ifdef VERIFY
+      assert (currentThread->waitingOn != JNULL, THREADS3);
+      #endif
 
-    if (get_thread_id (word2obj (nextThread->waitingOn)) == NO_OWNER)
-    {
-      // NOW enter the monitor (guaranteed to succeed)
-      currentThread = nextThread;
-      enter_monitor (word2obj (nextThread->waitingOn));
-      // Let the thread run.
-      nextThread->state = RUNNING;
+      if (get_thread_id (word2obj (currentThread->waitingOn)) == NO_OWNER)
+      {
+        // NOW enter the monitor (guaranteed to succeed)
+        enter_monitor (word2obj (currentThread->waitingOn));
+        // Let the thread run.
+        currentThread->state = RUNNING;
+        #ifdef SAFE
+        currentThread->waitingOn = JNULL;
+        #endif
+      }
+      break;
+    case DEAD:
+      if (currentThread == anchorThread)
+      {
+	if (!liveThreadExists)
+	{
+          #if DEBUG_THREADS
+          printf ("switch_thread: all threads are dead: %d\n", (int) currentThread);
+          #endif
+	  currentThread = null;
+          gMustExit = true;
+          return;
+	}
+	anchorThread = (Thread *) ref2ptr(currentThread->nextThread);
+      }
+      #if REMOVE_DEAD_THREADS
+      free_array ((Object *) word2ptr (currentThread->stackFrameArray));
+      free_array ((Object *) word2ptr (currentThread->stackArray));
+      free_array ((Object *) word2ptr (currentThread->isReferenceArray));
+
       #ifdef SAFE
-      nextThread->waitingOn = JNULL;
-      #endif
-    }
+      currentThread->stackFrameArray = JNULL;
+      currentThread->stackArray = JNULL;
+      currentThread->isReferenceArray = JNULL;
+      #endif SAFE
+
+      nextThread = (Thread *) word2ptr (currentThread->nextThread);
+      currentThread->nextThread = ptr2word (nextThread);
+      #endif REMOVE_DEAD_THREADS
+      break;
+    case STARTED:      
+      // Put stack ptr at the beginning of the stack so we can push arguments
+      // to entry methods. This assumes set_top_word or set_top_ref will
+      // be called immediately below.
+      init_stack_ptr_and_push_void();
+      currentThread->state = RUNNING;
+      if (currentThread == bootThread)
+      {
+        ClassRecord *classRecord;
+
+        classRecord = get_class_record (ENTRY_CLASS);
+        // Initialize top word with fake parameter for main():
+        set_top_ref (JNULL);
+        // Push stack frame for main method:
+        dispatch_special (classRecord, find_method (classRecord, MAIN_V), null);
+        // Push another if necessary for the static initializer:
+        dispatch_static_initializer (classRecord, pc);
+      }
+      else
+      {
+        set_top_ref (ptr2word (currentThread));
+        dispatch_virtual ((Object *) currentThread, RUN_V, null);
+      }
+      // The following is needed because the current stack frame
+      // was just created
+      stackFrame = current_stackframe();
+      update_stack_frame (stackFrame);
+      break;
   }
-
-  if (nextThread->state == DEAD)
-  {
-    if (nextThread == anchorThread && !liveThreadExists)
-    {
-      #if DEBUG_THREADS
-      printf ("switch_thread: all threads are dead: %d\n", (int) nextThread);
-      #endif
-      gMustExit = true;
-      return;
-    }
-    #if REMOVE_DEAD_THREADS
-    free_array ((Object *) word2ptr (nextThread->stackFrameArray));
-    free_array ((Object *) word2ptr (nextThread->stackArray));
-    free_array ((Object *) word2ptr (nextThread->isReferenceArray));
-
-    #ifdef SAFE
-    nextThread->stackFrameArray = JNULL;
-    nextThread->stackArray = JNULL;
-    nextThread->isReferenceArray = JNULL;
-    #endif SAFE
-
-    nextThread = (Thread *) word2ptr (nextThread->nextThread);
-    currentThread->nextThread = ptr2word (nextThread);
-    #endif REMOVE_DEAD_THREADS
-  }
-  else
-  {
-    liveThreadExists = true;
-  }  
-
-  currentThread = nextThread;
-  if (currentThread->state == STARTED)
-  {
-    // Put stack ptr at the beginning of the stack so we can push arguments
-    // to entry methods. This assumes set_top_word or set_top_ref will
-    // be called immediately below.
-
-    init_stack_ptr_and_push_void();
-    currentThread->state = RUNNING;
-    if (currentThread == bootThread)
-    {
-      ClassRecord *classRecord;
-
-      classRecord = get_class_record (ENTRY_CLASS);
-      // Initialize top word with fake parameter for main():
-      set_top_ref (JNULL);
-      // Push stack frame for main method:
-      dispatch_special (classRecord, find_method (classRecord, MAIN_V), null);
-      // Push another if necessary for the static initializer:
-      dispatch_static_initializer (classRecord, pc);
-    }
-    else
-    {
-      set_top_ref (ptr2word (currentThread));
-      dispatch_virtual ((Object *) currentThread, RUN_V, null);
-    }
-    // The following is needed because the current stack frame
-    // was just created
-    stackFrame = current_stackframe();
-    update_stack_frame (stackFrame);
-  }
-
   #if DEBUG_THREADS
   printf ("switch_thread: considered thread %d: %d\n", (int) currentThread,
           (int) (currentThread->state == RUNNING));
   #endif
 
   if (currentThread->state != RUNNING)
+  {
+    if (currentThread->state != DEAD)
+      liveThreadExists = true;
     goto LABEL_TASKLOOP;
+  }
 
   #if DEBUG_THREADS
   printf ("getting current stack frame...\n");
@@ -239,6 +260,9 @@ void switch_thread()
   #if DEBUG_THREADS
   printf ("done updading registers\n");
   #endif
+  
+  if (gRequestSuicide)
+    throw_exception (threadDeath);
 }
 
 /**

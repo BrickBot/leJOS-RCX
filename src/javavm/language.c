@@ -14,8 +14,8 @@
 #include "configure.h"
 #include "interpreter.h"
 #include "exceptions.h"
-#include "native.h"
 #include "stack.h"
+#include "platform_hooks.h"
 
 #ifdef VERIFY
 boolean classesInitialized = false;

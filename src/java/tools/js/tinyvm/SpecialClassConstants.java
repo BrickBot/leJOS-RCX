@@ -16,6 +16,7 @@ public interface SpecialClassConstants {
     "java/lang/NullPointerException",
     "java/lang/ClassCastException",
     "java/lang/ArithmeticException",
-    "java/lang/ArrayIndexOutOfBoundsException"
+    "java/lang/ArrayIndexOutOfBoundsException",
+    "java/lang/ThreadDeath"
   };
 }

@@ -1,17 +1,18 @@
 
 #include "types.h"
 #include "trace.h"
+#include "threads.h"
 #include "constants.h"
 #include "specialsignatures.h"
 #include "specialclasses.h"
 #include "exceptions.h"
-#include "threads.h"
 #include "classes.h"
 #include "language.h"
 #include "configure.h"
 #include "interpreter.h"
 #include "memory.h"
 #include "stack.h"
+#include "platform_hooks.h"
 
 Object *outOfMemoryError;
 Object *noSuchMethodError;
@@ -20,6 +21,7 @@ Object *nullPointerException;
 Object *classCastException;
 Object *arithmeticException;
 Object *arrayIndexOutOfBoundsException;
+Object *threadDeath;
 
 // Temporary globals:
 
@@ -29,9 +31,7 @@ static StackFrame *tempStackFrame;
 static ExceptionRecord *gExceptionRecord;
 static byte gNumExceptionHandlers;
 static MethodRecord *gExcepMethodRec = null;
-#ifdef EMULATE
 static byte *gExceptionPc;
-#endif
 
 void init_exceptions()
 {
@@ -42,6 +42,7 @@ void init_exceptions()
   classCastException = new_object_for_class (JAVA_LANG_CLASSCASTEXCEPTION);
   arithmeticException = new_object_for_class (JAVA_LANG_ARITHMETICEXCEPTION);
   arrayIndexOutOfBoundsException = new_object_for_class (JAVA_LANG_ARRAYINDEXOUTOFBOUNDSEXCEPTION);
+  threadDeath = new_object_for_class (JAVA_LANG_THREADDEATH);
 }
 
 /**
@@ -49,12 +50,23 @@ void init_exceptions()
  */
 void throw_exception (Object *exception)
 {
+  Thread *auxThread;
+  
   #ifdef VERIFY
   assert (exception != null, EXCEPTIONS0);
-  #endif
-  #if EMULATE
+  #endif VERIFY
+
+  if (currentThread == null)
+  {
+    // No threads have started probably
+    return;
+  }
+  
+  #ifdef VERIFY
+  assert (currentThread->state != DEAD, EXCEPTIONS1);
+  #endif VERIFY
+  
   gExceptionPc = pc;
-  #endif
   gExcepMethodRec = null;
 
   #if 0
@@ -62,26 +74,6 @@ void throw_exception (Object *exception)
   #endif
 
  LABEL_PROPAGATE:
-  if (currentThread->state == DEAD)
-  {
-    // TBD: There seems to be a problem here: do_return must have
-    // switched the currentThread already.
-
-    #ifdef EMULATE
-    printf ("*** UNCAUGHT EXCEPTION: \n");
-    printf ("--  Exception class   : %d\n", (int) get_class_index (exception));
-    printf ("--  Thread            : %d\n", (int) currentThread->threadId);
-    printf ("--  Method signature  : %d\n", (int) gExcepMethodRec->signatureId);
-    printf ("--  Root method sig.  : %d\n", (int) tempMethodRecord->signatureId);
-    printf ("--  Bytecode offset   : %d\n", (int) gExceptionPc - 
-            (int) get_code_ptr(gExcepMethodRec));
-    #else
-    
-    trace (4, gExcepMethodRec->signatureId, get_class_index (exception) % 10);
-
-    #endif EMULATE
-    return;
-  }
   tempStackFrame = current_stackframe();
   tempMethodRecord = tempStackFrame->methodRecord;
 
@@ -115,8 +107,19 @@ void throw_exception (Object *exception)
     gExceptionRecord++;
   }
   // No good handlers in current stack frame - go up.
+  auxThread = currentThread;
   do_return (0);
   // Note: return takes care of synchronized methods.
+  if (auxThread->state == DEAD)
+  {
+    if (get_class_index(exception) != JAVA_LANG_THREADDEATH)
+    {
+      handle_uncaught_exception (exception, auxThread,
+  			         gExcepMethodRec, tempMethodRecord,
+			         gExceptionPc);
+    }
+    return;
+  }
   goto LABEL_PROPAGATE; 
 }
 

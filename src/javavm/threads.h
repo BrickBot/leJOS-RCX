@@ -1,6 +1,7 @@
 
 #include "classes.h"
 #include "language.h"
+#include "constants.h"
 
 #ifndef _THREADS_H
 #define _THREADS_H
@@ -15,6 +16,7 @@
 extern Thread *currentThread;
 extern Thread *bootThread;
 extern byte gThreadCounter;
+extern boolean gRequestSuicide;
 
 typedef struct S_StackFrame
 {
@@ -23,23 +25,17 @@ typedef struct S_StackFrame
   // The following 2 fields are constant for a given stack frame.
   STACKWORD *localsBase;
   boolean *isReferenceBase;
-  // The following fields only need to be assined to on switch_thread.
+  // The following fields only need to be assigned to on switch_thread.
   byte *pc;
   STACKWORD *stackTop;
   boolean *isReference;
 } StackFrame;
 
-extern void start_thread (Thread *thread);
-extern void init_thread (Thread *thread);
-extern void switch_thread();
+extern boolean init_thread (Thread *thread);
 extern StackFrame *current_stackframe();
 extern void enter_monitor (Object* obj);
 extern void exit_monitor (Object* obj);
-
-/**
- * Must be written by user of threads.h.
- */
-extern void switch_thread_hook();
+extern void switch_thread();
 
 #define stackframe_array_ptr()   (word2ptr(currentThread->stackFrameArray))
 #define stack_array_ptr()        (word2ptr(currentThread->stackArray))
@@ -47,6 +43,13 @@ extern void switch_thread_hook();
 #define stackframe_array()       ((StackFrame *) ((byte *) stackframe_array_ptr() + HEADER_SIZE))
 #define stack_array()            ((STACKWORD *) ((byte *) stack_array_ptr() + HEADER_SIZE))
 #define is_reference_array()     ((JBYTE *) ((byte *) is_reference_array_ptr() + HEADER_SIZE))
+
+static inline void init_threads()
+{
+  gThreadCounter = 0;
+  currentThread = JNULL;	
+}
+
 
 #endif
 

@@ -39,13 +39,19 @@ OUTPUT_ARCH(h8300)
 ENTRY(__start)
 MEMORY
 {
-    mem    : o = 0x8000, l = 0x6f00
-    extra1 : o = 0xef50, l = 0x00b0
-    extra2 : o = 0xf010, l = 0x0d70
-    extra3 : o = 0xfe00, l = 0x0100
+    rom (r) : o = 0x0000, l = 0x8000
+    mem     : o = 0x8000, l = 0x6f00
+    extra1  : o = 0xef50, l = 0x00b0
+    extra2  : o = 0xf010, l = 0x0d70
+    romdata : o = 0xfd80, l = 0x0040     /* for interupt vectors */
+    extra3  : o = 0xfe00, l = 0x0100
+    eight   : o = 0xff00, l = 0x0100
 }
 SECTIONS
 {
+    .rom : {
+        _rom_ocia_handler = 0x36ba ;
+    } > rom
     .text : {
         __text_begin = . ;
 	*(.init)
@@ -69,4 +75,12 @@ SECTIONS
     .extra : {
         __extraMemory = . ; 
     } > extra2
+
+    .romdata : {
+       _ocia_vector  = 0x22 ;
+    } > romdata
+
+    .eight : {
+       _T_IER        = 0x90 ;
+    } > eight
 }

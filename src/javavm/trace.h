@@ -4,19 +4,6 @@
 
 #include "types.h"
 
-#ifdef EMULATE
-
-#include <stdio.h>
-
-#define VERIFY 1
-
-#else
-
-extern void trace (short s, short n1, short n2);
-
-#endif EMULATE
-
-
 #ifdef VERIFY
 
 #define INTERPRETER0   10

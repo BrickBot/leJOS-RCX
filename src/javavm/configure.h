@@ -3,13 +3,6 @@
 #define _CONFIGURE_H
 
 /**
- * Thread switching is not
- * implemented based on time, but on number
- * of opcodes executed.
- */
-#define OPCODES_PER_TIME_SLICE           200
-
-/**
  * Maximum level of recursion.
  */
 #define MAX_STACK_FRAMES                 12

@@ -1,12 +1,9 @@
 /**
  * tvmemul.c
  * Entry source file for TinyVM emulator.
- *
- * HISTORY
- * -------
- * First version - By Jose Solorzano
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include "types.h"
 #include "constants.h"
@@ -20,12 +17,30 @@
 #include "exceptions.h"
 #include "load.h"
 #include "trace.h"
+#include "platform_hooks.h"
 
 #define MEMORY_SIZE 8192 /* 16 Kb */
+#define DEBUG_RUNS  0
 
 Thread   *bootThread;
 TWOBYTES *gMemory;
 TWOBYTES gMemorySize = MEMORY_SIZE;
+
+
+void handle_uncaught_exception (Object *exception,
+                                       const Thread *thread,
+				       const MethodRecord *methodRecord,
+				       const MethodRecord *rootMethod,
+				       byte *pc)
+{
+    printf ("*** UNCAUGHT EXCEPTION/ERROR: \n");
+    printf ("--  Exception class   : %u\n", (unsigned) get_class_index (exception));
+    printf ("--  Thread            : %u\n", (unsigned) thread->threadId);
+    printf ("--  Method signature  : %u\n", (unsigned) methodRecord->signatureId);
+    printf ("--  Root method sig.  : %u\n", (unsigned) rootMethod->signatureId);
+    printf ("--  Bytecode offset   : %u\n", (unsigned) pc - 
+            (int) get_code_ptr(methodRecord));  					       
+}
 
 void switch_thread_hook()
 {
@@ -34,6 +49,10 @@ void switch_thread_hook()
 
 void run(void)
 {
+  #if DEBUG_RUNS
+  int count = 0;
+  #endif
+
   // Initialize memory
   gMemory = (TWOBYTES *) malloc (gMemorySize * sizeof (TWOBYTES));
   init_memory (gMemory, gMemorySize);
@@ -44,13 +63,28 @@ void run(void)
   #if DEBUG_THREADS
   printf ("Created bootThread: %d. Initializing...\n", (int) bootThread);
   #endif
-  init_thread (bootThread);
+  
+  #if DEBUG_RUNS
+  for (count = 0; count < 2; count++)
+  {
+  #endif DEBUG_RUNS
+
+  init_threads();
+  if (!init_thread (bootThread))
+  {
+    printf ("Unable to initialize threading module.\n");
+    exit (1);	  
+  }
   // Execute the bytecode interpreter
   engine();
   // Engine returns when all non-daemon threads are dead
   #if DEBUG_STARTUP
   printf ("Engine finished.\n");
   #endif
+
+  #if DEBUG_RUNS
+  }
+  #endif DEBUG_RUNS
 }
 
 int main (int argc, char *argv[])

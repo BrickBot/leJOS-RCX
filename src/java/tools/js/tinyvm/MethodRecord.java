@@ -67,7 +67,7 @@ public class MethodRecord implements WritableData, Constants
     {
       System.out.println ("Warning: Native method signature " +
         aSignature + " unrecognized. You are probably using JDK APIs " +
-        " or something similar that cannot be run under TinyVM.");
+        " or libraries that cannot be run under leJOS.");
     }
 
     if (pCodeAttrib != null)

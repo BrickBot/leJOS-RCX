@@ -4,6 +4,9 @@ import java.io.*;
 import java.util.*;
 import js.classfile.*;
 
+/**
+ * Abstraction for dumped binary.
+ */
 public class Binary implements SpecialClassConstants, SpecialSignatureConstants
 {
 
@@ -119,6 +122,10 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     }    
   }
 
+  /**
+   * Calls storeMethods on all the classes of the closure
+   * previously computed with processClasses.
+   */
   public void processMethods()
   {
     int pSize = iClassTable.size();
@@ -226,17 +233,20 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
   throws Exception
   {
     Binary pBin = new Binary();
+    // From special classes and entry class, store closure
     pBin.processClasses (aClassName, aClassPath);
+    // Store special signatures
     pBin.processSpecialSignatures();
     pBin.processConstants();
     pBin.processMethods();
     pBin.processFields();
-    // Copy code (first pass)
+    // Copy code as is (first pass)
     pBin.processCode (false);
     pBin.storeComponents();
     pBin.initOffsets();
     // Post-process code after offsets are set (second pass)
     pBin.processCode (true);
+    // Do -verbose reporting
     pBin.report();
     return pBin;
   }

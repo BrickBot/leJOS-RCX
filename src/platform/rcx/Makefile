@@ -4,7 +4,7 @@
 
 include ../Makefile.config
 
-CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -O2 -Wall -Wno-unused
+CFLAGS += -I${LIBRCX_HOME}/lib -I../vmsrc -I. -O2 -Wall -Wno-unused
 LFLAGS += -L${LIBRCX_HOME}/lib -L${LIBRCX_HOME}/float
 
 LIBS = -lrcx -lfloat
@@ -49,7 +49,7 @@ include ../vmsrc/Makefile.include
 
 PROGS = ${TINYVMBINARY}
 OBJS = interpreter.o threads.o exceptions.o \
-       memory.o language.o native.o main.o
+       memory.o language.o native.o main.o systime.o
 
 all: ${PROGS}
 	@echo Done building TinyVM srec
