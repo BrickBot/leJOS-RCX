@@ -8,7 +8,6 @@ public interface SpecialClassConstants {
     "entry/class",
     "java/lang/Object",
     "java/lang/Thread",
-    "java/lang/Boot_Thread",
     "java/lang/Throwable",
     "java/lang/OutOfMemoryError",
     "java/lang/NoSuchMethodError",

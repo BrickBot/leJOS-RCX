@@ -201,6 +201,8 @@ implements OpCodeConstants, OpCodeInfo, Constants
       Utilities.assert (pClassIndex != -1 && pClassIndex < MAX_CLASSES);
       int pMethodIndex = pClassRecord.getMethodIndex (pMethod);
       Utilities.assert (pMethodIndex != -1 && pMethodIndex < MAX_METHODS);
+      Utilities.trace ("processMethod: special: " + pClassIndex + ", " +
+                       pMethodIndex);
       return (pClassIndex << 8) | (pMethodIndex & 0xFF);
     }
     else
@@ -230,9 +232,9 @@ implements OpCodeConstants, OpCodeInfo, Constants
           break;
         case OP_LDC2_W:
           int pIdx1 = processConstantIndex ((aCode[i] & 0xFF) << 8 | 
-                                           aCode[i+1]);
+                                            (aCode[i+1] & 0xFF));
           pOutCode[i++] = (byte) (pIdx1 >> 8);
-          pOutCode[i++] = (byte) (pIdx1 | 0xFF);
+          pOutCode[i++] = (byte) (pIdx1 & 0xFF);
           break;
         case OP_ANEWARRAY:
           // Opcode is changed: ANEWARRAY -> NEWARRAY
@@ -242,11 +244,11 @@ implements OpCodeConstants, OpCodeInfo, Constants
           break;
         case OP_MULTIANEWARRAY:
           int pIdx2 = processMultiArray ((aCode[i] & 0xFF) << 8 | 
-                                        aCode[i+1]);
+                                         (aCode[i+1] & 0xFF));
           // Write element type
           pOutCode[i++] = (byte) (pIdx2 >> 8);
           // Write total number of dimensions
-          pOutCode[i++] = (byte) (pIdx2 | 0xFF);
+          pOutCode[i++] = (byte) (pIdx2 & 0xFF);
           // Skip requested dimensions for allocation
           i++;
           break;           
@@ -254,48 +256,48 @@ implements OpCodeConstants, OpCodeInfo, Constants
         case OP_CHECKCAST:
         case OP_INSTANCEOF:
           int pIdx3 = processClassIndex ((aCode[i] & 0xFF) << 8 | 
-                                        aCode[i+1]);
+                                         (aCode[i+1] & 0xFF));
           Utilities.assert (pIdx3 < MAX_CLASSES);
           pOutCode[i++] = (byte) (pIdx3 >> 8);
-          pOutCode[i++] = (byte) (pIdx3 | 0xFF);
+          pOutCode[i++] = (byte) (pIdx3 & 0xFF);
           break;         
         case OP_PUTSTATIC:
         case OP_GETSTATIC:
           int pWord1 = processField ((aCode[i] & 0xFF) << 8 | 
-                                     aCode[i+1], true);
+                                     (aCode[i+1] & 0xFF), true);
           pOutCode[i++] = (byte) (pWord1 >> 8);
-          pOutCode[i++] = (byte) (pWord1 | 0xFF);
+          pOutCode[i++] = (byte) (pWord1 & 0xFF);
           break;
         case OP_PUTFIELD:
         case OP_GETFIELD:
           int pWord2 = processField ((aCode[i] & 0xFF) << 8 | 
-                                     aCode[i+1], false);
+                                     (aCode[i+1] & 0xFF), false);
           pOutCode[i++] = (byte) (pWord2 >> 8);
-          pOutCode[i++] = (byte) (pWord2 | 0xFF);
+          pOutCode[i++] = (byte) (pWord2 & 0xFF);
           break;
         case OP_INVOKEINTERFACE:
           // Opcode is changed:
           pOutCode[i-1]  = (byte) OP_INVOKEVIRTUAL;
           int pWord3 = processMethod ((aCode[i] & 0xFF) << 8 | 
-                                     aCode[i+1], false);
+                                      (aCode[i+1] & 0xFF), false);
           pOutCode[i++] = (byte) (pWord3 >> 8);
-          pOutCode[i++] = (byte) (pWord3 | 0xFF);
+          pOutCode[i++] = (byte) (pWord3 & 0xFF);
           pOutCode[i++] = (byte) OP_NOP;
           break;
         case OP_INVOKESPECIAL:
         case OP_INVOKESTATIC:
           // Opcode is changed:
           int pWord4 = processMethod ((aCode[i] & 0xFF) << 8 | 
-                                     aCode[i+1], true);
+                                      (aCode[i+1] & 0xFF), true);
           pOutCode[i++] = (byte) (pWord4 >> 8);
-          pOutCode[i++] = (byte) (pWord4 | 0xFF);
+          pOutCode[i++] = (byte) (pWord4 & 0xFF);
           break;
         case OP_INVOKEVIRTUAL:
           // Opcode is changed:
           int pWord5 = processMethod ((aCode[i] & 0xFF) << 8 | 
-                                     aCode[i+1], false);
+                                      (aCode[i+1] & 0xFF), false);
           pOutCode[i++] = (byte) (pWord5 >> 8);
-          pOutCode[i++] = (byte) (pWord5 | 0xFF);
+          pOutCode[i++] = (byte) (pWord5 & 0xFF);
           break;
         case OP_LOOKUPSWITCH:
         case OP_TABLESWITCH:

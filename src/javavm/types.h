@@ -26,8 +26,8 @@ typedef union
 #define word2jfloat(WORD_)  (((AuxConvUnion1) (WORD_)).fnum)
 #define byte2jint(BYTE_)    ((JINT) (signed char) (BYTE_))
 #define word2jint(WORD_)    ((JINT) (WORD_))
-#define word2obj(WORD_)     ((Object *) (WORD_))
-#define obj2word(OBJ_)      ((STACKWORD) (OBJ_))
+#define word2obj(WORD_)     ((Object *) word2ptr(WORD_))
+#define obj2word(OBJ_)      ptr2word(OBJ_)
 
 #ifdef EMULATE
 

@@ -70,7 +70,7 @@ case OP_DCMPG:
 case OP_JSR:
   // Arguments: 2
   // Stack: +1
-  *(++stackTop) = (STACKWORD) (pc + 2);
+  *(++stackTop) = ptr2word (pc + 2);
   // Fall through!
 case OP_GOTO:
   // Arguments: 2
@@ -81,7 +81,7 @@ case OP_GOTO:
 case OP_RET:
   // Arguments: 1
   // Stack: +0
-  pc = (byte *) localsBase[pc[0]];
+  pc = word2ptr (localsBase[pc[0]]);
   // No pc increment!
   goto LABEL_ENGINELOOP;
 

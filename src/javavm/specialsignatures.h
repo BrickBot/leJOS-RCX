@@ -10,5 +10,7 @@
 #define _CLINIT__V 3
 #define START_V 4
 #define ARRAYCOPY_V 5
-#define _TVM_MAIN_METHOD_V 6
+#define CALLROM0_V 6
+#define CALLROM3_V 7
+#define _TVM_MAIN_METHOD_V 8
 #endif _SPECIALSIGNATURES_H

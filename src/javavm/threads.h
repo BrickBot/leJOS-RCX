@@ -13,6 +13,7 @@
 #define SF_SIZE (sizeof(StackFrame))
 
 extern Thread *currentThread;
+extern Thread *bootThread;
 
 typedef struct S_StackFrame
 {

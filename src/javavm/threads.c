@@ -3,6 +3,7 @@
 #include "trace.h"
 #include "constants.h"
 #include "specialsignatures.h"
+#include "specialclasses.h"
 #include "threads.h"
 #include "classes.h"
 #include "language.h"
@@ -17,11 +18,7 @@
 /**
  * Thread currently being executed by engine().
  */
-#ifdef SAFE
 Thread* currentThread = null;
-#else
-Thread* currentThread;
-#endif
 
 StackFrame *current_stackframe()
 {
@@ -64,9 +61,14 @@ void init_thread (Thread *thread)
   if (currentThread == null)
   {
     currentThread = thread;
-    thread->nextThread = ptr2word (thread);
+    #if DEBUG_THREADS
+    printf ("First-time init of currentThread: %d\n", (int) currentThread);
+    #endif
   }
-  thread->nextThread = currentThread->nextThread;
+  else
+  {
+    thread->nextThread = currentThread->nextThread;
+  }
   currentThread->nextThread = ptr2word (thread);
 }
 
@@ -77,12 +79,15 @@ void init_thread (Thread *thread)
  */
 void switch_thread()
 {
-  // TBD: loops forever when all threads are dead.
-
   Thread *anchorThread;
   Thread *nextThread;
   StackFrame *stackFrame;
   boolean liveThreadExists;
+
+  #if DEBUG_THREADS
+  printf ("Switch thread: currentThread: %d (%d)\n", (int) currentThread,
+          (int) (currentThread != null));
+  #endif
 
   #ifdef VERIFY
   assert (currentThread != null, THREADS0);
@@ -92,8 +97,29 @@ void switch_thread()
   liveThreadExists = false;
   // Save context information
   stackFrame = current_stackframe();
-  stackFrame->pc = pc;
-  stackFrame->stackTop = stackTop;
+
+  #if DEBUG_THREADS
+  printf ("switchThread: current stack frame: %d\n", (int) stackFrame);
+  #endif
+  
+  #ifdef VERIFY
+  assert (stackFrame != null || currentThread->state == STARTED,
+          THREADS4);
+  #endif
+
+  if (stackFrame != null)
+  {
+    stackFrame->pc = pc;
+    stackFrame->stackTop = stackTop;
+
+    #if DEBUG_THREADS
+    printf ("Saving stackFrame before switching:\n"
+            "-- pc: %d\n"
+            "-- stackTop: %d\n",
+            (int) pc, (int) stackTop);
+    #endif
+  }
+
   // Loop until a RUNNING frame is found
  LABEL_TASKLOOP:
   nextThread = (Thread *) word2ptr (currentThread->nextThread);
@@ -141,7 +167,17 @@ void switch_thread()
   if (currentThread->state == STARTED)
   {
     currentThread->state = RUNNING;
-    dispatch_virtual ((Object *) currentThread, RUN_V, null);
+    if (currentThread == bootThread)
+    {
+      ClassRecord *classRecord;
+
+      classRecord = get_class_record (ENTRY_CLASS);
+      dispatch_special (classRecord, find_method (classRecord, MAIN_V), null);
+    }
+    else
+    {
+      dispatch_virtual ((Object *) currentThread, RUN_V, null);
+    }
   }
   if (currentThread->state != RUNNING)
     goto LABEL_TASKLOOP;

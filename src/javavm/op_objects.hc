@@ -6,7 +6,7 @@ case OP_NEW:
   // Stack: +1
   // Arguments: 2
   // Hi byte unused
-  gStackWord = (STACKWORD) new_object_checked (pc[1], pc - 1);
+  gStackWord = obj2word (new_object_checked (pc[1], pc - 1));
   if (gMustExit)
     return;
   if (!gStackWord)

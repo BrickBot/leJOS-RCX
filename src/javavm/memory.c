@@ -211,11 +211,12 @@ void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr)
 {
   STACKWORD auxword = 0;
 
-  while (true)
-  {  
-    auxword *= 0x100;
-    auxword |= *(ptr++);    
-  }
+  while (true) 
+  {   
+    auxword *= 0x100; 
+    auxword |= *ptr; 
+    ptr++;   
+  } 
   *aWordPtr = auxword;
 }
 
@@ -263,6 +264,12 @@ void init_memory (TWOBYTES offset)
   #endif
 
   startPtr = USER_MEMORY_START + offset;
+  #if DEBUG_MEMORY
+  printf ("Location of gMemory: %d. gMemorySize: %d\n", (int) gMemory,
+          gMemorySize);
+  printf ("Setting start of memory to %d\n", (int) startPtr);
+  printf ("Going to reserve %d words\n", TOTAL_MEMORY_SIZE - offset);
+  #endif
   deallocate (startPtr, TOTAL_MEMORY_SIZE - offset);
 }
 

@@ -25,8 +25,8 @@ case OP_LDC:
   assert (gConstRec->constantSize <= 4, INTERPRETER5);
   #endif VERIFY
 
-  *(++stackTop) = make_word (get_constant_ptr(gConstRec), 
-                  gConstRec->constantSize);
+  make_word (get_constant_ptr(gConstRec), 
+             gConstRec->constantSize, ++stackTop);
   goto LABEL_ENGINELOOP;
 case OP_LDC2_W:
   // Stack size: +2
@@ -38,14 +38,15 @@ case OP_LDC2_W:
   #endif VERIFY
 
   gBytePtr = get_constant_ptr (gConstRec);
-  *(++stackTop) = make_word (gBytePtr, sizeof(STACKWORD));
-  *(++stackTop) = make_word (gBytePtr + sizeof(STACKWORD), sizeof(STACKWORD));
+  make_word (gBytePtr, sizeof(STACKWORD), ++stackTop);
+  make_word (gBytePtr + sizeof(STACKWORD), sizeof(STACKWORD),
+             ++stackTop);
   pc += 2;
   goto LABEL_ENGINELOOP;
 case OP_ACONST_NULL:
   // Stack size: +1
   // Arguments: 0
-  *(++stackTop) = 0;
+  *(++stackTop) = JNULL;
   goto LABEL_ENGINELOOP;
 case OP_ICONST_M1:
 case OP_ICONST_0:
@@ -68,19 +69,23 @@ case OP_LCONST_1:
   *(++stackTop) = 0;
   *(++stackTop) = *(pc-1) - OP_LCONST_0;
   goto LABEL_ENGINELOOP;
-case OP_FCONST_0:
-case OP_FCONST_1:
-case OP_FCONST_2:
-  // Stack size: +1
-  // Arguments: 0
-  *(++stackTop) = jfloat2word((JFLOAT) (*(pc-1) - OP_FCONST_0));
-  goto LABEL_ENGINELOOP;
 case OP_DCONST_0:
+  *(++stackTop) = 0;
+  // Fall through!
+case OP_FCONST_0:
+  *(++stackTop) = jfloat2word((JFLOAT) 0.0);
+  goto LABEL_ENGINELOOP;
+case OP_FCONST_1:
+  *(++stackTop) = jfloat2word((JFLOAT) 1.0);
+  goto LABEL_ENGINELOOP;
+case OP_FCONST_2:
+  *(++stackTop) = jfloat2word((JFLOAT) 2.0);
+  goto LABEL_ENGINELOOP;
 case OP_DCONST_1:
   // Stack size: +2
   // Arguments: 0
   *(++stackTop) = 0;
-  *(++stackTop) = jfloat2word((JFLOAT) (*(pc-1) - OP_DCONST_0));
+  *(++stackTop) = jfloat2word((JFLOAT) 1.0);
   goto LABEL_ENGINELOOP;
 case OP_POP2:
   // Stack size: -2
@@ -136,12 +141,14 @@ case OP_DUP2_X2:
   // Stack size: +2
   // Arguments: 0
   stackTop += 2;
-  *stackTop = *(stackTop-2);
-  *(stackTop-1) = *(stackTop-3);
-  *(stackTop-2) = *(stackTop-4);
-  *(stackTop-3) = *(stackTop-5);
-  *(stackTop-4) = *stackTop;
-  *(stackTop-5) = *(stackTop-1);  
+  gByte = 4;
+  while (gByte--)
+  {
+    *stackTop = *(stackTop-2);  
+    stackTop--;
+  }
+  stackTop[0] = stackTop[4];
+  stackTop[-1] = stackTop[3];
   goto LABEL_ENGINELOOP;
 case OP_SWAP:
   gStackWord = *stackTop;

@@ -10,6 +10,10 @@
 #include "language.h"
 #include "exceptions.h"
 
+#if DEBUG_BYTECODE
+extern char *OPCODE_NAME[];
+#endif
+
 // Interpreter globals:
 
 boolean gMustExit;
@@ -24,22 +28,18 @@ byte *gBytePtr;
 JFLOAT gFloat;
 ConstantRecord *gConstRec;
 STACKWORD gStackWord;
+STACKWORD *gWordPtr;
 int gInt;
-
-/* byte *current_code_base() */
-/* { */
-/*   return get_binary_base() + current_method()->codeOffset; */
-/* } */
 
 /**
  * Assumes pc points to 2-byte offset, and jumps.
  */
-void do_goto()
+void do_goto (void)
 {
   pc += (((JSHORT) pc[0] << 8) | pc[1]) - 1;
 }
 
-void do_isub()
+void do_isub (void)
 {
   stackTop--;
   stackTop[0] = word2jint(stackTop[0]) - word2jint(stackTop[1]);
@@ -50,12 +50,21 @@ void do_fcmp (JFLOAT f1, JFLOAT f2)
   // TBD: NaN
 
   stackTop++;
+
+  #if FP_ARITHMETIC
+
   if (f1 > f2)
     stackTop[0] = 1;
   else if (f1 == f2)
     stackTop[0] = 0;
   else if (f1 < f2)
     stackTop[0] = -1;
+
+  #else
+
+  stackTop[0] = 0;
+ 
+  #endif FP_ARITHMETIC
 }
 
 /**
@@ -66,13 +75,10 @@ void do_fcmp (JFLOAT f1, JFLOAT f2)
 void engine()
 {
   register short numOpcodes;
-
-  #ifdef VERIFY
-  assert (currentThread != null, INTERPRETER1);
-  #endif
-
+  
   gMustExit = false;
-  numOpcodes = 1;
+  switch_thread();
+  numOpcodes = OPCODES_PER_TIME_SLICE;
  LABEL_ENGINELOOP: 
   if (!(--numOpcodes))
   {
@@ -84,21 +90,23 @@ void engine()
   // SWITCH BEGINS HERE
   //-----------------------------------------------
 
+  #ifdef DEBUG_BYTECODE
+  printf ("OPCODE: (0x%X) %s\n", (int) *pc, OPCODE_NAME[*pc]);
+  #endif
+
   switch (*pc++)
   {
-
     #include "op_stack.hc"
     #include "op_locals.hc"
     #include "op_arrays.hc"
     #include "op_objects.hc"
-    #include "op_arithmetic.hc"
-    #include "op_logical.hc"
-    #include "op_conversions.hc"
     #include "op_control.hc"
     #include "op_methods.hc"
     #include "op_other.hc"
     #include "op_skip.hc"
-
+    #include "op_conversions.hc"
+    #include "op_logical.hc"
+    #include "op_arithmetic.hc"
   }
 
   //-----------------------------------------------

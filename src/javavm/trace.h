@@ -26,6 +26,7 @@
 #define THREADS1       21
 #define THREADS2       22
 #define THREADS3       23
+#define THREADS4       24
 
 #define MEMORY0        30
 #define MEMORY1        31
@@ -48,5 +49,15 @@
 extern void assert (boolean aCond, int aCode);
 
 #endif // VERIFY
+
+#if 0
+
+#define DEBUG_STARTUP  1
+#define DEBUG_THREADS  1
+#define DEBUG_MEMORY   1
+#define DEBUG_BYTECODE 1
+#define DEBUG_METHODS  1
+
+#endif
 
 #endif _TRACE_H

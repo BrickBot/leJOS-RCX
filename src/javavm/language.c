@@ -117,6 +117,12 @@ boolean dispatch_static_initializer (ClassRecord *aRec, byte *retAddr)
 {
   if (is_initialized (aRec))
     return false;
+
+  #if DEBUG_METHODS
+  printf ("dispatch_special_initializer: %d, %d\n",
+          (int) aRec, (int) retAddr);
+  #endif
+
   set_initialized (aRec);
   if (!has_clinit (aRec))
     return false;
@@ -171,6 +177,11 @@ void dispatch_special_checked (byte classIndex, byte methodIndex,
 {
   ClassRecord *classRecord;
 
+  #if DEBUG_METHODS
+  printf ("dispatch_special_checked: %d, %d, %d, %d\n",
+          classIndex, methodIndex, (int) retAddr, (int) btAddr);
+  #endif
+
   classRecord = get_class_record (classIndex);
   if (dispatch_static_initializer (classRecord, btAddr))
     return;
@@ -178,6 +189,10 @@ void dispatch_special_checked (byte classIndex, byte methodIndex,
                     retAddr);
 }
 
+/**
+ * @return true iff the method was dispatched; false
+ *         if an exception was thrown.
+ */
 boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord, 
                           byte *retAddr)
 {
@@ -185,18 +200,16 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   StackFrame *stackFrame;
   byte newStackFrameIndex;
 
+  #if DEBUG_METHODS
+  printf ("dispatch_special: %d, %d, %d\n", 
+          (int) classRecord, (int) methodRecord, (int) retAddr);
+  printf ("-- signature id = %d\n", methodRecord->signatureId);
+  printf ("-- code offset  = %d\n", methodRecord->codeOffset);
+  printf ("-- flags        = %d\n", methodRecord->mflags);
+  #endif
+
   paramBase = stackTop - methodRecord->numParameters + 1;
   newStackFrameIndex = currentThread->stackFrameArraySize;
-  if (is_native (methodRecord))
-  {
-    #ifdef VERIFY
-    assert (newStackFrameIndex != 0, LANGUAGE0);
-    #endif
-    // TBD: This will only work if dispatch_native doesn't itself dispatch.
-    dispatch_native (methodRecord->signatureId, paramBase);
-    pc = retAddr;
-    return true;
-  }
   if (newStackFrameIndex >= MAX_STACK_FRAMES)
   {
     throw_exception (stackOverflowError);
@@ -234,6 +247,11 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
     throw_exception (stackOverflowError);
     return false;
   } 
+  if (is_native (methodRecord))
+  {
+    dispatch_native (methodRecord->signatureId, paramBase);
+    return true;
+  }
   return true;
 }
 
