@@ -56,6 +56,9 @@ void assert (boolean aCond, int aCode)
 
 #endif
 
+const char versionArray[] = { 0xE2, 0x00, 0x03, 0x00, 0x01, 
+                                    0x00, 0x00, 0x00, 0x00 };
+
 char timerdata1[6];
 async_t timerdata0;
 char buffer[BUFSIZE];
@@ -234,18 +237,8 @@ int main (void)
           goto LABEL_RESET;
         case 0x15:
           // Get Versions...
-          buffer[0] = ~buffer[0];
-          #if 0
-          buffer[1] = 0x00;
-          buffer[2] = 0x03;
-          buffer[3] = 0x00;
-          buffer[4] = 0x01;
-          buffer[5] = 0x00;
-          buffer[6] = 0x00;
-          buffer[7] = 0x00;
-          buffer[8] = 0x00;
-          #endif
-          send_data (SERIAL_NO_POINTER, 0, buffer, 9);
+          versionArray[0] = ~buffer[0];
+          send_data (SERIAL_NO_POINTER, 0, versionArray, 9);
           goto LABEL_RESET;
         case 0x65:
           // Delete firmware
