@@ -5,8 +5,8 @@
 include ${TINYVM_HOME}/Makefile.config
 include ${TINYVM_HOME}/Makefile.common
 
-CFLAGS += -I${LIBRCX_HOME}/lib -O1 -Wall -Wno-unused
-LFLAGS += -L${LIBRCX_HOME}/lib -relax
+CFLAGS += -I${LIBRCX_HOME}/lib -O2 -Wall -Wno-unused
+LFLAGS += -L${LIBRCX_HOME}/lib
 
 LIBS = -lrcx
 

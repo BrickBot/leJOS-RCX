@@ -64,20 +64,6 @@ set_data_pointer (void *ptr)
 
 #if DEBUG_RCX
 
-void wait_for_power_press (void)
-{
-  short status;
-  status = 0;
-  do {
-    get_power_status(POWER_KEY, &status);
-    // status != 0 means not pressed
-  } while (status);
-  do {
-    get_power_status(POWER_KEY, &status);
-    // status == 0 means pressed
-  } while (!status);
-}
-
 void debug (short s, short n1, short n2)
 {
   trace (s, n1, n2);
@@ -104,9 +90,9 @@ void trace (short s, short n1, short n2)
     play_system_sound (SOUND_QUEUED, s);
   set_lcd_number (LCD_UNSIGNED, n1, 3002);
   set_lcd_number (LCD_PROGRAM, n2, 0);
+  set_lcd_segment (LCD_SENSOR_1_VIEW);
   refresh_display();
   wait_for_view_press();
-  play_system_sound (SOUND_QUEUED, 0);
 }
 
 int main (void)
@@ -115,7 +101,9 @@ int main (void)
   init_power();
   init_serial (&state0, &state1, 1, 1);
  LABEL_DOWNLOAD:
+  play_system_sound (SOUND_QUEUED, 1);
   set_data_pointer (MEM_START);
+  clear_display();
   set_lcd_number (LCD_UNSIGNED, (short) 0, 3002);
   set_lcd_number (LCD_PROGRAM, (short) 0, 0);
   refresh_display();
@@ -163,7 +151,6 @@ int main (void)
       }
     }
   } while (1);
-  play_system_sound (SOUND_QUEUED, 3);
   // Initialize binary image location
   #if 0
   debug (-1, ((TWOBYTES) MEM_START) / 10, 0);
@@ -178,6 +165,9 @@ int main (void)
   #if DEBUG_RCX
   debug (-1, ((TWOBYTES) nextByte) / 10, 1);
   #endif
+  // Make sure memory allocation starts at an even address.
+  if (((TWOBYTES) nextByte) & 0x0001)
+    nextByte++;
   init_memory (nextByte, ((TWOBYTES) MEM_END - (TWOBYTES) nextByte) / 2);
   // Initialize special exceptions
   #if 0

@@ -20,7 +20,17 @@ Object *classCastException;
 Object *arithmeticException;
 Object *arrayIndexOutOfBoundsException;
 
-extern void trace (short s, short n1, short n2);
+// Temporary globals:
+
+static TWOBYTES gCurrentOffset;
+static MethodRecord *gMethodRecord = null;
+static StackFrame *gStackFrame;
+static ExceptionRecord *gExceptionRecord;
+static byte gNumExceptionHandlers;
+static MethodRecord *gExcepMethodRec = null;
+#ifdef EMULATE
+static byte *gExceptionPc;
+#endif
 
 void init_exceptions()
 {
@@ -33,33 +43,21 @@ void init_exceptions()
   arrayIndexOutOfBoundsException = new_object_for_class (JAVA_LANG_ARRAYINDEXOUTOFBOUNDSEXCEPTION);
 }
 
-void throw_exception_checked (Object *exception)
-{
-  if (exception == null)
-  {
-    throw_exception (nullPointerException);
-    return;
-  }
-  throw_exception (exception);
-}
-
 /**
  * @return false iff all threads are dead.
  */
 void throw_exception (Object *exception)
 {
-  TWOBYTES currentOffset;
-  MethodRecord *methodRecord = null;
-  StackFrame *stackFrame;
-  ExceptionRecord *exceptionRecord;
-  byte numExceptionHandlers;
-  MethodRecord *exceptionMr = null;
-  #ifdef EMULATE
-  byte *exceptionPc = pc;
-  #endif
-
   #ifdef VERIFY
   assert (exception != null, EXCEPTIONS0);
+  #endif
+  #if EMULATE
+  gExceptionPc = pc;
+  #endif
+  gExcepMethodRec = null;
+
+  #if 0
+  trace (-1, get_class_index(exception), 3);
   #endif
 
  LABEL_PROPAGATE:
@@ -69,42 +67,48 @@ void throw_exception (Object *exception)
     printf ("*** UNCAUGHT EXCEPTION: \n");
     printf ("--  Exception class   : %d\n", (int) get_class_index (exception));
     printf ("--  Thread            : %d\n", (int) currentThread->threadId);
-    printf ("--  Method signature  : %d\n", (int) exceptionMr->signatureId);
-    printf ("--  Root method sig.  : %d\n", (int) methodRecord->signatureId);
-    printf ("--  Bytecode offset   : %d\n", (int) exceptionPc - 
-            (int) get_code_ptr(exceptionMr));
+    printf ("--  Method signature  : %d\n", (int) gExcepMethodRec->signatureId);
+    printf ("--  Root method sig.  : %d\n", (int) gMethodRecord->signatureId);
+    printf ("--  Bytecode offset   : %d\n", (int) gExceptionPc - 
+            (int) get_code_ptr(gExcepMethodRec));
     #else
     
-    trace (4, exceptionMr->signatureId, get_class_index (exception) % 10);
+    trace (4, gExcepMethodRec->signatureId, get_class_index (exception) % 10);
 
     #endif EMULATE
     return;
   }
-  stackFrame = current_stackframe();
-  methodRecord = stackFrame->methodRecord;
-  if (exceptionMr == null)
-    exceptionMr = methodRecord;
-  exceptionRecord = (ExceptionRecord *) (get_binary_base() + methodRecord->exceptionTable);
-  currentOffset = (TWOBYTES) (pc - (get_binary_base() + methodRecord->codeOffset));
-  numExceptionHandlers = methodRecord->numExceptionHandlers;
-  while (numExceptionHandlers--)
+  gStackFrame = current_stackframe();
+  gMethodRecord = gStackFrame->methodRecord;
+
+  if (gExcepMethodRec == null)
+    gExcepMethodRec = gMethodRecord;
+  gExceptionRecord = (ExceptionRecord *) (get_binary_base() + gMethodRecord->exceptionTable);
+  gCurrentOffset = ptr2word(pc) - ptr2word(get_binary_base() + gMethodRecord->codeOffset);
+
+  #if 0
+  trace (-1, gCurrentOffset, 5);
+  #endif
+
+  gNumExceptionHandlers = gMethodRecord->numExceptionHandlers;
+  while (gNumExceptionHandlers--)
   {
-    if (currentOffset >= exceptionRecord->start && currentOffset <= exceptionRecord->end)
+    if (gCurrentOffset >= gExceptionRecord->start && gCurrentOffset <= gExceptionRecord->end)
     {
       // Check if exception class applies
-      if (instance_of (exception, exceptionRecord->classIndex))
+      if (instance_of (exception, gExceptionRecord->classIndex))
       {
         // Clear operand stack:
-        stackTop = stackFrame->localsBase + methodRecord->numLocals - 1;
-        stackFrame->stackTop = stackTop;
+        stackTop = gStackFrame->localsBase + gMethodRecord->numLocals - 1;
+        gStackFrame->stackTop = stackTop;
         // Jump to handler:
-        pc = get_binary_base() + methodRecord->codeOffset + 
-             exceptionRecord->handler;
-        stackFrame->pc = pc;
+        pc = get_binary_base() + gMethodRecord->codeOffset + 
+             gExceptionRecord->handler;
+        gStackFrame->pc = pc;
         return;
       }
     }
-    exceptionRecord++;
+    gExceptionRecord++;
   }
   // No good handlers in current stack frame - go up.
   do_return (0);

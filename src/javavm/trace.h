@@ -10,7 +10,12 @@
 
 #define VERIFY 1
 
+#else
+
+extern void trace (short s, short n1, short n2);
+
 #endif EMULATE
+
 
 #ifdef VERIFY
 

@@ -20,13 +20,26 @@
 #define F_SIZE_SHIFT   5
 #define F_OFFSET_MASK  0x1F
 
-void *installedBinary;
-
 #ifdef VERIFY
 boolean classesInitialized = false;
 #endif
 
 #define get_stack_object(MREC_)  ((Object *) *(stackTop - (MREC_)->numParameters + 1))
+
+// Reliable globals:
+
+void *installedBinary;
+
+// Temporary globals:
+
+// (Gotta be careful with these; a lot of stuff
+// is not reentrant because of globals like these).
+
+static MethodRecord *gMethodRecord;
+static ClassRecord *gClassRecord;
+static byte gByte2;
+
+// Methods:
 
 byte get_class_index (Object *obj)
 {
@@ -111,14 +124,12 @@ void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStatic,
  */
 MethodRecord *find_method (ClassRecord *classRecord, TWOBYTES methodSignature)
 {
-  MethodRecord *methodRecord;
-  byte i;
-
-  for (i = 0; i < classRecord->numMethods; i++)
+  gByte = classRecord->numMethods;
+  while (gByte--)
   {
-    methodRecord = get_method_record (classRecord, i);
-    if (methodRecord->signatureId == methodSignature)
-      return methodRecord;
+    gMethodRecord = get_method_record (classRecord, gByte);
+    if (gMethodRecord->signatureId == methodSignature)
+      return gMethodRecord;
   }
   return null;
 }
@@ -127,7 +138,6 @@ boolean dispatch_static_initializer (ClassRecord *aRec, byte *retAddr)
 {
   if (is_initialized (aRec))
     return false;
-
   set_initialized (aRec);
   if (!has_clinit (aRec))
     return false;
@@ -141,32 +151,28 @@ boolean dispatch_static_initializer (ClassRecord *aRec, byte *retAddr)
 
 void dispatch_virtual (Object *ref, TWOBYTES signature, byte *retAddr)
 {
-  ClassRecord *classRecord;
-  MethodRecord *methodRecord;
-  byte classIndex;
-
   if (ref == JNULL)
   {
     throw_exception (nullPointerException);
     return;
   }
-  classIndex = get_class_index(ref);
+  gByte2 = get_class_index(ref);
  LABEL_METHODLOOKUP:
-  classRecord = get_class_record (classIndex);
-  methodRecord = find_method (classRecord, signature);
-  if (methodRecord == null)
+  gClassRecord = get_class_record (gByte2);
+  gMethodRecord = find_method (gClassRecord, signature);
+  if (gMethodRecord == null)
   {
-    if (classIndex == JAVA_LANG_OBJECT)
+    if (gByte2 == JAVA_LANG_OBJECT)
     {
       throw_exception (noSuchMethodError);
       return;
     }
-    classIndex = classRecord->parentClass;
+    gByte2 = gClassRecord->parentClass;
     goto LABEL_METHODLOOKUP;
   }
-  if (dispatch_special (classRecord, methodRecord, retAddr))
+  if (dispatch_special (gClassRecord, gMethodRecord, retAddr))
   {
-    if (is_synchronized(methodRecord))
+    if (is_synchronized(gMethodRecord))
     {
       current_stackframe()->monitor = ref;
       enter_monitor (ref);
