@@ -1,0 +1,69 @@
+Java Tools
+----------
+
+Java versions of the the lejos Tools are now available.
+
+These are:
+
+firml - downloads the lejos firmware
+lejosjc - compiles lejos java source files
+lejoslink - links lejos programs and produces a binary file for download
+lejosdl - downloads lejos programs
+
+These are equivalents of lejosfirmdl, lejosc, lejos and lejosrun.
+
+These commands are issued as Unix/Linux shell scripts and Windows batch files.
+For example, there is a a shell script called firmdl, and a Windows batch 
+file called firmdl.bat in the lejos bin directory. They should run correctly
+under Unix, Linux, MAC OSX, Windows and cygwin, with the correct version being
+chosen automatically.
+
+The Java versions have almost exactly the same flags as the existing versions
+of the tools, but with the omission of some rarer options. firmdl does not 
+support fast download - lejosfirmdl supports this with serial towers only.
+
+These commands require the environment variable LEJOS_HOME to be set. For example,
+on Windows you might do:
+
+set LEJOS_HOME=c:\lejos
+
+The port that the IR Tower is connected to is specified in the normal way -
+either by RCXTTY=COM1 or RCXTTY=usb etc, or by a --tty option on the command.
+
+The normal usage of the commands is:
+
+firmdl
+       - to download the firmware
+
+lejosjc MyClass.java
+                     - to compile a java class
+
+lejoslink MyClass -o MyClass.bin
+                                 - to link the program and produce a binary file
+
+lejosdl MyClass.bin 
+                    - to download the binary file
+
+The other commonly used options are compiling multiple source files with lejosjc,
+linking multiple class files with lejoslink and producing verbose output from 
+lejoslink by:
+
+lejoslink -verbose MyClass1 MyClass2 ... -o MyClass.bin >MyClass.sig
+
+The verbose output lets you see which classes and methods are included and excluded
+in your linked binary.
+
+Use the -h or --help flag to get help on options, e.g:
+
+firmdl -h
+
+The advantages of the Java Tools over the current C tools are:
+
+ - They are more easily understood by Java programmers
+ - They are easier to port to some platforms
+ - The shell and batch files are easier to understand and modify to your needs
+ - It may be easier to use them in Java IDEs
+ - You can incorporate the download code in your own Java programs
+
+A future version of firmdl will implement fast download for serial and usb IR towers.
+
