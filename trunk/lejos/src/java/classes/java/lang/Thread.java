@@ -2,7 +2,9 @@ package java.lang;
 
 public abstract class Thread
 {
-  // Note: The following fiels are used by the VM.
+  // Note 1: This class cannot have a static initializer.
+
+  // Note 2: The following fiels are used by the VM.
   // Their sizes and location can only be changed
   // if classes.h is changed accordingly. Needless
   // to say, they are read-only.
@@ -11,7 +13,7 @@ public abstract class Thread
   private Object _TVM_waitingOn;
   private int _TVM_stackFrameArray;
   private int _TVM_stackArray;
-  private int _TVM_currentStackFrame;
+  private byte _TVM_stackFrameArraySize;
   private byte _TVM_threadId; 
   private byte _TVM_state; 
 
@@ -22,7 +24,7 @@ public abstract class Thread
   // Static state follows:
 
   private static byte _TVM_threadIdCounter;
-  private static Error _TVM_outOfMemoryError = new OutOfMemoryError();
+  private static Error _TVM_outOfMemoryError;
   
   public Thread()
   {
@@ -33,15 +35,14 @@ public abstract class Thread
   {
     this.name = name;
     if (_TVM_threadIdCounter >= 63)
-      _TVM_throwOutOfMemoryError();
+    {
+      if (_TVM_outOfMemoryError == null)
+        _TVM_outOfMemoryError = new OutOfMemoryError();
+      throw _TVM_outOfMemoryError;
+    }
     _TVM_threadId = ++_TVM_threadIdCounter;
   }
   
-  static void _TVM_throwOutOfMemoryError()
-  {
-    throw _TVM_outOfMemoryError;
-  }
-
   public native void start();
   public abstract void run();
 }

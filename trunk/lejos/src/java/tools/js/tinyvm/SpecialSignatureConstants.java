@@ -11,6 +11,8 @@ public interface SpecialSignatureConstants {
     "<clinit>()V",
     "start()V",
     "arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V",
+    "callRom0(S)V",
+    "callRom3(SSSS)V",
     "_TVM_main_method()V"
   };
 }

@@ -22,10 +22,10 @@ case OP_MULTIANEWARRAY:
 case OP_IALOAD:
 case OP_FALOAD:
 case OP_AALOAD:
-  // Stack size: -1
+  // Stack size: -2 + 1
   // Arguments: 0
   stackTop--;
-  *stackTop = get_array_word ((REFERENCE) *stackTop, 4, *(stackTop+1));
+  get_array_word (word2ptr(*stackTop), 4, stackTop[1], stackTop);
   if (gMustExit)
     return;
   goto LABEL_ENGINELOOP;
@@ -34,21 +34,22 @@ case OP_DALOAD:
   // Stack size: -2 + 2
   // Arguments: 0
   gInt = word2jint(*stackTop--) * 2;
-  gStackWord = *stackTop;
-  *stackTop++ = get_array_word (gStackWord, 4, gInt++);
-  *stackTop = get_array_word (gStackWord, 4, gInt);
+  gBytePtr = word2ptr(*stackTop);
+  get_array_word (gBytePtr, 4, gInt++, stackTop++);
+  get_array_word (gBytePtr, 4, gInt, stackTop);
   if (gMustExit)
     return;
   goto LABEL_ENGINELOOP;
 case OP_BALOAD:
 case OP_CALOAD:
 case OP_SALOAD:
-  // Stack size: -1
+  // Stack size: -2 + 1
   // Arguments: 0
   gByte = *(pc-1);
   stackTop--;
-  *stackTop = get_array_word (word2obj(*stackTop), 
-              (gByte == OP_BALOAD) ? 1 : 2, *(stackTop+1));
+  get_array_word (word2obj(*stackTop), 
+                 (gByte == OP_BALOAD) ? 1 : 2, *(stackTop+1),
+                 stackTop);
   if (gMustExit)
     return;
   goto LABEL_ENGINELOOP;

@@ -338,7 +338,8 @@ public class ClassRecord implements WritableData, Constants
   {
     InputStream pIn = aCP.getInputStream (aName);
     if (pIn == null)
-      Utilities.fatal ("Class " + aName + " not found.");
+      Utilities.fatal ("Class " + aName + " not found. Check your " +
+                       "TINYVMPATH variable.");
     ClassRecord pCR = new ClassRecord();
     pCR.iBinary = aBinary;
     pCR.iCF = new JClassFile();

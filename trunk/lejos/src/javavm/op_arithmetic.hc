@@ -80,7 +80,7 @@ case OP_DDIV:
   stackTop -= 2;
   goto LABEL_ENGINELOOP;
 
-#else // FP_ARITHMETIC
+#else // no FP_ARITHMETIC
 
 case OP_FADD:
 case OP_FSUB:

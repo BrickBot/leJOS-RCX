@@ -251,8 +251,8 @@ public class GenOpCodeFiles
     initOpCodeArray (flds);
     File pVmSrc = new File (pHome, "vmsrc");
     File pOpCodesH = new File (pVmSrc, "opcodes.h");
-    File pEmul = new File (pHome, "emul");
-    File pOpInfoH = new File (pEmul, "opcodeinfo.h");
+    File pEmul = new File (pHome, "vmtest");
+    File pOpInfoH = new File (pEmul, "opcodeinfo.c");
     File pTools = new File (pHome, "jtools");
     File pToolsJs = new File (pTools, "js");
     File pToolsJsTinyVM = new File (pToolsJs, "tinyvm");

@@ -47,7 +47,7 @@
  * supported for floats. (doubles are treated
  * as floats always).
  */
-#define FP_ARITHMETIC                    1
+#define FP_ARITHMETIC                    0
 
 /**
  * Slightly safer code?
