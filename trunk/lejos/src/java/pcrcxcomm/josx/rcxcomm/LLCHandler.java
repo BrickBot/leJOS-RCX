@@ -32,7 +32,7 @@ public class LLCHandler extends PacketHandler
          if (tower == null)
             tower = new Tower();
          if (!open)
-            tower.openTower();
+            tower.openTower(false);
          usbFlag = tower.isUSB()? 1 : 0;
          open = true;
       }

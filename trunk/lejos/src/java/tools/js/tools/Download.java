@@ -55,11 +55,11 @@ public class Download extends AbstractTool
       assert port != null: "Precondition: port != null";
       assert !isOpen(): "Precondition: !isOpen()";
 
-      _tower = new Tower(port, fastMode);
+      _tower = new Tower(port);
 
       try
       {
-         _tower.openTower();
+         _tower.openTower(fastMode);
       }
       catch (TowerException e)
       {

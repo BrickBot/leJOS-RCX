@@ -10,14 +10,6 @@ extern "C" {
 /*
  * Class:     josx_rcxcomm_Tower
  * Method:    close
- * Signature: (I)I
- */
-JNIEXPORT jint JNICALL Java_josx_rcxcomm_Tower_setFast
-  (JNIEnv *, jobject, jint);
-
-/*
- * Class:     josx_rcxcomm_Tower
- * Method:    close
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_josx_rcxcomm_Tower_close
@@ -25,27 +17,27 @@ JNIEXPORT jint JNICALL Java_josx_rcxcomm_Tower_close
 
 /*
  * Class:     josx_rcxcomm_Tower
- * Method:    hexdump
- * Signature: (Ljava/lang/String;[BI)V
+ * Method:    isRCXAlive
+ * Signature: ()Z
  */
-JNIEXPORT void JNICALL Java_josx_rcxcomm_Tower_hexdump
-  (JNIEnv *, jobject, jstring, jbyteArray, jint);
+JNIEXPORT jboolean JNICALL Java_josx_rcxcomm_Tower_isRCXAlive
+  (JNIEnv *, jobject);
 
 /*
  * Class:     josx_rcxcomm_Tower
- * Method:    isAlive
- * Signature: ()I
+ * Method:    isUSB
+ * Signature: ()Z
  */
-JNIEXPORT jint JNICALL Java_josx_rcxcomm_Tower_isAlive
+JNIEXPORT jboolean JNICALL Java_josx_rcxcomm_Tower_isUSB
   (JNIEnv *, jobject);
 
 /*
  * Class:     josx_rcxcomm_Tower
  * Method:    open
- * Signature: (Ljava/lang/String;)I
+ * Signature: (Ljava/lang/String;Z)I
  */
 JNIEXPORT jint JNICALL Java_josx_rcxcomm_Tower_open
-  (JNIEnv *, jobject, jstring);
+  (JNIEnv *, jobject, jstring, jboolean);
 
 /*
  * Class:     josx_rcxcomm_Tower
