@@ -1,5 +1,5 @@
 
-import tinyvm.rcx.*;
+import josx.platform.rcx.*;
 
 /**
  * This program can be used to test each sensor and motor

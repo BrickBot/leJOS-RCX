@@ -15,23 +15,56 @@ default: check all_jtools all_ctools core_classes tinyvm_emul
 all: default lejos_bin
 
 release:
-	cvs commit
-	cvs tag RELEASE_`cat VERSION`
-	make release_no_tag
-
-release_no_tag:
 	make clean
+	rm -rf apidocs
 	make all
-	rm -rf ${TEMP}/lejos_*
 	export TINYVM_VERSION=lejos_`cat VERSION`; make dir_and_zip
 
 dir_and_zip:
-	cp -r * ${TEMP}/${TINYVM_VERSION}
-	rm -rf `find ${TEM{}/${TINYVM_VERSION} -name 'CVS'`
-	cp -r * ${TEMP}/tinyvm_check
-	cd ${TEMP}; jar cvf ${TINYVM_VERSION}.zip ${TINYVM_VERSION}
 	rm -rf ${TEMP}/${TINYVM_VERSION}
+	mkdir ${TEMP}/${TINYVM_VERSION}
+	cp -r . ${TEMP}/${TINYVM_VERSION}
+	cd ${TEMP}/${TINYVM_VERSION}; make remove_useless_files
+	cd ${TEMP}; tar cvf ${TINYVM_VERSION}.tar ${TINYVM_VERSION}; gzip ${TINYVM_VERSION}.tar
+	diff bin/lejos.srec ${TEMP}/${TINYVM_VERSION}/bin/lejos.srec
 
+remove_useless_files:
+	rm -rf `find . -name 'CVS'`
+	rm -rf `find . -name '*.o'`
+	rm -rf `find . -name '*.class'`
+	rm -rf `find . -name '*.tvm'`
+	rm -rf `find . -name '*.bin'`
+	rm -rf `find . -name '*.exe'`
+	rm -rf `find . -name '*.core'`
+	rm -rf `find . -name '*.jar'`
+	rm -rf `find . -name '*.lst'`
+	rm -rf `find . -name 'core'`
+
+release_win:
+	make clean
+	rm -rf apidocs
+	make all
+	export TINYVM_VERSION=lejos_win32_`cat VERSION`; make dir_and_zip_win
+
+dir_and_zip_win:
+	rm -rf ${TEMP}/lejos
+	mkdir ${TEMP}/lejos
+	cp -r . ${TEMP}/lejos
+	cd ${TEMP}/lejos; make remove_useless_files_win
+	cd ${TEMP}; jar cvf ${TINYVM_VERSION}.zip lejos
+	diff bin/lejos.srec ${TEMP}/lejos/bin/lejos.srec
+
+remove_useless_files_win:
+	rm -rf `find . -name 'CVS'`
+	rm -rf `find . -name '*.o'`
+	rm -rf `find . -name '*.class'`
+	rm -rf `find . -name '*.tvm'`
+	rm -rf `find . -name '*.bin'`
+	rm -rf `find . -name '*.core'`
+	rm -rf `find . -name '*.lst'`
+	rm -rf `find . -name 'core'`
+	/bin/strip `find . -name '*.exe'`
+	
 check:
 	@if [ "${TINYVM_HOME}" != "" ]; then \
 	  echo "Note: The TINYVM_HOME variable is no longer needed"; \

@@ -9,6 +9,7 @@ RCXLOADER=../bin/${RCXLOADERNAME}
 UNIXLOADER=../bin/${UNIXLOADERNAME}
 CC=gcc
 CCOPT=-I../vmsrc -O2 -Wall -Wno-unused
+LIBS=
 TVMFIRMDL_OBJ=tvm_firmdl3.o util.o
 TVMCDEFS=-DTOOL_NAME=\"javac\" -DTOOL_ALT_VAR=\"JAVAC\"
 TVMPDEFS=-DTOOL_NAME=\"javap\" -DTOOL_ALT_VAR=\"JAVAP\"
@@ -25,7 +26,7 @@ programs: ${TVMFIRMDL} ${TVM} ${TVMC} ${TVMP} ${RCXLOADER} ${UNIXLOADER}
 	${CC} ${CCOPT} -c $*.c
 
 ${TVMFIRMDL}: ${TVMFIRMDL_OBJ}
-	${CC} ${TVMFIRMDL_OBJ} -o ${TVMFIRMDL}
+	${CC} ${TVMFIRMDL_OBJ} -o ${TVMFIRMDL} ${LIBS}
 
 ${TVM}: tvm.o
 	${CC} tvm.o -o ${TVM}
