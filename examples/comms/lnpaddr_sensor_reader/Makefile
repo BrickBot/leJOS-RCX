@@ -1,41 +1,56 @@
-LEJOSHOME = ../../..
+LEJOS_HOME = ../../..
 
-LEJOSC = $(LEJOSHOME)/bin/lejosc
-LEJOS = $(LEJOSHOME)/bin/lejos
-LEJOSRUN = $(LEJOSHOME)/bin/lejosrun
-LEJOSFIRMDL = $(LEJOSHOME)/bin/lejosfirmdl
+# Program specific
+PROGRAM = LNPAddrSensorReader
+HOST_PROGRAM = LNPAddrReadSensor
+
+# General
+COMPILER = $(LEJOS_HOME)/bin/lejosjc
+LINKER = $(LEJOS_HOME)/bin/lejoslink
+LOADER = $(LEJOS_HOME)/bin/lejosdl
+FIRMWARE_LOADER = $(LEJOS_HOME)/bin/firmdl
 
 CLASSPATH = .
-CLASSLIB = $(LEJOSHOME)/lib/classes.jar
+CLASSLIB = $(LEJOS_HOME)/lib/classes.jar
 
-PCSOURCES = LNPAddrReadSensor.java
+HOST_CLASSPATH = $(LEJOS_HOME)/lib/pcrcxcomm.jar:$(LEJOS_HOME)/bin:.
+LD_LIBRARY_PATH := $(LD_LIBRARY_PATH):$(LEJOS_HOME)/bin
+LD_PRELOAD = $(LEJOS_HOME)/bin/libirtrcx.so
 
-SOURCES = LNPAddrSensorReader.java
-OBJECTS = LNPAddrSensorReader.class
-PROGRAMS = LNPAddrSensorReader
-BINARY = LNPAddrSensorReader.bin
-SIGNATURE = LNPAddrSensorReader.sig
+SOURCES = $(PROGRAM).java
+OBJECTS = $(PROGRAM).class
+PROGRAMS = $(PROGRAM)
+BINARY = $(PROGRAM).bin
+SIGNATURE = $(PROGRAM).sig
+
+HOST_SOURCES = $(HOST_PROGRAM).java
+HOST_OBJECTS = $(HOST_PROGRAM).class
 
 .EXPORT_ALL_VARIABLES :
 
-.PHONY : run
+.PHONY : load firmdl host_run clean
 
-default : pc run
 
-pc :
-	javac -classpath ${LEJOSHOME}/lib/pcrcxcomm.jar ${PCSOURCES}
+default : load
 
-run : $(BINARY)
-	$(LEJOSRUN) $(BINARY)
+
+load : $(BINARY)
+	$(LOADER) $(BINARY)
 
 firmdl :
-	$(LEJOSFIRMDL)
+	$(FIRMWARE_LOADER)
 
 $(BINARY) : $(OBJECTS)
-	$(LEJOS) -verbose $(PROGRAMS) -o $(BINARY) > $(SIGNATURE)
+	$(LINKER) -verbose $(PROGRAMS) -o $(BINARY) > $(SIGNATURE)
 
 $(OBJECTS) : $(SOURCES) $(CLASSLIB)
-	$(LEJOSC) $(SOURCES)
+	$(COMPILER) $(SOURCES)
+
+$(HOST_OBJECTS) : $(HOST_SOURCES)
+	javac -classpath $(HOST_CLASSPATH) $(HOST_SOURCES)
+
+host_run : $(HOST_OBJECTS)
+	java -Djava.library.path=$(LEJOS_HOME)/bin -classpath $(HOST_CLASSPATH) $(HOST_PROGRAM)
 
 clean :
 	rm -f $(BINARY) $(SIGNATURE) *.class *~ core
