@@ -4,22 +4,17 @@ import josx.platform.rcx.*;
  * Entry point for the program. This version uses
  * the enhanced Thread interface available in lejos1.0.2
  */
-public class Main implements ButtonListener {
+public class Main {
 	public static void main (String[] arg)
 	  throws Exception {
-	  	try  {
-			// Won't return until the 'RUN' button is pressed.
-	  		new Main().runIt();
-	  	} catch (OutOfMemoryError e)  {
-		  	MinLCD.setNumber(0x301f,(int)Runtime.getRuntime().totalMemory(),0x3002);
-		  	MinLCD.refresh();
-	  	}
+		// Won't return until the 'RUN' button is pressed.
+	  	runIt();
 	  }
 	  
 	/**
 	 * Return the FSM for wandering around aimlessly
 	 */
-	Action[] getWanderFSM() {
+	static Action[] getWanderFSM() {
 		Action[] actions = new Action[3];
 
 		actions[0] = new Action() {
@@ -62,7 +57,7 @@ public class Main implements ButtonListener {
 	/**
 	 * Return the FSM for avoiding obstacles on the left.
 	 */
-	Action[] getAvoidLeftFSM() {
+	static Action[] getAvoidLeftFSM() {
 		Action[] actions = new Action[2];
 
 		actions[0] = new Action() {
@@ -80,7 +75,7 @@ public class Main implements ButtonListener {
 		actions[1] = new Action() {
 			public int act() {
 				Motor.C.forward();
-				return 200;
+				return 400;
 			}
 
 			public int nextState() {
@@ -94,7 +89,7 @@ public class Main implements ButtonListener {
 	/**
 	 * Return the FSM for avoiding obstacles on the right.
 	 */
-	Action[] getAvoidRightFSM() {
+	static Action[] getAvoidRightFSM() {
 		Action[] actions = new Action[2];
 
 		actions[0] = new Action() {
@@ -112,7 +107,7 @@ public class Main implements ButtonListener {
 		actions[1] = new Action() {
 			public int act() {
 				Motor.A.forward();
-				return 200;
+				return 400;
 			}
 
 			public int nextState() {
@@ -123,48 +118,30 @@ public class Main implements ButtonListener {
 		return actions;
 	}
 
+
 	/**
 	 * Build up the behavioural model. Wire the sensors to the actuators.
 	 * Kick 'em off. Wait until the RUN button is pressed and then return.
 	 */
-	public void runIt() {
-	  	Button.RUN.addButtonListener(this);
-
+	public static void runIt() {
 	  	Sense s1 = new SenseNoOwner(new Actuator(getWanderFSM()));
 		s1.setPri(Thread.MIN_PRIORITY);
 		Sense s2 = new SenseBumper(Sensor.S3, new Actuator(getAvoidLeftFSM()));
+
 		s2.setPri(Thread.MIN_PRIORITY+1);
 		Sense s3 = new SenseBumper(Sensor.S1, new Actuator(getAvoidRightFSM()));
+
 		s3.setPri(Thread.MIN_PRIORITY+1);
 	
 		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-		
+
 		s1.runIt();
 		s2.runIt();	
 		s3.runIt();
 
-		MinLCD.setNumber(0x301f,(int)Runtime.getRuntime().freeMemory(),0x3002);
-		MinLCD.refresh();
-
-		// Wait until RUN button is pressed.		
-		synchronized (Button.RUN) {
-			try  {
-				Button.RUN.wait();
-			} catch (InterruptedException ie) {
-			}
-		}
-	}
-	
-	public void buttonPressed(Button b) {
-	}
-		
-	/**
-	 * If the 'run' button is pressed and released, wake up runIt().
-	 */			
-	public void buttonReleased(Button b) {
-		synchronized (b) {
-			// Wake the wait() up.
-			b.notifyAll();
+		try {
+			Button.RUN.waitForPressAndRelease();
+		} catch (InterruptedException ie) {
 		}
 	}
 }
@@ -229,9 +206,6 @@ class Actuator extends Thread {
 	 * there is only one transition from each state to the next.
 	 */
 	public void run() {
-		MinLCD.setNumber(0x301f,task,0x3002);
-		MinLCD.refresh();
-
 		// Keep running until the program should exit.
 		synchronized (arbitrator) {
 			do {
@@ -249,8 +223,10 @@ class Actuator extends Thread {
 				
 				// Loop until we end or we loose ownership.				
 				while (owner == this && state != Action.END) {
-					MinLCD.setNumber(0x301f,(state+1)*10+task,0x3002);
-					MinLCD.refresh();
+/*
+	  	MinLCD.setNumber(0x301f,task * 10 + state,0x3002);
+	  	MinLCD.refresh();
+*/
 					try  {
 						// Call wait() because it releases the arbitrator.
 						arbitrator.wait(actions[state].act());
@@ -341,24 +317,22 @@ class SenseBumper extends Sense {
 	
 	public void run() {
 		// Never exit the thread
-		do {
+		while (true) {
 			// Grab the monitor of the bumper
 			synchronized (bumper) {
 			
 				// While bumper isn't pressed wait.
-				while (!bumper.readBooleanValue()) {
+				do {
 					try {
 						bumper.wait();
 					} catch (InterruptedException ie) {
 					}
-					Sound.playTone(440, 10);
-				}
+				} while (!bumper.readBooleanValue());
 			}
-			Sound.playTone(500, 10);
 			
 			// Execute our FSM
 			actuator.execute();
-		} while (true);
+		}
 	}
 }
 
@@ -375,14 +349,14 @@ class SenseNoOwner extends Sense  {
 	public void run() {
 		while (true) {
 			synchronized (Actuator.arbitrator) {
+				// If there is no owner, we'll take it.
+				if (Actuator.owner == null)
+					actuator.execute();
+
 				try {
 					Actuator.arbitrator.wait();	// Wait until notified
 				} catch (InterruptedException ie) {
 				}
-				
-				// If there is no owner, we'll take it.
-				if (Actuator.owner == null)
-					actuator.execute();
 			}	
 		}
 	}

@@ -132,7 +132,7 @@ Object *new_object_for_class (const byte classIndex)
   TWOBYTES instanceSize;
 
 #if DEBUG_MEMORY
-  printf("New object for class\n");
+  printf("New object for class %d\n", classIndex);
 #endif
   instanceSize = get_class_record(classIndex)->classSize;
   ref = memcheck_allocate (instanceSize);
@@ -181,6 +181,9 @@ Object *new_primitive_array (const byte primitiveType, STACKWORD length)
     return JNULL;
   }
   allocSize = comp_array_size (length, primitiveType);
+#if DEBUG_MEMORY
+  printf("New array of type %d, length %ld\n", primitiveType, length);
+#endif
   ref = memcheck_allocate (allocSize);
   if (ref == null)
     return JNULL;
@@ -387,7 +390,7 @@ TWOBYTES *allocate (TWOBYTES size)
   TWOBYTES *ptr = startPtr;
   
 #if DEBUG_MEMORY
-  printf("Allocate %d\n", size);
+  printf("Allocate %d - free %d\n", size, free-size);
 #endif
   while (ptr < memoryTop)
   {
@@ -467,6 +470,11 @@ void deallocate (TWOBYTES *p, TWOBYTES size)
   #endif
 
   free += size;
+
+#if DEBUG_MEMORY
+  printf("Deallocate %d - free %d\n", size, free);
+#endif
+
   ((Object*)p)->flags.all = size;
 #endif
 }
