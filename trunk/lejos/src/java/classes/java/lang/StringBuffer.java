@@ -65,6 +65,14 @@ public class StringBuffer
   {
     return new String (characters, 0, characters.length);
   }
+
+  /**
+  * Retrieves the contents of the StringBuffer in the form of an array of characters.
+  */
+  public char [] getChars()
+  {
+    return characters;
+  }
 }
 
 
