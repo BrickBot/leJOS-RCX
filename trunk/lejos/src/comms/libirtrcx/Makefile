@@ -44,8 +44,8 @@ ifneq (,$(findstring $(OSTYPE),cygwin32 cygwin_nt-5.0 cygwin_nt-5.1 CYGWIN_NT-4.
 	RCXCOMM_OS_H=rcx_comm_win.h
 	EXT=.exe
 	LIBIRTRCX=$(LEJOS_HOME)/bin/irtrcx.dll
-	CFLAGS=-mno-cygwin -Wl,--add-stdcall-alias -shared -D__CYGWIN32__
-	LFLAGS=-shared
+	CFLAGS=-mno-cygwin -D__CYGWIN32__
+	LFLAGS=-mno-cygwin -Wl,--add-stdcall-alias -shared
 endif
 
 ifneq (,$(findstring $(OSTYPE), darwin))
