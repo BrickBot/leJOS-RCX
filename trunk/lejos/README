@@ -4,13 +4,13 @@ Summary
 
 -- You should have JDK1.1 or JDK1.2.
 -- Your PATH must contain the JDK's bin directory.
--- Type 'make' to finish installation of leJOS.
+-- In Unix, type 'make' to finish installation of leJOS.
 -- Add leJOS's bin directory to your PATH.
 -- Set RCXTTY to your serial device (e.g. com1).
 -- Download firmware using lejosfirmdl.
 -- Compile using lejosc instead of javac.
 -- Run programs in the RCX using lejos.
--- Run programs in the host using lejos-emul.
+-- Run programs in the host using lejos-unix.
 -- Exceptions: Use lejos -verbose. Exceptions
    are shown in the RCX as [XXXX Y], where 
    XXXX = method_signature, and 
@@ -45,12 +45,12 @@ to these, leJOS also offers:
 - More APIs.
 - Floating point operations (doubles work like floats).
 - String constants.
-- Comparison and casting of 8-byte longs (but not arithmetic).
+- Casting of 8-byte longs (but not logic or arithmetic).
 - Marks references in the stack (which makes it feasible
   to implement garbage collection).
 
 TinyVM is still around simply as a low-footprint alternative
-to leJOS. TinyVM is about 5 Kb smaller in the RCX.
+to leJOS. TinyVM is about 6 Kb smaller in the RCX.
 
 How do you pronounce leJOS?
 ---------------------------
@@ -64,7 +64,8 @@ Requirements
   (The JDK is used during installation, for compilation,
   and to run some tools provided with leJOS, e.g. the linker).
 
-- leJOS is known to work on Linux, CygWin and Solaris.
+- leJOS is known to work on Linux and Windows. It should 
+  work on other Unix systems.
 
 Setup
 -----
@@ -93,22 +94,12 @@ Downloading the Firmware:
   in the 200s or 300s), and you should hear a 
   double beep.
 
-Example
--------
-
-[...]
-     
-Footprint
----------
-
-[...]
-
 Emulation
 ---------
 
 You should be able to run linked programs in the 
 development machine. All you need to do is use
-lejos-emul instead of lejos.
+lejos-unix instead of lejos.
 
 In some cases it might be easier to debug
 programs with the emulated VM, and you'll also 
@@ -162,19 +153,19 @@ Known Bugs
 Documentation
 -------------
 
-[...]
-
-Typing 'make javadoc' is all that is currently available.
+The latest API Reference should be available at
+lejos.sourceforge.net. The API Reference for this release
+can be obtained with 'make javadoc'.
 
 About the License
 -----------------
 
-I'm releasing under the Mozilla Public License (see LICENSE)
+We are releasing under the Mozilla Public License (see LICENSE)
 for now, since Kekoa Proudfoot's librcx is under that same 
-license, and leJOS is linked against -lrcx and -lfloat.
-No changes have been made to those libraries, so they haven't
-been redistributed. They are only needed if you are planning
-to modify the native C source code. 
+license, and leJOS is linked against -lrcx and -lfloat, which
+are part of librcx. No changes have been made to those libraries, 
+so they haven't been redistributed. They are only needed if you 
+are planning to modify the native C source code. See docs/hacking. 
 
 Questions/Problems
 ------------------
