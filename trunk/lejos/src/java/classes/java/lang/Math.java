@@ -7,7 +7,7 @@ package java.lang;
  */
 public final class Math {
 
-   	final static double [] DIGIT = {45.0, 26.56505118, 14.03624347, 7.125016349, 3.576334375, 1.789910608, 0.89517371, 0.447614171, 0.2238105, 0.111905677, 0.055952892, 0.027976453, 0.013988227, 0.006994114, 0.003497057};
+	final static double [] DIGIT = {45.0, 26.56505118, 14.03624347, 7.125016349, 3.576334375, 1.789910608, 0.89517371, 0.447614171, 0.2238105, 0.111905677, 0.055952892, 0.027976453, 0.013988227, 0.006994114, 0.003497057};
 	
 	// Math constants
 	public static final double E = 2.718281828459045;
@@ -18,20 +18,16 @@ public final class Math {
 	private static final int COS = 1;
 	private static final int TAN = 2;
 
-	private Math()
-	{
-	}
-	
 	/**
-	 * Cosine function.
-	 */
+	* Cosine function.
+	*/
 	public static double cos(double a) {
 		return trig(a, COS);
 	}
 
-        /**
-	 * Power function.
-	 */
+	/**
+	* Power function.
+	*/
 	// will redo pow() properly later to handle doubles for b.
 	public static double pow(double a, int b) {
 		double c = 1.0;
@@ -100,10 +96,8 @@ public final class Math {
 	
 	private static double trig(double a, int returnType) {
 	 	
-   	// ** Since the Java tan method uses radians, this function
-   	// probably should:
-   	// a = LegoMath.java.lang.Math.toDegrees(a);
-	        a = toDegrees (a);
+   	// This method uses radians input, just like the official java.lang.Math
+   	a = toDegrees (a);
    	
    	// ** When a=0, 90, 180, 270 should return even number probably
    	
@@ -117,18 +111,18 @@ public final class Math {
    		a = a + 360;	
    	}
    	   	
-   	// Cos is negative in quadrants 2-3 (angle 90-270)
+   	// Cos is negative in quadrants 2 and 3 (angle 90-270)
    	int cosMult = 1;
    	if((a<270)&&(a>90))
    		cosMult = -1;  		
    	
-   	// Sin is negative in quadrants 3-4 (angle 180-360)
+   	// Sin is negative in quadrants 3 and 4 (angle 180-360)
    	int sinMult = 1;
    	if((a<360)&&(a>180))
    		sinMult = -1;
    	
    	// Transform the starting angle to between 0-90
-   	// Since the core trig method is only good for angles 0-90, must do
+   	// Since the cordic method is only accurate for angles 0-90, must do
    	// this to handle angles 90-360
    	if(a>=180)
    		a = a - 180;
@@ -136,18 +130,17 @@ public final class Math {
    	if(a>90)
    		a = 180 - a;
    	
-	final double[] digit = DIGIT;
    	// ** The core trig calculations to produce Cos & Sin **
-		int N = digit.length - 1;
+		int N = DIGIT.length - 1;
 		double x = 0.607252935;  // Absolute best accuracy available
 		double y = 0.0;
 		
 		for(int i = 0;i <= N;i++) {
 			// ** Temp code:
 			//System.out.println(i + "  " + "x = " + x + "  y = " + y + "  A = " + a + "  digit = " + digit[i]); 
-			double dx = x / java.lang.Math.pow(2, i);
-    	double dy = y / java.lang.Math.pow(2, i);
-    	double da = digit[i];
+			double dx = x / Math.pow(2, i);
+    	double dy = y / Math.pow(2, i);
+    	double da = DIGIT[i];
     	
     	if(a >= 0) {
     		x = x - dy;
@@ -174,6 +167,36 @@ public final class Math {
 			return y/x;
 	}
 	
+	/**
+	 * Arc tangent function
+	 */
+	public static double atan(double a) {
+  	
+   	int N = DIGIT.length - 1;
+		double x = 1.0;
+		double y = a;
+		double t = 0;
+		
+		for(int i = 0;i <= N;i++) {
+			
+			double dx = x / Math.pow(2, i);
+    	double dy = y / Math.pow(2, i);
+    	double da = DIGIT[i];
+    	
+    	if(y < 0) {
+    		x = x - dy;
+    		t = t - da;
+    		y = y + dx;
+    	}
+    	else {
+    		x = x + dy;
+    		t = t + da;
+    		y = y - dx;
+    	}
+		}
+		
+		return toRadians(t);
+	}
 
         /**
          * Converts radians to degrees.
