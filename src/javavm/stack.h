@@ -57,21 +57,9 @@ static inline boolean is_stack_overflow (MethodRecord *methodRecord)
   return (stackTop + methodRecord->maxOperands) >= (stack_array() + STACK_SIZE);
 }
 
-static inline void update_stack_frame (StackFrame *stackFrame)
-{
-  stackFrame->stackTop = stackTop;
-  stackFrame->isReference = isReference;
-  stackFrame->pc = pc;
-}  
+extern void update_stack_frame (StackFrame *stackFrame);
 
-static inline void update_registers (StackFrame *stackFrame)
-{
-  pc = stackFrame->pc;
-  stackTop = stackFrame->stackTop;
-  localsBase = stackFrame->localsBase;
-  isReference = stackFrame->isReference;
-  isReferenceBase = stackFrame->isReferenceBase;
-}
+extern void update_registers (StackFrame *stackFrame);
 
 /**--**/
 
