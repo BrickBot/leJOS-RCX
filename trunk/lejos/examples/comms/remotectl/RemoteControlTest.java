@@ -1,12 +1,15 @@
 /*
 * $Log$
+* Revision 1.2  2002/11/01 16:01:28  mpscholz
+* changed startup display
+*
 * Revision 1.1  2002/09/28 10:29:34  mpscholz
 * initial version for the test example of the remotecontrol package
 *
 */
 
 import josx.platform.rcx.*;
-import josx.platform.rcx.remotecontrol.*;
+import josx.rcxcomm.remotecontrol.*;
 
 /////////////////////////////////////////////////////////
 /**
