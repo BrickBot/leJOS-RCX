@@ -3,7 +3,7 @@ package josx.platform.rcx;
 /**
  * LCD routines.
  */
-public class LCD implements LCDConstants
+public class LCD
 {
   private LCD()
   {
@@ -17,7 +17,7 @@ public class LCD implements LCDConstants
    */
   public static void showNumber (int aValue)
   {
-    setNumber( LCD_UNSIGNED, aValue, LCD_DECIMAL_0);
+    setNumber (0x301f, aValue, 0x3002);
     refresh();
   }
 
@@ -29,7 +29,7 @@ public class LCD implements LCDConstants
    */
   public static void showProgramNumber (int aValue)
   {
-    setNumber( LCD_PROGRAM, aValue, 0);
+    setNumber (0x3017, aValue, 0);
     refresh();
   }
 
