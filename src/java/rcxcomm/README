@@ -11,7 +11,7 @@ A simple program to send a byte is:
 import josx.rcxcomm.*;
 import java.io.*;
 
-class TestRCXComm {
+public class TestRCXComm {
 
   public static void main(String [] args) {
 
@@ -60,7 +60,7 @@ The serial or USB tower is accessed by a dynamically linked library
 using the Java Native Interface (JNI). On Windows this is irtower.dll
 and needs to be on you path. As it is in the lejos bin directory, it
 will normally already be on your PATH. On Linux or Mac OSX, it is a
-shared library, irtower.so, which needs to be on your shared library 
+shared library, libirtower.so, which needs to be on your shared library 
 path. This can be achieved by adding the lejos bin directory to 
 LD_LIBRARY_PATH.
 
@@ -69,12 +69,17 @@ The port used for the IR Tower can be set in two ways:
   - You can set RCXTTY and call RCXPort with no parameter
   - You can pass the port name on the RCXPort constructor.
 
-For USB the port name is "USB", for a serial tower it is "COM1", "COM2" etc.
+For USB the port name is "usb", for a serial tower it is "COM1", "COM2" etc.
 
 There is an extra class available for the PC and Mac - RCXBean. This 
 provides a Java Bean interface for sending and receiving data from the RCX.
 It is useful for creating Web sites using Java Server Pages (JSPs) that 
 access the RCX to read sensors, perform actions, etc.
+
+For serial towers on the PC or Mac, there is an extra method: setListen.
+This is used to keep the serial tower alive for receiving data. Use 
+setListen(true) when you want to receive date and setListen(false) to conserve 
+the serial tower batteries. You don't need to call setListen for USB towers.
 
 The protocol used by josx.rcxcomm is rather slow, and is not suitable for
 sending large amounts of data.
