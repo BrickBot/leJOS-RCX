@@ -192,30 +192,37 @@ void free_array (Object *objectRef)
  * @param reqDimensions Number of requested dimensions for allocation.
  */
 Object *new_multi_array (byte elemType, byte totalDimensions, 
-                         byte reqDimensions)
+                         byte reqDimensions, STACKWORD *numElemPtr)
 {
-  STACKWORD numElements;
   Object *ref;
-  Object *ref2;
 
   #ifdef VERIFY
   assert (totalDimensions >= 1, MEMORY6);
   assert (reqDimensions <= totalDimensions, MEMORY8);
   #endif
 
+  #if 0
+  printf ("new_multi_array (%d, %d, %d)\n", (int) elemType, (int) totalDimensions, (int) reqDimensions);
+  #endif
+
   if (reqDimensions == 0)
     return JNULL;
-  numElements = *stackTop--;
+
+  #if 0
+  printf ("num elements: %d\n", (int) *numElemPtr);
+  #endif
+
   if (totalDimensions == 1)
-    return new_primitive_array (elemType, numElements);
-  ref = new_primitive_array (T_REFERENCE, numElements);
+    return new_primitive_array (elemType, *numElemPtr);
+
+  ref = new_primitive_array (T_REFERENCE, *numElemPtr);
   if (ref == JNULL)
     return JNULL;
-  while (--numElements >= 0)
+  while ((*numElemPtr)--)
   {
-    ref2 = new_multi_array (elemType, totalDimensions - 1, reqDimensions - 1);
-    ref_array(ref)[numElements] = ptr2word (ref2);
-    //set_array_word ((byte *) ref, 4, numElements, ptr2word (ref2));
+    ref_array(ref)[*numElemPtr] = ptr2word (
+      new_multi_array (elemType, totalDimensions - 1, reqDimensions - 1,
+      numElemPtr - 1));
   }
   return ref;
 }

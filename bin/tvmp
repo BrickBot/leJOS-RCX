@@ -1,14 +1,8 @@
 #!/bin/sh
 
-if [ "${TINYVM_HOME}" = "" ]; 
+if [ "${TINYVM_HOME}" != "" ]; 
 then
-  echo Error: TINYVM_HOME undefined.
-  exit 1
-fi
-
-if [ "${TINYVMPATH}" = "" ];
-then
-  echo Warning: TINYVMPATH undefined.
+  echo Warning: TINYVM_HOME is no longer needed.
 fi
 
 if [ "${JAVAP}" = "" ];
@@ -16,7 +10,8 @@ then
   JAVAP=javap
 fi
 
-JCCP=${TINYVMPATH}:${TINYVM_HOME}/lib/classes.jar
+TINYVM_HOME="`dirname $0`/.."
+JCCP="${TINYVMPATH}:${TINYVM_HOME}/lib/classes.jar:${CLASSPATH}"
 ${JAVAP} -classpath ${JCCP} $@
 
 

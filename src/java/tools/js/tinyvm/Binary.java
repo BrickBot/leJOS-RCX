@@ -11,7 +11,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
   final RecordTable iEntireBinary = new Sequence();
 
   // Contents of binary:
-  final MasterRecord iMasterRecord = new MasterRecord (this); // DONE
+  final MasterRecord iMasterRecord = new MasterRecord (this);
   final EnumerableSet iClassTable = new EnumerableSet();
   final EnumerableSet iConstantTable = new EnumerableSet();
   final RecordTable iMethodTables = new Sequence();
@@ -23,6 +23,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
   final RecordTable iConstantValues = new Sequence();
 
   // Other state:
+  final Hashtable iSpecialSignatures = new Hashtable();
   final Hashtable iClasses = new Hashtable();
   final HashVector iSignatures = new HashVector();
 
@@ -97,8 +98,15 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
   {
     for (int i = 0; i < SIGNATURES.length; i++)
     {
-      iSignatures.addElement (new Signature (SIGNATURES[i]));
+      Signature pSig = new Signature (SIGNATURES[i]);
+      iSignatures.addElement (pSig);
+      iSpecialSignatures.put (pSig, SIGNATURES[i]);
     }
+  }
+
+  public boolean isSpecialSignature (Signature aSig)
+  {
+    return iSpecialSignatures.containsKey (aSig);
   }
 
   public void processConstants()

@@ -10,7 +10,7 @@ extern void free_array (Object *objectRef);
 extern Object *new_object_checked (byte classIndex, byte *btAddr);
 extern Object *new_object_for_class (byte classIndex);
 extern Object *new_primitive_array (byte primitiveType, STACKWORD length);
-extern Object *new_multi_array (byte elemType, byte totalDimensions, byte reqDimensions);
+extern Object *new_multi_array (byte elemType, byte totalDimensions, byte reqDimensions, STACKWORD *numElemPtr);
 extern void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr);
 extern void save_word (byte *ptr, byte aSize, STACKWORD aWord);
 

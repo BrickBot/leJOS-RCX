@@ -12,7 +12,9 @@ case OP_NEWARRAY:
 case OP_MULTIANEWARRAY:
   // Stack size: -N + 1
   // Arguments: 3
-  *(++stackTop) = obj2word(new_multi_array (pc[0], pc[1], pc[2]));
+  gBytePtr = (byte *) new_multi_array (pc[0], pc[1], pc[2], stackTop);
+  stackTop -= pc[2];
+  *(++stackTop) = ptr2word (gBytePtr);
   pc += 3;
   goto LABEL_ENGINELOOP;
 case OP_IALOAD:

@@ -147,8 +147,8 @@ Example
      state. (Note that any pending queued tones 
      will not be heard).
 
-     You can kill any Java program running in the
-     RCX by pressing On/Off.
+     You can kill any Java program running under
+     TinyVM by pressing On/Off.
     
      As you may have guessed, you can only 
      download programs when the firmware is in

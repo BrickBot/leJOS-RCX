@@ -1,16 +1,11 @@
 #!/bin/sh
 
-if [ "${TINYVMPATH}" = "" ];
-then
-  echo Warning: TINYVMPATH undefined.
-fi
-
 JAVAVM=java
 TINYVMOPTIONS="${TINYVMOPTIONS} -Dtinyvm.home=${TINYVM_HOME}"
 
-TINYVMPATH=${TINYVMPATH}:${TINYVM_HOME}/lib/classes.jar
-export CLASSPATH=$CLASSPATH:${TINYVM_HOME}/lib/jtools.jar
-#echo TINYVMOPTIONS=${TINYVMOPTIONS}
-${JAVAVM} ${TINYVMOPTIONS} js.tinyvm.TinyVM -classpath ${TINYVMPATH} $@
+TINYVMPATH="${TINYVMPATH}:${TINYVM_HOME}/lib/classes.jar:${CLASSPATH}"
+export CLASSPATH="${TINYVM_HOME}/lib/jtools.jar"
+
+${JAVAVM} ${TINYVMOPTIONS} js.tinyvm.TinyVM -classpath "${TINYVMPATH}" $@
 
 

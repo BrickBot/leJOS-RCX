@@ -1,8 +1,8 @@
 
-TVMFIRMDL=${TINYVM_HOME}/bin/tvmfirmdl
-TVM=${TINYVM_HOME}/bin/tvm
+TVMFIRMDL=../bin/old-tvmfirmdl
+TVM=../bin/tvm
 CC=gcc
-CCOPT=-I${TINYVM_HOME}/vmsrc -O2 -Wall -Wno-unused
+CCOPT=-I../vmsrc -O2 -Wall -Wno-unused
 
 default: programs
 

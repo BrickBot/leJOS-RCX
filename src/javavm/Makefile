@@ -2,8 +2,8 @@
 # Makefile
 # Adapted from config.mk in librcx by Kekoa Proudfoot.
 
-include ${TINYVM_HOME}/Makefile.config
-include ${TINYVM_HOME}/Makefile.common
+include ../Makefile.config
+include ../Makefile.common
 
 CFLAGS += -I${LIBRCX_HOME}/lib -O2 -Wall -Wno-unused
 LFLAGS += -L${LIBRCX_HOME}/lib
@@ -13,7 +13,7 @@ LIBS = -lrcx
 CC = $(BINDIR)/$(BINPREFIX)gcc
 AS = $(BINDIR)/$(BINPREFIX)as
 AR = $(BINDIR)/$(BINPREFIX)ar
-LD = $(BINDIR)/$(BINPREFIX)ld -T${TINYVM_HOME}/vmsrc/rcx.lds -u__start
+LD = $(BINDIR)/$(BINPREFIX)ld -Trcx.lds -u__start
 
 # other variables
 
@@ -41,7 +41,7 @@ COFF = --oformat coff-h8300
 
 #####################################################################
 
-TINYVMBINARY = ${TINYVM_HOME}/bin/tinyvm.srec
+TINYVMBINARY = ../bin/tinyvm.srec
 PROGS = ${TINYVMBINARY}
 OBJS = interpreter.o threads.o exceptions.o \
        memory.o language.o native.o main.o

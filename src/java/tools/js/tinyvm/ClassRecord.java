@@ -23,6 +23,11 @@ public class ClassRecord implements WritableData, Constants
   int iArrayElementType;
   int iFlags;
 
+  public String getName()
+  {
+    return iCF.getName();
+  }
+
   public int getLength()
   {
     return IOUtilities.adjustedSize (
@@ -172,6 +177,11 @@ public class ClassRecord implements WritableData, Constants
       if (pEntry instanceof JCPE_Class)
       {
         String pClassName = ((JCPE_Class) pEntry).getName();
+        if (pClassName.startsWith ("["))
+	{
+          Utilities.trace ("Skipping array: " + pClassName);
+          continue;
+	}
         if (aClasses.get (pClassName) == null)
 	{
           ClassRecord pRec = ClassRecord.getClassRecord (pClassName, 
@@ -193,6 +203,17 @@ public class ClassRecord implements WritableData, Constants
   MethodRecord getMethodRecord (Signature aSig)
   {
     return (MethodRecord) iMethods.get (aSig);
+  }
+
+  MethodRecord getVirtualMethodRecord (Signature aSig)
+  {
+    MethodRecord pRec = getMethodRecord (aSig);
+    if (pRec != null)
+      return pRec;
+    ClassRecord pParent = getParent();
+    if (pParent == null)
+      return null;
+    return pParent.getVirtualMethodRecord (aSig);
   }
 
   int getMethodIndex (MethodRecord aRecord)
@@ -283,7 +304,7 @@ public class ClassRecord implements WritableData, Constants
       Signature pSignature = new Signature (pMethod.getName(), 
                                          pMethod.getDescriptor());
       MethodRecord pMethodRecord = new MethodRecord (pMethod, pSignature, 
-        iCF, iBinary, aExceptionTables, aSignatures);
+        this, iBinary, aExceptionTables, aSignatures);
       iMethodTable.add (pMethodRecord);
       iMethods.put (pSignature, pMethodRecord);
     }
@@ -340,8 +361,11 @@ public class ClassRecord implements WritableData, Constants
   {
     InputStream pIn = aCP.getInputStream (aName);
     if (pIn == null)
-      Utilities.fatal ("Class " + aName + " not found. Check your " +
-                       "TINYVMPATH variable.");
+    {
+      Utilities.fatal ("Class " + aName.replace ('/', '.') + 
+        " (file " + aName + 
+        ".class) not found in CLASSPATH: " + aCP);
+    }
     ClassRecord pCR = new ClassRecord();
     pCR.iBinary = aBinary;
     pCR.iCF = new JClassFile();

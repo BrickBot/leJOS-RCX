@@ -56,8 +56,8 @@ void assert (boolean aCond, int aCode)
 
 #endif
 
-const char versionArray[] = { 0xE2, 0x00, 0x03, 0x00, 0x01, 
-                                    0x00, 0x00, 0x00, 0x00 };
+char versionArray[] = { 0xE2, 0x00, 0x03, 0x00, 0x01, 
+                        0x00, 0x00, 0x00, 0x00 };
 
 char timerdata1[6];
 async_t timerdata0;
@@ -90,7 +90,8 @@ void debug (short s, short n1, short n2)
 
 void wait_for_power_release()
 {
-  do {
+  do
+  {
     get_power_status (POWER_KEY, &status);
   } while (status == 0);
 }
@@ -212,7 +213,8 @@ int main (void)
   play_system_sound (SOUND_QUEUED, 1);
   hookCommand = HC_NONE;
   clear_display();
-  set_lcd_number (LCD_UNSIGNED, (short) 0, 3002);
+  get_power_status (POWER_BATTERY, &status);
+  set_lcd_number (LCD_UNSIGNED, status, 3002);
   set_lcd_number (LCD_PROGRAM, (short) 0, 0);
   //update_run_status();
   refresh_display();
@@ -321,6 +323,8 @@ int main (void)
     goto LABEL_SHUTDOWN_POWER;        
   goto LABEL_DOWNLOAD;
  LABEL_SHUTDOWN_POWER:
+  clear_display();
+  refresh_display();
   shutdown_sensors();
   shutdown_buttons();
   shutdown_power();

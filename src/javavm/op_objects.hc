@@ -133,7 +133,7 @@ case OP_CHECKCAST:
   // Arguments: 2
   // Ignore hi byte
   pc++;
-  if (!instance_of (word2obj (*stackTop), *pc))
+  if (*stackTop != JNULL && !instance_of (word2obj (*stackTop), *pc))
     throw_exception (classCastException);
   pc++;
   goto LABEL_ENGINELOOP;
