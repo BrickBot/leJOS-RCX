@@ -34,8 +34,7 @@ public class TextLCD
    */
   public static final void print(String str)
   {
-    // This is leaking
-    print (str.toCharArray());
+    print (StringUtils.getCharacters(str));
   }
 
   /**
