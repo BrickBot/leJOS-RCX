@@ -32,8 +32,6 @@ JIRTRCX_LIB_SRC="src/comms/libjirtrcx"
 export JAVA
 
 default: emulator irtrcx_libs all_java scripts tinyvm_emul
-	@echo ""
-	@echo "====> Installation of leJOS done!"
 
 all: default lejos_bin
 
@@ -113,7 +111,9 @@ irtrcx_libs:
 	cd $(JIRTRCX_LIB_SRC); $(MAKE) $(MFLAGS)
 
 lejos_bin:
+	@echo ""
 	@echo "====> Making leJOS RCX binary (lejos.srec)"
+	@echo ""
 	cd $(PLAT_RCX_SRC); $(MAKE) $(MFLAGS)
 
 tinyvm_emul:
