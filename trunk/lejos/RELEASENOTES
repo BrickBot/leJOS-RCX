@@ -2,7 +2,12 @@ leJOS 1.0.4:
 ------------
 
   Juergen Stuber has added:
-  - serial listeners
+  - Serial listeners
+  
+  Paul Andrews has added (with a lot of help from Martin Nielsen):
+  - Number formatting to StringBuffer
+  - delete() method to StringBuffer
+  - Fixed Math.log() and Math.exp() to handle a much larger range of numbers.
 
 leJOS 1.0.3:
 -----------
