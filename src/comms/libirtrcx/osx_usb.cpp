@@ -22,14 +22,43 @@
  *
  *  OS X specific code taken in parts from Dave Baum's OS X implementation of NCQ.
  *
+ *  13/2/2005 Made interface generic C to avoid all the IOKit and Mach types impacting
+ *  all the other code. Also removed most of the code that was aware of the RCX 
+ *  communication protocol, since that is now in cross-platform code. Andy Belk
+ *
  */
 
 //#define OSX_DEBUG 1
 
 #include "osx_usb.h"
+#include <AvailabilityMacros.h>
+#include <CoreFoundation/CoreFoundation.h>
+#include <unistd.h>
+#include <sys/time.h>
+
+#include <mach/mach.h>         // For mach_port_deallocate()
 #include <IOKit/IOKitLib.h>
 #include <IOKit/IOCFPlugIn.h>
 #include <IOKit/usb/IOUSBLib.h>
+#include <IOKit/usb/USBSpec.h>
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_0
+// On 10.1 and later use a more complete USB interface,
+#define IOUSBDeviceInterface IOUSBDeviceInterface182
+#define IOUSBInterfaceInterface IOUSBInterfaceInterface182
+#endif
+
+#define LegoUSBRelease 256
+
+#define LEGO_SEND_PIPE 2
+#define LEGO_RECV_PIPE 1
+
+#ifndef RCX_COMM_H_INCLUDED
+#include "rcx_comm.h"
+#endif
+
+
+static io_iterator_t			gRawAddedIter;
 
 #define OSX_USB_BUFFERSIZE 4096
 
@@ -45,22 +74,15 @@ static int 				gReadDone;
 static short 				LegoUSBVendorID = 1684;
 static short 				LegoUSBProductID = 1;
 
-extern int 			__comm_debug;
+extern int				__comm_debug;
 
 static mach_port_t			gMasterPort;
 
 static IOUSBDeviceInterface		**dev = NULL;
 
 
-int osx_usb_nbread (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int timeout);
-
 /* Callback for async read */
 void osx_usb_readComplete(void *refCon, IOReturn result, void *arg0);
-
-/*
- * Locates matching device. Returns resulting device count (zero, 1 or > 1). Only 1 is useful right now.
- */
-unsigned int FindDevice(void *refCon, io_iterator_t iterator);
 
 /* Hexdump routine */
 
@@ -195,7 +217,7 @@ IOReturn FindInterfaces(IOUSBDeviceInterface **dev, IOUSBInterfaceInterface ***i
 }
 
 /*
- * Returns the number of matching devices found.
+ * Locates matching device. Returns resulting device count (zero, 1 or > 1). Only 1 is useful right now.
  */
 unsigned int FindDevice(void *refCon, io_iterator_t iterator) {
     kern_return_t		kr;
@@ -228,7 +250,7 @@ unsigned int FindDevice(void *refCon, io_iterator_t iterator) {
         // Now create the device interface
         result = (*plugInInterface)->QueryInterface(plugInInterface,
                                                 CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID),
-                                                    (LPVOID)&dev);
+                                                    (LPVOID *)&dev);
         // Don't need intermediate Plug-In Interface
         (*plugInInterface)->Release(plugInInterface);
 
@@ -273,14 +295,16 @@ unsigned int FindDevice(void *refCon, io_iterator_t iterator) {
     return count;
 }
 
+#if 0
 void osx_usb_rcx_wakeup (IOUSBInterfaceInterface** intf)
 {
     char wakeup[] = {0xfe, 0x10, 0xfe, 0x10};
     osx_usb_write(intf, &wakeup, 4);
     usleep(20000);
 }
+#endif
 
-IOUSBInterfaceInterface** osx_usb_rcx_init (int is_fast)
+intptr_t osx_usb_rcx_init (int is_fast)
 {
     CFMutableDictionaryRef	matchingDict;
     kern_return_t		result;
@@ -291,7 +315,7 @@ IOUSBInterfaceInterface** osx_usb_rcx_init (int is_fast)
     result = IOMasterPort(MACH_PORT_NULL, &gMasterPort);
     if (result || !gMasterPort) {
         printf("ERR: Couldn't create master I/O Kit port(%08x)\n", result);
-        return NULL;
+        return (intptr_t)NULL;
     }
 #ifdef OSX_DEBUG
     printf("Created Master Port.\n");
@@ -302,7 +326,7 @@ IOUSBInterfaceInterface** osx_usb_rcx_init (int is_fast)
     if (!matchingDict) {
         printf("Couldn't create a USB matching dictionary\n");
         mach_port_deallocate(mach_task_self(), gMasterPort);
-        return NULL;
+        return (intptr_t)NULL;
     }
     CFDictionarySetValue(matchingDict, CFSTR(kUSBVendorID),
                          CFNumberCreate(kCFAllocatorDefault, kCFNumberShortType, &LegoUSBVendorID));
@@ -320,20 +344,22 @@ IOUSBInterfaceInterface** osx_usb_rcx_init (int is_fast)
             printf("unable to find interfaces on device: %08x\n", result);
             (*dev)->USBDeviceClose(dev);
             (*dev)->Release(dev);
-            return NULL;
+            return (intptr_t)NULL;
         }
-        osx_usb_rcx_wakeup(intf);
-        return intf;
+        // Used to do a wakeup here. Not clear it's needed since Linux does not do it.
+        //osx_usb_rcx_wakeup(intf);
+        return (intptr_t)intf;
     } else if (device_count > 1) {
         printf("too many matching devices (%d) !\n", device_count);
     } else {
    	printf("no matching devices found\n");
     }
-    return NULL;
+    return (intptr_t)NULL;
 }
 
-void osx_usb_rcx_close (IOUSBInterfaceInterface** intf)
+void osx_usb_rcx_close (intptr_t usbii)
 {
+    IOUSBInterfaceInterface **intf = (IOUSBInterfaceInterface**)usbii;
     kern_return_t	kr;
     
     (void) (*intf)->USBInterfaceClose(intf);
@@ -403,7 +429,8 @@ void osx_usb_readComplete(void *refCon, IOReturn result, void *arg0) {
 
 
 /* Timeout read routine */
-int osx_usb_nbread (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int timeout) {
+int osx_usb_nbread (intptr_t usbii, void *buf, int maxlen, int timeout) {
+    IOUSBInterfaceInterface **intf = (IOUSBInterfaceInterface **)usbii;
     IOReturn kr;
     timeout *= 5;   // For safety
 #ifdef OSX_DEBUG
@@ -464,7 +491,8 @@ int osx_usb_nbread (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int t
 #if 0
 // Note: We can't useReadPipeTO() USB as Lego Tower is an interrupt device
 // This version blocks
-int osx_usb_read(IOUSBInterfaceInterface **intf, void *buf, int len, int timeout) {
+int osx_usb_read(intptr_t usbii, void *buf, int len, int timeout) {
+    IOUSBInterfaceInterface **intf = (IOUSBInterfaceInterface **)usbii;
     if (intf == NULL) {
         return -1;
     }
@@ -508,213 +536,8 @@ int osx_usb_read(IOUSBInterfaceInterface **intf, void *buf, int len, int timeout
 }
 #endif // 0
 
-int osx_usb_rcx_recv (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int timeout, int use_comp) {
-    if (intf == NULL) {
-        return -1;
-    }
-    char *bufp = (char *)buf;
-    unsigned char msg[OSX_USB_BUFFERSIZE];
-    int msglen;
-    int sum;
-    int pos;
-    int len;
-    int i;
-    /* Receive message */
-
-    for (i = 0; i < maxlen; i++) {
-        msg[i] = 0x00;
-    }
-
-    msglen = osx_usb_nbread(intf, msg, maxlen, timeout);
-
-    if (__comm_debug == 1) {
-        printf("recvlen = %d\n", msglen);
-        /* hexdump("R", msg, msglen); */
-    }
-
-    /* Check for message */
-    if (!msglen)
-        return RCX_NO_RESPONSE;
-
-    /* Verify message */
-    if (use_comp) {
-        if (msglen < 5 || (msglen - 3) % 2 != 0)
-            // 55 swallow workaround
-            if (msglen < 4 || (msglen -2) % 2 != 0)
-                return RCX_BAD_RESPONSE;
-
-        if (msg[0] != 0x55 || msg[1] != 0xff || msg[2] != 0x00)
-            if (msg[0] != 0xff || msg[1] != 0x00)
-                return RCX_BAD_RESPONSE;
-            else
-                pos = 2;
-        else
-            pos = 3;
-
-        for (sum = 0, len = 0; pos < msglen - 2; pos += 2) {
-            if (msg[pos] != ((~msg[pos+1]) & 0xff))
-                return RCX_BAD_RESPONSE;
-            sum += msg[pos];
-            if (len < maxlen)
-                bufp[len++] = msg[pos];
-        }
-
-        if (msg[pos] != ((~msg[pos+1]) & 0xff)) {
-            return RCX_BAD_RESPONSE;
-        }
-
-        if (msg[pos] != (sum & 0xff)) {
-            return RCX_BAD_RESPONSE;
-        }
-
-        /* Success */
-        return len;
-    } else {
-        if (msglen < 4) {
-            return RCX_BAD_RESPONSE;
-        }
-
-        if (msg[0] != 0x55 || msg[1] != 0xff || msg[2] != 0x00) {
-            return RCX_BAD_RESPONSE;
-        }
-
-        for (sum = 0, len = 0, pos = 3; pos < msglen - 1; pos++) {
-            sum += msg[pos];
-            if (len < maxlen) {
-                bufp[len++] = msg[pos];
-            }
-        }
-
-        /* Return success if checksum matches */
-        if (msg[pos] == (sum & 0xff)) {
-            return len;
-        }
-
-        /* Failed.  Possibly a 0xff byte queued message? (legos unlock firmware) */
-        for (sum = 0, len = 0, pos = 3; pos < msglen - 2; pos++) {
-            sum += msg[pos];
-            if (len < maxlen) {
-                bufp[len++] = msg[pos];
-            }
-        }
-
-        /* Return success if checksum matches */
-        if (msg[pos] == (sum & 0xff)) {
-            return len;
-        }
-
-        /* Failed.  Possibly a long message? */
-        /* Long message if opcode is complemented and checksum okay */
-        /* If long message, checksum does not include opcode complement */
-        for (sum = 0, len = 0, pos = 3; pos < msglen - 1; pos++) {
-            if (pos == 4) {
-                if (msg[3] != ((~msg[4]) & 0xff)) {
-                    return RCX_BAD_RESPONSE;
-                }
-            } else {
-                sum += msg[pos];
-                if (len < maxlen) {
-                    bufp[len++] = msg[pos];
-                }
-            }
-        }
-
-        if (msg[pos] != (sum & 0xff)) {
-            return RCX_BAD_RESPONSE;
-        }
-
-        /* Success */
-        return len;
-    }
-}
-
-int osx_usb_rcx_send(IOUSBInterfaceInterface **intf, void *buf, int len, int use_comp) {
-    char *bufp = (char *)buf;
-    char buflen = len;
-    char msg[OSX_USB_BUFFERSIZE];
-    int msglen;
-    int sum;
-    IOReturn kr;
-
-    /* drain buffer */
-    while (osx_usb_nbread(intf, msg, 64, 100) > 0) {
-    }
-
-    /* Encode message */
-    msglen = 0;
-    sum = 0;
-
-    if (use_comp) {
-        msg[msglen++] = 0x55;
-        msg[msglen++] = 0xff;
-        msg[msglen++] = 0x00;
-        while (buflen--) {
-            msg[msglen++] = *bufp;
-            msg[msglen++] = (~*bufp) & 0xff;
-            sum += *bufp++;
-        }
-        msg[msglen++] = sum;
-        msg[msglen++] = ~sum;
-    } else {
-        msg[msglen++] = 0xff;
-        while (buflen--) {
-            msg[msglen++] = *bufp;
-            sum += *bufp++;
-        }
-        msg[msglen++] = sum;
-    }
-    if (__comm_debug == 1) {
-        osx_hexdump("Sending: ", &msg, msglen);
-    }
-
-    kr = (*intf)->WritePipe(intf, LEGO_SEND_PIPE, &msg, msglen);
-    if (kIOReturnSuccess != kr) {
-        printf("unable to do osx_usb_rcx_send (%08x)\n", kr);
-        (void) (*intf)->USBInterfaceClose(intf);
-        (void) (*intf)->Release(intf);
-        return -1;
-    }
-    return len;
-}
-
-int osx_usb_rcx_sendrecv (IOUSBInterfaceInterface **intf, void *send, int slen, void *recv, int rlen, int timeout, int retries, int use_comp) {
-    int status = 0;
-
-#ifdef OSX_DEBUG
-    printf("sendrecv %d:\n", slen);
-#endif
-    while (retries--) {
-        if ((status = osx_usb_rcx_send(intf, send, slen, use_comp)) < 0) {
-            if (__comm_debug == 1)
-#ifdef OSX_DEBUG
-                printf("status = %s\n", rcx_strerror(status));
-#endif
-            continue;
-        }
-        if ((status = osx_usb_rcx_recv(intf, recv, rlen, timeout, use_comp)) < 0) {
-            if (__comm_debug == 1)
-#ifdef OSX_DEBUG
-                printf("status = %s\n", rcx_strerror(status));
-#endif
-            continue;
-        }
-        break;
-    }
-
-    return status;
-}
-
-int osx_usb_rcx_is_alive(IOUSBInterfaceInterface **intf, int use_comp) {
-    unsigned char send[1] = { 0x10 };
-    unsigned char recv[1];
-    if (intf == NULL) {
-        return -1;
-    }
-    
-    return (osx_usb_rcx_sendrecv(intf, send, 1, recv, 1, 100, 5, use_comp) == 1);
-}
-
-int osx_usb_write(IOUSBInterfaceInterface **intf, const void *buf, int len) {
+int osx_usb_write(intptr_t usbii, const void *buf, int len) {
+    IOUSBInterfaceInterface **intf = (IOUSBInterfaceInterface **)usbii;
     if (intf == NULL) {
         return -1;
     }
@@ -748,4 +571,3 @@ int osx_usb_write(IOUSBInterfaceInterface **intf, const void *buf, int len) {
 #endif
     return len;
 }
-

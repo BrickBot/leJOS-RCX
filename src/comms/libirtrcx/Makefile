@@ -21,6 +21,7 @@
 #	- reworked, adapted to refactorings
 #
 
+PWD := $(shell pwd)
 CC = $(shell $(LEJOS_HOME)/cctest.sh)
 
 COPT = -O2
@@ -28,10 +29,11 @@ COPT = -O2
 # COPT = -O0
 
 # Default: Unix
-EXTRA_OS_SRCS =
+EXTRA_OS_SRCS = 
 CFLAGS = -Wall -shared -fpic
 LFLAGS = -shared
 IRTRCX = $(LEJOS_HOME)/bin/libirtrcx.so
+LINK = $(CC)
 
 # Windows with CygWin installed
 ifneq (,$(findstring cygwin,$(OSTYPE)))
@@ -46,21 +48,26 @@ ifneq (,$(findstring darwin,$(OSTYPE)))
 	CFLAGS=-g
 	LFLAGS=-dynamiclib -framework IOKit -framework CoreFoundation
 	IRTRCX=$(LEJOS_HOME)/bin/libirtrcx.dylib
+	override LINK=$(CXX)
 endif
 
-SRCS = rcx_comm.c rcx_comm_$(OSTYPE).c $(EXTRA_OS_SRCS)
+SRCS = $(addprefix $(PWD)/, rcx_comm.c rcx_comm_$(OSTYPE).c $(EXTRA_OS_SRCS))
 OBJS = $(addsuffix .o, $(basename $(SRCS)))
 
 default: all
+
 all: $(IRTRCX)
 
 $(IRTRCX): $(OBJS)
-	$(CC) -o $(IRTRCX) $(OBJS) $(LFLAGS)
+	$(LINK) -o $(IRTRCX) $(OBJS) $(LFLAGS)
 
 $(OBJS): $(SRCS) rcx_comm.h rcx_comm_os.h rcx_comm_$(OSTYPE).h
 
 %.o: %.c
 	$(CC) -c -o $@ $(COPT) $(CFLAGS) "$<"
+
+%.o: %.cpp
+	$(CXX) -c -o $@ $(COPT) $(CFLAGS) "$<"
 
 .SUFFIXES: .cpp .o
 
