@@ -23,8 +23,24 @@ public class Button
    */
   public static final Button RUN = new Button (0x01);
 
-  private int iCode;
+  /**
+   * Array containing VIEW, PRGM and RUN, in that order.
+   */
+  public static final Button[] BUTTONS = new Button[3];
+  
+  private static final ButtonListenerThread LISTENER_THREAD = new ButtonListenerThread();
 
+  private int iCode;
+  private ButtonListener[] iListeners = new ButtonListener[4];
+  private int iNumListeners;
+  
+  static
+  {
+    BUTTONS[0] = Button.VIEW; 
+    BUTTONS[1] = Button.PRGM; 
+    BUTTONS[2] = Button.RUN; 
+  }
+  
   private Button (int aCode)
   {
     iCode = aCode;
@@ -43,8 +59,26 @@ public class Button
    */
   public final void waitForPressAndRelease()
   {
-    while (!isPressed()) {}
-    while (isPressed()) {}
+    while (!isPressed())
+      Thread.yield();
+    while (isPressed())
+      Thread.yield();
+  }
+
+  /**
+   * Adds a listener of button events. Each button can serve at most
+   * 4 listeners.
+   */
+  public synchronized void addButtonListener (ButtonListener aListener)
+  {
+    iListeners[iNumListeners++] = aListener;
+    if (!LISTENER_THREAD.isAlive())
+    {
+      // Hack: Force initialization of Native
+      Native.getDataAddress (null);    
+      // Start thread
+      LISTENER_THREAD.start();
+    }
   }
 
   /**
@@ -62,5 +96,51 @@ public class Button
       return Native.readMemoryShort (pAddr);
     }
   }
+
+  static class ButtonListenerThread extends Thread
+  {    
+    static boolean[] WAS_PRESSED = new boolean[3];
+    
+    public void run()
+    {
+      Button[] pButtons = BUTTONS;
+      boolean[] pWasPressedArray = WAS_PRESSED;
+      for (;;)
+      {
+        for (int i = 0; i < 3; i++)
+        {
+	  Button pButton = pButtons[i];
+          boolean pPressed = pButton.isPressed();
+	  if (pPressed != pWasPressedArray[i])
+	  {
+  	    synchronized (pButton)
+	    {
+              int pNumListeners = pButton.iNumListeners;
+  	      ButtonListener[] pListeners = pButton.iListeners;
+	      if (pPressed)
+	      {
+	        for (int j = 0; j < pNumListeners; j++)
+	        {
+	          pListeners[j].buttonPressed (pButton);
+		  Thread.yield();
+	        }
+	      }
+	      else
+	      {
+	        for (int j = 0; j < pNumListeners; j++)
+	        {
+	          pListeners[j].buttonReleased (pButton);
+		  Thread.yield();
+	        } 		    
+	      }
+	    }
+	    pWasPressedArray[i] = pPressed;
+  	  }
+	  Thread.yield();
+        }
+      }	    
+    }
+  }
+  
 }
 
