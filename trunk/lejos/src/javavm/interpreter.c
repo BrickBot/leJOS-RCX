@@ -224,6 +224,7 @@ void engine()
     }
     if( currentThread == null   /* no runnable thread */
         && gRequestCode == REQUEST_TICK){ /* no important request */
+      idle_hook();
       schedule_request( REQUEST_SWITCH_THREAD);
     }
   }

@@ -35,6 +35,10 @@ static inline void tick_hook( void)
   }
 }
 
+static inline void idle_hook()
+{
+}
+
 /**
  * Called after thread switch
  */
