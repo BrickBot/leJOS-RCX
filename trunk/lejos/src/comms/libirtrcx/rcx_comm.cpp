@@ -289,8 +289,7 @@ int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout_ms)
 	int result = 0;
 
 	// Receive message
-	// TODO better use maxlen + x ???
-	int expected = BUFFERSIZE;
+	int expected = 3 + maxlen + 1; // TODO correct? was BUFFERSIZE...
 	int read = rcxRead(port, msg, expected, timeout_ms); 
  
 	// Check for message
@@ -312,7 +311,6 @@ int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout_ms)
 		return RCX_BAD_RESPONSE;
 	}
 
-   if (__comm_debug) printf("test for normal message\n");
 	for (sum = 0, len = 0, pos = 3; pos < read - 1; pos++) 
 	{
 		sum += msg[pos];
@@ -325,12 +323,12 @@ int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout_ms)
 	// Return success if checksum matches
 	if (msg[pos] == (sum & 0xff))
 	{
-		if (__comm_debug) hexdump("R", msg, len);
+      if (__comm_debug) printf("normal message\n");
+		if (__comm_debug) hexdump("R", bufp, len);
 		return len;
 	}
 	
 	// Failed. Possibly a 0xff byte queued message? (legos unlock firmware)
-   if (__comm_debug) printf("test for queued message\n");
 	for (sum = 0, len = 0, pos = 3; pos < read - 2; pos++) 
 	{
 		sum += msg[pos];
@@ -343,12 +341,12 @@ int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout_ms)
 	// Return success if checksum matches
 	if (msg[pos] == (sum & 0xff))
 	{
-		if (__comm_debug) hexdump("R", msg, len);
+      if (__comm_debug) printf("queued message\n");
+		if (__comm_debug) hexdump("R", bufp, len);
 		return len;
 	}
 
 	// Failed. Possibly a long message?
-   if (__comm_debug) printf("test for long message\n");
 	/* Long message if opcode is complemented and checksum okay */
 	/* If long message, checksum does not include opcode complement */
 	for (sum = 0, len = 0, pos = 3; pos < read - 1; pos++) 
@@ -373,7 +371,8 @@ int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout_ms)
 	// Return success if checksum matches
 	if (msg[pos] == (sum & 0xff))
 	{
-		if (__comm_debug) hexdump("R", msg, len);
+      if (__comm_debug) printf("long message\n");
+		if (__comm_debug) hexdump("R", bufp, len);
 		return len;
 	}
 
@@ -391,7 +390,7 @@ int rcxReceiveSlow (void* port, void* buf, int maxlen, int timeout_ms)
 	int result = 0;
 
 	// Receive message
-	int expected = maxlen * 2 + 3 + 2;
+	int expected = 3 + maxlen * 2 + 2;
 	int read = rcxRead(port, msg, expected, timeout_ms); 
  
 	// Check for message
