@@ -62,6 +62,7 @@ void update_registers (StackFrame *stackFrame)
   localsBase = stackFrame->localsBase;
 }
 
+/* Turns out inlines aren't really inlined.
 inline byte get_thread_id (Object *obj)
 {
   return obj->threadId;
@@ -81,6 +82,12 @@ inline void set_monitor_count (Object *obj, byte count)
 {
   obj->monitorCount = count;
 }
+*/
+
+#define get_thread_id(obj) ((obj)->threadId)
+#define set_thread_id(obj,_threadId) ((obj)->threadId = (_threadId))
+#define inc_monitor_count(obj) ((obj)->monitorCount++)
+#define set_monitor_count(obj,count) ((obj)->monitorCount = (count))
 
 /**
  * Allocate stack frames
@@ -100,15 +107,6 @@ boolean init_thread (Thread *thread)
   printf("Setting intial priority to %d\n", thread->priority);
   #endif
 
-/*  
-  if (thread->state != NEW || thread->threadId == NO_OWNER)
-  {
-    // Thread already initialized?
-    // This assumes object creation sets state field to zero (NEW).
-    throw_exception (outOfMemoryError);
-    return false;
-  }
-*/
   if (thread->state != NEW)
   {
     throw_exception(illegalStateException);
@@ -233,68 +231,118 @@ boolean switch_thread()
       	(int)candidate->daemon
              );
       #endif
-      if (!currentThread)	// We don't have a running thread yet
-      {
-      	// See if we can move a thread to the running state
-        switch (candidate->state)
-        {
-          case CONDVAR_WAITING:
-            // We are waiting to be notified
-            if ((candidate->sleepUntil > 0) && (get_sys_time() >= (FOURBYTES) candidate->sleepUntil))
-            {
-  #if DEBUG_MONITOR
-        printf ("Waking up waiting thread %d: %d\n", (int) candidate, candidate->threadId);
-  #endif
-              // We will drop through to mon waiting.
-            }
-            else if (candidate->interruptState == INTERRUPT_CLEARED)
-              break;
-            else
-              candidate->interruptState = INTERRUPT_GRANTED;
-
-            // candidate->state = MON_WAITING;
-            // drop through
-          case MON_WAITING:
-            {
-              Object *pObj = word2obj(candidate->waitingOn);
-              // We are waiting to enter a synchronized block
-              #ifdef VERIFY
-              assert (pObj != JNULL, THREADS6);
-              #endif
       
-              if (get_thread_id(pObj) == NO_OWNER)
-              {
-                // NOW enter the monitor (guaranteed to succeed)
-                enter_monitor(candidate, pObj);
-                
-                // Set the monitor depth to whatever was saved.
-                set_monitor_count(pObj, candidate->monitorCount);
-                
-                // Let the thread run.
-                candidate->state = RUNNING;
-    
-                #ifdef SAFE
-                candidate->waitingOn = JNULL;
-                #endif
-              }
-            }
+      // See if we can move a thread to the running state. Used to not do this if we
+      // had already found one, but turns out to be easiest if we are avoiding
+      // priority inversion.
+      switch (candidate->state)
+      {
+        case CONDVAR_WAITING:
+          // We are waiting to be notified
+          if ((candidate->sleepUntil > 0) && (get_sys_time() >= (FOURBYTES) candidate->sleepUntil))
+          {
+#if DEBUG_MONITOR
+      printf ("Waking up waiting thread %d: %d\n", (int) candidate, candidate->threadId);
+#endif
+            // We will drop through to mon waiting.
+          }
+          else if (candidate->interruptState == INTERRUPT_CLEARED)
             break;
-          case SLEEPING:
-            if (candidate->interruptState != INTERRUPT_CLEARED
-                || (get_sys_time() >= (FOURBYTES) candidate->sleepUntil))
+          else
+            candidate->interruptState = INTERRUPT_GRANTED;
+
+          // candidate->state = MON_WAITING;
+          // drop through
+        case MON_WAITING:
+          {
+            Object *pObj = word2obj(candidate->waitingOn);
+            byte threadId = get_thread_id(pObj);
+
+            // We are waiting to enter a synchronized block
+            #ifdef VERIFY
+            assert (pObj != JNULL, THREADS6);
+            #endif
+             
+            if (threadId == NO_OWNER)
             {
-        #if DEBUG_THREADS
-        printf ("Waking up sleeping thread %d: %d\n", (int) candidate, candidate->threadId);
-        #endif
+              // NOW enter the monitor (guaranteed to succeed)
+              enter_monitor(candidate, pObj);
+              
+              // Set the monitor depth to whatever was saved.
+              set_monitor_count(pObj, candidate->monitorCount);
+              
+              // Let the thread run.
               candidate->state = RUNNING;
-              if (candidate->interruptState != INTERRUPT_CLEARED)
-            	candidate->interruptState = INTERRUPT_GRANTED;
+  
               #ifdef SAFE
-    	    candidate->sleepUntil = JNULL;
-              #endif // SAFE
+              candidate->waitingOn = JNULL;
+              #endif
             }
-            break;
-          case STARTED:      
+#if PI_AVOIDANCE
+            // Only avoid priority inversion if we don't already have a thread to run.
+            else if (currentThread == null)
+            {
+            	Thread *pOwner;
+            	int j;
+            	
+            	// Track down who owns this monitor and run them instead.            	
+            	// Could be 'waiting' in a native method, or we could be deadlocked!
+find_next:
+            	if (candidate->threadId != threadId)
+            	{
+                    for (j=MAX_PRIORITY-1; j >= 0; j--)
+                    {
+                      pOwner = threadQ[j];
+                      if (!pOwner)
+                        continue;
+                        
+                      do {
+                        // Remember threadQ[j] is the last thread on the queue
+                        pOwner = word2ptr(pOwner->nextThread);
+                        if (pOwner->threadId == threadId)
+                        {
+            		      if (pOwner->state == RUNNING)
+            		      {
+            			    currentThread = pOwner;
+            			    goto done_pi;
+            			  }
+            			  
+            		      // if owner is waiting too, iterate down.
+            		      if (pOwner->state == MON_WAITING)
+            		      {
+            			    threadId = get_thread_id(word2obj(pOwner->waitingOn));
+            			    if (threadId != NO_OWNER)
+            				  goto find_next;
+            		      }
+                        }
+                      } while (pOwner != threadQ[j]);
+                    }                   
+                    // If we got here, we're in trouble, just drop through.
+            	}
+            }
+done_pi:
+#endif // PI_AVOIDANCE
+          
+          }
+          break;
+        case SLEEPING:
+          if (candidate->interruptState != INTERRUPT_CLEARED
+              || (get_sys_time() >= (FOURBYTES) candidate->sleepUntil))
+          {
+      #if DEBUG_THREADS
+      printf ("Waking up sleeping thread %d: %d\n", (int) candidate, candidate->threadId);
+      #endif
+            candidate->state = RUNNING;
+            if (candidate->interruptState != INTERRUPT_CLEARED)
+          	candidate->interruptState = INTERRUPT_GRANTED;
+            #ifdef SAFE
+  	    candidate->sleepUntil = JNULL;
+            #endif // SAFE
+          }
+          break;
+        case STARTED:
+          if (currentThread == null)
+          {      
             // Put stack ptr at the beginning of the stack so we can push arguments
             // to entry methods. This assumes set_top_word or set_top_ref will
             // be called immediately below.
@@ -313,7 +361,7 @@ boolean switch_thread()
               set_top_ref (JNULL);
               // Push stack frame for main method:
               mRec= find_method (classRecord, main_4_1Ljava_3lang_3String_2_5V);
-              dispatch_special (find_method (classRecord, main_4_1Ljava_3lang_3String_2_5V), null);
+              dispatch_special (mRec, null);
               // Push another if necessary for the static initializer:
               dispatch_static_initializer (classRecord, pc);
             }
@@ -326,24 +374,24 @@ boolean switch_thread()
             // was just created
             stackFrame = current_stackframe();
             update_stack_frame (stackFrame);
-            break;
-          case RUNNING:
-            // Its running already
-          case DEAD:
-            // Dead threads should be handled earlier
-          default:
-            // ???
-            break;
-        }
+          }
+          break;
+        case RUNNING:
+          // Its running already
+        case DEAD:
+          // Dead threads should be handled earlier
+        default:
+          // ???
+          break;
+      }
 
-        // Do we now have a thread we want to run?
-        // Note we may later decide not to if all non-daemon threads have died        
-        if (candidate->state == RUNNING)
-        {
-          currentThread = candidate;
-          // Move thread to end of queue
-          *pThreadQ = candidate;
-        }
+      // Do we now have a thread we want to run?
+      // Note we may later decide not to if all non-daemon threads have died        
+      if (currentThread == null && candidate->state == RUNNING)
+      {
+        currentThread = candidate;
+        // Move thread to end of queue
+        *pThreadQ = candidate;
       }
       
       if (!candidate->daemon)
