@@ -268,7 +268,7 @@ public class Download extends AbstractTool
       send[2] = 69; // 'E'
       send[3] = 71; // 'G'
       send[4] = 79; // 'O'
-      send[5] = (byte) 174; // '®'
+      send[5] = (byte) 174; // trademark symbol (R) in ISO-8859-1
 
       // Use longer timeout so ROM has time to checksum firmware
       try
