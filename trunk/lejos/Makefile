@@ -23,7 +23,7 @@ release:
 	cvs tag RELEASE_`cat VERSION`
 	rm -rf ${TEMP}/tinyvm_release
 	cvs export -D tomorrow -d ${TEMP}/tinyvm_release tinyvm
-	zip -r ${TEMP}/tinyvm_`cat VERSION` ${TEMP}/tinyvm_release
+	cd ${TEMP} zip -r tinyvm_`cat VERSION`.zip tinyvm_release
 	diff bin/tinyvm.srec ${TEMP}/tinyvm_release/bin/tinyvm.srec
 
 check:
