@@ -30,14 +30,14 @@ public class Test16
 
   public static void main (String[] argv)
   {
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 50; i++)
     {
       int pValue = retvalue();
       ROM.setLcdNumber (ROM.LCD_CODE_UNSIGNED, pValue, 
                         ROM.LCD_POINT_DECIMAL_0);      
-      ROM.setLcdNumber (ROM.LCD_CODE_PROGRAM, i, 
-                        ROM.LCD_POINT_DECIMAL_0);      
+      ROM.setLcdNumber (ROM.LCD_CODE_PROGRAM, i % 10, (short) 0); 
       ROM.refreshLcd();
+      for (int k = 0; k < 1000; k++) { }
     }
   }
 }

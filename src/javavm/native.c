@@ -35,7 +35,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       trace (-1, (TWOBYTES) paramBase[1], 7);
       trace (-1, (TWOBYTES) paramBase[2] - 0xF010, 8);
       #endif
-      __rcall2 (paramBase[0], paramBase[1], (short) word2ptr(paramBase[2]));
+      __rcall2 (paramBase[0], paramBase[1], paramBase[2]);
       break;      
     case CALLROM3_V:
       __rcall3 (paramBase[0], paramBase[1], paramBase[2], paramBase[3]);
