@@ -32,7 +32,7 @@ ifndef OSTYPE
 endif
 
 ifneq (,$(findstring $(OSTYPE), linux LINUX linux-gnu))
-	RCXCOMM_OS_C=rcx_comm_linux.c
+	RCXCOMM_OS_C=rcx_comm_linux.cpp
 	RCXCOMM_OS_H=rcx_comm_linux.h
 	CFLAGS+=-I$(LEJOS_HOME)/src/tools/linux/legousbtower -shared -fpic	
 	LIBIRTRCX=$(LEJOS_HOME)/bin/libirtrcx.so
@@ -40,7 +40,7 @@ ifneq (,$(findstring $(OSTYPE), linux LINUX linux-gnu))
 endif
 
 ifneq (,$(findstring $(OSTYPE),cygwin32 cygwin_nt-5.0 cygwin_nt-5.1 CYGWIN_NT-4.0 WindowsNT Windows_NT))
-	RCXCOMM_OS_C=rcx_comm_win.c
+	RCXCOMM_OS_C=rcx_comm_win.cpp
 	RCXCOMM_OS_H=rcx_comm_win.h
 	EXT=.exe
 	LIBIRTRCX=$(LEJOS_HOME)/bin/irtrcx.dll
@@ -49,7 +49,7 @@ ifneq (,$(findstring $(OSTYPE),cygwin32 cygwin_nt-5.0 cygwin_nt-5.1 CYGWIN_NT-4.
 endif
 
 ifneq (,$(findstring $(OSTYPE), darwin))
-	RCXCOMM_OS_C=rcx_comm_osx.c osx_usb.c
+	RCXCOMM_OS_C=rcx_comm_osx.cpp osx_usb.cpp
 	RCXCOMM_OS_H=rcx_comm_osx.h osx_usb.h
 	CFLAGS += -g
 	LIBS += -framework IOKit -framework CoreFoundation
@@ -57,7 +57,7 @@ ifneq (,$(findstring $(OSTYPE), darwin))
 	LIBIRTRCX=$(LEJOS_HOME)/bin/libirtrcx.dylib
 endif
 
-SRCS = $(RCXCOMM_OS_C) rcx_comm.c
+SRCS = $(RCXCOMM_OS_C) rcx_comm.cpp
 OBJS = $(addsuffix .o, $(basename $(SRCS)))
 
 all: $(LIBIRTRCX)
@@ -68,10 +68,10 @@ $(LIBIRTRCX): $(OBJS)
 
 $(OBJS): $(SRCS) $(RCXCOMM_OS_H)
 
-%.o: %.c
+%.o: %.cpp
 	$(CC) -c -o $@ $(CFLAGS) "$<"
 
-.SUFFIXES: .c .o
+.SUFFIXES: .cpp .o
 
 clean:
 	rm -f *.o *~ *.bak *.a $(LIBIRTRCX)

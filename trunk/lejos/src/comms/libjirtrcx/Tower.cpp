@@ -6,17 +6,9 @@
 #include "josx_rcxcomm_Tower.h"
 #include <stdio.h>
 #include <string.h>
-
-#if defined(_WIN32)
-#include <windows.h>
-#endif
-
-extern "C" {
-#include "rcx_comm.h"
-}
-
 #include <stdlib.h>
 
+#include "rcx_comm.h"
 #include "Tower.h"
 
 #define TIME_OUT 100
@@ -25,7 +17,8 @@ extern "C" {
 #if !defined(_WIN32)
 #include <errno.h>
 
-int GetLastError() {
+int GetLastError() 
+{
   return errno;
 }
 #endif
@@ -48,7 +41,7 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport, jboolean f
   int result = 0;
 
 #ifdef TRACE
-  rcxSetDebug(1);
+  rcxSetDebug(true);
   printf("Entering open\n");
 #endif
 

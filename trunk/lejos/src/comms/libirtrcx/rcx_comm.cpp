@@ -39,7 +39,7 @@
 #include "rcx_comm.h"
 
 // Debug mode flag.
-int __comm_debug = 0;
+bool __comm_debug = false;
 
 //
 // Timer routines
@@ -50,6 +50,8 @@ typedef struct timeval timeval_t;
 #define tvupdate(tv)  gettimeofday(tv, NULL)
 #define tvsec(tv)     ((tv)->tv_sec)
 #define tvmsec(tv)    ((tv)->tv_usec) / 1000
+
+void gettimeofday(timeval_t *tv, void *tzp);
 
 static void timerReset(timeval_t *timer)
 {
@@ -64,17 +66,41 @@ static int timerRead(timeval_t *timer)
 }
 
 //
+// Prototypes for internal methods
+//
+
+// Receive packet in fast mode.
+// port: port handle
+// buf: buffer to read into
+// maxlen: maximum number of bytes to read
+// timeout_ms: timeout in ms
+// Returns number of received bytes or an error code.
+int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout);
+
+// Receive packet in normal mode.
+// port: port handle
+// buf: buffer to read into
+// maxlen: maximum number of bytes to read
+// timeout_ms: timeout in ms
+// Returns number of received bytes or an error code.
+int rcxReceiveSlow (void* port, void* buf, int maxlen, int timeout);
+
+// Check if echo is correct.
+// port: port handle
+// send: buffer with send bytes
+// sendLength: number of sent bytes
+bool rcxCheckEcho (void* port, char* send, int sendLength);
+
+//
 // getter functions
 //
 
-// Is tower attached to an usb port?
-int rcxIsUsb(void* port)
+bool rcxIsUsb(void* port)
 {
 	return ((Port*) port)->usb;
 }
 
-// Is tower set to fast mode?
-int rcxIsFast(void* port)
+bool rcxIsFast(void* port)
 {
 	return ((Port*) port)->fast;
 }
@@ -83,22 +109,17 @@ int rcxIsFast(void* port)
 // RCX functions
 //
 
-// Open tower on specific port.
-// Returns port handle.
-void* rcxOpen(char* portName, int isFast)
+void* rcxOpen(char* portName, bool fast)
 {
-	return __rcx_open(portName, isFast);
+	return __rcx_open(portName, fast);
 }
 
-// Close tower.
 void rcxClose(void* port)
 {
 	__rcx_close(port);
 }
 
-// Wake up tower / RCX.
-// Returns error code.
-int rcxWakeupTower (void* port, int timeout)
+int rcxWakeupTower (void* port, int timeout_ms)
 {
 	// wake up message
 	char msg[] = { 0x10, 0xfe, 0x10, 0xfe };
@@ -144,13 +165,11 @@ int rcxWakeupTower (void* port, int timeout)
 		}
 
 		rcxPurge(port);
-	} while (timerRead(&timer) < timeout);
+	} while (timerRead(&timer) < timeout_ms);
 	
 	return count == 0? RCX_NO_TOWER : RCX_BAD_LINK;	
 }
 
-// Read bytes.
-// Returns number of read bytes.
 int rcxRead (void* port, void* read, int readMaxLength, int timeout_ms)
 {
 	int result = __rcx_read(port, read, readMaxLength, timeout_ms);
@@ -163,8 +182,6 @@ int rcxRead (void* port, void* read, int readMaxLength, int timeout_ms)
    return result;
 }
 
-// Write bytes.
-// Returns number of written bytes.
 int rcxWrite(void* port, void* write, int writeLength) 
 {
 	if (__comm_debug) hexdump("W", write, writeLength);
@@ -172,8 +189,6 @@ int rcxWrite(void* port, void* write, int writeLength)
 	return  __rcx_write(port, write, writeLength);
 }
 
-// Send packet.
-// Returns number of sent bytes or an error code.
 int rcxSend (void* port, void* send, int sendLength)
 {
 	char *bufp = (char*) send;
@@ -223,7 +238,7 @@ int rcxSend (void* port, void* send, int sendLength)
 
 	// Check echo
    // USB tower does not echo!
-	if (!rcxIsUsb(port) && rcxCheckEcho(port) == 0)
+	if (!rcxIsUsb(port) && !rcxCheckEcho(port, msg, msglen))
 	{
       if (__comm_debug) printf("wrong echo\n");
 		return RCX_BAD_ECHO;
@@ -232,9 +247,7 @@ int rcxSend (void* port, void* send, int sendLength)
 	return buflen;
 }
 
-// Check if echo is correct.
-// (Internal method)
-int rcxCheckEcho (void* port, char* send, int sendLength)
+bool rcxCheckEcho (void* port, char* send, int sendLength)
 {
 	char echo[BUFFERSIZE];
 
@@ -247,8 +260,8 @@ int rcxCheckEcho (void* port, char* send, int sendLength)
 
 	// Check echo
 	// Ignore data, since rcx might send ack even if echo data is wrong
-	int result = read == sendLength /* && !memcmp(echo, send, sendLength) */? 1 : 0;
-	if (result) 
+	bool result = read == sendLength /* && !memcmp(echo, send, sendLength) */? 1 : 0;
+	if (!result) 
 	{
 		// Purge connection if echo is bad
 		rcxPurge(port);
@@ -257,16 +270,12 @@ int rcxCheckEcho (void* port, char* send, int sendLength)
 	return result;
 }
 
-// Receive packet.
-// Returns number of read bytes or an error code.
-int rcxReceive (void* port, void *buf, int maxlen, int timeout)
+int rcxReceive (void* port, void* buf, int maxlen, int timeout)
 {
 	rcxIsFast(port)?  rcxReceiveFast(port, buf, maxlen, timeout) : rcxReceiveSlow(port, buf, maxlen, timeout);
 }
 
-// Receive packet in fast mode.
-// Returns number of read bytes or an error code.
-int rcxReceiveFast (void* port, void *buf, int maxlen, int timeout)
+int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout)
 {
 	char *bufp = (char *)buf;
 	unsigned char msg[BUFFERSIZE];
@@ -368,11 +377,9 @@ int rcxReceiveFast (void* port, void *buf, int maxlen, int timeout)
 	return RCX_BAD_RESPONSE;
 }
 
-// Receive packet in slow mode.
-// Returns number of read bytes or an error code.
 int rcxReceiveSlow (void* port, void* buf, int maxlen, int timeout)
 {
-	char *bufp = (char*) buf;
+	char* bufp = (char*) buf;
 	unsigned char msg[BUFFERSIZE];
 	int sum;
 	int pos;
@@ -440,7 +447,6 @@ int rcxReceiveSlow (void* port, void* buf, int maxlen, int timeout)
 	return len;
 }
 
-// Send a packet an receive a response.
 int rcxSendReceive (void* port, void* send, int sendLength, 
   void* receive, int receiveLength, int timeout, int retries)
 {
@@ -475,20 +481,17 @@ int rcxSendReceive (void* port, void* send, int sendLength,
 	return status;
 }
 
-// Purge send buffers.
 void rcxPurge (void* port)
 {
 	__rcx_purge(port);
 }
 
-// Flush send buffers.
 void rcxFlush(void* port)
 {
 	__rcx_flush(port);
 }
 
-// Is RCX alive?
-int rcxIsAlive (void* port)
+bool rcxIsAlive (void* port)
 {
 	unsigned char send[1] = { 0x10 };
 	unsigned char recv[1];
@@ -498,7 +501,6 @@ int rcxIsAlive (void* port)
 	return read == 1? 1 : 0;
 }
 
-// error output
 void rcxPerror(char *str) 
 {
 	__rcx_perror(str);
@@ -508,7 +510,6 @@ void rcxPerror(char *str)
 // error handling
 //
 
-// Get string representation for error code.
 char* rcxStrerror (int error)
 {
 	switch (error) 
@@ -535,14 +536,12 @@ char* rcxStrerror (int error)
 // debug stuff
 //
 
-// Set debug mode.
-void rcxSetDebug(int debug)
+void rcxSetDebug(bool debug)
 {
 	__comm_debug = debug;
 }
 
-// Is librcx in debug mode?
-int rcIsDebug() 
+bool rcIsDebug() 
 {
 	return __comm_debug;
 }
@@ -551,19 +550,21 @@ int rcIsDebug()
 #define LINE_SIZE   16
 #define GROUP_SIZE  4
 #define UNPRINTABLE '.'
-void hexdump(char *prefix, void *buf, int len)
+void hexdump(char* prefix, void* buf, int len)
 {
 	unsigned char *b = (unsigned char *)buf;
 	int i, j, w;
 
-	for (i = 0; i < len; i += w) {
+	for (i = 0; i < len; i += w) 
+	{
 		w = len - i;
 		if (w > LINE_SIZE)
 			w = LINE_SIZE;
 		if (prefix)
 			printf("%s ", prefix);
 		printf("%04x: ", i);
-		for (j = 0; j < w; j++, b++) {
+		for (j = 0; j < w; j++, b++) 
+		{
 			printf("%02x ", *b);
 			if ((j + 1) % GROUP_SIZE == 0)
 				putchar(' ');
