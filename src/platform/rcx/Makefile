@@ -1,7 +1,7 @@
 # Makefile
 # Adapted from config.mk in librcx by Kekoa Proudfoot.
 
-ifeq (,$(findstring cygwin,$(OSTYPE)))
+ifneq (,$(findstring cygwin,$(OSTYPE)))
   LEJOS_HOME_NATIVE=$(shell cygpath -m $(LEJOS_HOME))
 else
   LEJOS_HOME_NATIVE=$(LEJOS_HOME)
