@@ -8,21 +8,133 @@ public class Main implements ButtonListener {
 	public static void main (String[] arg)
 	  throws Exception {
 	  	try  {
-	  		new Main().start();
+			// Won't return until the 'RUN' button is pressed.
+	  		new Main().runIt();
 	  	} catch (OutOfMemoryError e)  {
 		  	MinLCD.setNumber(0x301f,(int)Runtime.getRuntime().totalMemory(),0x3002);
 		  	MinLCD.refresh();
 	  	}
 	  }
 	  
-	public void start() {
+	/**
+	 * Return the FSM for wandering around aimlessly
+	 */
+	Action[] getWanderFSM() {
+		Action[] actions = new Action[3];
+
+		actions[0] = new Action() {
+			public int act() {
+				Motor.C.setPower(7); Motor.C.forward();
+				Motor.A.setPower(7); Motor.A.forward();
+				return 5000;
+			}
+
+			public int nextState() {
+				return 1;
+			}
+		};
+		
+		actions[1] = new Action() {
+			public int act() {
+				Motor.C.setPower(3);
+				return 2000;
+			}
+
+			public int nextState() {
+				return 2;
+			}
+		};
+		
+		actions[2] = new Action() {
+			public int act() {
+				Motor.C.setPower(7); Motor.C.backward();
+				return 700;
+			}
+
+			public int nextState() {
+				return 0;
+			}
+		};
+		
+		return actions;
+	}
+
+	/**
+	 * Return the FSM for avoiding obstacles on the left.
+	 */
+	Action[] getAvoidLeftFSM() {
+		Action[] actions = new Action[2];
+
+		actions[0] = new Action() {
+			public int act() {
+				Motor.C.setPower(7); Motor.C.backward();
+				Motor.A.setPower(7); Motor.A.backward();
+				return 200;
+			}
+
+			public int nextState() {
+				return 1;
+			}
+		};
+		
+		actions[1] = new Action() {
+			public int act() {
+				Motor.C.forward();
+				return 200;
+			}
+
+			public int nextState() {
+				return Action.END;
+			}
+		};
+
+		return actions;
+	}
+
+	/**
+	 * Return the FSM for avoiding obstacles on the right.
+	 */
+	Action[] getAvoidRightFSM() {
+		Action[] actions = new Action[2];
+
+		actions[0] = new Action() {
+			public int act() {
+				Motor.C.setPower(7); Motor.C.backward();
+				Motor.A.setPower(7); Motor.A.backward();
+				return 200;
+			}
+
+			public int nextState() {
+				return 1;
+			}
+		};
+		
+		actions[1] = new Action() {
+			public int act() {
+				Motor.A.forward();
+				return 200;
+			}
+
+			public int nextState() {
+				return Action.END;
+			}
+		};
+
+		return actions;
+	}
+
+	/**
+	 * Build up the behavioural model. Wire the sensors to the actuators.
+	 * Kick 'em off. Wait until the RUN button is pressed and then return.
+	 */
+	public void runIt() {
 	  	Button.RUN.addButtonListener(this);
 
-	  	Sense s1 = new SenseNoOwner(new Wander());
+	  	Sense s1 = new SenseNoOwner(new Actuator(getWanderFSM()));
 		s1.setPri(Thread.MIN_PRIORITY);
-		Sense s2 = new SenseBumper(Sensor.S3, new AvoidLeft());
+		Sense s2 = new SenseBumper(Sensor.S3, new Actuator(getAvoidLeftFSM()));
 		s2.setPri(Thread.MIN_PRIORITY+1);
-		Sense s3 = new SenseBumper(Sensor.S1, new AvoidRight());
+		Sense s3 = new SenseBumper(Sensor.S1, new Actuator(getAvoidRightFSM()));
 		s3.setPri(Thread.MIN_PRIORITY+1);
 	
 		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
@@ -47,7 +159,7 @@ public class Main implements ButtonListener {
 	}
 		
 	/**
-	 * If the 'run' button is pressed and released, quit.
+	 * If the 'run' button is pressed and released, wake up runIt().
 	 */			
 	public void buttonReleased(Button b) {
 		synchronized (b) {
@@ -62,18 +174,24 @@ public class Main implements ButtonListener {
  * actions stored in a finite state machine (fsm).
  */
 interface Action {
+	public static final int END = -1;
+	public static final int START = 0;
+
+	/**
+	 * Perform some sequence of actions.
+	 */
 	public int act();
+
+	/**
+	 * Return what the next state should be.
+	 */
+	public int nextState();
 }
 
 /**
  * A runnable instance of an FSM,
  */
-abstract class Actuator extends Thread {
-	public static final boolean FORWARD = true;
-	public static final boolean BACKWARD = false;
-	public static final int END = -1;
-	public static final int START = 0;
-
+class Actuator extends Thread {
 	// Any old object will do as the 'arbitrator'
 	static Object arbitrator = new Object();
 	
@@ -82,21 +200,30 @@ abstract class Actuator extends Thread {
 	static Actuator owner;
 	
 	protected Action actions[];
-	protected int fsm[];
-	protected int state = END;
+	protected int state = Action.END;
 	
 	// Useful for debugging.	
 	public static int tcount = 0;
 	public int task;
 
-	public Actuator() {
+	/**
+	 * Constructor. Sets a task id that can be used to identify this instance.
+	 * Sets the thread daemon flag to true.
+	 *
+	 * @param actions an array of Action items to be executed.
+	 */
+	public Actuator(Action[] actions) {
+		this.actions = actions;
 		task = ++tcount;
 		setDaemon(true);
 	}
 	
 	/**
-	 * The thread entry point. Runs the Actuator's FSM to completion -
-	 * waiting on the arbitrator's monitor between each state.
+	 * The thread entry point. Runs the Actuator's FSM to completion or until
+	 * it looses ownership.  Wait on the arbitrator's monitor between each state.
+	 * It might be nice if tasks were left running and just had their access to
+	 * the actuators gated, but the same effect can be achieved by their just
+	 * running a worker thread if they need some background processing done.
 	 * <P>
 	 * FSM is really a bit of a misnomer as there are no input events so
 	 * there is only one transition from each state to the next.
@@ -118,10 +245,10 @@ abstract class Actuator extends Thread {
 				
 				// Set state to start because we might have been terminated
 				// prematurely and we always start from the beginning.
-				state = START;
+				state = Action.START;
 				
 				// Loop until we end or we loose ownership.				
-				while (owner == this && state != END) {
+				while (owner == this && state != Action.END) {
 					MinLCD.setNumber(0x301f,(state+1)*10+task,0x3002);
 					MinLCD.refresh();
 					try  {
@@ -129,11 +256,11 @@ abstract class Actuator extends Thread {
 						arbitrator.wait(actions[state].act());
 					} catch (InterruptedException ie) {
 					}
-					state = fsm[state];
+					state = actions[state].nextState();
 				}
 
 				// If we ran to completion signify no owner.				
-				if (state == END)
+				if (state == Action.END)
 					owner = null;
 				
 				arbitrator.notifyAll();	
@@ -142,7 +269,7 @@ abstract class Actuator extends Thread {
 	}
 
 	/**
-	 * Run the Actuator.
+	 * Attempt to run this Actuator.
 	 */	
 	public void execute() {
 		synchronized (arbitrator) {
@@ -158,7 +285,11 @@ abstract class Actuator extends Thread {
 
 /**
  * Base class for sensor listener thread. This is tightly coupled to
- * an actuator in this implementation.
+ * an actuator in this implementation. If its sensor listener is called
+ * it grabs that sensor's monitor and calls notifuAll(). This should wake
+ * up any threads wait()ing on that sensor.
+ * <P>
+ * Sub-classes should implement run() to wait on the sensor's monitor.
  */
 abstract class Sense extends Thread implements SensorListener, SensorConstants {
 	Actuator actuator;
@@ -191,7 +322,8 @@ abstract class Sense extends Thread implements SensorListener, SensorConstants {
 }
 
 /**
- * Defines a thread to detect an obstacle on the left.
+ * Defines a thread to detect an obstacle on the left. Waits on its bumper
+ * and, when notified, will execute its actuator if the bumper's value is true.
  */
 class SenseBumper extends Sense {
 	Sensor bumper;
@@ -231,61 +363,9 @@ class SenseBumper extends Sense {
 }
 
 /**
- * Defines a finite state machine to avoid an obstacle on the left.
- */		
-class AvoidLeft extends Actuator {
-	public AvoidLeft() {
-		actions = new Action[2];
-		actions[0] = new Action() {
-			public int act() {
-				Motor.C.setPower(7); Motor.C.backward();
-				Motor.A.setPower(7); Motor.A.backward();
-				return (200);
-			}
-		};
-		
-		actions[1] = new Action() {
-			public int act() {
-				Motor.C.forward();
-				return (200);
-			}
-		};
-
-		fsm = new int[2];		
-		fsm[0] = 1;
-		fsm[1] = END;
-	}
-}
-
-/**
- * Defines a finite state machine to avoid an obstacle on the right.
- */		
-class AvoidRight extends Actuator {
-	public AvoidRight() {
-		actions = new Action[2];
-		actions[0] = new Action() {
-			public int act() {
-				Motor.C.setPower(7); Motor.C.backward();
-				Motor.A.setPower(7); Motor.A.backward();
-				return (200);
-			}
-		};
-		
-		actions[1] = new Action() {
-			public int act() {
-				Motor.A.forward();
-				return (200);
-			}
-		};
-
-		fsm = new int[2];		
-		fsm[0] = 1;
-		fsm[1] = END;
-	}
-}
-
-/**
  * A class to sense when the arbitrator has no owner so we can give it one.
+ * Waits on the arbitrator and when notified checks to see if there is an owner.
+ * If not it executes its actuator.
  */
 class SenseNoOwner extends Sense  {
 	public SenseNoOwner(Actuator actuator) {
@@ -308,37 +388,3 @@ class SenseNoOwner extends Sense  {
 	}
 }
 
-/**
- * Defines a finite state machine to wander around aimlessley.
- */		
-class Wander extends Actuator {
-	public Wander() {
-		actions = new Action[3];
-		actions[0] = new Action() {
-			public int act() {
-				Motor.C.setPower(7); Motor.C.forward();
-				Motor.A.setPower(7); Motor.A.forward();
-				return (5000);
-			}
-		};
-		
-		actions[1] = new Action() {
-			public int act() {
-				Motor.C.setPower(3);
-				return (2000);
-			}
-		};
-		
-		actions[2] = new Action() {
-			public int act() {
-				Motor.C.setPower(7); Motor.C.backward();
-				return (700);
-			}
-		};
-		
-		fsm = new int[3];		
-		fsm[0] = 1;
-		fsm[1] = 2;
-		fsm[2] = 0;
-	}
-}
