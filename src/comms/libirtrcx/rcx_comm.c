@@ -55,6 +55,7 @@
 #define TOWER_NAME "/dev/lego0"
 #define DEFAULTTTY   "usb"       /* Linux - USB */
 #define stricmp(x, y) strcmp(x, y)
+#define strnicmp(x, y, n) strncmp(x, y, n)
 #elif defined(_WIN32) || defined(__CYGWIN32__)
 #define DEFAULTTTY   "usb"       /* Cygwin - USB */
 #define TOWER_NAME "\\\\.\\LEGOTOWER1"
