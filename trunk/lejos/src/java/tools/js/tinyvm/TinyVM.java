@@ -38,7 +38,6 @@ public class TinyVM extends TinyVMTool
       catch (TinyVMException e)
       {
          System.err.println(e.getMessage());
-         e.printStackTrace();
          System.exit(1);
       }
    }
