@@ -120,11 +120,6 @@ int rcxWakeupTower (void* port, int timeout)
 	
 	do 
 	{
-		if (__comm_debug) 
-		{
-			hexdump("Write", msg, sizeof(msg));
-		}
-
       // write message		
 		int written = rcxWrite(port, msg, sizeof(msg));
 		if (written != sizeof(msg)) 
@@ -245,7 +240,7 @@ int rcxCheckEcho (void* port, char* send, int sendLength)
 
 	if (__comm_debug) 
 	{
-		hexdump("Check echo", echo, read);
+		hexdump("C", echo, read);
 	}
 
 	// Check echo

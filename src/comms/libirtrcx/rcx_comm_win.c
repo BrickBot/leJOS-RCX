@@ -46,7 +46,7 @@ void gettimeofday(struct timeval *tv, void *tzp);
 // some internal methods
 //
 
-int __rcx_open_setDevice(Port* port, char* symbolicName, int fast);
+void __rcx_open_setDevice(Port* port, char* symbolicName, int fast);
 int __rcx_open_setSerialPortParameters (Port* port);
 
 //
@@ -90,7 +90,6 @@ int __rcx_read_usb (void* port, void* buf, int maxlen, int timeout_ms)
 	
 		while (count == 0) 
 		{
-         if (__comm_debug) fprintf(stderr, "usb mode: read\n");
 			ReadFile(((Port*) port)->fileHandle, &bufp[len], maxlen - len, &count, NULL);
          if (__comm_debug) fprintf(stderr, "usb mode: read %d\n", count);
 			gettimeofday(&now, 0);
@@ -139,6 +138,7 @@ int __rcx_read_serial (void* port, void *buf, int maxlen, int timeout_ms)
 			fprintf(stderr, "serial mode: error reading tty: %lu\n", (unsigned long) GetLastError());
 			return RCX_READ_FAIL;
 		}
+      if (__comm_debug) fprintf(stderr, "serial mode: read %d\n", count);
 
 		if (count == 0) 
 		{
@@ -160,7 +160,6 @@ void __rcx_flush(void* port)
 int __rcx_write(void* port, void* buf, int len) 
 {
 	DWORD written = 0;
-   if (__comm_debug) fprintf(stderr, "usb mode: write\n");
 	if (WriteFile(((Port*) port)->fileHandle, buf, len, &written, NULL) == 0)
 	{
 		return RCX_WRITE_FAIL;
@@ -207,16 +206,33 @@ void* __rcx_open(char *tty, int fast)
 }
 
 // Set port parameters.
-// Returns 1 if success.
 // (Internal method)
-int __rcx_open_setDevice (Port* port, char* symbolicName, int fast)
+void __rcx_open_setDevice (Port* port, char* symbolicName, int fast)
 {
 	strncpy(port->symbolicName, symbolicName, 32);
-	strncpy(port->deviceName, USB_TOWER_NAME, 32);
-	port->usb = 1;	
-	port->fast = port->usb? 0 : fast;	
-
-	return 1;
+   port->symbolicName[31] = 0;
+   
+   int length = strlen(symbolicName);
+	if (strncmp(symbolicName, "usb", 3) == 0 && length <= 4)
+	{
+		// usb mode
+      strncpy(port->deviceName, USB_TOWER_NAME, 32);
+      if (length == 4)
+      {
+      	// multiple usb tower mode
+      	port->deviceName[strlen(USB_TOWER_NAME) - 1] = symbolicName[3];
+      }
+      port->usb = 1;	
+      port->fast = 0;	
+	}
+	else
+	{
+		// serial mode
+		strncpy(port->deviceName, symbolicName, 32);
+		port->deviceName[31] = 0;
+		port->usb = 0;	
+      port->fast = fast;	
+	}
 }
 
 // Set serial port parameters.
