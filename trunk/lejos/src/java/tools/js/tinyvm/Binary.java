@@ -2,8 +2,6 @@ package js.tinyvm;
 
 import java.util.Hashtable;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import js.tinyvm.io.IByteWriter;
 import js.tinyvm.util.HashVector;
@@ -220,8 +218,8 @@ public class Binary
 
       // Add special all classes first
       String[] specialClasses = SpecialClassConstants.CLASSES;
-      _logger.log(Level.INFO, "Starting with " + specialClasses.length
-         + " special classes.");
+      //_logger.log(Level.INFO, "Starting with " + specialClasses.length
+      //   + " special classes.");
       for (int i = 0; i < specialClasses.length; i++)
       {
          String className = specialClasses[i];
@@ -232,8 +230,8 @@ public class Binary
       }
 
       // Now add entry classes
-      _logger.log(Level.INFO, "Starting with " + entryClassNames.length
-         + " entry classes.");
+      // _logger.log(Level.INFO, "Starting with " + entryClassNames.length
+      //    + " entry classes.");
       for (int i = 0; i < entryClassNames.length; i++)
       {
          String className = entryClassNames[i];
@@ -246,8 +244,8 @@ public class Binary
       }
 
       // Now add the closure.
-      _logger.log(Level.INFO, "Starting with " + iClassTable.size()
-         + " classes.");
+      // _logger.log(Level.INFO, "Starting with " + iClassTable.size()
+      //    + " classes.");
       // Yes, call iClassTable.size() in every pass of the loop.
       for (int pIndex = 0; pIndex < iClassTable.size(); pIndex++)
       {
@@ -382,6 +380,6 @@ public class Binary
       return pTotal;
    }
 
-   private static final Logger _logger = Logger.getLogger("TinyVM");
+   // private static final Logger _logger = Logger.getLogger("TinyVM");
 }
 
