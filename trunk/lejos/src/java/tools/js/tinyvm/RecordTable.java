@@ -1,72 +1,114 @@
 package js.tinyvm;
 
 import java.io.IOException;
-import java.util.Enumeration;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import js.tinyvm.io.ByteWriter;
 import js.tinyvm.io.IOUtilities;
 
-public abstract class RecordTable extends WritableDataWithOffset
+public class RecordTable extends WritableDataWithOffset
 {
-   int iLength = -1;
-   private boolean iAlign;
+   private boolean _align;
+   private boolean _duplicates;
+   private ArrayList _list;
+   int _length;
 
-   public abstract Enumeration elements ();
-
-   public abstract int size ();
-
-   public abstract Object elementAt (int aIndex);
-
-   public abstract void add (WritableData aElement);
-
-   public RecordTable ()
+   /**
+    * Constructor.
+    * 
+    * @param allowDuplicates allow duplicates?
+    * @param align align output?
+    */
+   public RecordTable (boolean allowDuplicates, boolean align)
    {
-      this(false);
+      _duplicates = allowDuplicates;
+      _align = align;
+      _list = new ArrayList();
+      _length = -1;
    }
 
-   public RecordTable (boolean aAlign)
+   //
+   // public interface
+   //
+   
+   public Iterator iterator ()
    {
-      super();
-      iAlign = aAlign;
+      return _list.iterator();
    }
 
-   public void dump (ByteWriter aOut) throws TinyVMException
+   public int size ()
+   {
+      return _list.size();
+   }
+
+   public boolean contains (WritableData element)
+   {
+      assert element != null: "Precondition: element != null";
+      
+      return _list.contains(element);
+   }
+
+   public WritableData get (int index)
+   {
+      return (WritableData) _list.get(index);
+   }
+
+   public int indexOf (WritableData element)
+   {
+      assert element != null: "Precondition: element != null";
+      
+      return _list.indexOf(element);
+   }
+
+   public void add (WritableData element)
+   {
+      assert element != null: "Precondition: element != null";
+      
+      if (_duplicates || !_list.contains(element))
+      {
+         _list.add(element);
+      }
+   }
+
+   //
+   // Writable interface
+   //
+
+   public void dump (ByteWriter writer) throws TinyVMException
    {
       try
       {
          boolean pDoVerify = TinyVMConstants.VERIFY_LEVEL > 0;
-         Enumeration pEnum = elements();
-         while (pEnum.hasMoreElements())
+         for (Iterator iter = _list.iterator(); iter.hasNext();)
          {
-            int pLength = 0;
-            int pPrevSize = 0;
-            WritableData pData = (WritableData) pEnum.nextElement();
+            WritableData pData = (WritableData) iter.next();
+
+            int pLength = pData.getLength();
+            int pPrevSize = writer.size();
+
+            pData.dump(writer);
+
             if (pDoVerify)
             {
-               pLength = pData.getLength();
-               pPrevSize = aOut.size();
-            }
-            pData.dump(aOut);
-            if (pDoVerify)
-            {
-               if (aOut.size() != pPrevSize + pLength)
+               if (writer.size() != pPrevSize + pLength)
                {
                   if (pData instanceof RecordTable)
                   {
                      _logger.log(Level.SEVERE, "Aligned sequence: "
-                        + ((RecordTable) pData).iAlign);
+                        + ((RecordTable) pData)._align);
                   }
                   throw new TinyVMException("Bug RT-1: Written="
-                     + (aOut.size() - pPrevSize) + " Length=" + pLength
+                     + (writer.size() - pPrevSize) + " Length=" + pLength
                      + " Class=" + pData.getClass().getName());
                }
             }
          }
-         if (iAlign)
+         if (_align)
          {
-            IOUtilities.writePadding(aOut, 2);
+            IOUtilities.writePadding(writer, 2);
          }
       }
       catch (IOException e)
@@ -77,34 +119,41 @@ public abstract class RecordTable extends WritableDataWithOffset
 
    public int getLength () throws TinyVMException
    {
-      if (iLength != -1)
-         return iLength;
-      iLength = 0;
-      Enumeration pEnum = elements();
-      while (pEnum.hasMoreElements())
+      if (_length != -1)
       {
-         iLength += ((WritableData) pEnum.nextElement()).getLength();
+         return _length;
       }
-      _logger.log(Level.INFO, "RT.getLength: " + iLength);
-      if (iAlign)
-         iLength = IOUtilities.adjustedSize(iLength, 2);
-      return iLength;
+
+      _length = 0;
+      for (Iterator iter = _list.iterator(); iter.hasNext();)
+      {
+         _length += ((WritableData) iter.next()).getLength();
+      }
+
+      _logger.log(Level.INFO, "RT.getLength: " + _length);
+
+      if (_align)
+      {
+         _length = IOUtilities.adjustedSize(_length, 2);
+      }
+
+      return _length;
    }
 
-   public void initOffset (int aStart) throws TinyVMException
+   public void initOffset (int start) throws TinyVMException
    {
-      _logger.log(Level.INFO, "RT.initOffset: " + aStart);
+      _logger.log(Level.INFO, "RT.initOffset: " + start);
 
-      super.initOffset(aStart);
-      Enumeration pEnum = elements();
-      while (pEnum.hasMoreElements())
+      super.initOffset(start);
+
+      for (Iterator iter = _list.iterator(); iter.hasNext();)
       {
-         WritableData pElem = (WritableData) pEnum.nextElement();
-         if (pElem instanceof WritableDataWithOffset)
+         WritableData element = (WritableData) iter.next();
+         if (element instanceof WritableDataWithOffset)
          {
-            ((WritableDataWithOffset) pElem).initOffset(aStart);
+            ((WritableDataWithOffset) element).initOffset(start);
          }
-         aStart += pElem.getLength();
+         start += element.getLength();
       }
    }
 

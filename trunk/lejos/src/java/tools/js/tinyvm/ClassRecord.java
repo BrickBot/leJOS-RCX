@@ -3,8 +3,8 @@ package js.tinyvm;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,8 +44,8 @@ public class ClassRecord implements WritableData
    int iClassSize = -1;
    JavaClass iCF;
    Binary iBinary;
-   final EnumerableSet iMethodTable = new EnumerableSet();
-   final RecordTable iInstanceFields = new Sequence();
+   final RecordTable iMethodTable = new RecordTable(false, false);
+   final RecordTable iInstanceFields = new RecordTable(true, false);
    final Hashtable iStaticValues = new Hashtable();
    final Hashtable iStaticFields = new Hashtable();
    final Hashtable iMethods = new Hashtable();
@@ -188,10 +188,9 @@ public class ClassRecord implements WritableData
    {
       ClassRecord pParent = getParent();
       int pSize = (pParent != null)? pParent.getClassSize() : 0;
-      Enumeration pEnum = iInstanceFields.elements();
-      while (pEnum.hasMoreElements())
+      for (Iterator iter = iInstanceFields.iterator(); iter.hasNext();)
       {
-         InstanceFieldRecord pRec = (InstanceFieldRecord) pEnum.nextElement();
+         InstanceFieldRecord pRec = (InstanceFieldRecord) iter.next();
          pSize += pRec.getFieldSize();
       }
       return pSize;
@@ -338,10 +337,9 @@ public class ClassRecord implements WritableData
    {
       ClassRecord pParent = getParent();
       int pOffset = (pParent != null)? pParent.getClassSize() : 0;
-      Enumeration pEnum = iInstanceFields.elements();
-      while (pEnum.hasMoreElements())
+      for (Iterator iter = iInstanceFields.iterator(); iter.hasNext();)
       {
-         InstanceFieldRecord pRec = (InstanceFieldRecord) pEnum.nextElement();
+         InstanceFieldRecord pRec = (InstanceFieldRecord) iter.next();
          if (pRec.getName().equals(aName))
             return pOffset;
          pOffset += pRec.getFieldSize();
@@ -372,7 +370,7 @@ public class ClassRecord implements WritableData
       if (pRecord == null)
          return -1;
       // TBD: This indexOf call is slow
-      return ((Sequence) iBinary.iStaticFields).indexOf(pRecord);
+      return iBinary.iStaticFields.indexOf(pRecord);
    }
 
    public void storeConstants (RecordTable aConstantTable,
@@ -380,7 +378,6 @@ public class ClassRecord implements WritableData
    {
       _logger.log(Level.INFO, "Processing other constants in " + iName);
 
-      EnumerableSet pConstantSet = (EnumerableSet) aConstantTable;
       ConstantPool pPool = iCF.getConstantPool();
       Constant[] constants = pPool.getConstantPool();
       for (int i = 0; i < constants.length; i++)
@@ -393,9 +390,9 @@ public class ClassRecord implements WritableData
             || pEntry instanceof ConstantLong)
          {
             ConstantRecord pRec = new ConstantRecord(pPool, pEntry);
-            if (!pConstantSet.contains(pRec))
+            if (!aConstantTable.contains(pRec))
             {
-               pConstantSet.add(pRec);
+               aConstantTable.add(pRec);
                aConstantValues.add(pRec.constantValue());
             }
          }
@@ -466,10 +463,9 @@ public class ClassRecord implements WritableData
    public void storeCode (RecordTable aCodeSequences, boolean aPostProcess)
       throws TinyVMException
    {
-      Enumeration pMethods = iMethodTable.elements();
-      while (pMethods.hasMoreElements())
+      for (Iterator iter = iMethodTable.iterator(); iter.hasNext();)
       {
-         MethodRecord pRec = (MethodRecord) pMethods.nextElement();
+         MethodRecord pRec = (MethodRecord) iter.next();
          if (aPostProcess)
             pRec.postProcessCode(aCodeSequences, iCF, iBinary);
          else
