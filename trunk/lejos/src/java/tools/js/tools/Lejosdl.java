@@ -1,89 +1,233 @@
 package js.tools;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
- * Simple Lejos program downloader - replaces lejosrun
+ * Simple Lejos program downloader.
  */
-public class Lejosdl {
-
+public class Lejosdl
+{
   private static final int MAGIC = 0xCAF6;
 
-  public static void main(String [] args) throws IOException {
-    String fileName = "";
-    FileInputStream fis = null;
-    long pLength = 0;
-    byte [] buffer;
-    boolean usage = false;
-    String tty = "";
-    int i;
- 
-    // Process args
+  private ToolProgressListener _progress = null;
 
-   for(i=0; i < args.length && args[i].substring(0,1).equals("-");i++) {
-      if (args[i].equals("--tty") && i < args.length - 1) {
-        tty = args[++i];
-        System.err.println("Setting tty = " + tty);
-      } else if(args[i].length() > 6 && args[i].substring(0,6).equals("--tty=")) {
-        tty = args[i].substring(6);
-        System.err.println("Setting tty = " + tty);
-      } else if (args[i].equals("--help") || args[i].equals("-h")) {
-        usage = true;
-      } else if (args[i].equals("--debug")) {
-        System.err.println("For debug output set RCXCOMM_DEBUG=Y");
-        System.exit(1);
-      } else {
-        System.err.println("Unrecognized option " + args[i]);
-        System.exit(1);
+  /**
+   * Main entry point for command line usage.
+   * 
+   * @param args command line
+   */
+  public static void main (String[] args) throws IOException
+  {
+    assert args != null : "Precondition: args != null";
+
+    try
+    {
+      Lejosdl lejosdl = new Lejosdl(new ToolProgressListenerImpl());
+      lejosdl.start(args);
+    }
+    catch (ToolException e)
+    {
+      System.err.println(e.getMessage());
+      System.exit(1);
+    }
+  }
+
+  /**
+   * Constructor.
+   */
+  public Lejosdl(ToolProgressListener listener)
+  {
+    assert listener != null : "Precondition: listener != null";
+
+    _progress = listener;
+  }
+
+  /**
+   * Execute program download.
+   * 
+   * @param args command line
+   * @throws ToolException
+   */
+  public void start (String[] args) throws ToolException
+  {
+    assert args != null : "Precondition: args != null";
+
+    String fileName = "";
+    String tty = "";
+    boolean download = true;
+    boolean fastMode = false;
+
+    // Process args
+    try
+    {
+      int i;
+      for (i = 0; i < args.length && args[i].substring(0, 1).equals("-"); i++)
+      {
+        if (args[i].equals("--tty") && i < args.length - 1)
+        {
+          tty = args[++i];
+          _progress.log("Setting tty = " + tty);
+        }
+        else if (args[i].length() > 6
+            && args[i].substring(0, 6).equals("--tty="))
+        {
+          tty = args[i].substring(6);
+          _progress.log("Setting tty = " + tty);
+        }
+        else if (args[i].equals("--help") || args[i].equals("-h"))
+        {
+          throw new ToolException("Help:");
+        }
+        else if (args[i].equals("--nodl") || args[i].equals("-n"))
+        {
+          download = false;
+        }
+        else if (args[i].equals("--debug"))
+        {
+          throw new ToolException("For debug output set RCXCOMM_DEBUG=Y");
+        }
+        else if (args[i].equals("--fast") || args[i].equals("-f"))
+        {
+          fastMode = true;
+        }
+        else
+        {
+          throw new ToolException("Unrecognized option " + args[i]);
+        }
+      }
+
+      if (i < args.length)
+      {
+        fileName = args[i];
+      }
+      else
+      {
+        throw new ToolException("No file specified");
+      }
+    }
+    catch (ToolException e)
+    {
+      throw new ToolException(e.getMessage()
+          + "\n\nusage: lejosdl [options] filename"
+          + "\n--tty=<tty>   assume tower connected to <tty>"
+          + "\n--tty=usb     assume tower connected to usb"
+          + "\n-n, --nodl    do not download image"
+          + "\n-h, --help    display this message and exit"
+          + "\n-f, --fast    use fast transfer mode"
+          + "\nFor debug output set RCXCOMM_DEBUG=Y");
+    }
+
+    start(fileName, tty, download, fastMode);
+  }
+
+  /**
+   * Execute program download.
+   * 
+   * @param fileName file name of program
+   * @param tty serial port
+   * @param download download program?
+   * @param fastMode use fast mode?
+   * @throws ToolException
+   */
+  public void start (String fileName, String tty, boolean download,
+      boolean fastMode) throws ToolException
+  {
+    assert fileName != null : "Precondition: fileName != null";
+    assert tty != null : "Precondition: tty != null";
+
+    // Open the file
+    InputStream stream;
+    try
+    {
+      stream = new FileInputStream(fileName);
+    }
+    catch (FileNotFoundException e)
+    {
+      throw new ToolException("Program " + fileName + " not found");
+    }
+
+    start(stream, tty, download, fastMode);
+  }
+
+  /**
+   * Execute program download.
+   * 
+   * @param program reader with program to download
+   * @param tty serial port
+   * @param download download program?
+   * @param fastMode use fast mode?
+   * @throws ToolException
+   */
+  public void start (InputStream program, String tty, boolean download,
+      boolean fastMode) throws ToolException
+  {
+    assert program != null : "Precondition: program != null";
+    assert tty != null : "Precondition: tty != null";
+
+    byte[] buffer = new byte[0x10000];
+    int index = 0;
+
+    try
+    {
+      int read;
+      while ((read = program.read(buffer, index, 0x1000 - index)) != -1
+          && index < 0x10000)
+      {
+        index += read;
+      }
+
+      if (program.read() != -1)
+      {
+        // read remaining bytes
+        while ((read = program.read(buffer, 0, 0x1000)) != -1)
+        {
+          index += read;
+        }
+        throw new ToolException("Huge file: " + index + " bytes");
+      }
+    }
+    catch (IOException e)
+    {
+      throw new ToolException("Unable to read program: " + e.getMessage(), e);
+    }
+    finally
+    {
+      try
+      {
+        program.close();
+      }
+      catch (IOException e)
+      {
+        // ignore
       }
     }
 
-    if (i <args.length) fileName = args[i];
-    else usage = true;
-
-    if (usage) {
-      System.err.println("usage: lejosdl [options] filename");
-      System.err.println("--tty=<tty>   assume tower connected to <tty>");
-      System.err.println("--tty=usb     assume tower connected to usb");
-      System.err.println("-h, --help    display this message and exit");
-      System.err.println("For debug output set RCXCOMM_DEBUG=Y");
-      System.exit(1);
-    }
-   
-    // Open the file
-
-    try {
-      File f = new File(fileName);
-      pLength = f.length();
-      fis = new FileInputStream(f);
-    } catch (FileNotFoundException fe) {
-      System.err.println("File " + fileName + " not found");
-      System.exit(1);
+    if (buffer[0] != (byte) ((MAGIC >> 8) & 0xFF)
+        || buffer[1] != (byte) ((MAGIC >> 0) & 0xFF))
+    {
+      throw new ToolException("Magic number is not right."
+          + "\nLinker used was for emulation only?");
     }
 
-    if (pLength > 0xFFFF) {
-      System.err.println("Huge file: " + pLength + " bytes");
-      System.exit (1);
+    if (download)
+    {
+      Download d = new Download(_progress);
+      try
+      {
+        d.open(tty, fastMode);
+        d.downloadProgram(buffer, index);
+        d.close();
+      }
+      finally
+      {
+        if (d.isOpen())
+        {
+          d.close();
+        }
+      }
     }
-
-    Download.open(tty, false);
-
-    buffer = new byte[(int) pLength];
-    fis.read(buffer);
-
-    if (buffer[0] != (byte) ((MAGIC >> 8) & 0xFF) ||
-      buffer[1] != (byte) ((MAGIC >> 0) & 0xFF)) {
-      System.err.println("Magic number is not right. Linker used was for emulation only?");
-      System.exit (1);
-    }
-
-    Download.downloadProgram(buffer, (int) pLength);
-
-    fis.close();
-    Download.close();
   }
 }
-

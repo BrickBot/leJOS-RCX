@@ -19,9 +19,18 @@ public class F7Handler extends PacketHandler {
   boolean debug = false;
 
   F7Handler() {
-    tower = new Tower();
-    r = tower.open();
-    usbFlag = tower.getUsbFlag();
+    // TODO rework
+    try
+    {
+      tower = new Tower();
+      tower.openTower();
+      usbFlag = tower.isUSB()? 1 : 0;
+    }
+    catch (TowerException e)
+    {
+      e.printStackTrace();
+    }
+    r = tower.getError();
   }
 
   /**

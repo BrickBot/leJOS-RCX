@@ -1,6 +1,9 @@
 package josx.rcxcomm.remotecontrol;
 /*
  * $Log$
+ * Revision 1.1  2003/05/09 21:43:27  mpscholz
+ * moved remote control classes to josx.rcxcomm
+ *
  * Revision 1.1  2003/05/01 12:00:06  mpscholz
  * a messenger which sends LEGO remote control messages
  *
@@ -103,12 +106,20 @@ public class RemoteControlMessenger {
      * @param int the length of the packet
     */
     private void sendPacket(byte[] aPacket,int aPacketLength) {
-        // open tower
-        fTower.open(); 
-        // send packet
-        fTower.send(aPacket,aPacketLength);
-        // close tower
-        fTower.close();
+      // TODO rework
+			try
+			{
+			  // open tower
+			  fTower.openTower(); 
+			  // send packet
+			  fTower.sendPacket(aPacket);
+			  // close tower
+			  fTower.closeTower();
+			}
+			catch (TowerException e)
+			{
+			  e.printStackTrace();
+			}
     } // sendPacket()
 
 } // class RemoteControlMessenger
