@@ -22,7 +22,7 @@ public class RCXPort extends DataPort {
   */
   public RCXPort(String port) throws IOException {
     super();
-    open(port.toUpperCase());
+    open(port.toLowerCase());
   }
 
   /** Creates new RCXPort
