@@ -42,7 +42,7 @@
         <include name="classes.jar"/>
         <include name="rcxcomm.jar"/>
         <include name="pcrcxcomm.jar"/>
-        <include name="tools.jar"/>
+        <include name="jtools.jar"/>
         <include name="vision.jar"/>
       </fileset>  	
   	</delete>	
