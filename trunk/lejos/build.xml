@@ -132,4 +132,70 @@
   -->
   <target name="all" depends="clean, classes, rcxcomm, pcrcxcomm, vision, jtools" description="generate all jar files"/>
   
+  <!--
+    ==================================================
+    Target jar: create leJOS API docs
+    ==================================================
+  -->
+  <target name="doc" depends="" description="generate leJOS API docs">
+    <delete dir="${basedir}/apidocs"/>
+    <mkdir dir="${basedir}/apidocs"/>
+    <!-- packages: java.io java.lang java.util josx.platform.rcx josx.util josx.robotics josx.rcxcomm java.net javax.servlet.http -->
+    <javadoc protected="true"
+             windowtitle="leJOS API documentation"
+             author="true"
+             destdir="${basedir}/apidocs"
+             source="1.1"
+             defaultexcludes="yes">
+      <fileset dir="${javasrc}/classes"/>
+      <fileset dir="${javasrc}/rcxcomm"/>
+    </javadoc>
+  </target>
+
+  <!--
+    ==================================================
+    Target jar: create leJOS PC API docs
+    ==================================================
+  -->
+  <target name="pcdoc" depends="init" description="generate leJOS PC API docs">
+    <delete dir="${basedir}/pcapidocs"/>
+    <mkdir dir="${basedir}/pcapidocs"/>
+    <!-- packages: josx.rcxcomm -->
+    <javadoc protected="true"
+             windowtitle="leJOS PC API documentation"
+             author="true"
+             destdir="${basedir}/pcapidocs"
+             source="1.4"
+             defaultexcludes="yes">
+      <fileset dir="${javasrc}/pcrcxcomm"/>
+    </javadoc>
+  </target>
+
+  <!--
+    ==================================================
+    Target jar: create leJOS Vision API docs
+    ==================================================
+  -->
+  <target name="visiondoc" depends="init, pcrcxcomm" description="generate leJOS Vision API docs">
+    <delete dir="${basedir}/pcapidocs"/>
+    <mkdir dir="${basedir}/pcapidocs"/>
+    <!-- packages: josx.vision -->
+    <javadoc protected="true"
+             windowtitle="leJOS Vision API documentation"
+             author="true"
+             destdir="${basedir}/visionapidocs"
+             source="1.4"
+             defaultexcludes="yes">
+      <classpath location="${lib}/pcrcxcomm.jar"/>
+      <fileset dir="${javasrc}/vision"/>
+    </javadoc>
+  </target>
+
+  <!--
+    ==================================================
+    Target jar: create leJOS Vision API docs
+    ==================================================
+  -->
+  <target name="alldoc" depends="doc, pcdoc, visiondoc" description="generate all API docs"/>
+
 </project>
