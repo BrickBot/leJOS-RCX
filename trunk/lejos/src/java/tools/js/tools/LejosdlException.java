@@ -7,28 +7,28 @@ import js.common.ToolException;
  */
 public class LejosdlException extends ToolException
 {
-  /**
-   * @param message
-   */
-  public LejosdlException(String message)
-  {
-    super(message);
-  }
+   /**
+    * @param message
+    */
+   public LejosdlException (String message)
+   {
+      super(message);
+   }
 
-  /**
-   * @param cause
-   */
-  public LejosdlException(Throwable cause)
-  {
-    super(cause);
-  }
+   /**
+    * @param cause
+    */
+   public LejosdlException (Throwable cause)
+   {
+      super(cause);
+   }
 
-  /**
-   * @param message
-   * @param cause
-   */
-  public LejosdlException(String message, Throwable cause)
-  {
-    super(message, cause);
-  }
+   /**
+    * @param message
+    * @param cause
+    */
+   public LejosdlException (String message, Throwable cause)
+   {
+      super(message, cause);
+   }
 }

@@ -8,25 +8,28 @@ import java.util.Vector;
 
 public class ListReader
 {
-  public static Vector loadStrings (File aFile)
-  {
-    Vector pVec = new Vector();
-    if (!aFile.exists())
-      return pVec;
-    try {
-      BufferedReader pReader = new BufferedReader (new FileReader (aFile));
-      String pLine;
-      while ((pLine = pReader.readLine()) != null)
+   public static Vector loadStrings (File aFile)
+   {
+      Vector pVec = new Vector();
+      if (!aFile.exists())
+         return pVec;
+      try
       {
-        pLine = pLine.trim();
-        if (pLine.startsWith ("#") || pLine.equals (""))
-          continue;
-        pVec.addElement (pLine);
+         BufferedReader pReader = new BufferedReader(new FileReader(aFile));
+         String pLine;
+         while ((pLine = pReader.readLine()) != null)
+         {
+            pLine = pLine.trim();
+            if (pLine.startsWith("#") || pLine.equals(""))
+               continue;
+            pVec.addElement(pLine);
+         }
+         pReader.close();
       }
-      pReader.close();
-    } catch (IOException aE) {
-      aE.printStackTrace();
-    }
-    return pVec;
-  }
+      catch (IOException aE)
+      {
+         aE.printStackTrace();
+      }
+      return pVec;
+   }
 }

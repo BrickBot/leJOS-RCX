@@ -7,28 +7,28 @@ import js.common.ToolException;
  */
 public class TinyVMException extends ToolException
 {
-  /**
-   * @param message
-   */
-  public TinyVMException(String message)
-  {
-    super(message);
-  }
+   /**
+    * @param message
+    */
+   public TinyVMException (String message)
+   {
+      super(message);
+   }
 
-  /**
-   * @param cause
-   */
-  public TinyVMException(Throwable cause)
-  {
-    super(cause);
-  }
+   /**
+    * @param cause
+    */
+   public TinyVMException (Throwable cause)
+   {
+      super(cause);
+   }
 
-  /**
-   * @param message
-   * @param cause
-   */
-  public TinyVMException(String message, Throwable cause)
-  {
-    super(message, cause);
-  }
+   /**
+    * @param message
+    * @param cause
+    */
+   public TinyVMException (String message, Throwable cause)
+   {
+      super(message, cause);
+   }
 }

@@ -7,8 +7,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import js.common.ToolProgressMonitor;
 import js.common.CLIToolProgressMonitor;
+import js.common.ToolProgressMonitor;
 import js.tools.LejosdlException;
 
 import org.apache.commons.cli.CommandLine;

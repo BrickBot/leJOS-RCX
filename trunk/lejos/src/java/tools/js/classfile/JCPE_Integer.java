@@ -1,61 +1,58 @@
 package js.classfile;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public class JCPE_Integer extends JConstantPoolEntry
 {
-  private int iValue;
+   private int iValue;
 
-  public JCPE_Integer (IConstantPool aConstantPool,
-                        int aValue) 
-  {
-    super (aConstantPool);
-    iValue = aValue;
-  }
+   public JCPE_Integer (IConstantPool aConstantPool, int aValue)
+   {
+      super(aConstantPool);
+      iValue = aValue;
+   }
 
-  public JCPE_Integer (IConstantPool aConstantPool)
-  {
-    super (aConstantPool);
-  }
+   public JCPE_Integer (IConstantPool aConstantPool)
+   {
+      super(aConstantPool);
+   }
 
-  public void dump (OutputStream aOut)
-  throws Exception
-  {
-    aOut.write (JConstantPoolEntry.CONSTANT_Integer); // 1 byte
-    JIO.writeU4 (aOut, iValue);
-  }
-  
-  public void read (InputStream aIn)
-  throws Exception
-  {
-    // Assume tag already read
-    iValue = JIO.readU4 (aIn);
-  }
+   public void dump (OutputStream aOut) throws Exception
+   {
+      aOut.write(JConstantPoolEntry.CONSTANT_Integer); // 1 byte
+      JIO.writeU4(aOut, iValue);
+   }
 
-  public final void update() 
-  {
-  }
+   public void read (InputStream aIn) throws Exception
+   {
+      // Assume tag already read
+      iValue = JIO.readU4(aIn);
+   }
 
-  public int getValue()
-  {
-    return iValue;
-  }
+   public final void update ()
+   {}
 
-  public int hashCode()
-  {
-    return iValue;
-  }
+   public int getValue ()
+   {
+      return iValue;
+   }
 
-  public boolean equals (Object aObj)
-  {
+   public int hashCode ()
+   {
+      return iValue;
+   }
+
+   public boolean equals (Object aObj)
+   {
       if (aObj instanceof JCPE_Integer)
          return (iValue == ((JCPE_Integer) aObj).iValue);
       return false;
-  }
+   }
 
-  public String toString()
-  {
-    return String.valueOf (iValue);
-  }
+   public String toString ()
+   {
+      return String.valueOf(iValue);
+   }
 }
 

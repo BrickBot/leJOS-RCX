@@ -3,39 +3,36 @@ package js.classfile;
 import java.io.InputStream;
 import java.util.Enumeration;
 
-public class JExcepTable extends JTable
-implements IConstants
+public class JExcepTable extends JTable implements IConstants
 {
-  public JExcepTable()
-  {
-    super();
-  }
+   public JExcepTable ()
+   {
+      super();
+   }
 
-  public int length()
-  throws Exception
-  {
-    int pLength = 2;
-    Enumeration pEnum = elements();
-    while (pEnum.hasMoreElements())
-    {
-      JExcep pAttrib = (JExcep) pEnum.nextElement();
-      pLength += pAttrib.length();
-    }
-    return pLength;
-  }
+   public int length () throws Exception
+   {
+      int pLength = 2;
+      Enumeration pEnum = elements();
+      while (pEnum.hasMoreElements())
+      {
+         JExcep pAttrib = (JExcep) pEnum.nextElement();
+         pLength += pAttrib.length();
+      }
+      return pLength;
+   }
 
-  public void read (InputStream aIn)
-  throws Exception
-  {
-    int pSize = JIO.readU2 (aIn);
-    if (DEBUG_READ)
-      System.out.println ("JExcepTable.read: " + pSize + " bytes.");
-    for (int pIndex = 0; pIndex < pSize; pIndex++)
-    {
-      JExcep pObj = new JExcep();
-      pObj.read (aIn);
-      add (pObj);
-    }
-  }
+   public void read (InputStream aIn) throws Exception
+   {
+      int pSize = JIO.readU2(aIn);
+      if (DEBUG_READ)
+         System.out.println("JExcepTable.read: " + pSize + " bytes.");
+      for (int pIndex = 0; pIndex < pSize; pIndex++)
+      {
+         JExcep pObj = new JExcep();
+         pObj.read(aIn);
+         add(pObj);
+      }
+   }
 }
 
