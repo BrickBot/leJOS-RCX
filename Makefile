@@ -8,10 +8,12 @@ JAVADOC=javadoc
 JAVA=java
 TEMP=/usr/tmp
 
+PC_JAVADOC_SOURCE="rcxcomm/classes"
+
 ifneq (,$(findstring $(OSTYPE),cygwin))
-  JAVADOC_SOURCE="classes;rcxcomm/rcxclasses;rcxcomm/classes"
+  JAVADOC_SOURCE="classes;rcxcomm/rcxclasses"
 else
-  JAVADOC_SOURCE="classes:rcxcomm/rcxclasses:rcxcomm/classes"
+  JAVADOC_SOURCE="classes:rcxcomm/rcxclasses"
 endif
 
 export CLASSPATH
@@ -23,7 +25,7 @@ all: default lejos_bin
 
 release:
 	make clean
-	rm -rf apidocs
+	rm -rf apidocs pcapidocs
 	make all
 	export TINYVM_VERSION=lejos_`cat VERSION`; make dir_and_zip
 
@@ -36,7 +38,7 @@ dir_and_zip:
 	make javadoc
 	rm -rf ${TEMP}/${TINYVM_VERSION}.doc
 	mkdir ${TEMP}/${TINYVM_VERSION}.doc
-	tar cf - apidocs docs README RELEASENOTES CLICKME.html LICENSE ACKNOWLEDGMENTS Makefile | (cd ${TEMP}/${TINYVM_VERSION}.doc; tar xfpB -)
+	tar cf - apidocs pcapidocs docs README RELEASENOTES CLICKME.html LICENSE ACKNOWLEDGMENTS Makefile | (cd ${TEMP}/${TINYVM_VERSION}.doc; tar xfpB -)
 	cd ${TEMP}/${TINYVM_VERSION}.doc
 	rm -f ${TEMP}/${TINYVM_VERSION}.doc/Makefile
 	cd ${TEMP}; tar cvf ${TINYVM_VERSION}.doc.tar ${TINYVM_VERSION}.doc; gzip ${TINYVM_VERSION}.doc.tar
@@ -44,7 +46,7 @@ dir_and_zip:
 
 release_win:
 	make clean
-	rm -rf apidocs
+	rm -rf apidocs pcapidocs
 	make all
 	export TINYVM_VERSION=lejos_win32_`cat VERSION`; make dir_and_zip_win
 
@@ -58,7 +60,7 @@ dir_and_zip_win:
 	cd ${TEMP}; zip -r ${TINYVM_VERSION}.zip lejos
 	make javadoc
 	rm -f ${TEMP}/${TINYVM_VERSION}.doc.zip
-	cd ..; zip -r ${TEMP}/${TINYVM_VERSION}.doc.zip lejos/apidocs lejos/docs lejos/README lejos/RELEASENOTES lejos/CLICKME.html lejos/LICENSE lejos/ACKNOWLEDGMENTS
+	cd ..; zip -r ${TEMP}/${TINYVM_VERSION}.doc.zip lejos/apidocs lejos/pcapidocs lejos/docs lejos/README lejos/RELEASENOTES lejos/CLICKME.html lejos/LICENSE lejos/ACKNOWLEDGMENTS
 	diff bin/lejos.srec ${TEMP}/lejos/bin/lejos.srec
 
 check:
@@ -110,6 +112,10 @@ javadoc:
 	if [ ! -d apidocs ]; then mkdir apidocs; fi
 	${JAVADOC} -windowtitle "leJOS API documentation" -author -d apidocs -sourcepath $(JAVADOC_SOURCE) java.io java.lang java.util josx.platform.rcx josx.util josx.robotics josx.rcxcomm java.net javax.servlet.http
 
+pcjavadoc:
+	if [ ! -d pcapidocs ]; then mkdir pcapidocs; fi
+	${JAVADOC} -windowtitle "leJOS PC API documentation" -author -d pcapidocs -sourcepath $(PC_JAVADOC_SOURCE) josx.rcxcomm
+
 clean:
 	rm -f `find . -name '*.class'`
 	rm -f `find . -name 'core'`
@@ -121,7 +127,7 @@ clean:
 	rm -f `find . -name '*.bak'`
 	rm -f `find . -name '*.stackdump'`
 	rm -f `find . -name '*.backtrace'`
-	-rm -rf apidocs
+	-rm -rf apidocs pcapidocs
 
 distclean: clean
 	rm -rf `find . -name 'CVS'`
