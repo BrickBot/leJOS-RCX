@@ -11,14 +11,16 @@ TEMP=/usr/tmp
 PC_JAVADOC_SOURCE="rcxcomm/classes"
 
 ifneq (,$(findstring $(OSTYPE),cygwin))
-  JAVADOC_SOURCE="classes;rcxcomm/rcxclasses"
+  PATH_SEP=\;
 else
-  JAVADOC_SOURCE="classes:rcxcomm/rcxclasses"
+  PATH_SEP=:
 endif
+
+JAVADOC_SOURCE=classes${PATH_SEP}rcxcomm/rcxclasses
 
 export CLASSPATH
 
-default: check all_jtools all_ctools core_classes rcx_comm tinyvm_emul
+default: check all_ctools core_classes rcx_comm all_jtools tinyvm_emul
 	@echo "====> Installation of leJOS done!"
 
 all: default lejos_bin
@@ -82,8 +84,8 @@ all_jtools: java_tools generated_files java_loader
 	cd jtools; jar cf ../lib/jtools.jar `find . -name '*.class'`
 
 java_tools:
-	@echo "====> Making tools"
-	${JAVAC} jtools/js/tools/*.java
+	@echo "====> Making java tools"
+	${JAVAC} -classpath jtools${PATH_SEP}lib/pcrcxcomm.jar jtools/js/tools/*.java
 
 generated_files: common/classes.db common/signatures.db
 	${JAVA} -Dtinyvm.home="." js.tools.GenerateConstants
