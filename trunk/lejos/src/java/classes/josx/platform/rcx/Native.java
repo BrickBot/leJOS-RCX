@@ -27,8 +27,7 @@ class Native
   native static void writeMemoryByte (int aAddr, byte aByte);
 
   native static int  getDataAddress (Object obj);
-  native static void setMemoryBit(int aAddr, byte bit, byte value);
-  native static int  currentTimeMillis();
+  native static void setMemoryBit(int aAddr, int bit, int value);
 
   static int readMemoryShort (int aAddr)
   {
