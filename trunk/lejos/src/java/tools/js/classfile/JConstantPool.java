@@ -1,7 +1,10 @@
 package js.classfile;
 
-import java.io.*;
-import java.util.*;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
 public class JConstantPool implements IDumpable, IConstantPool
 {

@@ -1,5 +1,6 @@
 package js.classfile;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 
 public class JCPE_Methodref extends JCPE_RefEntry
 {

@@ -1,6 +1,5 @@
 package js.tinyvm;
 
-import java.util.*;
 
 public class Assertion
 {

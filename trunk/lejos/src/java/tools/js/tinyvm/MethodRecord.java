@@ -1,8 +1,14 @@
 package js.tinyvm;
 
-import java.io.*;
-import java.util.*;
-import js.classfile.*;
+import java.util.Enumeration;
+
+import js.classfile.JCPE_Utf8;
+import js.classfile.JClassFile;
+import js.classfile.JClassName;
+import js.classfile.JCodeAttribute;
+import js.classfile.JExcep;
+import js.classfile.JExcepTable;
+import js.classfile.JMethod;
 
 public class MethodRecord implements WritableData, Constants
 {

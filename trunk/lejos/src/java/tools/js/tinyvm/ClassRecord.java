@@ -1,8 +1,25 @@
 package js.tinyvm;
 
-import java.io.*;
-import java.util.*;
-import js.classfile.*;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
+
+import js.classfile.JCPE_Class;
+import js.classfile.JCPE_Double;
+import js.classfile.JCPE_Float;
+import js.classfile.JCPE_Integer;
+import js.classfile.JCPE_InterfaceMethodref;
+import js.classfile.JCPE_Long;
+import js.classfile.JCPE_Methodref;
+import js.classfile.JCPE_NameAndType;
+import js.classfile.JCPE_String;
+import js.classfile.JClassFile;
+import js.classfile.JConstantPool;
+import js.classfile.JConstantPoolEntry;
+import js.classfile.JField;
+import js.classfile.JMethod;
 
 /**
  * Abstraction for a class record (see vmsrc/language.h).

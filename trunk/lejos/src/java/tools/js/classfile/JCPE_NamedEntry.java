@@ -1,5 +1,6 @@
 package js.classfile;
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 abstract class JCPE_NamedEntry extends JConstantPoolEntry
 {

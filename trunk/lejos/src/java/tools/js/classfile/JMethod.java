@@ -1,7 +1,7 @@
 package js.classfile;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Method;
+import java.util.Enumeration;
 
 public class JMethod extends JComponent
 {

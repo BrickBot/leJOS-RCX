@@ -1,8 +1,8 @@
 package js.tinyvm;
 
-import java.io.*;
-import java.util.*;
-import js.classfile.*;
+import java.io.DataOutputStream;
+
+import js.classfile.JField;
 
 public class StaticValue extends WritableDataWithOffset
 implements Constants

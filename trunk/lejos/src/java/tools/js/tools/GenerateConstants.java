@@ -1,7 +1,10 @@
 package js.tools;
 
-import java.util.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 public class GenerateConstants
 {

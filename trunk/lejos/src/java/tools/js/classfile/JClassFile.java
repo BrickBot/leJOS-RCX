@@ -1,6 +1,8 @@
 package js.classfile;
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 
 /**
   Instances of JClassFile represent a memory image

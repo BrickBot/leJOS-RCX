@@ -1,6 +1,6 @@
 package js.classfile;
 
-import java.util.*;
+import java.util.Vector;
 
 public class JClassName
 implements IConstants

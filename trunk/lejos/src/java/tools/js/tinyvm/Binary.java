@@ -1,8 +1,7 @@
 package js.tinyvm;
 
-import java.io.*;
-import java.util.*;
-import js.classfile.*;
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * Abstraction for dumped binary.

@@ -1,8 +1,13 @@
 package js.tinyvm;
 
-import java.io.*;
-import java.util.zip.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.StringTokenizer;
+import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 public class ClassPath
 {

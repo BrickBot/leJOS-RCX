@@ -1,8 +1,11 @@
 package josx.rcxcomm;
 
-import java.net.*;
-import java.io.*;
-import josx.rcxcomm.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 
 /** 
  * A Proxy for the RCX Socket interface.

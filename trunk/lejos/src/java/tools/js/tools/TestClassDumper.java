@@ -1,7 +1,10 @@
 package js.tools;
 
-import java.io.*;
-import js.classfile.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+
+import js.classfile.JClassFile;
 
 public class TestClassDumper
 {

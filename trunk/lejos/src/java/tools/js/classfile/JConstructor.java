@@ -1,5 +1,5 @@
 package js.classfile;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
 
 public class JConstructor extends JMethod
 {

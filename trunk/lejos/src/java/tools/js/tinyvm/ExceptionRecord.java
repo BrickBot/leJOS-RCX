@@ -1,8 +1,8 @@
 package js.tinyvm;
 
-import java.io.*;
-import java.util.*;
-import js.classfile.*;
+import js.classfile.JCPE_Class;
+import js.classfile.JClassFile;
+import js.classfile.JExcep;
 
 public class ExceptionRecord implements WritableData, Constants
 {

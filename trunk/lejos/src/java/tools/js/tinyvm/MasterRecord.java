@@ -1,7 +1,5 @@
 package js.tinyvm;
 
-import java.io.*;
-import java.util.*;
 
 public class MasterRecord implements WritableData, Constants
 {

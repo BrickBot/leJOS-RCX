@@ -1,7 +1,6 @@
 package js.tinyvm;
 
-import java.util.*;
-import js.classfile.*;
+import js.classfile.JCPE_Utf8;
 
 public class Signature
 {
