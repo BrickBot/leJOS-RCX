@@ -158,7 +158,7 @@ int nbread (FILEDESCR fd, void *buf, int maxlen, int timeout)
 
 	if (select(fd+1, &fds, NULL, NULL, &tv) < 0) {
 	    myperror("select");
-	    return RCX_READ_ERR;
+	    return RCX_READ_FAIL;
 	}
 
 	if (!FD_ISSET(fd, &fds))
@@ -166,7 +166,7 @@ int nbread (FILEDESCR fd, void *buf, int maxlen, int timeout)
 
 	if ((count = read(fd, &bufp[len], maxlen - len)) < 0) {
 	    myperror("read");
-	    retun RCX_READ_ERR;
+	    return RCX_READ_FAIL;
 	}
 
         len += count;
