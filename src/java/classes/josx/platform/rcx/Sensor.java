@@ -42,6 +42,7 @@ public class Sensor
   private int iSensorId;
   private short iNumListeners = 0;
   private final SensorListener[] iListeners = new SensorListener[8];
+  private int iPreviousValue;
   private static final SensorThread SENSOR_THREAD = new SensorThread();
   
   /**
@@ -110,12 +111,12 @@ public class Sensor
     Native.getDataAddress (null);
     if (!SENSOR_THREAD.isAlive())
     {
-	  SENSOR_THREAD.setDaemon(true);
+      SENSOR_THREAD.setDaemon(true);
       SENSOR_THREAD.setPriority(Thread.MAX_PRIORITY);
       SENSOR_THREAD.start();
       for (int i = 0; i < 3; i++)
       {
-	SENSORS[i].iNumListeners = 0;
+    SENSORS[i].iNumListeners = 0;
       }
     }
     iListeners[iNumListeners++] = aListener;
@@ -153,7 +154,7 @@ public class Sensor
   public final void setTypeAndMode (int aType, int aMode)
   {
     setSensorValue (iSensorId, aType, 1);
-    setSensorValue (iSensorId, aMode, 0);	  
+    setSensorValue (iSensorId, aMode, 0);     
   }
 
   /**
@@ -161,7 +162,7 @@ public class Sensor
    */
   public final void setPreviousValue (int aValue)
   {
-    setSensorValue (iSensorId, aValue, 2);	  
+    setSensorValue (iSensorId, aValue, 2);    
   }
   
 //   /**
@@ -183,55 +184,43 @@ public class Sensor
   
   private static native void setSensorValue (int aSensorId, int aVal, int aRequestType);
   
+  private synchronized void callListeners() {
+    int newValue = readSensorValue( iSensorId, 1);
+    for (int i = 0; i < iNumListeners; i++) {
+      iListeners[i].stateChanged( this, iPreviousValue, newValue);
+    }
+    iPreviousValue = newValue;
+  }
+
   private static class SensorThread extends Thread
   {
-  	int mask;
-  	Poll poller = new Poll();
-    int[] iPreviousValue = new int[3];
-	
-	private void call(int sid) {
-		Sensor sensor = SENSORS[sid];
-        synchronized (sensor){
-			int newValue = readSensorValue(sid, 1);
-			int numListeners = sensor.iNumListeners;
-			for (int i = 0; i < numListeners; i++) {
-				sensor.iListeners[i].stateChanged (sensor, iPreviousValue[sid], newValue);
-			}
-            iPreviousValue[sid] = newValue;
-        }
+    int mask;
+    Poll poller = new Poll();
+    
+    public void addToMask(int id) {
+        mask |= 1 << id;
+        
+        // Interrupt the polling thread, not the current one!
+        interrupt();
     }
-
-	public void addToMask(int id) {
-		mask |= 1 << id;
-		
-		// Interrupt the polling thread, not the current one!
-		interrupt();
-	}
-	
+    
     public void run()
     {
       for (;;)
       {
-	  	try  {
-			int changed = poller.poll(mask, 0);
-		
-			if ((changed & Poll.SENSOR1_MASK) != 0)
-				call(0);
-			if ((changed & Poll.SENSOR2_MASK) != 0)
-				call(1);
-			if ((changed & Poll.SENSOR3_MASK) != 0)
-				call(2);
-	  	} catch (InterruptedException ie) {
-	  	}	
-      }	    
-    }     	  
+        try  {
+            int changed = poller.poll(mask, 0);
+        
+            if ((changed & Poll.SENSOR1_MASK) != 0)
+                S1.callListeners();
+            if ((changed & Poll.SENSOR2_MASK) != 0)
+                S2.callListeners();
+            if ((changed & Poll.SENSOR3_MASK) != 0)
+                S3.callListeners();
+        } catch (InterruptedException ie) {
+        }   
+      }     
+    }         
   }
   
 }
-
-
-
-
-
-
-
