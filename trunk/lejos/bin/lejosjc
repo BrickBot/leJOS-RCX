@@ -6,14 +6,14 @@
 # 12/12/02  created L. Griffiths
 
 if [ $OSTYPE == "cygwin" ]; then
-  SEPARATOR=";"
+  SEP=";"
 else
-  SEPARATOR=":"
+  SEP=":"
 fi
 
 if [ -z "$LEJOS_HOME" ]; then
-  echo LEJOS_HOME not defined
-else
-  javac -target 1.1 -source 1.2 -bootclasspath "$LEJOS_HOME/lib/classes.jar$SEPARATOR$LEJOS_HOME/lib/rcxrcxcomm.jar$SEPARATOR$CLASSPATH" $*
+  LEJOS_HOME="$(dirname $0)/.."
 fi
+
+javac -target 1.1 -source 1.2 -bootclasspath "$LEJOS_HOME/lib/classes.jar$SEP$LEJOS_HOME/lib/rcxrcxcomm.jar$SEP$CLASSPATH" "$@"
 
