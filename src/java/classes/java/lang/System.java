@@ -10,11 +10,11 @@ public final class System
   /**
    * Copies one array to another.
    */
-  //public static native void arraycopy (Object src, int srcoffset, Object dest, int destoffset, int length);
-  static void arraycopy (char[] src, int srcoffset, char[] dest, int destoffset, int length)
+  //public static native void arraycopy (Object src, int srcOffset, Object dest, int destOffset, int length);
+  static void arraycopy (char[] src, int srcOffset, char[] dest, int destOffset, int length)
   {
     for (int i = 0; i < length; i++)
-      dest[i + destoffset] = src[i + srcoffset]; 
+      dest[i + destOffset] = src[i + srcOffset]; 
   }
 
   /**
@@ -30,7 +30,7 @@ public final class System
   public static native long currentTimeMillis();
   
   /**
-   * Get the singelton instance of Runtime.
+   * Get the singleton instance of Runtime.
    */
   public static Runtime getRuntime() {
   	return Runtime.getRuntime();
