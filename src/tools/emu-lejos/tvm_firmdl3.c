@@ -391,7 +391,8 @@ rcx_wakeup_tower (int fd, int timeout)
 	#endif
 	
 	if (write(fd, msg, sizeof(msg)) != sizeof(msg)) {
-	    perror("write");
+	    perror("Unable to write: Probably a resource allocation problem: "
+	           "Close programs or reboot");
 	    exit(1);
 	}
 	
@@ -455,7 +456,7 @@ rcx_send (int fd, void *buf, int len, int use_comp)
     /* Send message */
     
     if (write(fd, msg, msglen) != msglen) {
-	perror("write");
+	perror("Unable to write");
 	exit(1);
     }
 

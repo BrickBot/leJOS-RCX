@@ -56,15 +56,19 @@ char *get_classpath (char *program)
   
   #endif __CYGWIN__
   
+  cpath = lejosjar;   
+  
+  #ifndef JAVA2
   oldcpath = getenv ("CLASSPATH");
   if (oldcpath == NULL)
     oldcpath = "";
-  cpath = lejosjar;   
   if (strcmp (oldcpath, "") != 0)
   {
     cpath = append (cpath, PATH_SEPARATOR);
     cpath = append (cpath, oldcpath);
   }
+  #endif
+  
   return cpath;
 }
 
@@ -91,7 +95,13 @@ int main (int argc, char *argv[])
     exit (1);
   }
   newargv[count++] = toolName;
+  
+  #ifdef JAVA2
+  newargv[count++] = "-bootclasspath";
+  #else
   newargv[count++] = "-classpath";
+  #endif
+  
   newargv[count++] = cpath;
   for (i = 1; i < argc; i++)
   {
