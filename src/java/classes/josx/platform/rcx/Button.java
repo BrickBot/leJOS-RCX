@@ -86,11 +86,11 @@ public class Button
    */
   public static int readButtons()
   {
-    synchronized (Native.MEMORY_MONITOR)
+    synchronized (Memory.MONITOR)
     {
-      int pAddr = Native.iAuxDataAddr;
-      Native.callRom ((short) 0x1fb6, (short) 0x3000, (short) pAddr);
-      return Native.readMemoryShort (pAddr);
+      int pAddr = Memory.iAuxDataAddr;
+      ROM.call ((short) 0x1fb6, (short) 0x3000, (short) pAddr);
+      return Memory.readShort (pAddr);
     }
   }
 

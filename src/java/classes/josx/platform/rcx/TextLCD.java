@@ -78,57 +78,57 @@ public class TextLCD
 
   private static final void native_print_pos_0(byte mask)
   {
-     Native.setMemoryBit(0xef44, 0x4, (mask & 1<<0x2));
-     Native.setMemoryBit(0xef44, 0x5, (mask & 1<<0x0));
-     Native.setMemoryBit(0xef44, 0x7, (mask & 1<<0x5));
-     Native.setMemoryBit(0xef45, 0x5, (mask & 1<<0x1));
-     Native.setMemoryBit(0xef45, 0x7, (mask & 1<<0x6));
-     Native.setMemoryBit(0xef47, 0x5, (mask & 1<<0x3));
-     Native.setMemoryBit(0xef47, 0x7, (mask & 1<<0x4));
+     Memory.setBit(0xef44, 0x4, (mask & 1<<0x2));
+     Memory.setBit(0xef44, 0x5, (mask & 1<<0x0));
+     Memory.setBit(0xef44, 0x7, (mask & 1<<0x5));
+     Memory.setBit(0xef45, 0x5, (mask & 1<<0x1));
+     Memory.setBit(0xef45, 0x7, (mask & 1<<0x6));
+     Memory.setBit(0xef47, 0x5, (mask & 1<<0x3));
+     Memory.setBit(0xef47, 0x7, (mask & 1<<0x4));
   }
 
   private static final void native_print_pos_1(byte mask)
   {
-     Native.setMemoryBit(0xef43, 0x4, (mask & 1<<0x2));
-     Native.setMemoryBit(0xef43, 0x5, (mask & 1<<0x0));
-     Native.setMemoryBit(0xef43, 0x7, (mask & 1<<0x5));
-     Native.setMemoryBit(0xef47, 0x1, (mask & 1<<0x1));
-     Native.setMemoryBit(0xef47, 0x3, (mask & 1<<0x6));
-     Native.setMemoryBit(0xef48, 0x5, (mask & 1<<0x3));
-     Native.setMemoryBit(0xef48, 0x7, (mask & 1<<0x4));
+     Memory.setBit(0xef43, 0x4, (mask & 1<<0x2));
+     Memory.setBit(0xef43, 0x5, (mask & 1<<0x0));
+     Memory.setBit(0xef43, 0x7, (mask & 1<<0x5));
+     Memory.setBit(0xef47, 0x1, (mask & 1<<0x1));
+     Memory.setBit(0xef47, 0x3, (mask & 1<<0x6));
+     Memory.setBit(0xef48, 0x5, (mask & 1<<0x3));
+     Memory.setBit(0xef48, 0x7, (mask & 1<<0x4));
   }
   
   private static final void native_print_pos_2(byte mask)
   {
-     Native.setMemoryBit(0xef44, 0x0, (mask & 1<<0x2));
-     Native.setMemoryBit(0xef44, 0x1, (mask & 1<<0x0));
-     Native.setMemoryBit(0xef44, 0x3, (mask & 1<<0x5));
-     Native.setMemoryBit(0xef48, 0x1, (mask & 1<<0x1));
-     Native.setMemoryBit(0xef48, 0x3, (mask & 1<<0x6));
-     Native.setMemoryBit(0xef49, 0x5, (mask & 1<<0x3));
-     Native.setMemoryBit(0xef49, 0x7, (mask & 1<<0x4));
+     Memory.setBit(0xef44, 0x0, (mask & 1<<0x2));
+     Memory.setBit(0xef44, 0x1, (mask & 1<<0x0));
+     Memory.setBit(0xef44, 0x3, (mask & 1<<0x5));
+     Memory.setBit(0xef48, 0x1, (mask & 1<<0x1));
+     Memory.setBit(0xef48, 0x3, (mask & 1<<0x6));
+     Memory.setBit(0xef49, 0x5, (mask & 1<<0x3));
+     Memory.setBit(0xef49, 0x7, (mask & 1<<0x4));
   }
   
   private static final void native_print_pos_3(byte mask)
   {
-     Native.setMemoryBit(0xef46, 0x0, (mask & 1<<0x2));
-     Native.setMemoryBit(0xef46, 0x1, (mask & 1<<0x0));
-     Native.setMemoryBit(0xef46, 0x3, (mask & 1<<0x5));
-     Native.setMemoryBit(0xef4b, 0x1, (mask & 1<<0x1));
-     Native.setMemoryBit(0xef4b, 0x3, (mask & 1<<0x6));
-     Native.setMemoryBit(0xef4b, 0x5, (mask & 1<<0x3));
-     Native.setMemoryBit(0xef4b, 0x7, (mask & 1<<0x4));
+     Memory.setBit(0xef46, 0x0, (mask & 1<<0x2));
+     Memory.setBit(0xef46, 0x1, (mask & 1<<0x0));
+     Memory.setBit(0xef46, 0x3, (mask & 1<<0x5));
+     Memory.setBit(0xef4b, 0x1, (mask & 1<<0x1));
+     Memory.setBit(0xef4b, 0x3, (mask & 1<<0x6));
+     Memory.setBit(0xef4b, 0x5, (mask & 1<<0x3));
+     Memory.setBit(0xef4b, 0x7, (mask & 1<<0x4));
   }
   
   private static final void native_print_pos_4(byte mask)
   {
-     Native.setMemoryBit(0xef46, 0x4, (mask & 1<<0x2));
-     Native.setMemoryBit(0xef46, 0x5, (mask & 1<<0x0));
-     Native.setMemoryBit(0xef46, 0x7, (mask & 1<<0x5));
-     Native.setMemoryBit(0xef4a, 0x1, (mask & 1<<0x1));
-     Native.setMemoryBit(0xef4a, 0x3, (mask & 1<<0x6));
-     Native.setMemoryBit(0xef4a, 0x5, (mask & 1<<0x3));
-     Native.setMemoryBit(0xef4a, 0x7, (mask & 1<<0x4));
+     Memory.setBit(0xef46, 0x4, (mask & 1<<0x2));
+     Memory.setBit(0xef46, 0x5, (mask & 1<<0x0));
+     Memory.setBit(0xef46, 0x7, (mask & 1<<0x5));
+     Memory.setBit(0xef4a, 0x1, (mask & 1<<0x1));
+     Memory.setBit(0xef4a, 0x3, (mask & 1<<0x6));
+     Memory.setBit(0xef4a, 0x5, (mask & 1<<0x3));
+     Memory.setBit(0xef4a, 0x7, (mask & 1<<0x4));
   }
 
 // Some documentation, leached from legOS.

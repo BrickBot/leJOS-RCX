@@ -42,7 +42,7 @@ public class LCD
    */
   public static void setNumber (int aCode, int aValue, int aPoint)
   {
-    Native.callRom ((short) 0x1ff2, (short) aCode, (short) aValue, (short) aPoint);
+    ROM.call ((short) 0x1ff2, (short) aCode, (short) aValue, (short) aPoint);
   } 
 
   /**
@@ -51,7 +51,7 @@ public class LCD
    */
   public static void refresh()
   {
-    Native.callRom ((short) 0x27c8);
+    ROM.call ((short) 0x27c8);
   }
 
   /**
@@ -86,7 +86,7 @@ public class LCD
    */
   public static void setSegment (int aCode)
   {
-    Native.callRom ((short) 0x1b62, (short) aCode);
+    ROM.call ((short) 0x1b62, (short) aCode);
   }
 
   /**
@@ -95,7 +95,7 @@ public class LCD
    */
   public static void clearSegment (int aCode)
   {
-    Native.callRom ((short) 0x1e4a, (short) aCode);
+    ROM.call ((short) 0x1e4a, (short) aCode);
   }
 
   /**
@@ -103,7 +103,7 @@ public class LCD
    */
   public static void clear()
   {
-    Native.callRom ((short) 0x27ac);
+    ROM.call ((short) 0x27ac);
   }
 }
 

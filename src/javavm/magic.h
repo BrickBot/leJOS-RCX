@@ -2,6 +2,6 @@
 #ifndef _MAGIC_H
 #define _MAGIC_H
 
-#define MAGIC 0xCAF2
+#define MAGIC 0xCAF5
 
 #endif
