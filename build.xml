@@ -1,10 +1,10 @@
 <!--
   ==================================================
-  Buildfile for java part of leJOS.
+  Buildfile for java build of leJOS.
   $Id$
   ==================================================
 -->
-<project name="leJOS java part" default="jar" basedir=".">
+<project name="leJOS java build" default="all" basedir=".">
 
   <!--
     ==================================================
@@ -17,15 +17,7 @@
   <property name="javasrc" value="${src}/java"/>
   <property name="build" value="${basedir}/build"/>
   <property name="bin" value="${basedir}/bin"/>
-
-  <path id="lejos.classpath">
-    <pathelement location="${build}/classes"/>
-    <pathelement location="${build}/pcrcxcomm"/>
-    <pathelement location="${build}/rcxcomm"/>
-    <pathelement location="${build}/vision"/>
-    <fileset file="${javasrc}/vision/jmf.jar"/>
-    <pathelement location="${build}/tools"/>
-  </path>
+  <property name="lib" value="${basedir}/lib"/>
 
   <!--
     ==================================================
@@ -37,14 +29,10 @@
   	<delete file="${javasrc}/tools/js/tinyvm/SpecialClassConstants.java"/>
   	<delete file="${javasrc}/tools/js/tinyvm/SpecialSignatureConstants.java"/>
   	<!-- delete classes -->
-    <delete dir="${build}/classes"/>
-    <delete dir="${build}/pcrcxcomm"/>
-    <delete dir="${build}/rcxcomm"/>
-    <delete dir="${build}/vision"/>
-    <delete dir="${build}/tools"/>
+    <delete dir="${build}"/>
   	<!-- delete jars -->
   	<delete>
-      <fileset dir="${build}">
+      <fileset dir="${lib}">
         <include name="*.jar"/>
       </fileset>  	
   	</delete>	
@@ -52,40 +40,89 @@
 
   <!--
     ==================================================
-    Target init: makes a timestamp and the build
-                 directory
+    Target init: makes a timestamp and the build dir
     ==================================================
   -->
   <target name="init" description="setup build">
     <tstamp/>
     <mkdir dir="${build}"/>
-    <mkdir dir="${build}/classes"/>
-    <mkdir dir="${build}/pcrcxcomm"/>
-    <mkdir dir="${build}/rcxcomm"/>
-    <mkdir dir="${build}/vision"/>
-  	<copy todir="${build}/vision">
-  	  <fileset dir="${javasrc}/vision">
-  	  	<include name="**/*.properties"/>
-  	  </fileset>
-  	</copy>
-    <mkdir dir="${build}/tools"/>
+    <mkdir dir="${lib}"/>
   </target>
 
   <!--
     ==================================================
-    Target compile: compile all sources
+    Target jar: create classes jar (RCX: JDK 1.1)
     ==================================================
   -->
-  <target name="compile" depends="init" description="compile all sources">
-    <javac srcdir="${javasrc}/tools" destdir="${build}/tools" fork="yes" optimize="on" debug="on" source="1.4" classpathref="lejos.classpath" includes="**/GenerateConstants.java"/>
-  	<java classpathref="lejos.classpath" classname="js.tools.GenerateConstants">
+  <target name="classes" depends="init" description="generate classes jar">
+    <mkdir dir="${build}/classes"/>
+    <javac srcdir="${javasrc}/classes" destdir="${build}/classes" fork="yes" optimize="on" debug="on" target="1.1"/>
+    <jar destfile="${lib}/classes.jar" basedir="${build}/classes" update="false"/>
+  </target>
+
+  <!--
+    ==================================================
+    Target jar: create rcxcomm jar (RCX: JDK 1.1)
+    ==================================================
+  -->
+  <target name="rcxcomm" depends="init, classes" description="generate rcxcomm jar">
+    <mkdir dir="${build}/rcxcomm"/>
+    <javac srcdir="${javasrc}/rcxcomm" destdir="${build}/rcxcomm" fork="yes" optimize="on" debug="on" target="1.1">
+      <classpath location="${lib}/classes.jar"/>
+    </javac>
+    <jar destfile="${lib}/rcxcomm.jar" basedir="${build}/rcxcomm" update="false"/>
+  </target>
+
+  <!--
+    ==================================================
+    Target jar: create pcrcxcomm jar (PC: JDK 1.4)
+    ==================================================
+  -->
+  <target name="pcrcxcomm" depends="init" description="generate pcrcxcomm jar">
+    <mkdir dir="${build}/pcrcxcomm"/>
+    <javac srcdir="${javasrc}/pcrcxcomm" destdir="${build}/pcrcxcomm" fork="yes" optimize="on" debug="on" source="1.4"/>
+    <jar destfile="${lib}/pcrcxcomm.jar" basedir="${build}/pcrcxcomm" update="false"/>
+  </target>
+
+  <!--
+    ==================================================
+    Target jar: create vision jar (PC: JDK 1.4)
+    ==================================================
+  -->
+  <target name="vision" depends="init, pcrcxcomm" description="generate pcrcxcomm jar">
+    <mkdir dir="${build}/vision"/>
+    <copy todir="${build}/vision">
+      <fileset dir="${javasrc}/vision">
+        <include name="**/*.properties"/>
+      </fileset>
+    </copy>
+    <javac srcdir="${javasrc}/vision" destdir="${build}/vision" fork="yes" optimize="on" debug="on" source="1.4">
+      <classpath location="${lib}/pcrcxcomm.jar"/>
+    </javac>
+    <jar destfile="${lib}/vision.jar" basedir="${build}/vision" update="false"/>
+  </target>
+
+  <!--
+    ==================================================
+    Target jar: create jtools jar (PC: JDK 1.4)
+    ==================================================
+  -->
+  <target name="jtools" depends="init, pcrcxcomm" description="generate jtools jar">
+    <mkdir dir="${build}/tools"/>
+    <!-- generate constants first -->
+    <javac srcdir="${javasrc}/tools" destdir="${build}/tools" fork="yes" optimize="on" debug="on" source="1.4" includes="**/GenerateConstants.java"/>
+    <java classpath="${build}/tools" classname="js.tools.GenerateConstants">
       <sysproperty key="tinyvm.home" value="${src}"/>
-  	</java>
-    <javac srcdir="${javasrc}/classes" destdir="${build}/classes" fork="yes" optimize="on" debug="on" target="1.1" classpathref="lejos.classpath"/>
-    <javac srcdir="${javasrc}/rcxcomm" destdir="${build}/rcxcomm" fork="yes" optimize="on" debug="on" target="1.1" classpathref="lejos.classpath"/>
-    <javac srcdir="${javasrc}/pcrcxcomm" destdir="${build}/pcrcxcomm" fork="yes" optimize="on" debug="on" source="1.4" classpathref="lejos.classpath"/>
-    <javac srcdir="${javasrc}/vision" destdir="${build}/vision" fork="yes" optimize="on" debug="on" target="1.1" classpathref="lejos.classpath"/>
-    <javac srcdir="${javasrc}/tools" destdir="${build}/tools" fork="yes" optimize="on" debug="on" source="1.4" classpathref="lejos.classpath"/>
+    </java>
+    <!-- generate tools -->
+    <javac srcdir="${javasrc}/tools" destdir="${build}/tools" fork="yes" optimize="on" debug="on" source="1.4">
+      <classpath location="${lib}/pcrcxcomm.jar"/>
+    </javac>
+    <jar destfile="${lib}/jtools.jar" basedir="${build}/tools" update="false">
+      <fileset dir="${bin}">
+        <include name="lejos.srec"/>
+      </fileset>
+    </jar>
   </target>
 
   <!--
@@ -93,16 +130,6 @@
     Target jar: create all jar files
     ==================================================
   -->
-  <target name="jar" depends="clean, compile" description="generate all jar files">
-    <jar destfile="${build}/classes.jar" basedir="${build}/classes"/>
-    <jar destfile="${build}/pcrcxcomm.jar" basedir="${build}/pcrcxcomm"/>
-    <jar destfile="${build}/rcxcomm.jar" basedir="${build}/rcxcomm"/>
-    <jar destfile="${build}/vision.jar" basedir="${build}/vision"/>
-    <jar destfile="${build}/tools.jar" basedir="${build}/tools">
-      <fileset dir="${bin}">
-      	<include name="lejos.srec"/>
-      </fileset>
-    </jar>
-  </target>
-
+  <target name="all" depends="clean, classes, rcxcomm, pcrcxcomm, vision, jtools" description="generate all jar files"/>
+  
 </project>
