@@ -177,14 +177,15 @@ implements OpCodeConstants, OpCodeInfo, Constants
     } catch (Throwable t) {
       t.printStackTrace();
     }
-    if (!(pEntry instanceof JCPE_Methodref))
+    if (!(pEntry instanceof JCPE_RefEntry))
     {
       Utilities.fatal ("Classfile error: Instruction requiring " +
-                       "CONSTANT_Methodref entry got " +
+                       "CONSTANT_MethodRef or CONSTANT_InterfaceMethodRef " +
+                       "got " +
                        (pEntry == null ? "null" : 
                        pEntry.getClass().getName()));
     }
-    JCPE_Methodref pMethodEntry = (JCPE_Methodref) pEntry;
+    JCPE_RefEntry pMethodEntry = (JCPE_RefEntry) pEntry;
     JCPE_Class pClass = pMethodEntry.getClassEntry();
     ClassRecord pClassRecord = iBinary.getClassRecord (pClass.getName());
     if (pClassRecord == null)

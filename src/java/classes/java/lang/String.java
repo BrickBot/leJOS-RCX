@@ -1,5 +1,8 @@
 package java.lang;
 
+/**
+ * <b>Class String is not yet supported.</b>
+ */
 public class String
 {
   private char[] characters;

@@ -37,7 +37,7 @@ JINT gInt;
  */
 void do_goto (boolean aCond)
 {
-  #if DEBUG_BYTECODE
+  #if 0
   printf ("do_goto: %d, %d (= %d)\n", (int) pc[0], (int) pc[1],
           (JSHORT) (((TWOBYTES) pc[0] << 8) | pc[1]));
   #endif

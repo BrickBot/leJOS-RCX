@@ -11,7 +11,7 @@ case OP_BIPUSH:
 case OP_SIPUSH:
   // Stack size: +1
   // Arguments: 2
-  #if DEBUG_BYTECODE
+  #if 0
   printf ("  OP_SIPUSH args: %d, %d (%d)\n", (int) pc[0], (int) pc[1], (int) pc[2]);
   #endif
   *(++stackTop) = (STACKWORD) (short) (((TWOBYTES) pc[0] << 8) | pc[1]);

@@ -36,12 +36,13 @@ case OP_INSTANCEOF:
   pc += 2;
   goto LABEL_ENGINELOOP;
 case OP_CHECKCAST:
-  // Stack: -1
+  // Stack: -1 +1 (same)
   // Arguments: 2
   // Ignore hi byte
   pc++;
-  if (!instance_of (word2obj (*stackTop--), *pc++))
+  if (!instance_of (word2obj (*stackTop), *pc))
     throw_exception (classCastException);
+  pc++;
   goto LABEL_ENGINELOOP;
 
 /*end*/

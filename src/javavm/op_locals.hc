@@ -9,7 +9,7 @@ case OP_ALOAD:
   // Stack: +1
   *(++stackTop) = localsBase[*pc++];
   #if DEBUG_BYTECODE
-  printf ("  OP_ALOAD pushed: %d\n", (int) stackTop[0]);
+  printf ("\n  OP_ALOAD pushed: %d\n\n", (int) stackTop[0]);
   #endif
   goto LABEL_ENGINELOOP;
 case OP_ILOAD_0:
@@ -36,7 +36,7 @@ case OP_ALOAD_3:
   // Stack: +1
   *(++stackTop) = localsBase[*(pc-1)-OP_ALOAD_0];
   #if DEBUG_BYTECODE
-  printf ("  OP_ALOAD_<N> pushed: %d\n", (int) stackTop[0]);
+  printf ("\n  OP_ALOAD_<N> pushed: %d\n\n", (int) stackTop[0]);
   #endif
   goto LABEL_ENGINELOOP;
 case OP_LLOAD:
@@ -96,6 +96,9 @@ case OP_ASTORE_2:
 case OP_ASTORE_3:
   // Arguments: 0
   // Stack: -1
+  #if DEBUG_BYTECODE
+  printf ("\n  OP_ASTORE: %d, %d\n\n", (int) (*(pc-1)-OP_ASTORE_0), (int) *stackTop);
+  #endif
   localsBase[*(pc-1)-OP_ASTORE_0] = *stackTop--;
   goto LABEL_ENGINELOOP;
 case OP_LSTORE:
