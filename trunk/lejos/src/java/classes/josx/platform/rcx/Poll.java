@@ -14,11 +14,15 @@ public class Poll
     public static final short SENSOR2_MASK = 0x02;
     public static final short SENSOR3_MASK = 0x04;
     public static final short ALL_SENSORS  = 0x07;
+
     public static final short RUN_MASK     = 0x08;
     public static final short VIEW_MASK    = 0x10;
     public static final short PRGM_MASK    = 0x20;
     public static final short ALL_BUTTONS  = 0x38;
     public static final short BUTTON_MASK_SHIFT  = 3;
+
+    public static final short SERIAL_MASK = 0x40;
+    public static final short SERIAL_SHIFT = 6;
 
     private static Poll monitor = new Poll(true);
     
@@ -97,5 +101,3 @@ public class Poll
     }
 */
 }
-
-
