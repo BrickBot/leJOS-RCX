@@ -3,9 +3,9 @@ leJOS, a Java system for the Lego Mindstorms RCX
 Summary
 -------
 
--- You need a Java Development Kit (JDK).
--- JDK 1.1 to 1.4 work.
+-- You need a Java Development Kit (JDK) 1.4 or above.
 -- Your PATH must contain the JDK's bin directory.
+-- You need ANT 1.6 or above.
 -- In Unix, type 'make' to finish installation of leJOS.
 -- Add leJOS's bin directory to your PATH.
 -- Set RCXTTY to your 'tower' device (e.g. COM1 or USB or /dev/ttyS0).

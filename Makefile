@@ -1,22 +1,18 @@
 
 SHELL=/bin/sh
-CLASSPATH=src/java/tools
 
 # OSTYPE is not set by default on Mac OS X
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 endif
 
-JAVAC=javac -target 1.1 -source 1.2
-JAVADOC=javadoc
-JAVA=java
+ANT=ant
 TEMP=/usr/tmp
 
 LEJOS_HOME=$(shell pwd)
+LEJOS_HOME=G:\\workspace\\lejos
 
 MFLAGS = OSTYPE=$(OSTYPE) LEJOS_HOME=$(LEJOS_HOME)
-
-PC_JAVADOC_SOURCE="src/java/rcxcomm/classes"
 
 ifneq (,$(findstring cygwin,$(OSTYPE)))
   PATH_SEP=;
@@ -25,13 +21,7 @@ else
 endif
 
 
-JAVADOC_SOURCE="src/java/classes${PATH_SEP}src/java/rcxcomm/rcxclasses"
 REGRESSION_SRC="test/regression"
-JTOOLS_SRC="src/java/tools"
-CORE_CLASSES_SRC="src/java/classes"
-VISION_SRC="src/java/vision"
-RCXCOMM_SRC="src/java/rcxcomm"
-PCRCXCOMM_SRC="src/java/pcrcxcomm"
 JVM_SRC="src/javavm"
 EMU_SRC="src/tools/emu-lejos"
 PLAT_RCX_SRC="src/platform/rcx"
@@ -40,10 +30,13 @@ PLAT_GBOY_SRC="src/platform/gameboy"
 IRTRCX_LIB_SRC=src/comms/libirtrcx
 JIRTRCX_LIB_SRC=src/comms/libjirtrcx
 
-export CLASSPATH
 export JAVA
 
-default: emulator irtrcx_libs core_classes rcx_comm all_jtools tinyvm_emul
+x: emulator all_java tinyvm_emul
+	@echo ""
+	@echo "====> Installation of leJOS done!"
+
+default: emulator irtrcx_libs all_java tinyvm_emul
 	@echo ""
 	@echo "====> Installation of leJOS done!"
 
@@ -103,26 +96,8 @@ check_release:
 	$(MAKE) $(MFLAGS) 
 	cd $(REGRESSION_SRC); ./run.sh
 
-all_jtools: java_tools generated_files java_loader
-	cd $(JTOOLS_SRC); jar cf ../../../lib/jtools.jar `find . -name '*.class'`
-
-java_tools:
-	@echo ""
-	@echo "====> Making java tools"
-	@echo ""
-	${JAVAC} -classpath "./src/java/tools${PATH_SEP}./lib/pcrcxcomm.jar" $(JTOOLS_SRC)/js/tools/*.java
-
-generated_files:
-	@echo ""
-	@echo "====> Generating constants"
-	@echo "" 
-	${JAVA} -classpath $(CLASSPATH) -Dtinyvm.home="./src" js.tools.GenerateConstants
-
-java_loader:
-	@echo ""
-	@echo "====> Making loader/linker (lejos)"
-	@echo ""
-	${JAVAC} $(JTOOLS_SRC)/js/tinyvm/*.java
+all_java:
+	${ANT} all
 
 emulator:
 	@echo ""
@@ -148,33 +123,17 @@ tinyvm_emul:
 	@echo ""
 	cd $(PLAT_UNIX_SRC); $(MAKE) $(MFLAGS)
 
-core_classes:
-	@echo ""
-	@echo "====> Making core classes"
-	@echo ""
-	${JAVAC} -classpath  $(CORE_CLASSES_SRC) `find $(CORE_CLASSES_SRC) -name '*.java'`
-	cd $(CORE_CLASSES_SRC); jar cf ../../../lib/classes.jar `find . -name '*.class'`
-
-rcx_comm: core_classes
-	@echo ""
-	@echo "====> Making rcxcomm"
-	@echo ""
-	cd $(RCXCOMM_SRC); $(MAKE) $(MFLAGS)
-	cd $(PCRCXCOMM_SRC); $(MAKE) $(MFLAGS)
-
-visionapi:
-	cd $(VISION_SRC); $(MAKE) $(MFLAGS)
-
 javadoc:
-	${JAVADOC} -protected -windowtitle "leJOS API documentation" -author -d apidocs -sourcepath $(JAVADOC_SOURCE) java.io java.lang java.util josx.platform.rcx josx.util josx.robotics josx.rcxcomm java.net javax.servlet.http
+	${ANT} doc
 
 pcjavadoc:
-	${JAVADOC} -protected -windowtitle "leJOS PC API documentation" -author -d pcapidocs -sourcepath $(PC_JAVADOC_SOURCE) josx.rcxcomm
+	${ANT} pcdoc
 
 visiondoc:
-	javadoc -protected -windowtitle "leJOS Vision API documentation" -author -d visionapidocs -classpath "$(JMFHOME)/lib/jmf.jar${PATH_SEP}./lib/pcrcxcomm.jar" -sourcepath vision josx.vision
+	${ANT} visiondoc
 
 clean:
+	${ANT} clean
 	rm -f `find . -name '*.class'`
 	rm -f `find . -name 'core'`
 	rm -f `find . -name '*.o'`
