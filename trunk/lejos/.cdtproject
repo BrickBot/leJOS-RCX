@@ -25,6 +25,12 @@
 
 <item id="org.eclipse.cdt.make.core.buildtargets">
 <buildTargets>
+<target name="all" path="src/platform/rcx/librcx/lib" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<buildCommand>make</buildCommand>
+<buildTarget>all</buildTarget>
+<stopOnError>true</stopOnError>
+<useDefaultCommand>true</useDefaultCommand>
+</target>
 <target name="all" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>make</buildCommand>
 <buildTarget>all</buildTarget>
