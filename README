@@ -3,8 +3,8 @@ leJOS, a Java system for the Lego Mindstorms RCX
 Summary
 -------
 
--- You should have JDK1.1 or JDK1.2. JDK1.3 should also work.
--- JDK1.4 requires you to use the  
+-- You need a Java Development Kit (JDK).
+-- JDK 1.1 to 1.3 work, 1.4 works with option -target 1.1 for lejosc.
 -- Your PATH must contain the JDK's bin directory.
 -- In Unix, type 'make' to finish installation of leJOS.
 -- Add leJOS's bin directory to your PATH.
@@ -59,11 +59,10 @@ to leJOS. TinyVM is about 7 Kb smaller in the RCX.
 Compatibility
 -------------
 
-RCX 1.0 in RIS 1.0/1.5: yes
-RCX 2.0 in RIS 2.0: probably, if not we'll fix it
+RCX 1.0/2.0 in RIS 1.0/1.5/2.0: yes
 
 Serial IR Tower in RIS 1.0/1.5: yes
-USB IR Tower in RIS 2.0: no, but we intend to support it
+USB IR Tower in RIS 2.0: under Microsoft Windows, not under Linux
 
 How do you pronounce leJOS?
 ---------------------------
@@ -73,9 +72,10 @@ I pronounce it like the Spanish word "lejos" (which means far).
 Requirements
 ------------
 
-- JDK1.1.X or JDK1.2.X, available from http://java.sun.com.
-  (The JDK is used during installation, for compilation,
-  and to run some tools provided with leJOS, e.g. the linker).
+- A Java Development Kit
+  Lejos is known to work with JDK1.1.x to 1.4.x from SUN
+  (see http://java.sun.com).
+  Other Java environments (for example jikes) may also work.
 
 - leJOS is known to work on Linux and Windows. It should 
   work on Unix systems in general.
@@ -278,14 +278,12 @@ Juergen Stuber will be taking over as project leaders.
 Questions/Problems
 ------------------
 
-Please direct feedback to
-Paul Andrews <mpandrews@users.sourceforge.net> and
-Juergen Stuber <starblue@users.sourceforge.net>.
+Please direct feedback to the lejos-discussion mailing list
+<lejos-discussion@lists.sourceforge.net>.  To subscribe
+see http://lists.sourceforge.net/lists/listinfo/lejos-discussion .
 
-You can also subscribe to the tinyvm-discussion mailing list. Look 
-for the "Mailing Lists" section at http://sourceforge.net/projects/tinyvm.
-
-Take a look at the leJOS website at http://lejos.sourceforge.net/ .
+Take a look at the Lejos website at http://lejos.sourceforge.net/
+or its project page at http://sourceforge.net/projects/lejos .
 
 Finally, there is a newsgroup at LUGNET for Java on the RCX,
 see http://www.lugnet.com/robotics/rcx/java/ .
