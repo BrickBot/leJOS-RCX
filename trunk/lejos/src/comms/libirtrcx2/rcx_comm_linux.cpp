@@ -39,7 +39,6 @@
 #include <sys/time.h>
 
 #include <stdio.h>
-// #include <stdio_ext.h>
 #include <ctype.h>
 #include <errno.h>
 #include <string.h>
@@ -129,7 +128,7 @@ void __rcx_purge(void* port)
 
 	struct timeval tv;
 	tv.tv_sec = 0;
-	tv.tv_usec = 1;
+	tv.tv_usec = 0;
 
    int selected = TEMP_FAILURE_RETRY (select(FD_SETSIZE, &fds, NULL, NULL, &tv));
 	if (selected > 0)
