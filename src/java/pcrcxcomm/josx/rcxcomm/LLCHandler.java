@@ -59,7 +59,13 @@ public class LLCHandler extends PacketHandler {
       }
       // System.out.println("Written " + t.write(packet, len));
       sendTime = System.currentTimeMillis();
-      return (tower.write(packet, len) == len);
+      boolean r = (tower.write(packet, len) == len);
+
+      // Read echo for Serial tower
+      byte [] echo = new byte[len];
+      if (usbFlag == 0) tower.read(echo);
+
+      return r;
     }
   }  
 
@@ -94,8 +100,8 @@ public class LLCHandler extends PacketHandler {
   }
 
   /**
-   * Search for the next paket or ack and read it into the relevent buffer
-   * an set the flag to say we've got it. Implements the keep-alive sends.
+   * Search for the next packet or ack and read it into the relevant buffer
+   * and set the flag to say we've got it. Implements the keep-alive sends.
    **/
   private void getOp() {
     while (true) {
@@ -117,7 +123,7 @@ public class LLCHandler extends PacketHandler {
         return;
       }
       op = b[0];
-      if ((op & 0x7) == 1) {
+      if ((op & 0xf7) == 0xf1) {
         gotPacket = true;
         inPacket[0] = op;
         int extra = (op & 0x7) + 1; // Add 1 for the checksum
@@ -127,7 +133,7 @@ public class LLCHandler extends PacketHandler {
         inPacketLength = extra+1;
         return;
       }
-      if ((op & 0x7) == 0) {
+      if ((op & 0xf7) == 0xf0) {
         gotAck = true;
         ackPacket[0] = op;
         byte [] rest = new byte[1];
@@ -135,6 +141,7 @@ public class LLCHandler extends PacketHandler {
         ackPacket[1] = rest[0];
         return;
       }
+      if (debug) System.out.println("Discarding " + op);
     }
   }
 
