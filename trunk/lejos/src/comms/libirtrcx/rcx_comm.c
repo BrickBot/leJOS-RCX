@@ -52,7 +52,7 @@
 /* Machine-dependent defines */
 
 #if defined(LINUX) || defined(linux)
-#define TOWER_NAME "/dev/lego0"
+#define TOWER_NAME "/dev/usb/legousbtower0"
 #define DEFAULTTTY   "usb"       /* Linux - USB */
 /*
  * Programming note (aB.)
