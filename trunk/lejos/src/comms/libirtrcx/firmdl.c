@@ -57,6 +57,7 @@
  *  07/14/2001 Added --nodl option to report size only and not actually perform
  *             download.
  *  09/20/2001 Added USB support and added earlier legOS fix to checksum code
+ *  09/23/2002 david <david@csse.uwa.edu.au> modified to support linux usb tower
  */
 
 #include <sys/types.h>
@@ -661,12 +662,14 @@ int main (int argc, char **argv)
 	if ( __comm_debug ) fprintf(stderr, "USB IR Tower mode.\n");
 	tty="\\\\.\\legotower1";
     }
-#endif
-
-#ifdef __APPLE__
+#else
     if ( strcmp( tty , "usb" ) == 0 ) {
         usb_flag = 1;
         if ( __comm_debug) fprintf(stderr, "USB IR Tower mode.\n");
+
+#if defined(LINUX) 
+	tty = "/dev/lego0";
+#endif
     }
 #endif
     

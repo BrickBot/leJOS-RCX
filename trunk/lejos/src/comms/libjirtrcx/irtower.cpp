@@ -1,3 +1,8 @@
+/*
+*  09/23/2002 david <david@csse.uwa.edu.au> modified to support linux usb tower
+*/
+
+
 #include <jni.h>
 #include "josx_rcxcomm_Tower.h"
 #include <stdio.h>
@@ -10,7 +15,11 @@
 #include "rcx_comm.h"
 #include <stdlib.h>
 
+#if defined(_WIN32) || defined(__CYGWIN32__)
 #define TOWER_NAME "\\\\.\\LEGOTOWER1"
+#elif defined (LINUX)
+#define TOWER_NAME "/dev/lego0"
+#endif
 
 /* Machine-dependent defines */
 
@@ -79,6 +88,14 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport)
     tty = TOWER_NAME;
   }
 #endif
+
+#if defined(LINUX)
+  if ((strcmp( tty , "usb" ) == 0) ) {
+    usb_flag = 1;
+    tty = TOWER_NAME;
+  }
+#endif
+
 
   // Set debugging if RCXCOMM_DEBUG=Y 
 
