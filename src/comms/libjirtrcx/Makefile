@@ -14,7 +14,7 @@ ifneq (,$(findstring cygwin,$(OSTYPE)))
 IRTOWER=../../bin/irtower.dll
   CCOPT=-mno-cygwin -I${JDK}/include -I${JDK}/include/win32 -Wl,--add-stdcall-alias -shared
   # May not be necessary if make/gnumake sets CXX up correctly
-  CXX=${CC}
+  # CXX=${CC}
 else
 ifneq (,$(findstring darwin,$(OSTYPE)))
     # Mac OS X
@@ -49,4 +49,5 @@ osx_usb.o: osx_usb.c
 clean:
 	rm -rf *.o *~ core
 	rm -f ${IRTOWER}
-        
+
+
