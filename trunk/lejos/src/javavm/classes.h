@@ -8,7 +8,7 @@
 #define THREAD_MASK     0xFF00
 #define COUNT_MASK      0x00FF
 #define CLASS_MASK      0x00FF
-#define ELEM_SIZE_MASK  0x0007
+#define ELEM_SIZE_MASK  0x003F
 #define ELEM_SIZE_SHIFT 0x0008
 #define ARRAY_MASK      0x4000
 #define LENGTH_MASK     0x00FF
@@ -29,7 +29,7 @@ typedef struct S_Object
    * bit 14: is primitive array
    * Primitive arrays:
    *   bits 0-7: Array length.
-   *   bits 8-10: Element size - 1.
+   *   bits 8-13: Element size - 1.
    * Other:
    *   bits 0-7: Class index.
    */

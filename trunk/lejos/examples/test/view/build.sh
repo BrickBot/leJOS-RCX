@@ -1,7 +1,8 @@
 #!/bin/sh
 
 CLASSPATH=.
-tvmc View.java
-tvmld View -o View.tvm
+export CLASSPATH
+lejosc View.java
+lejos View -o View.bin
 
-echo "Run 'tvm View.tvm' to download the program."
+echo "Run 'lejosrun View.bin' to download the program."

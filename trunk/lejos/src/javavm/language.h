@@ -110,6 +110,7 @@ extern void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStat
 
 #define install_binary(PTR_)        (installedBinary=(PTR_))
 #define get_master_record()         ((MasterRecord *) installedBinary)
+#define get_magic_number()          get_master_record()->magicNumber
 #define get_binary_base()           ((byte *) installedBinary)
 #define get_class_base()            ((ClassRecord *) (get_binary_base() + sizeof(MasterRecord)))
 

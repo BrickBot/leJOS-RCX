@@ -28,6 +28,12 @@ typedef struct
   STACKWORD lo;
 } JLONG;
 
+#include "platform_config.h"
+
+#ifndef LITTLE_ENDIAN
+#error LITTLE_ENDIAN not defined in platform_config.h
+#endif
+
 #define jfloat2word(FLOAT_) (((AuxConvUnion1) (FLOAT_)).sword)
 #define word2jfloat(WORD_)  (((AuxConvUnion1) (WORD_)).fnum)
 #define byte2jint(BYTE_)    ((JINT) (signed char) (BYTE_))
@@ -36,20 +42,9 @@ typedef struct
 #define obj2word(OBJ_)      ptr2word(OBJ_)
 #define obj2ref(OBJ_)       ptr2ref(OBJ_)
 #define obj2ptr(OBJ_)       ((void *) (OBJ_))
-
-#ifdef EMULATE
-
-#define ptr2word(PTR_)  ((STACKWORD) (PTR_))
-#define ptr2ref(PTR_)   ((REFERENCE) (PTR_))
-#define word2ptr(WRD_)  ((void *) (WRD_))
-
-#else
-
-#define ptr2word(PTR_)  ((STACKWORD) (TWOBYTES) (PTR_))
-#define ptr2ref(PTR_)   ((REFERENCE) (TWOBYTES) (PTR_))
-#define word2ptr(WRD_)  ((void *) (TWOBYTES) (WRD_))
-
-#endif EMULATE
+#define ptr2ref(PTR_)       ((REFERENCE) ptr2word(PTR_))
+#define ref2ptr(REF_)       word2ptr((STACKWORD) (REF_))
+#define ref2obj(REF_)       ((Object *) ref2ptr(REF_))
 
 static inline JINT jlong_compare (JLONG a1, JLONG a2)
 {

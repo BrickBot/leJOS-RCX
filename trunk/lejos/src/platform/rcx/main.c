@@ -13,6 +13,8 @@
 #include "exceptions.h"
 #include "configure.h"
 #include "trace.h"
+#include "magic.h"
+#include "systime.h"
 
 extern char _bss_start;
 extern char _end;
@@ -23,6 +25,9 @@ extern char _data_begin;
 
 extern char _extraMemory;
 
+/**
+ * bootThread is a special global.
+ */
 Thread *bootThread;
 
 #if !EMULATE && VERIFY
@@ -41,11 +46,11 @@ Thread *bootThread;
 
 #define HC_NONE            0
 #define HC_SHUTDOWN_POWER  1
-//#define HC_DELETE_FIRMWARE 2
+#define HC_DELETE_PROGRAM  2
 
-#define RS_NO_PROGRAM      0
-#define RS_STOPPED         1
-#define RS_RUNNING         2
+#define HP_NO_PROGRAM      0
+#define HP_INTERRUPTED     1
+#define HP_NOT_STARTED     2
 
 #ifdef VERIFY
 
@@ -63,11 +68,14 @@ char timerdata1[6];
 async_t timerdata0;
 char buffer[BUFSIZE];
 char numread;   
-char valid, state0, state1;
+char valid;
 char hookCommand;
 char *nextByte;
 char *mmStart;
 short status;
+byte hasProgram;
+boolean isReadyToTransfer;
+//TWOBYTES noTransferCount;
 TWOBYTES seqNumber;
 TWOBYTES currentIndex;
 
@@ -78,15 +86,6 @@ set_data_pointer (void *ptr)
 {
   play_sound_or_set_data_pointer(0x1771, (short)ptr, 0);
 }
-
-#if DEBUG_RCX
-
-void debug (short s, short n1, short n2)
-{
-  trace (s, n1, n2);
-}
-
-#endif
 
 void wait_for_power_release()
 {
@@ -112,35 +111,15 @@ void trace (short s, short n1, short n2)
   wait_for_power_release();
 }
 
-#if 0
-
-void update_run_status()
+void handle_uncaught_exception (Object *exception,
+                                       const Thread *thread,
+				       const MethodRecord *methodRecord,
+				       const MethodRecord *rootMethod,
+				       byte *pc)
 {
-  if (runStatus == RS_RUNNING)
-  {
-    clear_lcd_segment (LCD_STANDING);
-    set_lcd_segment (LCD_WALKING);    
-  }
-  else if (runStatus == RS_STOPPED)
-  {
-    clear_lcd_segment (LCD_WALKING);
-    set_lcd_segment (LCD_STANDING);    
-  }
-  else if (runStatus == RS_NO_PROGRAM)
-  {
-    clear_lcd_segment (LCD_WALKING);
-    clear_lcd_segment (LCD_STANDING);        
-  }
-  refresh_display();
+  trace (4, methodRecord->signatureId, get_class_index (exception) % 10);
 }
 
-void set_run_status (char aRunStatus)
-{
-  runStatus = aRunStatus;
-  update_run_status();
-}
-
-#endif
 
 /**
  * This function is invoked by switch_thread
@@ -149,78 +128,73 @@ void set_run_status (char aRunStatus)
 void switch_thread_hook()
 {
   get_power_status (POWER_KEY, &status);
-  if (status == 0)
+  if (!status)
   {
     // Power button pressed - wait for release
     wait_for_power_release();
-    // Make interpreter exit
-    gMustExit = true;
-
-#if 0
-    // Check to see if this is a delete-firmware request
-    read_buttons (BUTTONS_READ, &status);
-    if ((status & 0x05) != 0)
-      hookCommand = HC_DELETE_FIRMWARE;
-    else
-      hookCommand = HC_SHUTDOWN_POWER;
-#endif
-
-    hookCommand = HC_SHUTDOWN_POWER;
-  }
-
-#if 0
-
-  else
-  {
-    read_buttons (BUTTONS_READ, &status);
-    if ((status & 0x01) != 0)
+    read_buttons (0x3000, &status);
+    if (status & 0x04)
     {
-      // Run button pressed.
-      if (runStatus == RS_RUNNING)
-      {
-        gMustExit = 1;
-      }
-      else if (runStatus == RS_STOPPED)
-      {
-        runStatus = RS_RUNNING;
-      }
+      hookCommand = HC_DELETE_PROGRAM;
+      // Force interpreter to exit. The program must
+      // be deleted from memory as a result.
+      gMustExit = true;
+    }
+    else
+    {
+      hookCommand = HC_SHUTDOWN_POWER;
+      gRequestSuicide = true;
+      // The following sound should not be heard unless
+      // the program did not commit suicide (dealock or
+      // cathing of Throwable around infinite loop).
+      play_system_sound (SOUND_QUEUED, 2);
     }
   }
-
-#endif
-
 }
 
-void reset_rcx()
+void reset_rcx_serial()
 {
-  init_timer (&timerdata0, &timerdata1[0]);
-  init_power();
-  state0 = 0;
-  state1 = 0;
-  init_serial (&state0, &state1, 1, 1);
-  init_sensors();
+  //init_serial (&timerdata1[4], &timerdata0, 1, 1);
+  init_serial (0, 0, 1, 1);
 }
 
 int main (void)
 {
+ LABEL_FIRMWARE_ONE_TIME_INIT:
+  hasProgram = HP_NO_PROGRAM;
  LABEL_POWERUP:
   // The following call always needs to be the first one.
   init_timer (&timerdata0, &timerdata1[0]);
- LABEL_DOWNLOAD:
-  reset_rcx();
+  sys_time = 0l;
+  init_power();
+  systime_init();
+  init_sensors();
   // If power key pressed, wait until it's released.
   wait_for_power_release();
-  play_system_sound (SOUND_QUEUED, 1);
   hookCommand = HC_NONE;
+ LABEL_DOWNLOAD:
+  reset_rcx_serial();
+ LABEL_DOWNLOAD_INIT:
+  isReadyToTransfer = false;
+  play_system_sound (SOUND_QUEUED, 1);
   clear_display();
   get_power_status (POWER_BATTERY, &status);
   set_lcd_number (LCD_UNSIGNED, status, 3002);
   set_lcd_number (LCD_PROGRAM, (short) 0, 0);
-  //update_run_status();
+ LABEL_START_TRANSFER:
+  clear_lcd_segment (LCD_WALKING);
+  if (hasProgram != HP_NO_PROGRAM)
+  {
+    set_lcd_segment (LCD_STANDING);
+  }
+  else
+  {
+    clear_lcd_segment (LCD_STANDING);
+  }
   refresh_display();
- LABEL_RESET:
-  set_data_pointer (MEM_START);
+ LABEL_RESET_TRANSFER:
   currentIndex = 1;
+ LABEL_COMM_LOOP:
   while (1)
   {
     check_for_data (&valid, &nextByte);
@@ -236,12 +210,12 @@ int main (void)
           // Alive?
           buffer[0] = ~buffer[0];
           send_data (SERIAL_NO_POINTER, 0, buffer, 1);
-          goto LABEL_RESET;
+          goto LABEL_COMM_LOOP;
         case 0x15:
           // Get Versions...
           versionArray[0] = ~buffer[0];
           send_data (SERIAL_NO_POINTER, 0, versionArray, 9);
-          goto LABEL_RESET;
+          goto LABEL_COMM_LOOP;
         case 0x65:
           // Delete firmware
           buffer[0] = ~buffer[0];
@@ -249,34 +223,67 @@ int main (void)
           goto LABEL_EXIT;
         case 0x45:
           // Transfer data
+          seqNumber = ((TWOBYTES) buffer[2] << 8) |  buffer[1]; 
+	  buffer[0] = ~buffer[0];
+	  buffer[1] = (byte) !isReadyToTransfer;
+	  send_data (SERIAL_NO_POINTER, 0, buffer, 2);
+	  if (!isReadyToTransfer)
+	  {
+  	    goto LABEL_DOWNLOAD;
+	  }
           break;
+	case 0x12:
+          // Get value -- used by TinyVM to initiate download
+	  if (isReadyToTransfer)
+            goto LABEL_DOWNLOAD;
+	  buffer[0] = ~buffer[0];
+	  buffer[1] = (byte) (MAGIC >> 8);
+	  buffer[2] = (byte) (MAGIC & 0xFF);
+	  send_data (SERIAL_NO_POINTER, 0, buffer, 3);
+          set_data_pointer (MEM_START);
+          isReadyToTransfer = true;
+	  hasProgram = HP_NO_PROGRAM;
+	  goto LABEL_START_TRANSFER;
         default:
           // Other??
           #if 0
-          trace (4, (short) buffer[0], 9);
+          trace (2, (short) buffer[0], 7);
           #endif
           goto LABEL_DOWNLOAD;
       }
-      seqNumber = ((TWOBYTES) buffer[2] << 8) |  buffer[1]; 
       set_lcd_number (LCD_UNSIGNED, (short) currentIndex, 3002);
       set_lcd_number (LCD_PROGRAM, (short) 0, 0);
       refresh_display();
       if (currentIndex != 1 && seqNumber == 0)
       {
+        // Reinitialize serial communications
+        reset_rcx_serial();
+	// Set pointer to start of binary image
         install_binary (MEM_START);
-        // Initialize heap location and size
-        #if DEBUG_RCX
-        debug (-1, ((TWOBYTES) nextByte) / 10, 1);
-        #endif
+        // Check magic number
+        if (get_magic_number() != MAGIC)
+        { 
+          trace (1, MAGIC, 9);
+          goto LABEL_DOWNLOAD;
+        }
+	// Indicate that the RCX has a new program in it.
+	hasProgram = HP_NOT_STARTED;
         // Make sure memory allocation starts at an even address.
         mmStart = (((TWOBYTES) nextByte) & 0x0001) ? nextByte + 1 : nextByte;
-        //runStatus = RS_STOPPED;
-        goto LABEL_PROGRAM_STARTUP;
+        // Initialize memory for object allocation.
+	// This can only be done once for each program downloaded.
+        init_memory (mmStart, ((TWOBYTES) MEM_END - (TWOBYTES) mmStart) / 2);
+        // Initialize special exceptions
+        init_exceptions();
+        // Create the boot thread (bootThread is a special global).
+        bootThread = (Thread *) new_object_for_class (JAVA_LANG_THREAD);
+        goto LABEL_DOWNLOAD_INIT;
       }
       if (nextByte >= MAXNEXTBYTEPTR || seqNumber != currentIndex)
       {
-        #if DEBUG_RCX
-        debug (4, (TWOBYTES) nextByte / 10, seqNumber - currentIndex);
+        #if 0
+        trace (4, (TWOBYTES) seqNumber, currentIndex);
+        trace (4, (TWOBYTES) nextByte / 10, 5);
         #endif
         goto LABEL_DOWNLOAD;
       }
@@ -285,57 +292,68 @@ int main (void)
     else
     {
       switch_thread_hook();
-
-      //if (hookCommand == HC_DELETE_FIRMWARE)
-      //  goto LABEL_EXIT;
-
       if (hookCommand == HC_SHUTDOWN_POWER)
         goto LABEL_SHUTDOWN_POWER;
-
-      //if (runStatus == RS_RUNNING)
-      //  goto LABEL_PROGRAM_STARTUP;
+      if (hookCommand == HC_DELETE_PROGRAM)
+	goto LABEL_FIRMWARE_ONE_TIME_INIT;
+      if (hasProgram != HP_NO_PROGRAM)
+      {
+        read_buttons (0x3000, &status);
+	if ((status & 0x01) != 0)
+	{
+          do {
+            read_buttons (0x3000, &status);
+	  } while ((status & 0x01) != 0);
+          goto LABEL_PROGRAM_STARTUP;
+	}
+      }
     }
   }
 
  LABEL_PROGRAM_STARTUP:
-  // Prevent memory from being corrupted by serial comm.
-  set_data_pointer (0);
-  // Initialize memory for object allocation
-  init_memory (mmStart, ((TWOBYTES) MEM_END - (TWOBYTES) mmStart) / 2);
-  // Initialize special exceptions
-  init_exceptions();
-  // Create the boot thread (bootThread is a special global)
-  bootThread = (Thread *) new_object_for_class (JAVA_LANG_THREAD);
-  #if DEBUG_RCX
-  debug (-1, ((TWOBYTES) bootThread) / 10, 3);
-  #endif
-  // Start/prepare thread
-  init_thread (bootThread);
-  // Execute the bytecode interpreter
-  #if 0
-  debug (-1, (short) get_master_record()->magicNumber, 4);
-  #endif
+  // Jump to this point to start executing main().
+  // Initialize the threading module.
+  init_threads();
+  // Start/prepare boot thread. This schedules execution of main().
+  if (!init_thread (bootThread))
+  {
+    // There isn't enough memory to even start the boot thread!!
+    trace (1, START_V, JAVA_LANG_OUTOFMEMORYERROR % 10);
+    // The program is useless now
+    goto LABEL_FIRMWARE_ONE_TIME_INIT;
+  }
+  // Show walking man.
+  clear_lcd_segment (LCD_STANDING);
+  set_lcd_segment (LCD_WALKING);
+  refresh_display();  
+  // Execute the bytecode interpreter.
   engine();
-  //runStatus = RS_STOPPED;
   // Engine returns when all threads are done or
-  // when power has been shut down.
-  if (hookCommand == HC_SHUTDOWN_POWER)
-    goto LABEL_SHUTDOWN_POWER;        
-  goto LABEL_DOWNLOAD;
+  // when power has been shut down. The following
+  // delay is so that motors get a chance to stop.
+  for (status = 0; status < 10000; status++) { }
+  if (hookCommand == HC_DELETE_PROGRAM)
+  {
+    // Program must be deleted from memory
+    goto LABEL_FIRMWARE_ONE_TIME_INIT;
+  }
+  // Getting to this point means that the program
+  // finished voluntarily, or as a result of an
+  // assisted suicide.
+  hasProgram = HP_NOT_STARTED;
+  if (hookCommand != HC_SHUTDOWN_POWER)
+    goto LABEL_DOWNLOAD;
  LABEL_SHUTDOWN_POWER:
   clear_display();
   refresh_display();
   shutdown_sensors();
   shutdown_buttons();
+  shutdown_timer();
   shutdown_power();
   goto LABEL_POWERUP;
  LABEL_EXIT:
-  //shutdown_buttons();
-  //shutdown_power();
+  // Seems to be a good idea to shutdown timer before going back to ROM.
   shutdown_timer();
   return 0;
 }
-
-
-
 

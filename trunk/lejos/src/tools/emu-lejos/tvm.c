@@ -80,6 +80,12 @@
 
 typedef unsigned char byte;
 
+// This is for CygWin:
+
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 #if defined(LINUX)
 #define DEFAULTTTY   "/dev/ttyS0" /* Linux - COM1 */
 #elif defined(WINNT)
@@ -88,7 +94,7 @@ typedef unsigned char byte;
 #define DEFAULTTTY   "/dev/ttyd2" /* IRIX - second serial port */
 #endif
 
-#define DEBUG 1
+#define DEBUG 0
 #define ERR_NOECHO  -1
 #define ERR_BADECHO -2
 
@@ -96,13 +102,10 @@ char *progname;
 
 /* RCX routines */
 
-#define BUFFERSIZE   4096
-#define TOWRITEMAX   100
-#define RETRIES      5
-
-#ifndef O_BINARY
-#define O_BINARY 0
-#endif
+#define BUFFERSIZE      4096
+#define TOWRITEMAX      100
+#define RETRIES         5
+#define RESPONSE_LENGTH 11
 
 long receive_packet (long fd, byte *buffer, long length);
 
@@ -134,6 +137,15 @@ rcx_init(char *tty)
     }
 
     return fd;
+}
+
+static void sleep_us (unsigned long us)
+{
+  struct timeval tval;
+
+  tval.tv_sec = us / 1000000;
+  tval.tv_usec = us % 1000000;
+  select (0, NULL, NULL, NULL, &tval);	
 }
 
 void
@@ -303,7 +315,7 @@ long receive_packet (long fd, byte *buffer, long length)
 	printf ("read error\n");
 	exit(1);
       }
-      #if DEBUG > 1
+      #if DEBUG > 2
       printf ("Received %d bytes\n", (int) count);
       printf ("     ");
       for (i = offset; i < offset + count; i++)
@@ -348,20 +360,22 @@ main(int argc, char **argv)
 {
     byte *pBinary;
     byte *pSend;
+    byte response[RESPONSE_LENGTH];
     long i;
+    long numRead;
     char *tty;
     long fd;
     long pDesc, pLength, pTotal;
     long r, index, rest, numToWrite, offset;
 
     if (argc != 2) {
-        fprintf(stderr, "tvm downloads a file written by tvmld.\n");
+        fprintf(stderr, "%s downloads a file written by the linker.\n", argv[0]);
 	fprintf(stderr, "Use: %s filename\n", argv[0]);
 	exit(1);
     }
 
     if ((pDesc = open(argv[1], O_RDONLY | O_BINARY)) == -1) {
-	fprintf(stderr, "%s: failed to open\n", argv[1]);
+	fprintf(stderr, "%s: failed to open file %s\n", argv[0], argv[1]);
 	exit(1);
     }
 
@@ -396,18 +410,74 @@ main(int argc, char **argv)
     if (pBinary[0] != ((MAGIC >> 8) & 0xFF) ||
         pBinary[1] != ((MAGIC >> 0) & 0xFF))
     {
-      printf ("Magic number is not right. The input file should have been produced using tvmld.\n");
+      printf ("Magic number is not right. Linker used was for emulation only?\n");
       exit (1);
     }
+
+    // Set program-download message
+    
+    response[0] = (byte) (MAGIC >> 8);
+    response[1] = (byte) (MAGIC & 0xFF);
+    send_message (fd, (byte) 0x12, response, 2);
+    numRead = receive_packet (fd, response, RESPONSE_LENGTH);
+    sleep_us (1000);
+    if (numRead != RESPONSE_LENGTH)
+    {
+      printf (numRead == -1 ? "No response from RCX. " : "Bad response from RCX. ");
+      printf ("Please make sure RCX has leJOS firmware "
+              "and is in range. The firmware must be in program download mode. "
+	      "Turn RCX off and on if necessary.\n");
+      exit (1);
+    }
+    
+    #if 0
+    if (numRead != -1)
+    {
+      for (index = 0; index < numRead; index++)
+      {
+	printf ("byte %d = 0x%X\n", (int) index, (int) response[index]);
+      }
+    }
+    #endif
+    
+    if (response[5] != (byte) (MAGIC >> 8) || response[7] != (byte) (MAGIC & 0xFF))
+    {
+      printf ("Unexpected response from RCX. The RCX either doesn't have firmware or "
+              "it isn't in program-download mode.\n");
+      exit (1);
+    }
+
+    sleep_us (10000);    
+    
+    // Transfer data
+    
     index = 0;
     rest = pLength;
     offset = 0;
     do {
       numToWrite = (rest > TOWRITEMAX) ? TOWRITEMAX : rest;
       index = (rest > TOWRITEMAX) ? index + 1 : 0;
+      //printf ("transfering %ld\n", (long) index);
       transfer_data (fd, index, pBinary + offset, numToWrite);
+      if (index != 0)
+      {
+        sleep_us (10000);
+        numRead = receive_packet (fd, response, 9);
+        //printf ("numread = %ld\n", numRead);
+        if (numRead != 9)
+        {
+  	  fprintf (stderr, "transfer data: invalid response length.\n");
+	  exit (1);
+	}
+        if (response[5] != 0)
+        {
+	  fprintf (stderr, "transfer data: RCX says there's an error.\n");
+	  exit (1);
+        }
+      }
       rest -= numToWrite;
       offset += numToWrite;
+      sleep_us (1000);
     } while (index != 0);   
     rcx_close(fd);
     exit(0);

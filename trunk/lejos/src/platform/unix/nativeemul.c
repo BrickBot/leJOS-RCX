@@ -1,4 +1,8 @@
-
+/**
+ * nativeemul.c
+ * Native method handling for unix_impl (emulation).
+ */
+#include <stdio.h>
 #include "types.h"
 #include "trace.h"
 #include "constants.h"
@@ -20,9 +24,6 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 
   switch (signature)
   {
-    //    csae _TVM_MAINMETHOD_V:
-    //  classRecord = get_class_record (ENTRY_CLASS);
-    //  dispatch_special (classRecord, find_method (classRecord, MAIN_V),
     case START_V:
       init_thread ((Thread *) paramBase[0]);
       break;

@@ -54,12 +54,12 @@ extern void initialize_state (Object *objRef, TWOBYTES numWords);
 extern void deallocate (TWOBYTES *ptr, TWOBYTES size);
 extern TWOBYTES *allocate (TWOBYTES size);
 
-inline void set_class (Object *obj, byte classIndex)
+static inline void set_class (Object *obj, byte classIndex)
 {
   obj->flags = CLASS_MASK & classIndex;
 }
 
-inline void set_array (Object *obj, byte elemSize, byte length)
+static inline void set_array (Object *obj, byte elemSize, byte length)
 {
   obj->flags = ARRAY_MASK | ((TWOBYTES) (elemSize - 1) << ELEM_SIZE_SHIFT) | 
                length;
@@ -93,15 +93,13 @@ Object *new_object_checked (byte classIndex, byte *btAddr)
 
 /**
  * Allocates and initializes the state of
- * an object, which is pushed on the operand
- * stack.
+ * an object.
  */
 Object *new_object_for_class (byte classIndex)
 {
   Object *ref;
   TWOBYTES instanceSize;
 
-  // TBD: Check for class initialization!
   instanceSize = get_class_record(classIndex)->classSize;
   ref = memcheck_allocate (instanceSize);
   if (ref == null)
@@ -251,7 +249,7 @@ typedef union
 void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr)
 {
   // This switch statement is 
-  // a workaround for a gcc bug.
+  // a workaround for a h8300-gcc bug.
   switch (aSize)
   {
     case 1:
@@ -265,7 +263,7 @@ void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr)
       assert (aSize == 4, MEMORY9);
     #endif VERIFY
   }
-  #if EMULATE
+  #if LITTLE_ENDIAN
   ((AuxStackUnion *) aWordPtr)->st.byte0 = ptr[3];  
   ((AuxStackUnion *) aWordPtr)->st.byte1 = ptr[2];  
   ((AuxStackUnion *) aWordPtr)->st.byte2 = ptr[1];  
@@ -314,8 +312,6 @@ void init_memory (void *ptr, TWOBYTES size)
 
   startPtr = ptr;
   freeOffset = NULL_OFFSET;
-  currentThread = null;
-  gThreadCounter = 0;
   #if DEBUG_MEMORY
   printf ("Setting start of memory to %d\n", (int) startPtr);
   printf ("Going to reserve %d words\n", size);
@@ -328,30 +324,30 @@ void init_memory (void *ptr, TWOBYTES size)
  */
 TWOBYTES *allocate (TWOBYTES size)
 {
-  register TWOBYTES *ptr;
-  TWOBYTES *anchorOffsetRef;
+  TWOBYTES *ptr;
+  TWOBYTES auxOffset;
 
   #if DEBUG_MEMORY
-  printf ("Allocating %d words.\n", size);
+  if (size > 2)
+    printf ("Allocating %d words (%d, %d).\n", size, (int) freeOffset, (int) startPtr);
   #endif
-  anchorOffsetRef = &freeOffset;
-  while (*anchorOffsetRef != NULL_OFFSET)
+  auxOffset = freeOffset;
+  while (auxOffset != NULL_OFFSET)
   { 
-    ptr = startPtr + *anchorOffsetRef;
+    ptr = startPtr + auxOffset;
     if (ptr[0] >= size + 2)
     {
       ptr[0] = ptr[0] - size;
+      #if DEBUG_MEMORY
+      if (size > 2)
+	printf ("Allocated at %d\n", (int) (ptr + ptr[0]));
+      #endif
       return ptr + ptr[0];
     }
-    if (ptr[0] >= size)
-    {
-      *anchorOffsetRef = ptr[1]; 
-      return ptr;     
-    }
-    anchorOffsetRef = &(ptr[1]);
+    auxOffset = ptr[1];
   }
   #if DEBUG_MEMORY
-  printf ("No more memory!");
+  printf ("No more memory!\n");
   #endif
   return null;      
 }

@@ -4,6 +4,9 @@ import java.io.*;
 import java.util.*;
 import js.classfile.*;
 
+/**
+ * Abstraction for a class record (see vmsrc/language.h).
+ */
 public class ClassRecord implements WritableData, Constants
 {
   int iIndex = -1;

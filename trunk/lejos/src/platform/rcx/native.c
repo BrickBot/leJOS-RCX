@@ -14,7 +14,7 @@
 
 #include <rom.h>
 
-extern void reset_rcx();
+extern void reset_rcx_serial();
 
 void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 {
@@ -66,7 +66,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       do_return (1);
       return;
     case RESETRCX_V:
-      reset_rcx();
+      reset_rcx_serial();
       break;
   }  
   do_return (0);

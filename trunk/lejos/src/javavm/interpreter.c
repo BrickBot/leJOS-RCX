@@ -1,10 +1,10 @@
 
 #include "interpreter.h"
+#include "threads.h"
 #include "trace.h"
 #include "types.h"
 #include "constants.h"
 #include "classes.h"
-#include "threads.h"
 #include "opcodes.h"
 #include "configure.h"
 #include "memory.h"
@@ -150,6 +150,7 @@ void engine()
   register short numOpcodes;
   
   gMustExit = false;
+  gRequestSuicide = false;
   switch_thread();
   numOpcodes = OPCODES_PER_TIME_SLICE;
  LABEL_ENGINELOOP: 
