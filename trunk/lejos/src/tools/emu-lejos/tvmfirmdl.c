@@ -515,7 +515,10 @@ main(int argc, char **argv)
 	    break;
     }
     if (i == 5) {
-	fprintf(stderr, "%s: Delete firmware failed.\n", progname);
+	fprintf(stderr, "%s: Delete firmware failed. (Note that "
+                "you can delete the TinyVM firmware by holding "
+                "both the Run and Prgm buttons down while pressing "
+                "the On-Off button).\n", progname);
 	exit(1);
     }
 

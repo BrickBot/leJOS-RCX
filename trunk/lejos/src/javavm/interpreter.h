@@ -9,6 +9,10 @@ extern byte *pc;
 extern STACKWORD *stackTop;
 extern STACKWORD *localsBase;
 
+// Temp globals:
+
+extern byte gByte;
+
 extern void engine();
 
 #endif

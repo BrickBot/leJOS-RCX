@@ -56,7 +56,7 @@ extern TWOBYTES *allocate (TWOBYTES size);
 
 inline void set_class (Object *obj, byte classIndex)
 {
-  obj->flags = classIndex;
+  obj->flags = CLASS_MASK & classIndex;
 }
 
 inline void set_array (Object *obj, byte elemSize, byte length)
@@ -77,8 +77,13 @@ inline void set_array (Object *obj, byte elemSize, byte length)
  */
 Object *new_object_checked (byte classIndex, byte *btAddr)
 {
+  #if 0
+  trace (-1, classIndex, 0);
+  #endif
   if (dispatch_static_initializer (get_class_record(classIndex), btAddr))
-    return null;
+  {
+    return JNULL;
+  }
   return new_object_for_class (classIndex);
 }
 
@@ -96,11 +101,21 @@ Object *new_object_for_class (byte classIndex)
   instanceSize = get_class_record(classIndex)->classSize;
   ref = memcheck_allocate (instanceSize);
   if (ref == null)
-    return null;
+  {
+    return JNULL;
+  }
 
   // Initialize default values
   set_class (ref, classIndex);
+  #if 0
+  trace (-1, classIndex, 1);
+  trace (-1, ((short) ref) - 56000, 2);
+  trace (-1, (short) get_class_index(ref), 3);
+  #endif
   initialize_state (ref, instanceSize);
+  #if 0
+  trace (-1, (short) get_class_index(ref), 4);
+  #endif
 
   #if DEBUG_OBJECTS
   printf ("new_object_for_class: returning %d\n", (int) ref);
@@ -144,13 +159,13 @@ Object *new_primitive_array (byte primitiveType, STACKWORD length)
   if (length > 0xFF)
   {
     throw_exception (outOfMemoryError);
-    return null;
+    return JNULL;
   }
   elemSize = typeSize[primitiveType];
   allocSize = get_array_size ((byte) length, elemSize);
   ref = memcheck_allocate (allocSize);
   if (ref == null)
-    return null;
+    return JNULL;
   set_array (ref, elemSize, (byte) length);
   initialize_state (ref, allocSize);
   return ref;
@@ -185,13 +200,13 @@ Object *new_multi_array (byte elemType, byte totalDimensions,
   #endif
 
   if (reqDimensions == 0)
-    return null;
+    return JNULL;
   numElements = *stackTop--;
   if (totalDimensions == 1)
     return new_primitive_array (elemType, numElements);
   ref = new_primitive_array (T_REFERENCE, numElements);
-  if (ref == null)
-    return null;
+  if (ref == JNULL)
+    return JNULL;
   while (--numElements >= 0)
   {
     ref2 = new_multi_array (elemType, totalDimensions - 1, reqDimensions - 1);
@@ -262,7 +277,7 @@ Object *memcheck_allocate (TWOBYTES size)
     assert (outOfMemoryError != null, MEMORY5);
     #endif
     throw_exception (outOfMemoryError);
-    return null;
+    return JNULL;
   }
   ref->syncInfo = 0;
   #ifdef SAFE

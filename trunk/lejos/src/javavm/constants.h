@@ -5,7 +5,7 @@
 #define true (1)
 #define false (0)
 
-#define JNULL ((REFERENCE) null)
+#define JNULL (0)
 
 #define T_REFERENCE 0
 #define T_STACKFRAME 1

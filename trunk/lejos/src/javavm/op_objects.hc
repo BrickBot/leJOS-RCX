@@ -6,10 +6,15 @@ case OP_NEW:
   // Stack: +1
   // Arguments: 2
   // Hi byte unused
-  gStackWord = obj2word (new_object_checked (pc[1], pc - 1));
-  if (gStackWord)
-  {
-    *(++stackTop) = gStackWord;
+  gBytePtr = (byte *) new_object_checked (pc[1], pc - 1);
+  if (gBytePtr != JNULL)
+  { 
+    #if 0
+    trace (-1, (short) pc[1], 1);
+    trace (-1, (short) gBytePtr, 2);
+    trace (-1, get_class_index((Object *) gBytePtr), 3);
+    #endif
+    *(++stackTop) = ptr2word(gBytePtr);
     pc += 2;
   }
   goto LABEL_ENGINELOOP;
