@@ -3,7 +3,10 @@ leJOS 1.0.0beta3:
  
   - Removed gcc's -O2 option from unix_impl/Makefile, as
     it was crashing gcc 2.95.2.
-  - 
+  - Added Christophe Ponsard's remote control example,
+    Ryan Vander Bijl's hworld example, and Reinhard Schiedermeier's
+    example on RCX-to-RCX communication (serial2rcx).
+  
   
 leJOS 1.0.0beta2:
 -----------------
