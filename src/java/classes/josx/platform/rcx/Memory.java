@@ -22,11 +22,11 @@ public class Memory
   public static native int  getDataAddress (Object obj);
   public static native void setBit(int aAddr, int bit, int value);
 
-  public static int readShort (int aAddr)
+  public static short readShort (int aAddr)
   {
     int b1 = Memory.readByte (aAddr) & 0xff;
     int b2 = Memory.readByte (aAddr + 1) & 0xff;
-    return (b1 << 8) + b2;
+    return (short)((b1 << 8) + b2);
   }
 
   public static void writeShort (int aAddr, short s)
