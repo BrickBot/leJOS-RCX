@@ -46,22 +46,18 @@ bool __comm_debug = false;
 // Timer routines
 //
 
-typedef struct timeval timeval_t;
-
 #define tvupdate(tv)  gettimeofday(tv, NULL)
 #define tvsec(tv)     ((tv)->tv_sec)
 #define tvmsec(tv)    ((tv)->tv_usec) / 1000
 
-void gettimeofday(timeval_t *tv, void *tzp);
-
-static void timerReset(timeval_t *timer)
+static void timerReset(timeval* timer)
 {
 	tvupdate(timer);
 }
 
-static int timerRead(timeval_t *timer)
+static int timerRead(timeval* timer)
 {
-	timeval_t now;
+	timeval now;
 	tvupdate(&now);
 	return (tvsec(&now) - tvsec(timer)) * 1000 + (tvmsec(&now) - tvmsec(timer));
 }
@@ -195,7 +191,7 @@ int rcxWakeupTower (void* port, int timeout_ms)
 	// receive buffer
 	char buf[BUFFERSIZE];
 	// timer
-	timeval_t timer;
+	timeval timer;
 	// received bytes
 	int count = 0;
 	

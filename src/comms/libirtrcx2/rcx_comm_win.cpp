@@ -39,8 +39,6 @@
 
 #define USB_TOWER_NAME "\\\\.\\LEGOTOWER1"
 
-typedef struct timeval timeval_t;
-
 #include "rcx_comm_win.h"
 #include "rcx_comm.h"
 #include "rcx_comm.cpp"
