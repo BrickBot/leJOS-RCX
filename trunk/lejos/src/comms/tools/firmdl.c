@@ -78,7 +78,7 @@
   #include <windows.h>
 #endif
 
-#include "rcx_comm.h"
+#include "../libirtrcx/rcx_comm.h"
 #include "srec.h"
 
 #ifdef __APPLE__
