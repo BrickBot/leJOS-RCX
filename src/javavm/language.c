@@ -282,10 +282,7 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
     return false;
   } 
   if (is_native (methodRecord))
-  {
     dispatch_native (methodRecord->signatureId, paramBase);
-    return true;
-  }
   return true;
 }
 

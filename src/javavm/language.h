@@ -90,6 +90,7 @@ typedef struct S_ConstantRecord
   /**
    * Size of constant. Length of Utf8 entry for strings.
    */
+  byte constantType;
   byte constantSize;
 } ConstantRecord;
 
@@ -129,15 +130,15 @@ extern void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStat
 
 #define class_size(CLASSIDX_)       (get_class_record(CLASSIDX_)->classSize)
 
-#define is_initialized(CLASSREC_)   ((CLASSREC_)->cflags & C_INITIALIZED)
-#define is_array_class(CLASSREC_)   ((CLASSREC_)->cflags & C_ARRAY)
-#define has_clinit(CLASSREC_)       ((CLASSREC_)->cflags & C_HASCLINIT)
-#define is_interface(CLASSREC_)     ((CLASSREC_)->cflags & C_INTERFACE)
+#define is_initialized(CREC_)       (((CREC_)->cflags & C_INITIALIZED) != 0)
+#define is_array_class(CREC_)       (((CREC_)->cflags & C_ARRAY) != 0)
+#define has_clinit(CREC_)           (((CREC_)->cflags & C_HASCLINIT) != 0)
+#define is_interface(CREC_)         (((CREC_)->cflags & C_INTERFACE) != 0)
 
 #define set_initialized(CLASSREC_)  ((CLASSREC_)->cflags |= C_INITIALIZED)
 
-#define is_synchronized(MREC_)      ((MREC_)->mflags & M_SYNCHRONIZED)
-#define is_native(MREC_)            ((MREC_)->mflags & M_NATIVE)
+#define is_synchronized(MREC_)      (((MREC_)->mflags & M_SYNCHRONIZED) != 0)
+#define is_native(MREC_)            (((MREC_)->mflags & M_NATIVE) != 0)
 #define get_code_ptr(MREC_)         (get_binary_base() + (MREC_)->codeOffset)
 
 #define get_static_fields_base()    (get_binary_base() + get_master_record()->staticFieldsOffset)

@@ -14,12 +14,20 @@ public class ExceptionRecord implements WritableData, Constants
   {
     iExcep = aExcep;
     int pCPIndex = aExcep.getClassIndex();
-    JCPE_Class pCls = (JCPE_Class) aCF.getConstantPool().getEntry (pCPIndex);
-    String pName = pCls.getName();
-    iClassIndex = aBinary.getClassIndex (pName);    
+    if (pCPIndex == 0)
+    {
+      // An index of 0 means ANY.
+      iClassIndex = aBinary.getClassIndex ("java/lang/Throwable");
+    }
+    else
+    {
+      JCPE_Class pCls = (JCPE_Class) aCF.getConstantPool().getEntry (pCPIndex);
+      String pName = pCls.getName();
+      iClassIndex = aBinary.getClassIndex (pName);    
+    }
     if (iClassIndex == -1)
     {
-      Utilities.fatal ("Error: Exception " + pName + " not found.");
+      Utilities.fatal ("Error: Exception not found: " + iExcep);
     }
   }
 

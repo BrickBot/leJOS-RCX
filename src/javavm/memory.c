@@ -61,7 +61,11 @@ inline void set_class (Object *obj, byte classIndex)
 
 inline void set_array (Object *obj, byte elemSize, byte length)
 {
-  obj->flags = ARRAY_MASK | ((elemSize - 1) << ELEM_SIZE_SHIFT) | length;
+  obj->flags = ARRAY_MASK | ((TWOBYTES) (elemSize - 1) << ELEM_SIZE_SHIFT) | 
+               length;
+  #ifdef VERIFY
+  assert (is_array(obj), MEMORY0);
+  #endif
 }
 
 /**

@@ -54,12 +54,23 @@ implements OpCodeConstants, OpCodeInfo, Constants
     }
     ConstantRecord pRecord = new ConstantRecord ((JConstantPoolEntry) pEntry);
     int pIdx = iBinary.getConstantIndex (pRecord);
+    
     if (pIdx == -1)
 
     {
       Utilities.fatal ("Bug CU-2: Didn't find constant " + pEntry + 
                        " of class " + pEntry.getClass().getName());
     }
+
+//     pRecord = iBinary.getConstantRecord (pIdx);
+//     System.out.println ("$@ Method = " + iFullName);
+//     System.out.println ("$@ hashCode = " + System.identityHashCode(pRecord));
+//     System.out.println ("$@ pIdx = " + pIdx);
+//     System.out.println ("$@ pEntry = " + pEntry.getClass().getName());
+//     System.out.println ("$@ const. offset = " + pRecord.getOffset());
+//     System.out.println ("$@ const. size = " + pRecord.getConstantSize());
+    
+
     return pIdx;                           
   }
 
@@ -231,12 +242,12 @@ implements OpCodeConstants, OpCodeInfo, Constants
           pOutCode[i] = (byte) processConstantIndex ((int) aCode[i]);
           i++;
           break;
-        case OP_LDC2_W:
-          int pIdx1 = processConstantIndex ((aCode[i] & 0xFF) << 8 | 
-                                            (aCode[i+1] & 0xFF));
-          pOutCode[i++] = (byte) (pIdx1 >> 8);
-          pOutCode[i++] = (byte) (pIdx1 & 0xFF);
-          break;
+//         case OP_LDC2_W:
+//           int pIdx1 = processConstantIndex ((aCode[i] & 0xFF) << 8 | 
+//                                             (aCode[i+1] & 0xFF));
+//           pOutCode[i++] = (byte) (pIdx1 >> 8);
+//           pOutCode[i++] = (byte) (pIdx1 & 0xFF);
+//           break;
         case OP_ANEWARRAY:
           // Opcode is changed: ANEWARRAY -> NEWARRAY
           pOutCode[i-1] = (byte) OP_NEWARRAY;
@@ -306,6 +317,7 @@ implements OpCodeConstants, OpCodeInfo, Constants
         case OP_GOTO_W:
         case OP_JSR_W:
         case OP_LDC_W:
+        case OP_LDC2_W:
         case OP_I2L:
         case OP_F2L:
         case OP_D2L:

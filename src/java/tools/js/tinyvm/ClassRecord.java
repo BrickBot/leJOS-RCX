@@ -257,9 +257,12 @@ public class ClassRecord implements WritableData, Constants
           pEntry instanceof JCPE_Integer ||
           pEntry instanceof JCPE_Long)
       {
+//         System.out.println ("$@ " + iName + " JCPE_String: " + pEntry);
+
         ConstantRecord pRec = new ConstantRecord (pEntry);
         if (!pConstantSet.contains (pRec))
 	{
+//           System.out.println ("$@ " + System.identityHashCode(pRec) + " Inserted value");
           ConstantValue pValue = new ConstantValue (pEntry);
           pRec.setConstantValue (pValue);
           pConstantSet.add (pRec);

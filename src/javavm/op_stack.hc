@@ -21,16 +21,22 @@ case OP_LDC:
   // Stack size: +1
   // Arguments: 1
   gConstRec = get_constant_record (*pc++);
-
-  // TBD: strings
-
-  #ifdef VERIFY
-  assert (gConstRec->constantSize <= 4, INTERPRETER5);
-  #endif VERIFY
-
-  make_word (get_constant_ptr(gConstRec), 
-             gConstRec->constantSize, ++stackTop);
+  if (gConstRec->constantType == T_REFERENCE)
+  {
+    // Strings not supported!!
+    *(++stackTop) = obj2word(nullPointerException);
+  }
+  else
+  {
+    #ifdef VERIFY
+    assert (gConstRec->constantType == T_INT, INTERPRETER0);
+    #endif
+    make_word (get_constant_ptr(gConstRec), 4, ++stackTop);
+  }
   goto LABEL_ENGINELOOP;
+
+#if 0
+
 case OP_LDC2_W:
   // Stack size: +2
   // Arguments: 2
@@ -46,6 +52,9 @@ case OP_LDC2_W:
              ++stackTop);
   pc += 2;
   goto LABEL_ENGINELOOP;
+
+#endif
+
 case OP_ACONST_NULL:
   // Stack size: +1
   // Arguments: 0

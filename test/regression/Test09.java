@@ -1,7 +1,7 @@
 
 // Class-dependent language features
 
-public class Test1
+public class Test09
 {
   int x;
   static String y;
@@ -11,7 +11,7 @@ public class Test1
     y = new Object() + "abc" + ((float) 4.5) + "" + ((double) 3.2) +
                56L + "" + 22 + "" + 'c' + "" + ((byte) 5) + "" +
                true + "" + ((short) 5);
-    Object c = Test1.class;
+    Object c = Test09.class;
   }
 }
 

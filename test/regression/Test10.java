@@ -42,6 +42,7 @@ public class Test10
         }.start();
       }
     }.start();
+    for (int i = 0; i < 100000; i++) { }
   }
 }
 
