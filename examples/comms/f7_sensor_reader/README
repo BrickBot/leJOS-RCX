@@ -1,0 +1,31 @@
+To run do
+
+If necessary prepare tower
+% setenv RCXTTY ...
+
+If necessary download firmware
+% make firmdl
+
+Compile and load program on RCX
+% make
+
+Connect a sensor to sensor port 2 (best is touch sensor).
+
+Start the program on the RCX.
+
+Compile and run the host program
+% make host_run
+
+Watch the numbers change when you press the sensor.
+
+
+Explanation:
+
+The program on the RCX receives the number of the sensor to read
+from the host as one byte and sends back the raw value in 0..1023
+as a two-byte short.
+
+Sensors are numbered 0..2, so the 1 sent corresponds to sensor port 2.
+
+Communication is via RCXF7Port, which uses the standard F7 message format
+of the LEGO firmware to provide byte streams.
