@@ -51,26 +51,22 @@ StackFrame *current_stackframe()
 
 inline byte get_thread_id (Object *obj)
 {
-  TWOBYTES aux;
-  aux = obj->syncInfo & THREAD_MASK;
-  return (byte) (aux >> THREAD_SHIFT);
+  return obj->threadId;
 }
 
 inline void set_thread_id (Object *obj, byte threadId)
 {
-  obj->syncInfo = (obj->syncInfo & ~THREAD_MASK) | 
-                  ((TWOBYTES) threadId << THREAD_SHIFT);
+  obj->threadId = threadId;
 }
 
 inline void inc_monitor_count (Object *obj)
 {
-  obj->syncInfo = (obj->syncInfo & ~COUNT_MASK) | 
-                   ((obj->syncInfo & COUNT_MASK) + 1);
+  obj->monitorCount++;
 }
 
 inline void set_monitor_count (Object *obj, byte count)
 {
-  obj->syncInfo = (obj->syncInfo & ~COUNT_MASK) | count;
+  obj->monitorCount = count;
 }
 
 /**
