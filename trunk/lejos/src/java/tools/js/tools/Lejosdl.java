@@ -132,7 +132,7 @@ public class Lejosdl
    * @param fastMode use fast mode?
    * @throws ToolException
    */
-  public void start (String fileName, String tty, boolean download,
+  protected void start (String fileName, String tty, boolean download,
       boolean fastMode) throws ToolException
   {
     assert fileName != null : "Precondition: fileName != null";
@@ -150,6 +150,29 @@ public class Lejosdl
     }
 
     start(stream, tty, download, fastMode);
+
+    try
+    {
+      stream.close();
+    }
+    catch (IOException e)
+    {
+      throw new ToolException(e);
+    }
+  }
+
+  /**
+   * Execute program download.
+   * 
+   * @param program reader with program to download
+   * @param tty serial port
+   * @param fastMode use fast mode?
+   * @throws ToolException
+   */
+  public void start (InputStream program, String tty, boolean fastMode)
+      throws ToolException
+  {
+    start(program, tty, true, fastMode);
   }
 
   /**
@@ -173,7 +196,7 @@ public class Lejosdl
     try
     {
       int read;
-      while ((read = program.read(buffer, index, 0x1000 - index)) != -1
+      while ((read = program.read(buffer, index, 0x10000 - index)) != -1
           && index < 0x10000)
       {
         index += read;

@@ -19,6 +19,8 @@
   <property name="bin" value="${basedir}/bin"/>
   <property name="lib" value="${basedir}/lib"/>
 
+  <property name="org.lejos" value="${basedir}/../org.lejos/lib"/>
+
   <!--
     ==================================================
     Target clean removes the class directory
@@ -139,7 +141,19 @@
     Target jar: create all jar files
     ==================================================
   -->
-  <target name="all" depends="clean, classes, rcxcomm, pcrcxcomm, vision, jtools" description="generate all jar files"/>
+  <target name="all" depends="clean, classes, rcxcomm, pcrcxcomm, vision, jtools" description="generate all jar files">
+    <mkdir dir="${org.lejos}"/>
+    <delete>
+      <fileset dir="${org.lejos}">
+        <include name="*.jar"/>
+      </fileset>
+    </delete>
+    <copy todir="${org.lejos}">
+      <fileset dir="${lib}">
+        <include name="*.jar"/>
+      </fileset>
+    </copy>
+  </target>
   
   <!--
     ==================================================

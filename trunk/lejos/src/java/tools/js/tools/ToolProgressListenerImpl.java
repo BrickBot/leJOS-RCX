@@ -31,7 +31,7 @@ public class ToolProgressListenerImpl implements ToolProgressListener
   public void progress (int progress)
   {
     assert progress >= 0 && progress <= 100 : "Precondition: progress >= 0 && progress <= 100";
-    
+
     System.out.print("\r  " + progress + "%\r");
     if (progress >= 100)
     {

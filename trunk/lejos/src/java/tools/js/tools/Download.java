@@ -320,10 +320,7 @@ public class Download
     {
       int numToWrite = Math.min(length - addr, TOWRITEMAX);
 
-      if (verbose)
-      {
-        _progress.progress(addr * 100 / length);
-      }
+      _progress.progress(addr * 100 / length);
 
       block = terminate0 && length - addr <= TOWRITEMAX ? 0 : block;
       transferData(opcode, block, data, addr, numToWrite);
@@ -332,10 +329,7 @@ public class Download
       addr += numToWrite;
     };
 
-    if (verbose)
-    {
-      _progress.progress(100);
-    }
+    _progress.progress(100);
   }
 
   //
