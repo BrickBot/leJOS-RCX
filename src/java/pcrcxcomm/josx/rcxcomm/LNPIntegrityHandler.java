@@ -9,7 +9,6 @@ public class LNPIntegrityHandler extends PacketHandler {
   private byte [] outPacket = new byte[259];
   private int inPacketLength = 0;
   private byte op;
-  private int error = 0;
   private boolean debug = true;
 
   public LNPIntegrityHandler(PacketHandler handler, byte op) {
@@ -23,7 +22,7 @@ public class LNPIntegrityHandler extends PacketHandler {
    * @return true if the send was successful, else false
    */
   public boolean sendPacket(byte [] packet, int len) {
-    int sum = op + len -1;
+    int sum = op + len - 1;
     outPacket[0] = op;
     outPacket[1] = (byte) len;
     for(int i=0; i<len; i++) {
@@ -60,7 +59,6 @@ public class LNPIntegrityHandler extends PacketHandler {
         return true;
       } else {
         if (debug) System.out.println("Checksum error");
-        error++;
       }
     }
     return false;
