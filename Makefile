@@ -2,11 +2,19 @@
 SHELL=/bin/sh
 CLASSPATH=jtools
 
+# OSTYPE is not set by default on Mac OS X
+ifndef OSTYPE
+  OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
+  #export OSTYPE
+endif
+
 #JAVAC=jikes -bootclasspath c:/jdk1.3/jre/lib/rt.jar
 JAVAC=javac -target 1.1
 JAVADOC=javadoc
 JAVA=java
 TEMP=/usr/tmp
+
+MFLAGS = OSTYPE=$(OSTYPE)
 
 PC_JAVADOC_SOURCE="rcxcomm/classes"
 
@@ -27,10 +35,10 @@ default: check all_ctools core_classes rcx_comm all_jtools tinyvm_emul
 all: default lejos_bin
 
 release:
-	make clean
+	$(MAKE) $(MFLAGS) clean
 	rm -rf apidocs pcapidocs
-	make all
-	export TINYVM_VERSION=lejos_`cat VERSION`; make dir_and_zip
+	$(MAKE) $(MFLAGS) all
+	export TINYVM_VERSION=lejos_`cat VERSION`; $(MAKE) dir_and_zip
 
 dir_and_zip:
 	rm -rf ${TEMP}/${TINYVM_VERSION}
@@ -38,8 +46,8 @@ dir_and_zip:
 	tar cf - . | (cd ${TEMP}/${TINYVM_VERSION}; tar xfpB -)
 	cd ${TEMP}/${TINYVM_VERSION}; make distclean_src
 	cd ${TEMP}; tar cvf ${TINYVM_VERSION}.tar ${TINYVM_VERSION}; gzip ${TINYVM_VERSION}.tar
-	make javadoc
-	make pcjavadoc
+	$(MAKE) $(MFLAGS) javadoc
+	$(MAKE) $(MFLAGS) pcjavadoc
 	rm -rf ${TEMP}/${TINYVM_VERSION}.doc
 	mkdir ${TEMP}/${TINYVM_VERSION}.doc
 	tar cf - apidocs pcapidocs docs README RELEASENOTES CLICKME.html LICENSE ACKNOWLEDGMENTS Makefile | (cd ${TEMP}/${TINYVM_VERSION}.doc; tar xfpB -)
@@ -49,9 +57,9 @@ dir_and_zip:
 	diff bin/lejos.srec ${TEMP}/${TINYVM_VERSION}/bin/lejos.srec
 
 release_win:
-	make clean
+	$(MAKE) clean
 	rm -rf apidocs pcapidocs
-	make all
+	$(MAKE) all
 	export TINYVM_VERSION=lejos_win32_`cat VERSION`; make dir_and_zip_win
 
 dir_and_zip_win:
@@ -62,8 +70,8 @@ dir_and_zip_win:
 	cp /bin/cygwin1.dll ${TEMP}/lejos/bin
 	rm -f ${TINYVM_VERSION}.zip
 	cd ${TEMP}; zip -r ${TINYVM_VERSION}.zip lejos
-	make javadoc
-	make pcjavadoc
+	$(MAKE) $(MFLAGS) javadoc
+	$(MAKE) $(MFLAGS) pcjavadoc
 	rm -f ${TEMP}/${TINYVM_VERSION}.doc.zip
 	cd ..; zip -r ${TEMP}/${TINYVM_VERSION}.doc.zip lejos/apidocs lejos/pcapidocs lejos/docs lejos/README lejos/RELEASENOTES lejos/CLICKME.html lejos/LICENSE lejos/ACKNOWLEDGMENTS
 	diff bin/lejos.srec ${TEMP}/lejos/bin/lejos.srec
@@ -78,7 +86,7 @@ check_release:
 	@echo TINYVM_HOME=${TINYVM_HOME}
 	@echo Location of lejosc=`which lejosc`
 	@echo Location of lejos=`which lejos`
-	make
+	$(MAKE) $(MFLAGS) 
 	cd regression; ./run.sh
 
 all_jtools: java_tools generated_files java_loader
@@ -96,22 +104,22 @@ java_loader:
 	${JAVAC} jtools/js/tinyvm/*.java
 
 all_ctools:
-	cd tools; make
+	cd tools; $(MAKE) $(MFLAGS)
 
 lejos_bin:
 	@echo "====> Making leJOS RCX binary (lejos.srec)"
-	cd rcx_impl; make
+	cd rcx_impl; $(MAKE) $(MFLAGS)
 
 tinyvm_emul:
 	@echo "====> Making leJOS Unix binaries (lejos, for emulation)"
-	cd unix_impl; make
+	cd unix_impl; $(MAKE) $(MFLAGS)
 
 core_classes:
 	${JAVAC} -classpath classes `find classes -name '*.java'`
 	cd classes; jar cf ../lib/classes.jar `find . -name '*.class'`
 
 rcx_comm:
-	cd rcxcomm; make
+	cd rcxcomm; $(MAKE) $(MFLAGS)
 
 javadoc:
 	if [ ! -d apidocs ]; then mkdir apidocs; fi
