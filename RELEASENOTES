@@ -1,6 +1,9 @@
 leJOS 2.1.0
 -----------
 
+  Paul Anrews has added:
+  - Activity class in josx.robotics
+
   Lawrie Griffiths has added:
   - linker changes to remove some unused methods and hence reduce program
     sizes.
