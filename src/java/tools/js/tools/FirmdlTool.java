@@ -85,7 +85,7 @@ public class FirmdlTool extends AbstractTool
             try
             {
                String fastdl = tty.toLowerCase().indexOf("usb") == -1? "fastdl4x" : "fastdl2x";
-               Image fastImage = getImage("fastdl2x");
+               Image fastImage = getImage(fastdl);
                log(fastImage);
 
                d.open(tty, false);
