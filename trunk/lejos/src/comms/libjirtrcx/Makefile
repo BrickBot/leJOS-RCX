@@ -21,7 +21,7 @@ endif
 
 .EXPORT_ALL_VARIABLES :
 
-${IRTOWER}: irtower.cpp rcx_comm.cpp rcx_comm.h josx_rcxcomm_irTower.h
+${IRTOWER}: irtower.cpp rcx_comm.cpp rcx_comm.h josx_rcxcomm_Tower.h
 	$(CC) $(CCOPT) *.cpp
 
 clean:
