@@ -448,8 +448,8 @@ main(int argc, char **argv)
     
     if (response[5] != (byte) (MAGIC >> 8) || response[7] != (byte) (MAGIC & 0xFF))
     {
-      printf ("Unexpected response from RCX. The RCX either doesn't have firmware or "
-              "it isn't in program-download mode.\n");
+      printf ("Unexpected response from RCX. The RCX either doesn't have valid leJOS firmware or "
+              "it is not in program-download mode. (lejosfirmdl downloads firmware).\n");
       exit (1);
     }
 

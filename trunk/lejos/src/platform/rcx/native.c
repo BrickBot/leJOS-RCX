@@ -16,6 +16,8 @@
 
 #include <rom.h>
 
+static sensor_t sensors[3];
+
 extern void reset_rcx_serial();
 
 /**
@@ -104,6 +106,66 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
       return;
     case RESETSERIAL_V:
       reset_rcx_serial();
+      return;
+    case READSENSORVALUE_I:
+      // Parameters: int romId (0..2), int requestedValue (0..2).
+      {
+	short pId;
+        byte pAction;
+	
+	pId = paramBase[0];
+	if (pId >= 0 && pId < 3)
+	{
+          sensor_t *sensor;
+	  
+	  sensor = &(sensors[pId]);
+	  read_sensor (0x1000 + pId, sensor);	  
+	  switch ((byte) paramBase[1])
+	  {
+	    case 0:
+	      push_word ((JINT) sensor->raw);
+	      return;
+	    case 1:
+	      push_word ((JINT) sensor->value);
+	      return;
+	    case 2:
+	      push_word (sensor->boolean);
+	      return;
+	  }
+	}
+      }
+      return;
+    case SETSENSORVALUE_V:
+      // Arguments: int romId (1..3), int value, int requestedValue (0..3) 
+      {
+	short pId;
+	
+	pId = paramBase[0];
+	if (pId >= 0 && pId < 3)
+	{
+          sensor_t *sensor;
+	  STACKWORD value;
+	  
+	  value = paramBase[1];
+	  sensor = &(sensors[pId]);
+	  
+	  switch ((byte) paramBase[2])
+	  {
+            case 0:
+	      sensor -> mode = value;
+	      return;
+            case 1:	      
+	      sensor -> type = value;
+	      return;
+	    case 2:
+              sensor -> value = (short) (JINT) value;
+	      return;
+	    case 3:
+              sensor -> boolean = value;
+	      return;
+	  }
+	}
+      }
       return;
     default:
       throw_exception (noSuchMethodError);

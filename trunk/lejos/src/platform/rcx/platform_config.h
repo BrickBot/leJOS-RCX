@@ -31,7 +31,7 @@ typedef unsigned long FOURBYTES;
 // Are we using the timer IRQ to switch threads? Not yet.
 
 #define PLATFORM_HANDLES_SWITCH_THREAD 0
-#define OPCODES_PER_TIME_SLICE         128
+#define OPCODES_PER_TIME_SLICE         148
 
 // No extra assertion code
 

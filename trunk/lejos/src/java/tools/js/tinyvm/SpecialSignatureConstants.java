@@ -12,16 +12,18 @@ public interface SpecialSignatureConstants {
     "start()V",
     "yield()V",
     "sleep(J)V",
+    "currentTimeMillis()J",
     "callRom0(S)V",
     "callRom1(SS)V",
     "callRom2(SSS)V",
     "callRom3(SSSS)V",
     "callRom4(SSSSS)V",
-    "resetSerial()V",
     "readMemoryByte(I)B",
     "writeMemoryByte(IB)V",
     "getDataAddress(Ljava/lang/Object;)I",
     "setMemoryBit(III)V",
-    "currentTimeMillis()J"
+    "resetSerial()V",
+    "readSensorValue(II)I",
+    "setSensorValue(III)V"
   };
 }
