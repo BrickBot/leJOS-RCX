@@ -54,9 +54,9 @@
 
 /* Globals */
 
-extern int __comm_debug;
+static int __comm_debug = 0;
 
-extern int usb_flag;
+static int usb_flag = 0;
 
 void __rcx_perror(char * str) 
 {
