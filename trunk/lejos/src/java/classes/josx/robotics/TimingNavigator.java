@@ -15,8 +15,8 @@ import josx.util.*;
  * Note: This class will only work for robots using two motors to steer differentially
  * that can rotate within its footprint (i.e. turn on one spot).
  * 
- * @author <a href="mailto:bbagnall@escape.ca">Brian Bagnall</a>
- * @version 0.1  23-June-2001
+ * @author <a href="mailto:bbagnall@mts.net">Brian Bagnall</a>
+ * @version 1.4  17-Feb-2002
  */
 public class TimingNavigator implements Navigator {
 
@@ -40,6 +40,14 @@ public class TimingNavigator implements Navigator {
    
    private static Thread sleepThread; // Thread used for delays
    private boolean travel = false; // Used in stop() to know when to interrupt
+   
+   /**
+   * A variable that adds extra time to each rotation. This gives the 
+   * robot more time to overcome momentum when starting a rotation. Proper 
+   * use of this variable increases accuracy dramatically.
+   */
+   private short momentum_delay = 0;
+   
    /**
    * Allocates a Navigator object and initializes if with the left and right wheels.
    * The x and y values will each equal 0 (cm's) on initialization, and the starting
@@ -66,6 +74,20 @@ public class TimingNavigator implements Navigator {
       angle = 0.0f;
       x = 0.0f;
       y = 0.0f;
+   }
+   
+   /**
+   * A variable that adds extra time to each rotation. This gives the 
+   * robot more time to overcome momentum when starting a rotation. Proper 
+   * use of this variable increases accuracy dramatically.
+   * <BR>Note: The use of this method also causes the timeRotate variable (supplied in
+   * the constructor) to be recalculated. This method assumes the time to rotate
+   * 360 degrees also includes the delay in overcoming momentum, so this method
+   * subtracts delay from timeRotate.
+   */
+   public void setMomentumDelay(short delay) {
+      momentum_delay = delay;
+      // ** It should also recalculate the timeRotate variable
    }
    
    /**
@@ -113,7 +135,7 @@ public class TimingNavigator implements Navigator {
 
       oldTime = (int)System.currentTimeMillis();
 
-      int delay = ((int)(ROTATION * Math.abs(angle)));
+      int delay = ((int)(ROTATION * Math.abs(angle))) + momentum_delay;
     
       if (angle > 0) {
          right.forward();
@@ -253,4 +275,4 @@ public class TimingNavigator implements Navigator {
          oldTime = 0;
       }
    }
-}   
+}
