@@ -1,5 +1,5 @@
 <%@ page contentType="text/html" language='java' import='josx.rcxcomm.*'%>
-<jsp:useBean id='rcx' class='rcxcomm.RCXBean' scope='application'>
+<jsp:useBean id='rcx' class='josx.rcxcomm.RCXBean' scope='application'>
   <jsp:setProperty name='rcx' property='comPort' value='COM2'/>
 </jsp:useBean>
 <HTML>
