@@ -3,6 +3,10 @@ legousbtower version 0.53
 legousbtower is a kernel usb driver which allows communication with the Lego RCX 2.0 brick. 
 It is distributed as part of the LeJOS project <http://www.lejos.org>
 
+NOTE for users with USB ports that use OHCI (you can tell by doing an lsmod and seeing if
+usb-ohci is loaded as a module). There is a bug in OHCI which prevents the tower from working.
+See the README in the tools/linux/ohci directory for details of an available patch.
+
 * Installation
 
 type: make
