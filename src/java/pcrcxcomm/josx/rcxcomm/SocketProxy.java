@@ -14,7 +14,7 @@ public class SocketProxy {
   private static DataInputStream dis;
   private static DataOutputStream dos;
 
-  public static void main(String[] args) {
+  private SocketProxy() {
     try {
 
       // Open the RCX Port
@@ -38,7 +38,14 @@ public class SocketProxy {
     }
   }
 
-  static void newSocket() {
+  public static void main(String[] args) {
+    new SocketProxy();
+  }
+
+  /**
+   * Open a new socket for a new connection.
+   **/
+  private void newSocket() {
     try {
       int len = dis.readByte();
 
@@ -52,7 +59,7 @@ public class SocketProxy {
 
       System.out.println("Connecting to host: " + host + ",port: " + port);
 
-      Socket sock = new Socket(host,port);
+      Socket sock = new Socket(host, port);
 
       dos.writeByte(0);
       dos.flush();
@@ -69,78 +76,88 @@ public class SocketProxy {
       System.out.println("IOException: " + ioe.getMessage());
     }
   }
-}
 
-class InThread extends Thread {
-  DataOutputStream dout;
-  DataInputStream din;
-  Socket sock;
+  /**
+   * private inner class that implements a thread for reading from the socket
+   * and writing to thew RCXPort.
+   **/
+  private class InThread extends Thread {
+    private DataOutputStream dout;
+    private DataInputStream din;
+    private Socket sock;
 
-  public InThread(Socket sock, DataInputStream dis, DataOutputStream  dos) {
-    super();
-    din = dis;
-    dout = dos;
-    this.sock = sock;
-    start();
+    public InThread(Socket sock, DataInputStream dis, DataOutputStream  dos) {
+      super();
+      din = dis;
+      dout = dos;
+      this.sock = sock;
+      start();
+    }
+
+    public void run() {
+      while (true) {
+        try { 
+          int in = din.readByte();
+
+          // If end of stream, close socket and stop thread
+
+          if (in < 0) {
+            System.out.println("Inthread: Closing Socket");
+            sock.close();
+            return;
+          }
+        
+          System.out.println("Inthread: " + (char) in);
+          dout.writeByte(in);
+          dout.flush();
+        }
+        catch (IOException ioe) {}
+      }
+    }
   }
 
-  public void run() {
-    while (true) {
-      try { 
-        int in = din.readByte();
+  /**
+   * Private inner class that implements a thread for reading from the RCXPort
+   * and writing to the socket. When it detects of connection from the RCX,
+   * and opens a new socket.
+   */
+  private class OutThread extends Thread {
+    private DataOutputStream dout;
+    private DataInputStream din;
+    private Socket sock;
 
-        // If end of stream, close socket and stop thread
+    public OutThread(Socket sock, DataInputStream dis, DataOutputStream  dos) {
+      super();
+      din = dis;
+      dout = dos;
+      this.sock = sock;
+      start();
+    }
 
-        if (in < 0) {
-          System.out.println("Inthread: Closing Socket");
-          sock.close();
-          return;
-        }
+    public void run() {
+      int in = 0;
+      while (true) {
+        try { 
+          in = din.readByte();
         
-        System.out.println("Inthread: " + (char) in);
-        dout.writeByte(in);
-        dout.flush();
+          // If we get an end of stream marker, start a new connection
+        
+          if (in < 0) {
+            System.out.println("Outthread stopped");
+            sock.close();
+            newSocket();
+            return;
+          }
+
+          System.out.println("Outthread: " + (char) in);
+          dout.writeByte(in);
+        }
+        catch (IOException ioe) {}
       }
-      catch (IOException ioe) {}
     }
   }
 }
 
-class OutThread extends Thread {
-  DataOutputStream dout;
-  DataInputStream din;
-  Socket sock;
-
-  public OutThread(Socket sock, DataInputStream dis, DataOutputStream  dos) {
-    super();
-    din = dis;
-    dout = dos;
-    this.sock = sock;
-    start();
-  }
-
-  public void run() {
-    int in = 0;
-    while (true) {
-      try { 
-        in = din.readByte();
-        
-        // If we get an end of stream marker, start a new connection
-        
-        if (in < 0) {
-          System.out.println("Outthread stopped");
-          sock.close();
-          SocketProxy.newSocket();
-          return;
-        }
-
-        System.out.println("Outthread: " + (char) in);
-        dout.writeByte(in);
-      }
-      catch (IOException ioe) {}
-    }
-  }
-}
 
    
 
