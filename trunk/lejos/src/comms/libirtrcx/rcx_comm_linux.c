@@ -21,11 +21,12 @@
  *
  *  Contributor(s): Kekoa Proudfoot <kekoa@graphics.stanford.edu>
  *
- *  02/01/2002 Lawrie Griffiths Changes for rcxcomm
- *  09/23/2002 david <david@csse.uwa.edu.au> modified to support linux usb tower
- *    - changed rcx_recv to expect explicit number of bytes rather than 4096
+ *  03/03/2005 Matthias Paul Scholz replaced exit statements in rcx_open with return NULL
  *  27/01/2003 david <david@csse.uwa.edu.au> changed to factor out platform specific
  *  code
+ *  09/23/2002 david <david@csse.uwa.edu.au> modified to support linux usb tower
+ *    - changed rcx_recv to expect explicit number of bytes rather than 4096
+ *  02/01/2002 Lawrie Griffiths Changes for rcxcomm
  *
  */
 
@@ -143,19 +144,19 @@ rcx_dev_t *__rcx_open(char *tty, int is_fast)
 	port = malloc(sizeof(rcx_dev_t));
 	if (!port) {
 		perror("malloc");
-		exit(1);
+		return NULL;
 	}
 	port->tty = malloc(strlen(tty)+1);
 	if (!port->tty) {
 		perror("malloc");
-		exit(1);
+		return NULL;
 	}
 	strcpy(port->tty, tty);
 
 	port->fast = is_fast;
 	if ((port->fd = open(tty, O_RDWR)) < 0) { 
 		perror(tty);
-		exit(1);
+		return NULL;
 	}
 
 	/* Assume USB for all non-tty devices */
@@ -165,13 +166,13 @@ rcx_dev_t *__rcx_open(char *tty, int is_fast)
 	if (port->usb) {
 		if (port->fast) {
 			fprintf(stderr, "FAST mode not allowed with USB LINUX\n");
-			exit(1);
+			return NULL;
 		} 
 	} else {
 		if (!isatty(port->fd)) {
 			close(port->fd);
 			fprintf(stderr, "%s: not a tty\n", tty);
-			exit(1);
+			return NULL;
 		}
 
 		memset(&ios, 0, sizeof(ios));
@@ -189,7 +190,7 @@ rcx_dev_t *__rcx_open(char *tty, int is_fast)
 	    
 		if (tcsetattr(port->fd, TCSANOW, &ios) == -1) {
 			perror("tcsetattr");
-			exit(1);
+			return NULL;
 		}
 	}
 	return port;
