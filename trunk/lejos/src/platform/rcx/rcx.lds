@@ -84,9 +84,13 @@ SECTIONS
         _transmitting = 0x61 ; /* 0xef93 */
     } > romdata1
 
-    .extra : {
-        __extraMemory = . ;
-    } > extra
+    .extra1 : {
+        _extra_memory_start = . ;
+    } > extra1
+
+    .hwreserved1 : {
+        _extra_memory_end = . ;
+    } > hwreserved1
 
     .intvectors : {
        _ocia_vector  = 0x12 ; /* 0xfda2 */

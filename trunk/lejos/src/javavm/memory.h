@@ -9,7 +9,9 @@
 
 extern byte typeSize[];
 
-extern void init_memory (void *ptr, TWOBYTES size);
+extern void memory_init ();
+extern void memory_add_region (byte *region, byte *end);
+
 extern void free_array (Object *objectRef);
 extern void deallocate (TWOBYTES *ptr, TWOBYTES size);
 extern Object *new_object_checked (const byte classIndex, byte *btAddr);

@@ -24,6 +24,11 @@
 #define ARRAY_CHECKING                   1
 
 /**
+ * If not 0, coalesce adjacent free blocks in the heap
+ */
+#define COALESCE                         1
+
+/**
  * Iff not 0, threads in the DEAD state are
  * removed from the circular list. Recommended.
  */

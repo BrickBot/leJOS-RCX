@@ -36,12 +36,20 @@ byte typeSize[] = {
   8  // 11 == T_LONG
 };
 
+
+typedef struct MemoryRegion_S {
+  struct MemoryRegion_S *next;  /* pointer to next region */
+  TWOBYTES *end;                /* pointer to end of region */
+  TWOBYTES contents;            /* start of contents, even length */
+} MemoryRegion;
+
+
 /**
  * Beginning of heap.
  */
-static TWOBYTES *startPtr;
-static TWOBYTES *memoryTop;
-static TWOBYTES free;	// Total number of free words in heap
+static MemoryRegion *memory_regions; /* list of regions */
+static TWOBYTES memory_size;    /* total number of words in heap */
+static TWOBYTES memory_free;    /* total number of free words in heap */
 
 extern void deallocate (TWOBYTES *ptr, TWOBYTES size);
 extern TWOBYTES *allocate (TWOBYTES size);
@@ -89,9 +97,9 @@ Object *memcheck_allocate (const TWOBYTES size)
   }
   ref->monitorCount = 0;
   ref->threadId = 0;
-  #ifdef SAFE
+#if SAFE
   ref->flags.all = 0;
-  #endif
+#endif
   return ref;
 }
 
@@ -364,125 +372,162 @@ void scan_memory (TWOBYTES *numNodes, TWOBYTES *biggest, TWOBYTES *freeMem)
 
 #endif // DEBUG_RCX_MEMORY
 
-/**
- * @param ptr Beginning of heap.
- * @param size Size of heap in 2-byte words.
- */
-void init_memory (void *ptr, TWOBYTES size)
+
+void memory_init ()
 {
   #ifdef VERIFY
   memoryInitialized = true;
   #endif
 
-  startPtr = ptr;
-  memoryTop = ((TWOBYTES *) ptr) + size;
-  #if DEBUG_MEMORY
-  printf ("Setting start of memory to %d\n", (int) startPtr);
-  printf ("Going to reserve %d words\n", size);
-  #endif
-  free = size;
-  *((TWOBYTES*)ptr) = size;
+  memory_regions = null;
+  memory_size = 0;
+  memory_free = 0;
 }
 
+/**
+ * @param region Beginning of region.
+ * @param size Size of region in bytes.
+ */
+void memory_add_region (byte *start, byte *end)
+{
+  MemoryRegion *region;
+  TWOBYTES contents_size;
+
+  /* word align upwards */
+  region = (MemoryRegion *) (((int)start+1) & ~1);
+
+  /* initialize region header */
+  region->next = memory_regions;
+  region->end = (TWOBYTES *) ((int)end & ~1); /* word align downwards */
+
+  /* add to list */
+  memory_regions = region;
+
+  /* create free block in region */
+  contents_size = region->end - &(region->contents);
+  ((Object*)&(region->contents))->flags.all = contents_size;
+
+  /* memory accounting */
+  memory_size += contents_size;
+  memory_free += contents_size;
+
+  #if DEBUG_MEMORY
+  printf ("Added memory region\n");
+  printf ("  start:          %5d\n", (int)start);
+  printf ("  end:            %5d\n", (int)end);
+  printf ("  region:         %5d\n", (int)region);
+  printf ("  region->next:   %5d\n", (int)region->next);
+  printf ("  region->end:    %5d\n", (int)region->end);
+  printf ("  memory_regions: %5d\n", (int)memory_regions);
+  printf ("  contents_size:  %5d\n", (int)contents_size);
+  #endif
+
+}
+
+
+/**
+ * @param size Size of block including header in 2-byte words.
+ */
 TWOBYTES *allocate (TWOBYTES size)
 {
-  TWOBYTES blockHeader;
-  TWOBYTES *ptr = startPtr;
-  
+  MemoryRegion *region;
+
 #if DEBUG_MEMORY
-  printf("Allocate %d - free %d\n", size, free-size);
+  printf("Allocate %d - free %d\n", size, memory_free-size);
 #endif
-  while (ptr < memoryTop)
-  {
-    blockHeader = *ptr;
-    if (blockHeader & IS_ALLOCATED_MASK)
-    {
-      TWOBYTES s = (blockHeader & IS_ARRAY_MASK) ? get_array_size ((Object *) ptr) :
-                                             get_object_size ((Object *) ptr);
-      ptr += s;
-    }
-    else
-    {
-      free -= size;
-      if (size == blockHeader)
-        return ptr;
-      else if (size < blockHeader)
-      {
-        // Return tailend
-        *ptr -= size;
-        return ptr + *ptr;
+
+  for (region = memory_regions; region != null; region = region->next) {
+    TWOBYTES *ptr = &(region->contents);
+    TWOBYTES *regionTop = region->end;
+
+    while (ptr < regionTop) {
+      TWOBYTES blockHeader = *ptr;
+
+      if (blockHeader & IS_ALLOCATED_MASK) {
+        /* jump over allocated block */
+        TWOBYTES s = (blockHeader & IS_ARRAY_MASK) 
+          ? get_array_size ((Object *) ptr)
+          : get_object_size ((Object *) ptr);
+        ptr += s;
       }
-      
-      ptr += blockHeader;
+      else
+      {
+        if (size <= blockHeader) {
+          /* allocate from this block */
+
+#if COALESCE
+          {
+            TWOBYTES nextBlockHeader;
+
+            /* NOTE: Theoretically there could be adjacent blocks
+               that are too small, so we never arrive here and fail.
+               However, in practice this should suffice as it keeps
+               the big block at the beginning in one piece.
+               Putting it here saves code space as we only have to
+               search through the heap once, and deallocat remains
+               simple.
+            */
+            
+            while (true) {
+              TWOBYTES *next_ptr = ptr + blockHeader;
+              nextBlockHeader = *next_ptr;
+              if (next_ptr >= regionTop ||
+                  (nextBlockHeader & IS_ALLOCATED_MASK) != 0)
+                break;
+              blockHeader += nextBlockHeader;
+              *ptr = blockHeader;
+            }
+          }
+#endif
+
+          if (size < blockHeader) {
+            /* cut into two blocks */
+            blockHeader -= size; /* first block gets remaining free space */
+            *ptr = blockHeader;
+            ptr += blockHeader; /* second block gets allocated */
+#if SAFE
+            *ptr = size;
+#endif
+            /* NOTE: allocating from the top downwards avoids most
+                     searching through already allocated blocks */
+          }
+          memory_free -= size;
+          return ptr;
+        } else {
+          /* continue searching */
+          ptr += blockHeader;
+        }
+      }
     }
   }
-    
+  /* couldn't allocate block */
   return JNULL;
 }
 
 /**
- * Now coallesces adjacent free blocks.
  * @param size Must be exactly same size used in allocation.
  */
 void deallocate (TWOBYTES *p, TWOBYTES size)
 {
-#ifdef COALLESCE 
-  TWOBYTES blockHeader;
-  TWOBYTES *ptr = startPtr;
-
-#if DEBUG_MEMORY
-  printf("Deallocate %d\n", size);
-#endif
-
   #ifdef VERIFY
   assert (size <= (FREE_BLOCK_SIZE_MASK >> FREE_BLOCK_SIZE_SHIFT), MEMORY3);
   #endif
 
-  free += size;
-  while (ptr < memoryTop)
-  {
-    blockHeader = *ptr;
-    
-    if (blockHeader & IS_ALLOCATED_MASK)
-    {
-      TWOBYTES s = (blockHeader & IS_ARRAY_MASK) ? get_array_size ((Object *) ptr) :
-                                             get_object_size ((Object *) ptr);
-      ptr += s;
-    }
-    else if (p + size == ptr)
-    {
-      // Join with later block
-      *p = size + blockHeader;
-      return;
-    }
-    else if (ptr + blockHeader == p)
-    {
-      // Join with earlier block
-      *ptr = size + blockHeader;
-      p = ptr;
-    }
-    
-    ptr += *ptr;
-  }
-#else
-  #ifdef VERIFY
-  assert (size <= (FREE_BLOCK_SIZE_MASK >> FREE_BLOCK_SIZE_SHIFT), MEMORY3);
-  #endif
-
-  free += size;
+  memory_free += size;
 
 #if DEBUG_MEMORY
-  printf("Deallocate %d - free %d\n", size, free);
+  printf("Deallocate %d - free %d\n", size, memory_free);
 #endif
 
   ((Object*)p)->flags.all = size;
-#endif
 }
+
 
 int getHeapSize() {
-  return ((int)(memoryTop - startPtr)) << 1;
+  return ((int)memory_size) << 1;
 }
 
+
 int getHeapFree() {
-  return ((int)free) << 1;
+  return ((int)memory_free) << 1;
 }
