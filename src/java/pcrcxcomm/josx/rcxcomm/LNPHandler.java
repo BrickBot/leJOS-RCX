@@ -52,7 +52,14 @@ public class LNPHandler extends PacketHandler {
         System.out.println(s);
       }
       sendTime = System.currentTimeMillis();
-      return (tower.write(packet, len) == len);
+
+      boolean r = (tower.write(packet, len) == len);
+
+      // Read echo for Serial tower
+      byte [] echo = new byte[len];
+      if (usbFlag == 0) tower.read(echo);
+
+      return r;
     }
   }  
 
