@@ -109,7 +109,7 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     for (int pIndex = 0; pIndex < pSize; pIndex++)
     {
       ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
-      for (int i=0; i<pInterfaceMethods.size(); i++) pRec.addUsedMethod((String) pInterfaceMethods.get(i));
+      for (int i=0; i<pInterfaceMethods.size(); i++) pRec.addUsedMethod((String) pInterfaceMethods.elementAt(i));
       pRec.iIndex = pIndex;
       pRec.initFlags();
       pRec.initParent();
