@@ -117,11 +117,14 @@ public class LNPHandler extends PacketHandler {
       // if (debug) System.out.println("Got op = " + b[0]);
       if (op == (byte) 0xf0 || op == (byte) 0xf1) {
         // if (debug) System.out.println("Got packet");
+        r = tower.read(b);
+
+        // if length byte is not available, discard the packet
+        if (r <=0) return;
         gotPacket = true;
         isAddressing = (op == (byte) 0xf1);
         inPacket[0] = op;
-        r = tower.read(b);
-        int extra = b[0] + 1;
+        int extra = (b[0] & 0xff) + 1;
         inPacket[1] = b[0];
         byte [] rest = new byte[extra];
         r = tower.read(rest); 
