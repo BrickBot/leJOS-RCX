@@ -63,30 +63,30 @@ public class RotationNavigator extends Thread implements Navigator, SensorConsta
    * rotating the wires to the motor ports by 90 or 180 degrees.
    * @param wheelDiameter The diameter of the wheel, usually printed right on the
    * wheel, in centimeters (e.g. 49.6 mm = 4.96 cm) 
-   * @param axleLength The distance from the center of the left tire to the center
+   * @param driveLength The distance from the center of the left tire to the center
    * of the right tire, in centimeters.
    * @param ratio The ratio of sensor rotations to wheel rotations.<BR>
    *  e.g. 3 complete rotations of the sensor for every one turn of the wheel = 3f<BR>
    * 1 rotation of the sensor for every 2 turns of the wheel = 0.5f
-   * @param right The motor used to drive the right wheel e.g. Motor.C.
-   * @param left The motor used to drive the left wheel e.g. Motor.A.
-   * @param rotRight Sensor used to read rotations from the right wheel. e.g. Sensor.S3
-   * @param rotLeft Sensor used to read rotations from the left wheel. e.g. Sensor.S1
+   * @param rightMotor The motor used to drive the right wheel e.g. Motor.C.
+   * @param leftMotor The motor used to drive the left wheel e.g. Motor.A.
+   * @param rightRot Sensor used to read rotations from the right wheel. e.g. Sensor.S3
+   * @param leftRot Sensor used to read rotations from the left wheel. e.g. Sensor.S1
    */
    
-   public RotationNavigator(float wheelDiameter, float axleLength, float ratio, Motor left, Motor right, Sensor rotLeft, Sensor rotRight) {
-      this.right = right;
-      this.left = left;
+   public RotationNavigator(float wheelDiameter, float driveLength, float ratio, Motor leftMotor, Motor rightMotor, Sensor leftRot, Sensor rightRot) {
+      this.right = rightMotor;
+      this.left = leftMotor;
 
-      this.rotLeft = rotLeft;
-      rotLeft.setTypeAndMode(SENSOR_TYPE_ROT, SENSOR_MODE_ANGLE);
-      rotLeft.setPreviousValue(0);
-      rotLeft.activate();
+      this.rotLeft = leftRot;
+      this.rotLeft.setTypeAndMode(SENSOR_TYPE_ROT, SENSOR_MODE_ANGLE);
+      this.rotLeft.setPreviousValue(0);
+      this.rotLeft.activate();
       
-      this.rotRight = rotRight;
-      rotRight.setTypeAndMode(SENSOR_TYPE_ROT, SENSOR_MODE_ANGLE);
-      rotRight.setPreviousValue(0);
-      rotRight.activate();
+      this.rotRight = rightRot;
+      this.rotRight.setTypeAndMode(SENSOR_TYPE_ROT, SENSOR_MODE_ANGLE);
+      this.rotRight.setPreviousValue(0);
+      this.rotRight.activate();
       
       // Set coordinates and starting angle:
       angle = 0.0f;
@@ -101,7 +101,7 @@ public class RotationNavigator extends Thread implements Navigator, SensorConsta
       COUNTS_PER_CM = (16 * ratio)/wheelCircumference;
       
       // Calculate counts per degree
-      float fullRotation = (axleLength * (float)Math.PI);
+      float fullRotation = (driveLength * (float)Math.PI);
       COUNTS_PER_DEGREE = ((fullRotation/wheelCircumference)*(16*ratio))/360;
       
       // Thread is for keeping the RCX straight when driving by
@@ -121,8 +121,8 @@ public class RotationNavigator extends Thread implements Navigator, SensorConsta
    *  e.g. 3 complete rotations of the sensor for every one turn of the wheel = 3f<BR>
    * 1 rotation of the sensor for every 2 turns of the wheel = 0.5f
    */
-   public RotationNavigator(float wheelDiameter, float axleLength, float ratio) {
-      this(wheelDiameter, axleLength, ratio, Motor.A, Motor.C, Sensor.S1, Sensor.S3);
+   public RotationNavigator(float wheelDiameter, float driveLength, float ratio) {
+      this(wheelDiameter, driveLength, ratio, Motor.A, Motor.C, Sensor.S1, Sensor.S3);
    }
    
    /**
@@ -242,18 +242,19 @@ public class RotationNavigator extends Thread implements Navigator, SensorConsta
    * @param dist The positive or negative distance to move the robot (in centimeters).
    */
    public void travel(int dist) {
-      
+   // !! The command != STOP lines need to be tested!!!
+   // !! Should stop and exit travel() when travel() interrupted by stop()
       int counts = (int)(dist * COUNTS_PER_CM);
       
       if(dist > 0) {
          forward();
-         while(rotLeft.readValue() < counts || rotRight.readValue() < counts) {
+         while(command != STOP && (rotLeft.readValue() < counts || rotRight.readValue() < counts)) {
             Thread.yield();
          }
       } else
       if(dist < 0) {
          backward();
-         while(rotLeft.readValue() > counts || rotRight.readValue() > counts) {
+         while(command != STOP && rotLeft.readValue() > counts || rotRight.readValue() > counts) {
             Thread.yield();
          }
       }

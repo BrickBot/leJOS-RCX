@@ -7,7 +7,10 @@ import josx.util.*;
 // OR methods account for RCX currently in moving mode
 // !! All methods that change x, y must be synchronized.
 /**
- * The TimingNavigator class performs navigation by timing all movements of the robot.
+ * The Navigator class contains methods for performing basic navigational
+ * movements. Normally the Navigator class is instantiated as an object and
+ * methods are called on that object. It can also be extended by your robot
+ * code, but the constructor method will need to be overwritten if you do this. 
  *
  * Note: This class will only work for robots using two motors to steer differentially
  * that can rotate within its footprint (i.e. turn on one spot).
@@ -35,8 +38,10 @@ public class TimingNavigator implements Navigator {
    private Motor left;
    private Motor right;
    
+   private static Thread sleepThread; // Thread used for delays
+   private boolean travel = false; // Used in stop() to know when to interrupt
    /**
-   * Allocates a TimingNavigator object and initializes if with the left and right wheels.
+   * Allocates a Navigator object and initializes if with the left and right wheels.
    * The x and y values will each equal 0 (cm's) on initialization, and the starting
    * angle is 0 degrees, so if the first move is forward() the robot will run along
    * the x axis.
@@ -108,6 +113,8 @@ public class TimingNavigator implements Navigator {
 
       oldTime = (int)System.currentTimeMillis();
 
+      int delay = ((int)(ROTATION * Math.abs(angle)));
+    
       if (angle > 0) {
          right.forward();
          left.backward();
@@ -117,9 +124,10 @@ public class TimingNavigator implements Navigator {
          right.backward();
          angle = angle * -1;
       }
-
-      int delay = ((int)(ROTATION * Math.abs(angle)));
-      pause(delay);
+      
+      try {
+         Thread.sleep(delay);
+      } catch(InterruptedException ie) { }
       right.stop();
       left.stop();
    }
@@ -183,22 +191,19 @@ public class TimingNavigator implements Navigator {
       } else {
          backward();
       }
+      travel = true;
       int delay = (int)(CENTIMETER * Math.abs(distance));
       
-      pause(delay);
-      stop();
+      sleepThread = Thread.currentThread();
+      try {
+         sleepThread.sleep(delay);
+         travel = false;
+         stop(); // Will not be called if Interrupted
+      } catch (InterruptedException ie) {
+         travel = false;
+      } 
    }
    
-   /**
-   * Just a simple delay helper method to avoid try-catch coding.
-   * (Threads cannot be Interrupted in Lejos, therefore no need to catch.)
-   *
-   * @param delay The milliseconds to pause before returning.
-   */
-   public static void pause(long delay) {
-      try {Thread.sleep(delay);} catch (InterruptedException ie) {}
-   }
-
    /**
    * Moves the RCX robot forward until stop() is called.
    *
@@ -231,6 +236,9 @@ public class TimingNavigator implements Navigator {
    * @see Navigator.forward().
    */
    public void stop() {
+      // Only call interrupt if travelling
+      if(travel == true)
+         sleepThread.interrupt();
       left.stop();
       right.stop();
       // Recalculate x-y coordinates based on Timer results
