@@ -29,6 +29,18 @@ typedef union
 #define word2obj(WORD_)     ((Object *) (WORD_))
 #define obj2word(OBJ_)      ((STACKWORD) (OBJ_))
 
+#ifdef EMULATE
+
+#define ptr2word(PTR_)  ((STACKWORD) (PTR_))
+#define word2ptr(WRD_)  ((void *) (WRD_))
+
+#else
+
+#define ptr2word(PTR_)  ((STACKWORD) (TWOBYTES) (PTR_))
+#define word2ptr(WRD_)  ((void *) (TWOBYTES) (WRD_))
+
+#endif
+
 #endif _TYPES_H
 
 

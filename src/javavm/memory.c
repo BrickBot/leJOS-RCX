@@ -184,6 +184,7 @@ Object *new_multi_array (byte elemType, byte totalDimensions,
 {
   STACKWORD numElements;
   Object *ref;
+  Object *ref2;
 
   #ifdef VERIFY
   assert (totalDimensions >= 1, MEMORY6);
@@ -200,26 +201,25 @@ Object *new_multi_array (byte elemType, byte totalDimensions,
     return null;
   while (--numElements >= 0)
   {
-    set_array_word ((byte *) ref, 4, numElements, 
-      (STACKWORD) new_multi_array (elemType, 
-         totalDimensions - 1, reqDimensions - 1));
+    ref2 = new_multi_array (elemType, totalDimensions - 1, reqDimensions - 1);
+    set_array_word ((byte *) ref, 4, numElements, ptr2word (ref2));
   }
   return ref;
 }
 
-STACKWORD make_word (byte *ptr, byte aSize)
+void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr)
 {
-  STACKWORD result = 0;
+  STACKWORD auxword = 0;
 
-  while (aSize--)
-  {
-    result = result << 8;
-    result |= *ptr++;
+  while (true)
+  {  
+    auxword *= 0x100;
+    auxword |= *(ptr++);    
   }
-  return result;
+  *aWordPtr = auxword;
 }
 
-void copy_word (byte *ptr, byte aSize, STACKWORD aWord)
+void save_word (byte *ptr, byte aSize, STACKWORD aWord)
 {
   while (aSize--)
   {

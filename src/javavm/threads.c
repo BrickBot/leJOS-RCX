@@ -57,17 +57,17 @@ inline void set_monitor_count (Object *obj, byte count)
 
 void init_thread (Thread *thread)
 {
-  thread->stackFrameArray = (REFERENCE) new_primitive_array (T_STACKFRAME, MAX_STACK_FRAMES);
-  thread->stackArray = (REFERENCE) new_primitive_array (T_INT, STACK_SIZE);
+  thread->stackFrameArray = ptr2word (new_primitive_array (T_STACKFRAME, MAX_STACK_FRAMES));
+  thread->stackArray = ptr2word (new_primitive_array (T_INT, STACK_SIZE));
   thread->stackFrameArraySize = 0;
   thread->state = STARTED;
   if (currentThread == null)
   {
     currentThread = thread;
-    thread->nextThread = (REFERENCE) thread;
+    thread->nextThread = ptr2word (thread);
   }
   thread->nextThread = currentThread->nextThread;
-  currentThread->nextThread = (REFERENCE) thread;
+  currentThread->nextThread = ptr2word (thread);
 }
 
 /**
@@ -96,14 +96,14 @@ void switch_thread()
   stackFrame->stackTop = stackTop;
   // Loop until a RUNNING frame is found
  LABEL_TASKLOOP:
-  nextThread = (Thread *) currentThread->nextThread;
+  nextThread = (Thread *) word2ptr (currentThread->nextThread);
   if (nextThread->state == WAITING)
   {
     #ifdef VERIFY
     assert (nextThread->waitingOn != JNULL, THREADS3);
     #endif
 
-    if (get_thread_id((Object *) (nextThread->waitingOn)) == NO_OWNER)
+    if (get_thread_id((Object *) word2ptr (nextThread->waitingOn)) == NO_OWNER)
     {
       nextThread->state = RUNNING;
       #ifdef SAFE
@@ -120,16 +120,16 @@ void switch_thread()
       return;
     }
     #if REMOVE_DEAD_THREADS
-    free_array ((Object *) nextThread->stackFrameArray);
-    free_array ((Object *) nextThread->stackArray);
+    free_array ((Object *) word2ptr (nextThread->stackFrameArray));
+    free_array ((Object *) word2ptr (nextThread->stackArray));
 
     #ifdef SAFE
     nextThread->stackFrameArray = JNULL;
     nextThread->stackArray = JNULL;
     #endif SAFE
 
-    nextThread = (Thread *) nextThread->nextThread;
-    currentThread->nextThread = (REFERENCE) nextThread;
+    nextThread = (Thread *) word2ptr (nextThread->nextThread);
+    currentThread->nextThread = ptr2word (nextThread);
     #endif REMOVE_DEAD_THREADS
   }
   else
@@ -164,7 +164,7 @@ void enter_monitor (Object* obj)
   if (owner != NO_OWNER && tid != owner)
   {
     currentThread->state = WAITING;
-    currentThread->waitingOn = (REFERENCE) obj;
+    currentThread->waitingOn = ptr2word (obj);
     // Gotta yield
     switch_thread();
     return;
