@@ -55,9 +55,9 @@ public class Button
   public final void waitForPressAndRelease() throws InterruptedException
   {
     while (!isPressed())
-      	Thread.sleep(SLEEPTIME);
+      	Thread.sleep(SLEEP_TIME);
     while (isPressed())
-    	Thread.sleep(SLEEPTIME);
+    	Thread.sleep(SLEEP_TIME);
   }
 
   /**
