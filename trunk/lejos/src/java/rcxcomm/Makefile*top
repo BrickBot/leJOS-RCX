@@ -1,0 +1,5 @@
+
+default:
+	cd src; make
+	cd classes; make
+	cd rcxclasses; make
