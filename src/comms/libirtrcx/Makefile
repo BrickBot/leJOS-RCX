@@ -43,6 +43,7 @@ ifneq (,$(findstring darwin,$(OSTYPE)))
 	OSX_USB=osx_usb
 	LIBS += -framework IOKit -framework CoreFoundation
 	FIRMDL_OBJ += osx_usb.o
+        CFLAGS += -g
 else
 	OSX_USB=
 endif
