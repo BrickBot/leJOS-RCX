@@ -1,0 +1,20 @@
+/*
+ * This is an NQC program that sends messages to other RCXs.
+ * @author Jürgen Stuber
+ */
+task main()
+{
+	int message = 1;
+
+	while (true) {
+		SetUserDisplay(message,0);
+		SendMessage (message);
+		if (message < 255) {
+			message++;
+		} else {
+			message = 1;
+		}
+
+		Wait (20);
+	}
+}

@@ -1,0 +1,9 @@
+The subdirectories contain examples for sending RIS- and NQC-compatible
+F7 messages using josx.platform.rcx.Message.
+For comparison and testing NQC programs are also provided.
+You can mix the various programs and programming languages.
+
+- receiver: receive messages and display their value
+- sender: send messages 1..255 every 200ms in a loop
+- pingpong: send received message increased by one, looping through 1..255
+    pingpong.nqc needs RCX2 firmware for fast timer
