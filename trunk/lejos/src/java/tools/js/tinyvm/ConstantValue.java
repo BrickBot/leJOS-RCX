@@ -164,7 +164,7 @@ public class ConstantValue extends WritableDataWithOffset
          else if (_value instanceof String)
          {
             byte[] bytes = ((String) _value).getBytes();
-            writer.write(bytes, 0, bytes.length);
+            writer.write(bytes);
          }
          else
          {

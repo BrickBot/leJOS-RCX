@@ -31,7 +31,7 @@ public class CodeSequence extends WritableDataWithOffset
             _logger.log(Level.WARNING, "Not writing code sequence");
             return;
          }
-         aOut.write(iBytes, 0, iBytes.length);
+         aOut.write(iBytes);
       }
       catch (IOException e)
       {
