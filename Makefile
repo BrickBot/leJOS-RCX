@@ -13,7 +13,7 @@ TEMP=/usr/tmp
 
 export CLASSPATH
 
-default: check all_jtools all_ctools core_classes tinyvm_emul
+default: check all_jtools all_ctools core_classes tinyvm_emul all_ctools
 
 all: default tinyvm_bin
 
@@ -39,7 +39,8 @@ check_release:
 	echo TINYVM_HOME=${TINYVM_HOME}
 	echo Location of tvmc=`which tvmc`
 	echo Location of tvmld=`which tvmld`
-	which tvmc; make; 
+	which tvmc;
+	make
 	cd regression; ./run.sh
 
 all_jtools: java_tools generated_files java_loader
