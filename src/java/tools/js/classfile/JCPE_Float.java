@@ -49,9 +49,11 @@ public class JCPE_Float extends JConstantPoolEntry
   {
     if (aObj instanceof  JCPE_Float)
     {
+      if (aObj == this)
+	return true;
       float pOther = ((JCPE_Float) aObj).iValue;
-      return (iValue == pOther ||
-              (Float.isNaN(iValue) && Float.isNaN(pOther)));
+      // Note: NaN is not equal to anything.
+      return (iValue == pOther);
     }
     return false;
   }
