@@ -42,7 +42,8 @@ void poll_sensors( void)
     }
   }
 
-  // See if the Poll instance is interested    
-  poll_inputs();
+  // See if the Poll instance is interested 
+  if (should_poll())   
+    poll_inputs();
 }
 

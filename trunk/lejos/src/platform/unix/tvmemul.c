@@ -19,6 +19,7 @@
 #include "exceptions.h"
 #include "load.h"
 #include "trace.h"
+#include "poll.h"
 #include "platform_hooks.h"
 
 #define MEMORY_SIZE 8192 /* 16 Kb */
@@ -68,6 +69,7 @@ void run(void)
   int count = 0;
   #endif
 
+  init_poller();
   // Initialize binary image state
   initialize_binary();
   // Initialize memory

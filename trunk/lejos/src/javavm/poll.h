@@ -17,12 +17,21 @@ typedef struct S_Poll
   JSHORT changed;            // Mask of inputs that have changed
 } Poll;
 
+extern void init_poller();
 extern void set_poller(Poll*);
 extern void poll_inputs();
+extern Poll *poller;
 extern int throttle;
 extern FOURBYTES next_poll_time;
 
-// This really ough to be driven by interrupts from the
+// If we're not polling or somone already has the monitor
+// return.
+static boolean inline should_poll()
+{
+  return poller && get_monitor_count((&(poller->_super))) == 0;
+}
+
+// This really ought to be driven by interrupts from the
 // hardware. For now just throttle it.
 static inline void do_poll()
 {

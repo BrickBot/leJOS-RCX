@@ -172,42 +172,40 @@ boolean array_store_helper()
  */
 void engine()
 {
-  register short numOpcodes = 1;
+  register short numOpcodes = 1;  // Force switch_thread() call
 
   gMakeRequest = false;  
 
  LABEL_ENGINELOOP: 
-  do
+  // Poll various bits of hardware
+  do_poll();
+    
+  if (gMakeRequest)
   {
-    // Poll various bits of hardware
-    do_poll();
-      
-    if (gMakeRequest)
+    gMakeRequest = false;
+    switch (gRequestCode)
     {
-      gMakeRequest = false;
-      switch (gRequestCode)
-      {
-        case REQUEST_SWITCH_THREAD:
-          numOpcodes=1;
-          break;
-        case REQUEST_EXIT:
-          return;
-      }
+      case REQUEST_SWITCH_THREAD:
+        numOpcodes=1;
+        break;
+      case REQUEST_EXIT:
+        return;
     }
-  
-    if (currentThread == null || !(--numOpcodes))
-    {
-      #if DEBUG_THREADS
-      printf ("switching thread: %d\n", (int) numOpcodes);
-      #endif
-      switch_thread();
-      #if DEBUG_THREADS
-      printf ("done switching thread\n");
-      #endif
-      numOpcodes = OPCODES_PER_TIME_SLICE;
-    }
+  }
 
-  } while (currentThread == null);	// No runnable thread
+  if (currentThread == null || !(--numOpcodes))
+  {
+    #if DEBUG_THREADS
+    printf ("switching thread: %d\n", (int) numOpcodes);
+    #endif
+    switch_thread();
+    #if DEBUG_THREADS
+    printf ("done switching thread\n");
+    #endif
+    numOpcodes = OPCODES_PER_TIME_SLICE;
+    if (currentThread == null)
+    	goto LABEL_ENGINELOOP;
+  }
 
   //-----------------------------------------------
   // SWITCH BEGINS HERE

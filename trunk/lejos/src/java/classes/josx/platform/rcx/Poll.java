@@ -74,7 +74,7 @@ public class Poll
 	 * Unless you are using rotation sensors bigger values
 	 * are probably fine.
 	 */
-	public native final void setThrottle(int throttle);
+	public static native final void setThrottle(int throttle);
 
 	/**
 	 * Sets up and starts the the poller in the kernel.

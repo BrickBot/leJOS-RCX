@@ -2,11 +2,18 @@
 #include "sensors.h"
 #include "threads.h"
 
-Poll *poller = 0;
+Poll *poller;
 short old_sensor_values[3];
 short old_st;
-int throttle = 1;
-FOURBYTES next_poll_time = 0;
+int throttle;
+FOURBYTES next_poll_time;
+
+void init_poller()
+{
+  poller = null;
+  throttle = 3;
+  next_poll_time = 0;
+}
 
 void set_poller(Poll *_poller)
 {
@@ -25,11 +32,6 @@ void poll_inputs()
   short i;
   short *pOldValue = old_sensor_values;
   sensor_t *pSensor = &sensors[0];
-
-  // If we're not polling or somone already has the monitor
-  // return.
-  if (!poller || get_monitor_count((&(poller->_super))) != 0)
-    return;
 
   // We do not have a thread that we can use to grab
   // the monitor but that's OK because we are atomic
