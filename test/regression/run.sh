@@ -7,8 +7,6 @@ export CLASSPATH=.
 export PATH=../bin:$PATH
 
 # allow core dump
-ulimit -c unlimited
-rm -f core
 
 rm $OUT_FILE
 for i in $TEST_CLASSES
@@ -19,7 +17,6 @@ do
   emu-lejos $i -o $i.tvm
   echo ------------------ Running $i
   echo "----------------- Run of $i.tvm" >> $OUT_FILE
-  trap "" SIGSEGV
   emu-lejosrun $i.tvm >> $OUT_FILE 2>&1
   if [ -f core ];
   then

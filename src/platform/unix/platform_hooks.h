@@ -18,16 +18,14 @@ extern int last_ad_time;
 
 static inline void instruction_hook()
 {
-  if( get_sys_time_impl() != last_sys_time){
-    last_sys_time = get_sys_time_impl();
-    gMakeRequest = true;
-  }
+  gMakeRequest = true;
 }
 
 static inline void tick_hook()
 {
-  if( get_sys_time_impl() >= last_ad_time + 3){
-    last_ad_time = get_sys_time_impl();
+  register int st = get_sys_time_impl();
+  if( st >= last_ad_time + 3){
+    last_ad_time = st;
     poll_sensors();
     poll_inputs();
   }

@@ -51,13 +51,9 @@ int main (int argc, char **argv)
   printf ("#endif\n");	
   printf ("#define FP_ARITHMETIC 1\n");	
   printf ("#define PLATFORM_HANDLES_SWITCH_THREAD 0\n");
-  printf ("#define TICKS_PER_TIME_SLICE          20\n");
+  printf ("#define TICKS_PER_TIME_SLICE          140 // Actually instructions per timeslice\n");
   printf ("#define VERIFY\n");
   printf ("#define RECORD_REFERENCES 1\n");
-  printf ("\n");
-  printf ("#define DEBUG_BYTECODE 0\n");
-  printf ("#define DEBUG_THREADS 0\n");
-  printf ("#define DEBUG_METHODS 0\n");
   printf ("\n");
   printf ("#endif // _PLATFORM_CONFIG_H\n");		
   return 0;
