@@ -48,20 +48,6 @@ case OP_IFGT:
   goto LABEL_ENGINELOOP;
 
 
-case OP_DCMPL:
-case OP_DCMPG:
-  // TBD: no distinction between opcodes
-  {
-    STACKWORD wrd1;
-    STACKWORD wrd2;
-
-    wrd2 = pop_word();
-    just_pop_word();
-    wrd1 = pop_word();
-    just_pop_word();
-    do_fcmp (word2jfloat(wrd1), word2jfloat (wrd2), 0);
-  }
-  goto LABEL_ENGINELOOP;
 case OP_JSR:
   // Arguments: 2
   // Stack: +1
@@ -84,6 +70,21 @@ case OP_RET:
   goto LABEL_ENGINELOOP;
 
 #if FP_ARITHMETIC
+
+case OP_DCMPL:
+case OP_DCMPG:
+  // TBD: no distinction between opcodes
+  {
+    STACKWORD wrd1;
+    STACKWORD wrd2;
+
+    wrd2 = pop_word();
+    just_pop_word();
+    wrd1 = pop_word();
+    just_pop_word();
+    do_fcmp (word2jfloat(wrd1), word2jfloat (wrd2), 0);
+  }
+  goto LABEL_ENGINELOOP;
 
 case OP_FCMPL:
 case OP_FCMPG:

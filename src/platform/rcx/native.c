@@ -14,7 +14,7 @@
 #include "exceptions.h"
 #include "systime.h"
 
-#include <rom.h>
+#include <rom.h> // Requires librcx
 
 static sensor_t sensors[3];
 

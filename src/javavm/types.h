@@ -4,7 +4,6 @@
 #ifndef _TYPES_H
 #define _TYPES_H
 
-typedef unsigned char byte;
 typedef byte boolean;
 
 /*
@@ -44,6 +43,7 @@ typedef struct
 #define word2jfloat(WORD_)  (((AuxConvUnion1) (WORD_)).fnum)
 #define byte2jint(BYTE_)    ((JINT) (signed char) (BYTE_))
 #define word2jint(WORD_)    ((JINT) (WORD_))
+#define word2jshort(WORD_)  ((JSHORT) (WORD_))
 #define word2obj(WORD_)     ((Object *) word2ptr(WORD_))
 #define obj2word(OBJ_)      ptr2word(OBJ_)
 #define obj2ref(OBJ_)       ptr2ref(OBJ_)

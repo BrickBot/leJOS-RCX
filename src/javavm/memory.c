@@ -202,6 +202,11 @@ Object *new_multi_array (byte elemType, byte totalDimensions,
 {
   Object *ref;
 
+  #ifdef WIMPY_MATH
+  Object *aux;
+  TWOBYTES ne;
+  #endif
+
   #ifdef VERIFY
   assert (totalDimensions >= 1, MEMORY6);
   assert (reqDimensions <= totalDimensions, MEMORY8);
@@ -221,26 +226,62 @@ Object *new_multi_array (byte elemType, byte totalDimensions,
   if (totalDimensions == 1)
     return new_primitive_array (elemType, *numElemPtr);
 
+
   ref = new_primitive_array (T_REFERENCE, *numElemPtr);
   if (ref == JNULL)
     return JNULL;
+
   while ((*numElemPtr)--)
   {
-    ref_array(ref)[*numElemPtr] = ptr2word (
-      new_multi_array (elemType, totalDimensions - 1, reqDimensions - 1,
-      numElemPtr + 1));
+    #ifdef WIMPY_MATH
+
+    aux = new_multi_array (elemType, totalDimensions - 1, reqDimensions - 1,
+      numElemPtr + 1);
+    ne = *numElemPtr;
+    ref_array(ref)[ne] = ptr2word (aux);
+
+    #else
+
+    ref_array(ref)[*numElemPtr] = ptr2word (new_multi_array (elemType, totalDimensions - 1, reqDimensions - 1, numElemPtr + 1));
+
+    #endif WIMPY_MATH
   }
+
+
   return ref;
 }
+
+#ifdef WIMPY_MATH
+
+void store_word (byte *ptr, byte aSize, STACKWORD aWord)
+{
+  byte *wptr;
+  byte ctr;
+
+  wptr = &aWord;
+  ctr = aSize;
+  while (ctr--)
+  {
+    #if LITTLE_ENDIAN
+    ptr[ctr] = wptr[aSize-ctr-1];
+    #else
+    ptr[ctr] = wptr[ctr];
+    #endif LITTLE_ENDIAN
+  }
+}
+
+#else
 
 void store_word (byte *ptr, byte aSize, STACKWORD aWord)
 {
   while (aSize--)
   {
-    ptr[aSize] = (byte) (aWord & 0xFF);
+    ptr[aSize] = (byte) aWord;
     aWord = aWord >> 8;
   }
 }
+
+#endif WIMPY_MATH
 
 typedef union 
 {
@@ -289,68 +330,6 @@ void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr)
 // 2. First 2 bytes of free block is size.
 // 3. Second 2 bytes of free block is abs. offset of next free block.
 
-// /**
-//  * @param ptr Beginning of heap.
-//  * @param size Size of heap in 2-byte words.
-//  */
-// void init_memory (void *ptr, TWOBYTES size)
-// {
-//   #ifdef VERIFY
-//   memoryInitialized = true;
-//   #endif
-// 
-//   startPtr = ptr;
-//   freeOffset = NULL_OFFSET;
-//   #if DEBUG_MEMORY
-//   printf ("Setting start of memory to %d\n", (int) startPtr);
-//   printf ("Going to reserve %d words\n", size);
-//   #endif
-//   deallocate (startPtr, size);
-// }
-// 
-// /**
-//  * @param size Size of object in 2-byte words.
-//  */
-// TWOBYTES *allocate (TWOBYTES size)
-// {
-//   register TWOBYTES *ptr;
-//   TWOBYTES *anchorOffsetRef;
-// 
-//   #if DEBUG_MEMORY
-//   printf ("Allocating %d words.\n", size);
-//   #endif
-//   anchorOffsetRef = &freeOffset;
-//   while (*anchorOffsetRef != NULL_OFFSET)
-//   { 
-//     ptr = startPtr + *anchorOffsetRef;
-//     if (ptr[0] >= size + 2)
-//     {
-//       ptr[0] = ptr[0] - size;
-//       return ptr + ptr[0];
-//     }
-//     if (ptr[0] >= size)
-//     {
-//       // This is necessary or we could run out of memory.
-//       *anchorOffsetRef = ptr[1]; 
-//       return ptr;     
-//     }
-//     anchorOffsetRef = &(ptr[1]);
-//   }
-//   #if DEBUG_MEMORY
-//   printf ("No more memory!");
-//   #endif
-//   return null;      
-// }
-// 
-// void deallocate (TWOBYTES *ptr, TWOBYTES size)
-// {
-//   // TBD: consolidate free blocks
-//   ptr[0] = size;
-//   ptr[1] = freeOffset;
-//   freeOffset = ptr - startPtr;
-// }
-//
- 
 #if DEBUG_RCX_MEMORY
 
 void scan_memory (TWOBYTES *numNodes, TWOBYTES *biggest, TWOBYTES *freeMem)
@@ -427,6 +406,4 @@ void deallocate (TWOBYTES *ptr, TWOBYTES size)
   
   ptr[0] = size;
 }
-
-
 

@@ -5,6 +5,7 @@
 
 // Basic types
 
+typedef unsigned char byte;
 typedef signed char JBYTE;
 typedef signed short JSHORT;
 typedef signed long JINT;

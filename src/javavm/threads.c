@@ -37,7 +37,9 @@ StackFrame *current_stackframe()
 
 inline byte get_thread_id (Object *obj)
 {
-  return (byte) ((obj->syncInfo & THREAD_MASK) >> THREAD_SHIFT);
+  TWOBYTES aux;
+  aux = obj->syncInfo & THREAD_MASK;
+  return (byte) (aux >> THREAD_SHIFT);
 }
 
 inline void set_thread_id (Object *obj, byte threadId)
@@ -230,7 +232,7 @@ boolean switch_thread()
       // Put stack ptr at the beginning of the stack so we can push arguments
       // to entry methods. This assumes set_top_word or set_top_ref will
       // be called immediately below.
-      init_stack_ptr_and_push_void();
+      init_sp_pv();
       currentThread->state = RUNNING;
       if (currentThread == bootThread)
       {
@@ -240,7 +242,7 @@ boolean switch_thread()
         // Initialize top word with fake parameter for main():
         set_top_ref (JNULL);
         // Push stack frame for main method:
-        dispatch_special (classRecord, find_method (classRecord, MAIN_V), null);
+        dispatch_special (find_method (classRecord, MAIN_V), null);
         // Push another if necessary for the static initializer:
         dispatch_static_initializer (classRecord, pc);
       }
@@ -338,8 +340,6 @@ void exit_monitor (Object* obj)
     set_thread_id (obj, NO_OWNER);
   set_monitor_count (obj, newMonitorCount);
 }
-
-
 
 
 

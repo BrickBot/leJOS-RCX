@@ -17,10 +17,6 @@
 #include "stack.h"
 #include "platform_hooks.h"
 
-#ifdef VERIFY
-boolean classesInitialized = false;
-#endif
-
 #if 0
 #define get_stack_object(MREC_)  ((Object *) get_ref_at ((MREC_)->numParameters - 1))
 #endif
@@ -75,7 +71,7 @@ boolean dispatch_static_initializer (ClassRecord *aRec, byte *retAddr)
   printf ("dispatch_static_initializer: has clinit: %d, %d\n",
           (int) aRec, (int) retAddr);
   #endif
-  dispatch_special (aRec, find_method (aRec, _CLINIT__V), retAddr);
+  dispatch_special (find_method (aRec, _CLINIT__V), retAddr);
   return true;
 }
 
@@ -105,7 +101,7 @@ void dispatch_virtual (Object *ref, TWOBYTES signature, byte *retAddr)
     auxByte = tempClassRecord->parentClass;
     goto LABEL_METHODLOOKUP;
   }
-  if (dispatch_special (tempClassRecord, auxMethodRecord, retAddr))
+  if (dispatch_special (auxMethodRecord, retAddr))
   {
     if (is_synchronized(auxMethodRecord))
     {
@@ -135,8 +131,7 @@ void dispatch_special_checked (byte classIndex, byte methodIndex,
   classRecord = get_class_record (classIndex);
   if (dispatch_static_initializer (classRecord, btAddr))
     return;
-  dispatch_special (classRecord, get_method_record (classRecord, methodIndex),
-                    retAddr);
+  dispatch_special (get_method_record (classRecord, methodIndex), retAddr);
 }
 
 /**
@@ -145,8 +140,7 @@ void dispatch_special_checked (byte classIndex, byte methodIndex,
  * @param retAddr What the PC should be upon return.
  * @return true iff the stack frame was pushed.
  */
-boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord, 
-                          byte *retAddr)
+boolean dispatch_special (MethodRecord *methodRecord, byte *retAddr)
 {
   #if DEBUG_METHODS
   int debug_ctr;
@@ -161,8 +155,8 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   #endif
 
   #if DEBUG_METHODS
-  printf ("dispatch_special: %d, %d, %d\n", 
-          (int) classRecord, (int) methodRecord, (int) retAddr);
+  printf ("dispatch_special: %d, %d\n", 
+          (int) methodRecord, (int) retAddr);
   printf ("-- signature id = %d\n", methodRecord->signatureId);
   printf ("-- code offset  = %d\n", methodRecord->codeOffset);
   printf ("-- flags        = %d\n", methodRecord->mflags);
@@ -218,7 +212,7 @@ boolean dispatch_special (ClassRecord *classRecord, MethodRecord *methodRecord,
   printf ("pc set to 0x%X\n", (int) pc);
   #endif
 
-  init_stack_ptr (stackFrame, methodRecord);
+  init_sp (stackFrame, methodRecord);
   update_constant_registers (stackFrame);
   
   //printf ("m %d stack = %d\n", (int) methodRecord->signatureId, (int) (localsBase - stack_array())); 

@@ -33,6 +33,9 @@ case OP_IREM:
 case OP_INEG:
   just_set_top_word (-word2jint(get_top_word()));
   goto LABEL_ENGINELOOP;
+
+#if FP_ARITHMETIC
+
 case OP_FSUB:
   just_set_top_word (jfloat2word(-word2jfloat(get_top_word())));
   // Fall through!
@@ -78,6 +81,8 @@ case OP_DDIV:
   just_set_top_word (jfloat2word(word2jfloat(get_top_word()) /
                     word2jfloat(tempStackWord)));
   goto LABEL_ENGINELOOP;
+
+#endif FP_ARITHMETIC
 
 // Notes:
 // - Not supported: LADD, LSUB, LMUL, LREM, FREM, DREM

@@ -15,7 +15,7 @@
 #define get_top_word()             (stackTop[0])
 #define get_top_ref()              (stackTop[0])
 #define get_word_at(DOWN_)         (*(stackTop-(DOWN_)))
-#define get_ref_at(DOWN_)          (*(stackTop-(DOWN_)))
+#define get_ref_at(DOWN_)          *(stackTop-(DOWN_))
 #define get_stack_ptr()            (stackTop)
 #define get_stack_ptr_at(DOWN_)    (stackTop-(DOWN_))
 #define get_is_ref_ptr()           (isReference)
@@ -32,7 +32,7 @@ extern boolean   *isReferenceBase;
 /**
  * Clears the operand stack for the given stack frame.
  */
-static inline void init_stack_ptr (StackFrame *stackFrame, MethodRecord *methodRecord)
+static inline void init_sp (StackFrame *stackFrame, MethodRecord *methodRecord)
 {
   stackTop = stackFrame->localsBase + methodRecord->numLocals - 1;
   isReference = stackFrame->isReferenceBase + methodRecord->numLocals - 1;
@@ -43,7 +43,7 @@ static inline void init_stack_ptr (StackFrame *stackFrame, MethodRecord *methodR
  * and pushes a void (unitialized) element, which should be overriden
  * immediately with set_top_word or set_top_ref.
  */
-static inline void init_stack_ptr_and_push_void()
+static inline void init_sp_pv (void)
 {
   stackTop = stack_array();
   isReference = is_reference_array();
@@ -72,6 +72,8 @@ static inline void update_registers (StackFrame *stackFrame)
   isReference = stackFrame->isReference;
   isReferenceBase = stackFrame->isReferenceBase;
 }
+
+/**--**/
 
 static inline void update_constant_registers (StackFrame *stackFrame)
 {
