@@ -89,7 +89,7 @@ public class TinyVM extends TinyVMTool
       }
       finally
       {
-         if (stream instanceof OutputStream)
+         if (stream instanceof FileOutputStream)
          {
             try
             {
