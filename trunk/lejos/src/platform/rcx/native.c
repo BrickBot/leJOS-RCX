@@ -14,9 +14,7 @@
 #include "exceptions.h"
 #include "systime.h"
 
-#include <rom.h> // Requires librcx
-
-static sensor_t sensors[3];
+sensor_t sensors[3];
 
 extern void reset_rcx_serial();
 
@@ -157,7 +155,6 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
           sensor_t *sensor;
 	  
 	  sensor = &(sensors[pId]);
-	  read_sensor (0x1000 + pId, sensor);	  
 	  switch ((byte) paramBase[1])
 	  {
 	    case 0:

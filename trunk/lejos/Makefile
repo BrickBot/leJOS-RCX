@@ -2,8 +2,8 @@
 SHELL=/bin/sh
 CLASSPATH=jtools
 
-JAVAC=jikes -bootclasspath c:/jdk1.3/jre/lib/rt.jar
-#JAVAC=javac
+#JAVAC=jikes -bootclasspath c:/jdk1.3/jre/lib/rt.jar
+JAVAC=javac
 JAVADOC=javadoc
 JAVA=java
 TEMP=/usr/tmp
@@ -66,7 +66,7 @@ remove_useless_files_win:
 	rm -rf `find . -name '*.lst'`
 	rm -rf `find . -name 'core'`
 	/bin/strip `find . -name '*.exe'`
-	
+
 check:
 	@if [ "${TINYVM_HOME}" != "" ]; then \
 	  echo "Note: The TINYVM_HOME variable is no longer needed"; \
