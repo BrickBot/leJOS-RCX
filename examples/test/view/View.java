@@ -1,133 +1,97 @@
-
+import java.lang.System;
 import josx.platform.rcx.*;
 
 /**
  * This program can be used to test each sensor and motor
- * independently.<br>
- * Button functionality:<br>
+ * independently.<p>
+ * Button functionality:
  * <ul>
  * <li> VIEW:<br>
- *   Select a device.
+ *   Select a port.
  * <li> PRGM:<br>
- *   Sensors: switch type of input (0 = raw, 1 = pct, 2 = boolean).<br>
- *   Motors : select power.
+ *   Sensor ports:
+ *   select input type/mode: touch/raw (0), touch/bool (1), touch/edge (2),
+ *     touch/pulse (3), light/pct (4), rot/angle (5),
+ *     temp/degc (6), temp/degf (7)<br>
+ *   Motor ports : select power.
  * <li> RUN:<br>
- *   Sensors: activate (1) or passivate (0).<br>
- *   Motors : forward (1), backward (2), or stop (0).
+ *   Sensor ports: passive (0), active (1).<br>
+ *   Motor ports : float (0), forward (1), backward (2), brake (3).<br>
+ *   Press longer than 0.5s to terminate the program.
  * </ul>
- */
-public class View implements Segment, SensorConstants
-{
-  static final Object[] DEVICES = new Object[] { Sensor.S1, Sensor.S2, Sensor.S3,
-				                 Motor.A, Motor.B, Motor.C };
-  static final int VIEW_SEGMENT[][] = 
-  { 
-     { SENSOR_1_VIEW, SENSOR_2_VIEW, SENSOR_3_VIEW,
-       MOTOR_A_VIEW, MOTOR_B_VIEW, MOTOR_C_VIEW },
-     { SENSOR_1_ACTIVE, SENSOR_2_ACTIVE, SENSOR_3_ACTIVE,
-       MOTOR_A_FWD, MOTOR_B_FWD, MOTOR_C_FWD },
-     { SENSOR_1_ACTIVE, SENSOR_2_ACTIVE, SENSOR_3_ACTIVE,
-       MOTOR_A_REV, MOTOR_B_REV, MOTOR_C_REV }
-  };
-                         
-  static int iRunState[] = new int[6];
-  static int iRunMode[] = new int[6];
-  static int iCurrentDevice;
-  
-  static void runPressed()
-  {
-    Object pDevice = DEVICES[iCurrentDevice];
-    int pTop = (pDevice instanceof Sensor) ? 2 : 3;
-    iRunState[iCurrentDevice]++;
-    if (iRunState[iCurrentDevice] >= pTop)
-      iRunState[iCurrentDevice] = 0;
-  }
+ * */
 
+public class View
+{
+  static final int QUIT_DELAY = 500 /* ms */;
+
+  static final PortView[] VIEWS =
+    new PortView[] { SensorView.S1, SensorView.S2, SensorView.S3,
+                     MotorView.A, MotorView.B, MotorView.C };
+
+  static int iCurrentView;
+  
   static void viewPressed()
   {
-    iCurrentDevice++;
-    if (iCurrentDevice >= DEVICES.length)
-      iCurrentDevice = 0;
+    iCurrentView++;
+    if (iCurrentView >= VIEWS.length)
+      iCurrentView = 0;
   }
 
   static void prgmPressed()
   {
-    Object pDevice = DEVICES[iCurrentDevice];
-    int pTop = (pDevice instanceof Sensor) ? 3 : 8;
-    iRunMode[iCurrentDevice]++;
-    if (iRunMode[iCurrentDevice] >= pTop)
-      iRunMode[iCurrentDevice] = 0;
+    VIEWS[iCurrentView].prgmPressed();
   }
 
-  static void updateRCX()
+  static void runPressed()
   {
-    Object pDevice = DEVICES[iCurrentDevice];
-    int pRunState = iRunState[iCurrentDevice];
-    int pRunMode = iRunMode[iCurrentDevice];
+    VIEWS[iCurrentView].runPressed();
+  }
+
+  static void show()
+  {
     LCD.clear();
-    LCD.setSegment (VIEW_SEGMENT[pRunState][iCurrentDevice]);
-    updateValue();
-    if (pDevice instanceof Sensor)
-    {
-      Sensor s = (Sensor) pDevice;
-      if (pRunState == 0)
-        s.passivate();
-      else if (pRunState == 1)
-        s.activate();
-      if (pRunMode == 0)
-	s.setTypeAndMode (SENSOR_TYPE_LIGHT, SENSOR_MODE_RAW);
-      else if (pRunMode == 1)
-	s.setTypeAndMode (SENSOR_TYPE_LIGHT, SENSOR_MODE_PCT);
-      else if (pRunMode == 2)
-	s.setTypeAndMode (SENSOR_TYPE_TOUCH, SENSOR_MODE_BOOL);	    
-      LCD.showProgramNumber (pRunMode);
+    for( int i=0; i<VIEWS.length; i++){
+      if( i == iCurrentView){
+        VIEWS[i].showCursor();
+        VIEWS[i].showValues();
+      }
+      VIEWS[i].showPort();
     }
-    else
-    { 
-      Motor m = (Motor) pDevice;
-      m.setPower (pRunMode);
-      if (pRunState == 0)
-        m.stop();
-      else if (pRunState == 1)
-        m.forward();
-      else if (pRunState == 2)
-        m.backward();
-      LCD.showNumber (pRunMode);
-      LCD.showProgramNumber (pRunState);
-    }
-  }
-
-  static void updateValue()
-  {
-    Object pDevice = DEVICES[iCurrentDevice];
-    int pRunMode = iRunMode[iCurrentDevice];
-    if (pDevice instanceof Sensor)
-    {
-      LCD.showNumber (((Sensor) pDevice).readValue());
-    }
+    LCD.refresh();
   }
 
   public static void main (String[] arg)
   {
-    updateRCX();
-    for (;;)
+    boolean quit = false;
+
+    iCurrentView = 0;
+    show();
+    while( !quit)
     {
       for (int i = 0; i < 3; i++)
       {
         Button b = Button.BUTTONS[i];
         if (b.isPressed())
-	{
+        {
+          long t = System.currentTimeMillis();
           while (b.isPressed()) { }
+
           if (b == Button.VIEW)
             viewPressed();
           else if (b == Button.PRGM)
             prgmPressed();
           else if (b == Button.RUN)
-            runPressed();
-          updateRCX();
-	}
+            if( (int)System.currentTimeMillis()-(int)t > QUIT_DELAY)
+              quit = true;
+            else
+              runPressed();
+        }
       }
-      updateValue();
+      show();
+    }
+    for( int i=0; i<VIEWS.length; i++){
+      VIEWS[i].shutdown();
     }
   }
 }
