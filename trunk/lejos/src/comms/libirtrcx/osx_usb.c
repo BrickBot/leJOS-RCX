@@ -41,7 +41,7 @@ extern int 			__comm_debug;
 mach_port_t			gMasterPort;
 IOUSBDeviceInterface		**dev = NULL;
 
-static int osx_usb_nbread (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int timeout);
+int osx_usb_nbread (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int timeout);
 
 /* Callback for async read */
 void osx_usb_readComplete(void *refCon, IOReturn result, void *arg0);
@@ -334,7 +334,7 @@ void osx_usb_readComplete(void *refCon, IOReturn result, void *arg0) {
 }
 
 /* Timeout read routine */
-static int osx_usb_nbread (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int timeout)
+int osx_usb_nbread (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int timeout)
 {
     int len = 0;
     SInt32 reason;
@@ -489,6 +489,11 @@ int osx_usb_rcx_send(IOUSBInterfaceInterface **intf, void *buf, int len, int use
     int sum;
     IOReturn			kr;
 
+
+    /* drain buffer */
+    while (osx_usb_nbread(intf, msg, 64, 100) > 0) 
+        ;
+        
     /* Encode message */
 
     msglen = 0;
@@ -544,7 +549,7 @@ int osx_usb_rcx_sendrecv (IOUSBInterfaceInterface **intf, void *send, int slen, 
                 printf("status = %s\n", rcx_strerror(status));
             continue;
         }
-        printf("\n");
+        /* printf("\n"); */
         if ((status = osx_usb_rcx_recv(intf, recv, rlen, timeout, use_comp)) < 0) {
             if (__comm_debug == 1)
                 printf("status = %s\n", rcx_strerror(status));
