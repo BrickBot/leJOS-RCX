@@ -20,10 +20,12 @@ void dumpCommon()
 
   pRec = get_master_record();
   printf ("* MASTER RECORD:\n");
-  printf ("  magic           : 0x%X\n", (int) (pRec->magicNumber));
-  printf ("  constants at    : %d\n", (int) (pRec->constantTableOffset));
-  printf ("  statics at      : %d\n", (int) (pRec->staticFieldsOffset));
-  printf ("  static state at : %d\n", (int) (pRec->staticStateOffset));
+  printf ("  magic            : 0x%X\n", (int) (pRec->magicNumber));
+  printf ("  constants at     : %d\n", (int) (pRec->constantTableOffset));
+  printf ("  statics at       : %d\n", (int) (pRec->staticFieldsOffset));
+  printf ("  static state at  : %d\n", (int) (pRec->staticStateOffset));
+  printf ("  static state len : %d\n", (int) (pRec->staticStateLength));
+  printf ("  last class index : %d\n", (int) (pRec->lastClass));
 }
 
 void dumpFields (ClassRecord *classRecord)

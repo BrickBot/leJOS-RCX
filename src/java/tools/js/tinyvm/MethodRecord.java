@@ -88,6 +88,11 @@ public class MethodRecord implements WritableData, Constants
     initFlags();
   }
 
+  public int getFlags()
+  {
+    return iFlags;
+  }
+  
   public ClassRecord getClassRecord()
   {
     return iClassRecord;

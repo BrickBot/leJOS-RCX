@@ -9,7 +9,6 @@ import js.classfile.*;
  */
 public class Binary implements SpecialClassConstants, SpecialSignatureConstants
 {
-
   // State that is written to the binary:
   final RecordTable iEntireBinary = new Sequence();
 
@@ -17,11 +16,12 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
   final MasterRecord iMasterRecord = new MasterRecord (this);
   final EnumerableSet iClassTable = new EnumerableSet();
   final EnumerableSet iConstantTable = new EnumerableSet();
+  final RecordTable iEntryClassIndices = new Sequence();
   final RecordTable iMethodTables = new Sequence();
   final RecordTable iInstanceFieldTables = new Sequence();
   final RecordTable iStaticFields = new Sequence();
   final RecordTable iExceptionTables = new EnumerableSet();
-  final RecordTable iStaticState = new Sequence();
+  final RecordTable iStaticState = new Sequence (true);
   final RecordTable iCodeSequences = new Sequence();
   final RecordTable iConstantValues = new Sequence();
 
@@ -35,6 +35,12 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     iEntireBinary.dump (aOut);
   }
 
+  public boolean hasMain (String aClassName)
+  {
+    ClassRecord pRec = getClassRecord (aClassName);
+    return pRec.hasMethod (new Signature ("main", "([Ljava/lang/String;)V"), true);  	 
+  }
+  
   public ClassRecord getClassRecord (String aClassName)
   {
     return (ClassRecord) iClasses.get (aClassName);
@@ -64,11 +70,9 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     return (ConstantRecord) iConstantTable.elementAt (aIndex);
   }
 
-  public void processClasses (String aClassName, ClassPath aClassPath)
+  public void processClasses (Vector aEntryClasses, ClassPath aClassPath)
   throws Exception
   {
-    CLASSES[0] = aClassName;
-    int pCounter = 0;
     // Add special classes first
     for (int i = 0; i < CLASSES.length; i++)
     {
@@ -77,9 +81,20 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
       iClasses.put (pName, pRec);
       iClassTable.add (pRec);
     }
-    // Now add the closure
-    // Yes, call size() explicitly in every pass
+    // Now add entry classes
+    int pEntrySize = aEntryClasses.size();
+    for (int i = 0; i < pEntrySize; i++)
+    {
+      String pName = (String) aEntryClasses.elementAt (i);
+      ClassRecord pRec = ClassRecord.getClassRecord (pName, aClassPath, this);
+      iClasses.put (pName, pRec);
+      iClassTable.add (pRec);
+      // Update table of indices to entry classes
+      iEntryClassIndices.add (new EntryClassIndex (this, pName));
+    }      
     Utilities.trace ("Starting with " + iClassTable.size() + " classes.");
+    // Now add the closure.
+    // Yes, call iClassTable.size() in every pass of the loop.
     for (int pIndex = 0; pIndex < iClassTable.size(); pIndex++)
     {
       ClassRecord pRec = (ClassRecord) iClassTable.elementAt(pIndex);
@@ -159,18 +174,20 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
 
   public void storeComponents()
   {
-    // 5 aligned components:
+    // Master record and class table are always the first two:
     iEntireBinary.add (iMasterRecord);
     iEntireBinary.add (iClassTable);
+    // 5 aligned components:
+    iEntireBinary.add (iStaticState);
+    iEntireBinary.add (iStaticFields);
     iEntireBinary.add (iConstantTable);
     iEntireBinary.add (iMethodTables);
     iEntireBinary.add (iExceptionTables);
-    iEntireBinary.add (iStaticFields);
     // 4 unaligned components:
     iEntireBinary.add (iInstanceFieldTables);
-    iEntireBinary.add (iStaticState);
     iEntireBinary.add (iCodeSequences);
     iEntireBinary.add (iConstantValues);
+    iEntireBinary.add (iEntryClassIndices);
   }
 
   public void initOffsets()
@@ -229,12 +246,12 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     Utilities.verbose (2, "Excep tables offset  : " + iExceptionTables.getOffset());
   }
 		       
-  public static Binary createFromClosureOf (String aClassName, ClassPath aClassPath)
+  public static Binary createFromClosureOf (Vector aEntryClasses, ClassPath aClassPath)
   throws Exception
   {
     Binary pBin = new Binary();
     // From special classes and entry class, store closure
-    pBin.processClasses (aClassName, aClassPath);
+    pBin.processClasses (aEntryClasses, aClassPath);
     // Store special signatures
     pBin.processSpecialSignatures();
     pBin.processConstants();

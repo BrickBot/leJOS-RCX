@@ -58,6 +58,11 @@ After 1.0.0alpha3:
 
 - Brian Bagnall wrote the java.lang.Math class.
 
+After 1.0.0alpha4:
+------------------
+
+- Brian Bagnall added the atan(double) method to Math.
+
 
 
 

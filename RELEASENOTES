@@ -1,9 +1,21 @@
 leJOS 1.0.0alpha5:
 ------------------
 
-  - Significant changes to Sensor API. See setTypeAndMode.
+  - Significant changes to Sensor API. Sensor.setTypeAndMode()
+    should be called before using a Sensor. Sensor.getPercentageValue()
+    is no longer there. SensorListener only has one method.
+  - Performance of low-level method readSensorValue has
+    improved by at least a factor of 6.
+  - There is only one global thread that dispatches events to
+    SensorListener's, which will also improve performance
+    considerably, and may even prevent certain race conditions.
+    (Having only one thread for sensor events was once mentioned 
+    by Reinhard Schiedermeier).
   - java.lang.Math.atan(double), contributed by Brian Bagnall.
-  - 
+  - Linker checks whether entry class has a main method.
+  - Forced persistence across runs was taken out, i.e. all memory 
+    is reinitialized every time you rerun a program.
+  - Prgm-On/Off does nothing. Run-On/Off kills a running program.
   
 leJOS 1.0.0alpha4:
 ------------------

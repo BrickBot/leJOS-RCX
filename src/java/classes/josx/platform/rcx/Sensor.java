@@ -26,11 +26,6 @@ public class Sensor
   private static final SensorThread SENSOR_THREAD = new SensorThread();
   
   /**
-   * Array containing all three sensors [0..2].
-   */
-  public static final Sensor[] SENSORS = { Sensor.S1, Sensor.S2, Sensor.S3 };
-
-  /**
    * Sensor labeled 1 on RCX.
    */
   public static final Sensor S1 = new Sensor (0);
@@ -44,6 +39,11 @@ public class Sensor
    * Sensor labeled 3 on RCX.
    */
   public static final Sensor S3 = new Sensor (2);
+
+  /**
+   * Array containing all three sensors [0..2].
+   */
+  public static final Sensor[] SENSORS = { Sensor.S1, Sensor.S2, Sensor.S3 };
 
   /**
    * Reads the canonical value of the sensor.

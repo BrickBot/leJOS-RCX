@@ -7,6 +7,16 @@ public class Sequence extends RecordTable
 {
   final Vector iVector = new Vector();
 
+  public Sequence (boolean aAlign)
+  {
+    super (aAlign);
+  }
+  
+  public Sequence()
+  {
+    super();
+  }
+  
   public void add (WritableData aElement)
   {
     iVector.addElement (aElement);

@@ -8,11 +8,23 @@ public abstract class RecordTable extends WritableDataWithOffset
 implements Constants
 {
   int iLength = -1;
-
+  private boolean iAlign;
+  
   public abstract Enumeration elements();
   public abstract int size();
   public abstract Object elementAt (int aIndex);
   public abstract void add (WritableData aElement);
+  
+  public RecordTable()
+  {
+    this (false);
+  }
+  
+  public RecordTable (boolean aAlign)
+  {
+    super();
+    iAlign = aAlign;	  
+  }
   
   public void dump (ByteWriter aOut)
   throws Exception
@@ -40,6 +52,8 @@ implements Constants
 	}
       }
     }
+    if (iAlign)
+      IOUtilities.writePadding (aOut, 2);
   }
 
   public int getLength()
@@ -53,6 +67,8 @@ implements Constants
       iLength += ((WritableData) pEnum.nextElement()).getLength();
     }
     Utilities.trace ("RT.getLength: " + iLength);
+    if (iAlign)
+      return IOUtilities.adjustedSize (iLength, 2); 
     return iLength;
   }
 

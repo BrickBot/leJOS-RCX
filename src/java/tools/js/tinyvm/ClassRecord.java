@@ -95,6 +95,17 @@ public class ClassRecord implements WritableData, Constants
     return false;
   }
 
+  /**
+   * (Call only after record has been processed).
+   */
+  public boolean hasMethod (Signature aSignature, boolean aStatic)
+  {
+    MethodRecord pRec = (MethodRecord) iMethods.get (aSignature);
+    if (pRec == null)
+      return false;
+    return ((pRec.getFlags() & M_STATIC) == 0) ^ aStatic;
+  }
+
   public void initFlags()
   {
     iFlags = 0;
@@ -367,7 +378,7 @@ public class ClassRecord implements WritableData, Constants
     {
       Utilities.fatal ("Class " + aName.replace ('/', '.') + 
         " (file " + aName + 
-        ".class) not found in CLASSPATH: " + aCP);
+        ".class) not found in: " + aCP);
     }
     ClassRecord pCR = new ClassRecord();
     pCR.iBinary = aBinary;

@@ -1,6 +1,7 @@
 
 #include "types.h"
 #include "classes.h"
+#include "memory.h"
 
 #ifndef _LANGUAGE_H
 #define _LANGUAGE_H
@@ -18,8 +19,25 @@ typedef struct S_MasterRecord
 {
   TWOBYTES magicNumber;
   TWOBYTES constantTableOffset;
+  
+  /**
+   * Offset to STATICFIELD[].
+   */
   TWOBYTES staticFieldsOffset;
   TWOBYTES staticStateOffset;
+  
+  /**
+   * Size of all static state in 2-byte words.
+   */
+  TWOBYTES staticStateLength;
+  TWOBYTES numStaticFields;
+  
+  /**
+   * Offset to sequence of class indices (bytes).
+   */
+  TWOBYTES entryClassesOffset;
+  byte numEntryClasses;
+  byte lastClass;
 } MasterRecord;
 
 typedef struct S_ClassRecord
@@ -136,7 +154,8 @@ extern void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStat
 #define has_clinit(CREC_)           (((CREC_)->cflags & C_HASCLINIT) != 0)
 #define is_interface(CREC_)         (((CREC_)->cflags & C_INTERFACE) != 0)
 
-#define set_initialized(CLASSREC_)  ((CLASSREC_)->cflags |= C_INITIALIZED)
+#define set_initialized(CLASSREC_)   ((CLASSREC_)->cflags |= C_INITIALIZED)
+#define set_uninitialized(CLASSREC_) ((CLASSREC_)->cflags &= ~C_INITIALIZED)
 
 #define is_synchronized(MREC_)      (((MREC_)->mflags & M_SYNCHRONIZED) != 0)
 #define is_native(MREC_)            (((MREC_)->mflags & M_NATIVE) != 0)
@@ -146,7 +165,25 @@ extern void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStat
 #define get_static_state_base()     (get_binary_base() + get_master_record()->staticStateOffset)
 #define get_static_field_offset(R_) ((R_) & 0x0FFF)
 
-#endif
+#define get_num_entry_classes()     (get_master_record()->numEntryClasses)
+#define get_entry_classes_base()    (get_binary_base() + get_master_record()->entryClassesOffset)
+#define get_entry_class(N_)         (*(get_entry_classes_base() + (N_)))
+
+static inline void initialize_binary()
+{
+  MasterRecord *mrec;
+  byte i;
+  
+  mrec = get_master_record();
+  zero_mem ((TWOBYTES *) (get_binary_base() + mrec->staticStateOffset),
+            mrec->staticStateLength);
+  for (i = 0; i <= mrec->lastClass; i++)
+  {
+    set_uninitialized (get_class_record (i)); 	  
+  }
+}  
+
+#endif _LANGUAGE_H
 
 
 

@@ -5,7 +5,6 @@ package js.tinyvm;
 
 public interface SpecialClassConstants {
   static final String[] CLASSES = {
-    "entry/class",
     "java/lang/Object",
     "java/lang/Thread",
     "java/lang/String",

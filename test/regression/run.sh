@@ -11,10 +11,10 @@ do
   echo ------------------ Compiling $i
   lejosc $i.java
   echo ------------------ Linking $i
-  lejos-unix $i -o $i.tvm
+  emu-lejos $i -o $i.tvm
   echo ------------------ Running $i
   echo "----------------- Run of $i.tvm" >> $OUT_FILE
-  lejosrun-unix $i.tvm >> $OUT_FILE
+  emu-lejosrun $i.tvm >> $OUT_FILE
 done
 
 if [ ! -f $GOLD_FILE ]; 

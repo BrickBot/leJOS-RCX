@@ -22,6 +22,7 @@ implements Constants
 
   public void dump (ByteWriter aOut) throws Exception
   {
+    // Static values must be dumped in Big Endian order
     DataOutputStream pDataOut = (DataOutputStream) aOut;
     switch (iType)
     {

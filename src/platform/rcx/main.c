@@ -46,7 +46,7 @@ Thread *bootThread;
 
 #define HC_NONE            0
 #define HC_SHUTDOWN_POWER  1
-#define HC_DELETE_PROGRAM  2
+#define HC_EXIT_PROGRAM    2
 
 #define HP_NO_PROGRAM      0
 #define HP_INTERRUPTED     1
@@ -91,7 +91,7 @@ void delay()
 {
   int i;
 	
-  for (i = 0; i  < 30; i++) { }
+  for (i = 0; i  < 100; i++) { }
 }
 
 void wait_for_power_release()
@@ -146,11 +146,10 @@ void switch_thread_hook()
     // Power button pressed - wait for release
     wait_for_power_release();
     read_buttons (0x3000, &status);
-    if (status & 0x04)
+    if (status & 0x01)
     {
-      hookCommand = HC_DELETE_PROGRAM;
-      // Force interpreter to exit. The program must
-      // be deleted from memory as a result.
+      hookCommand = HC_EXIT_PROGRAM;
+      // Force interpreter to exit. 
       gMustExit = true;
     }
     else
@@ -183,7 +182,11 @@ int main (void)
   systime_init();
   init_sensors();
   // If power key pressed, wait until it's released.
-  wait_for_power_release();
+  for (status = 0; status < 100; status++) { }
+  get_power_status (POWER_KEY, &status);
+  if (status == 0)  
+    wait_for_power_release();
+ LABEL_NEW_PROGRAM:
   hookCommand = HC_NONE;
  LABEL_DOWNLOAD:
   reset_rcx_serial();
@@ -283,13 +286,6 @@ int main (void)
 	hasProgram = HP_NOT_STARTED;
         // Make sure memory allocation starts at an even address.
         mmStart = (((TWOBYTES) nextByte) & 0x0001) ? nextByte + 1 : nextByte;
-        // Initialize memory for object allocation.
-	// This can only be done once for each program downloaded.
-        init_memory (mmStart, ((TWOBYTES) MEM_END - (TWOBYTES) mmStart) / 2);
-        // Initialize special exceptions
-        init_exceptions();
-        // Create the boot thread (bootThread is a special global).
-        bootThread = (Thread *) new_object_for_class (JAVA_LANG_THREAD);
         goto LABEL_DOWNLOAD_INIT;
       }
       if (nextByte >= MAXNEXTBYTEPTR || seqNumber != currentIndex)
@@ -307,8 +303,8 @@ int main (void)
       switch_thread_hook();
       if (hookCommand == HC_SHUTDOWN_POWER)
         goto LABEL_SHUTDOWN_POWER;
-      if (hookCommand == HC_DELETE_PROGRAM)
-	goto LABEL_FIRMWARE_ONE_TIME_INIT;
+      if (hookCommand == HC_EXIT_PROGRAM)
+	goto LABEL_COMM_LOOP;
       if (hasProgram != HP_NO_PROGRAM)
       {
         read_buttons (0x3000, &status);
@@ -325,6 +321,19 @@ int main (void)
 
  LABEL_PROGRAM_STARTUP:
 
+  // Reinitialize binary
+  initialize_binary();
+  
+  // Initialize memory for object allocation.
+  // This can only be done after initialize_binary().
+  init_memory (mmStart, ((TWOBYTES) MEM_END - (TWOBYTES) mmStart) / 2);
+
+  // Initialize special exceptions
+  init_exceptions();
+
+  // Create the boot thread (bootThread is a special global).
+  bootThread = (Thread *) new_object_for_class (JAVA_LANG_THREAD);
+
   #if DEBUG_RCX_MEMORY
   {
     TWOBYTES numNodes, biggest, freeMem;	
@@ -338,7 +347,9 @@ int main (void)
   // Jump to this point to start executing main().
   // Initialize the threading module.
   init_threads();
-  // Start/prepare boot thread. This schedules execution of main().
+
+  // Start/prepare boot thread. Sets thread state to STARTED,
+  // which in the case of bootThread, means main will be scheduled.
   if (!init_thread (bootThread))
   {
     // There isn't enough memory to even start the boot thread!!
@@ -346,21 +357,25 @@ int main (void)
     // The program is useless now
     goto LABEL_FIRMWARE_ONE_TIME_INIT;
   }
+
   // Show walking man.
   clear_lcd_segment (LCD_STANDING);
   set_lcd_segment (LCD_WALKING);
   refresh_display();  
+
   // Execute the bytecode interpreter.
   engine();
+
   // Engine returns when all threads are done or
   // when power has been shut down. The following
   // delay is so that motors get a chance to stop.
   for (status = 0; status < 10000; status++) { }
-  if (hookCommand == HC_DELETE_PROGRAM)
+  if (hookCommand == HC_EXIT_PROGRAM)
   {
     // Program must be deleted from memory
-    goto LABEL_FIRMWARE_ONE_TIME_INIT;
+    goto LABEL_NEW_PROGRAM;
   }
+
   // Getting to this point means that the program
   // finished voluntarily, or as a result of an
   // assisted suicide.

@@ -134,6 +134,7 @@ void dispatch_native (TWOBYTES signature, STACKWORD *paramBase)
 	  }
 	}
       }
+      push_word (0);
       return;
     case SETSENSORVALUE_V:
       // Arguments: int romId (1..3), int value, int requestedValue (0..3) 
