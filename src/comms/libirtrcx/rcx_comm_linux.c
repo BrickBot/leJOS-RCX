@@ -69,69 +69,37 @@ int __rcx_read (FILEDESCR fd, void *buf, int maxlen, int timeout)
 {
 	long len = 0;
     
-	if (usb_flag == 1) {
+	char *bufp = (char *)buf;
 
-		long timer = timeout;
-		long rc;
-		char *cptr;
-		static int last_timeout = 0;
+	int count;
+	fd_set fds;
+	struct timeval tv;
+	int retry = 10;
 
-		if (__comm_debug) printf("__rcx_read: enter timeout %d, maxlen %d\n", timer, maxlen);
+	while (len < maxlen) {
+		FD_ZERO(&fds);
+		FD_SET(fd, &fds);
 
-		cptr = (char *) buf;
+		tv.tv_sec = timeout / 1000;
+		tv.tv_usec = (timeout % 1000) * 1000;
 
-		if (last_timeout != timeout) {
-			if(__comm_debug) printf("attempting to set timeout to %d\n",timeout);
-
-			rc = ioctl(fd, LEGO_TOWER_SET_READ_TIMEOUT, timeout);
-
-			if (!rc) {
-				last_timeout = timeout;
-			}
+		if (select(fd+1, &fds, NULL, NULL, &tv) < 0) {
+			perror("select");
+			return RCX_READ_FAIL;
 		}
-
-
-		if ((len = read(fd, cptr, maxlen)) < 0) {
-			if (errno != ETIMEDOUT) {
-				printf("error %d\n", errno);
-				perror("read");
-				exit(1);
-			}
-		}
-
-	} else {
-
-		char *bufp = (char *)buf;
-
-		int count;
-		fd_set fds;
-		struct timeval tv;
-	    
-		while (len < maxlen) {
-			FD_ZERO(&fds);
-			FD_SET(fd, &fds);
-
-			tv.tv_sec = timeout / 1000;
-			tv.tv_usec = (timeout % 1000) * 1000;
-		    
-			if (select(fd+1, &fds, NULL, NULL, &tv) < 0) {
-				perror("select");
-				return RCX_READ_FAIL;
-			}
-		    
-			if (!FD_ISSET(fd, &fds))
+		if (!FD_ISSET(fd, &fds)) {
+			if (len > 0 || retry == 0) {
 				break;
-
-			if ((count = read(fd, &bufp[len], maxlen - len)) < 0) {
-				perror("read");
-				return RCX_READ_FAIL;
+			} else {
+				retry--;
 			}
-	    
-			len += count;
+		}	
+		if ((count = read(fd, &bufp[len], maxlen - len)) < 0) {
+			perror("read");
+			return RCX_READ_FAIL;
 		}
-    
-	} 
-
+		len += count;
+	}
 	return len;
 }
 
@@ -166,10 +134,13 @@ FILEDESCR __rcx_init(char *tty, int is_fast)
 		exit(1);
 	}
 
+	/* Assume USB for all non-tty devices */
+	usb_flag = !isatty(fd);
+	if (__comm_debug) printf("usb_flag = %d\n", usb_flag);
 
-	if (usb_flag == 1) {
+	if (usb_flag) {
 		if (is_fast) {
-			fprintf(stderr, "FAST mode not alowed with USB LINUX\n");
+			fprintf(stderr, "FAST mode not allowed with USB LINUX\n");
 			return RCX_OPEN_FAIL;
 		} 
 	} else {
