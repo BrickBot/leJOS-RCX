@@ -158,6 +158,7 @@ void* __rcx_open(char *tty, bool is_fast)
 			close(result->fileHandle);
 		}
 		free(result);
+		result = NULL;
 	}
 
 	if (__comm_debug) printf("device = %s\n", result->deviceName);

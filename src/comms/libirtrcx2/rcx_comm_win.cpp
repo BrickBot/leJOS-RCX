@@ -233,6 +233,7 @@ void* __rcx_open(char* tty, bool fast)
 		   CloseHandle(result->fileHandle);
 		}
 		free(result);
+		result = NULL;
 	}
 
 	if (__comm_debug) printf("device = %s\n", result->deviceName);
