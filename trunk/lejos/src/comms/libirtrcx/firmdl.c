@@ -420,7 +420,7 @@ int main (int argc, char **argv)
     /* Load the s-record file */
 
     image_len = srec_load(fileName, image, IMAGE_MAXLEN, &image_start);
-    fprintf(stderr, "Image size=%d (%dk)", image_len, image_len/1024+1);
+    fprintf(stderr, "Image size=%d (%dk)\n", image_len, image_len/1024+1);
     if (no_download)
     	exit(0);
 
