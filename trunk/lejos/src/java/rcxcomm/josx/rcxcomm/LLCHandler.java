@@ -50,7 +50,7 @@ public class LLCHandler extends PacketHandler {
   }
 
   /**
-   * Search for the next packet or ack and read it into the relevent buffer
+   * Search for the next packet or ack and read it into the relevant buffer
    * and set the relevant flag to say we've got it. 
    **/
   private void getOp() {
@@ -58,7 +58,7 @@ public class LLCHandler extends PacketHandler {
       int r = LLC.read();
       if (r < 0) return;
       op = (byte) r;
-      if ((op & 0x7) == 1) {
+      if ((op & 0xf7) == 0xf1) {
         gotPacket = true;
         inPacket[0] = op;
         int extra = (op & 0x7) + 1; // Add 1 for the checksum
@@ -66,7 +66,7 @@ public class LLCHandler extends PacketHandler {
         inPacketLength = extra+1;
         return;
       }
-      if ((op & 0x7) == 0) {
+      if ((op & 0xf7) == 0xf0) {
         gotAck = true;
         ackPacket[0] = op;
         ackPacket[1] = (byte) LLC.receive();
