@@ -146,10 +146,12 @@ public class Firmdl {
     className = className + ".class";
 
     java.net.URL classUrl = new Object().getClass().getResource(className);
+    System.err.println("url " + classUrl);
     if (classUrl != null) {
       String s = classUrl.getFile();
+      System.err.println("s " + s);
       int i = s.indexOf("lib/jtools.jar");
-      return s.substring(6,i);
+      return s.substring("file:".length(), i);
     } else {
       System.err.println("Cannot locate lejos.srec");
       System.exit(1);
