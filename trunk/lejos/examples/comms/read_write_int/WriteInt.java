@@ -1,6 +1,5 @@
 import java.io.*;
 import josx.rcxcomm.*;
-import josx.platform.rcx.*;
 
 /**
  * This program uses the josx.rcxcomm package to
