@@ -196,26 +196,6 @@ void __rcx_close(FILEDESCR fd)
 }
 
 
-int __rcx_is_alive (FILEDESCR fd, int use_comp)
-{
-	return RCX_NOT_IMPL;
-}
-
-int __rcx_send(FILEDESCR fd, void *buf, int len, int use_comp)
-{
-	return RCX_NOT_IMPL;
-}
-
-int __rcx_recv(FILEDESCR fd, void *buf, int maxlen, int timeout, int use_comp)
-{
-	return RCX_NOT_IMPL;
-}
-
-int __rcx_sendrecv (FILEDESCR fd, void *send, int slen, void *recv, int rlen, int timeout, int retries, int use_comp)
-{
-  return RCX_NOT_IMPL;
-}
-
 void gettimeofday(timeval_t *tv, void *tzp) {
 	SYSTEMTIME st;
 	GetSystemTime(&st);

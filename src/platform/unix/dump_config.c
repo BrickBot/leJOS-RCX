@@ -4,6 +4,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 int determine_little_endian()
 {
@@ -27,12 +28,14 @@ int main (int argc, char **argv)
   if (le == -1)
   {
     printf ("#error Unable to determine byte order for this platform");
-    exit (1);
+    exit(1);
   }
   printf ("#ifndef _PLATFORM_CONFIG_H\n");	
   printf ("#define _PLATFORM_CONFIG_H\n");
   printf ("\n");
   printf ("#include <stdio.h>\n");
+  printf ("#include <string.h>\n");
+  printf ("#include <stdlib.h>\n");
 
   printf ("typedef unsigned char byte;\n");
   printf ("typedef signed char JBYTE;\n");

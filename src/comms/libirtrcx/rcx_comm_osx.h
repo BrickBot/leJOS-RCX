@@ -25,7 +25,9 @@
 #ifndef RCX_COMM_OSX_H_INCLUDED
 #define RCX_COMM_OSX_H_INCLUDED
 
-#define FILEDESCR	int
+/* Support storage of file descriptors or IODevices in a FILEDESCR */
+#include <stdint.h>
+#define FILEDESCR	intptr_t
 #define BADFILE	-1
 /* O_SYNC not defined on Mac OS X */
 #define O_SYNC 0
@@ -35,11 +37,6 @@ extern int       __rcx_write(FILEDESCR fd, const void *buf, size_t len);
 extern int       __rcx_read(FILEDESCR fd, void *buf, int maxlen, int timeout);
 extern FILEDESCR __rcx_init (char *tty, int is_fast);
 extern void      __rcx_close (FILEDESCR fd);
-extern int __rcx_send(FILEDESCR fd, void *buf, int len, int use_comp);
-extern int __rcx_recv(FILEDESCR fd, void *buf, int maxlen, int timeout, int use_comp);
-extern int __rcx_is_alive (FILEDESCR fd, int use_comp);
-extern int __rcx_sendrecv (FILEDESCR fd, void *send, int slen, void *recv, int rlen, int timeout, int retries, int use_comp);
-
 
 #endif /* RCX_COMM_OSX_H_INCLUDED */
 

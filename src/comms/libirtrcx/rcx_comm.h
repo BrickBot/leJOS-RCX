@@ -45,13 +45,12 @@
 #if defined(_WIN32) || defined(__CYGWIN32__)
   #define FILEDESCR	HANDLE
   #define BADFILE	NULL
+#elif defined(__APPLE__)
+  /* Mac OS X defines in the platform-specific header file */
+  #include "rcx_comm_osx.h"
 #else
   #define FILEDESCR	int
   #define BADFILE	-1
-  #if defined(__APPLE__) && !defined(O_SYNC)
-    /* O_SYNC not defined on Mac OS X */
-    #define O_SYNC 0
-  #endif
 #endif
 
 // getter functions for the globals
