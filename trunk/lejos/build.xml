@@ -199,7 +199,7 @@
     Target jar: create all jar files
     ==================================================
   -->
-  <target name="all" depends="clean, classes, rcxcomm, pcrcxcomm, vision, jtools, deploy" description="make all"/>
+  <target name="all" depends="classes, rcxcomm, pcrcxcomm, vision, jtools, deploy" description="make all"/>
 	  
   <!--
     ==================================================
