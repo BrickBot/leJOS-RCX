@@ -39,7 +39,7 @@ package josx.platform.rcx;
  */
 public class Sensor
 {
-  static final long SLEEP_TIME = 50;
+  static final long SLEEP_TIME = 20;
   
   private int iSensorId;
   private short iNumListeners = 0;
