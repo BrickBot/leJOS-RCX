@@ -5,6 +5,8 @@
 #define true (1)
 #define false (0)
 
+#define JNULL ((REFERENCE) null)
+
 #define T_REFERENCE 0
 #define T_STACKFRAME 1
 #define T_BOOLEAN 4

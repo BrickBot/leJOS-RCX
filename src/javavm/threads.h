@@ -1,7 +1,9 @@
-#ifndef _THREADS_H
-#define _THREADS_H
 
 #include "classes.h"
+#include "language.h"
+
+#ifndef _THREADS_H
+#define _THREADS_H
 
 #define RUNNING 0
 #define WAITING 1

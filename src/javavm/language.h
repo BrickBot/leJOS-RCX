@@ -1,7 +1,9 @@
-#ifndef _LANGUAGE_H
-#define _LANGUAGE_H
 
 #include "types.h"
+#include "classes.h"
+
+#ifndef _LANGUAGE_H
+#define _LANGUAGE_H
 
 #define STATIC_INITIALIZER 0
 
@@ -12,7 +14,8 @@
 #define C_HASCLINIT   0x04
 #define C_INTERFACE   0x08
 
-extern void dispatch_special (byte classIndex, byte methodIndex, byte *rAddr);
+extern void dispatch_special (byte classIdx, byte methodIndex, byte *rAddr);
+extern void dispatch_virtual (Object *obj, TWOBYTES signature, byte *rAddr);
 extern short find_method (byte classIndex, TWOBYTES methodSignature);
 
 typedef struct S_MasterRecord
@@ -45,7 +48,7 @@ typedef struct S_ClassRecord
    * Class index of array element.
    */
   byte arrayElementType;
-  byte flags;
+  byte cflags;
 } ClassRecord;
 
 // Method flags:
@@ -69,7 +72,7 @@ typedef struct S_MethodRecord
   byte numParameters;
   // Number of exception handlers
   byte numExceptionHandlers;
-  byte flags;
+  byte mflags;
 } MethodRecord;
 
 typedef struct S_ExceptionRecord
@@ -115,12 +118,12 @@ extern MasterRecord *installedBinary;
 
 #define class_size(CLASSIDX_)       (get_class_record(CLASSIDX_)->classSize)
 
-#define is_initialized(CLASSREC_)   ((CLASSREC_)->flags & C_INITIALIZED)
-#define is_array(CLASSREC_)         ((CLASSREC_)->flags & C_ARRAY)
-#define has_clinit(CLASSREC_)       ((CLASSREC_)->flags & C_HASCLINIT)
-#define is_interface(CLASSREC_)     ((CLASSREC_)->flags & C_INTERFACE)
+#define is_initialized(CLASSREC_)   ((CLASSREC_)->cflags & C_INITIALIZED)
+#define is_array_class(CLASSREC_)   ((CLASSREC_)->cflags & C_ARRAY)
+#define has_clinit(CLASSREC_)       ((CLASSREC_)->cflags & C_HASCLINIT)
+#define is_interface(CLASSREC_)     ((CLASSREC_)->cflags & C_INTERFACE)
 
-#define set_initialized(CLASSREC_)  ((CLASSREC_)->flags |= C_INITIALIZED)
+#define set_initialized(CLASSREC_)  ((CLASSREC_)->cflags |= C_INITIALIZED)
 
 #endif
 

@@ -7,6 +7,7 @@
 extern boolean gMustExit;
 extern byte *pc;
 extern STACKWORD *stackTop;
+extern STACKWORD *localsBase;
 
 extern void engine();
 

@@ -8,6 +8,7 @@
 #include "language.h"
 #include "configure.h"
 #include "interpreter.h"
+#include "memory.h"
 
 #define NO_OWNER 0
 
@@ -22,19 +23,41 @@ static Thread* currentThread = null;
 static Thread* currentThread;
 #endif
 
+inline byte get_thread_id (Object *obj)
+{
+  return (byte) ((obj->syncInfo >> THREAD_SHIFT) & THREAD_MASK);
+}
+
+inline void set_thread_id (Object *obj, byte threadId)
+{
+  obj->syncInfo = (obj->syncInfo & ~THREAD_MASK) | 
+                  ((TWOBYTES) threadId << THREAD_SHIFT);
+}
+
+inline void inc_monitor_count (Object *obj)
+{
+  obj->syncInfo = (obj->syncInfo & ~COUNT_MASK) | 
+                   ((obj->syncInfo & COUNT_MASK) + 1);
+}
+
+inline void set_monitor_count (Object *obj, byte count)
+{
+  obj->syncInfo = (obj->syncInfo & ~COUNT_MASK) | count;
+}
+
 void init_thread (Thread *thread)
 {
-  thread->stackFrameArray = new_primitive_array (T_STACKFRAME, MAX_STACK_FRAMES);
-  thread->stackArray = new_primitive_array (T_INT, STACK_SIZE);
-  thread->currentStackFrame = null;
+  thread->stackFrameArray = (REFERENCE) new_primitive_array (T_STACKFRAME, MAX_STACK_FRAMES);
+  thread->stackArray = (REFERENCE) new_primitive_array (T_INT, STACK_SIZE);
+  thread->currentStackFrame = JNULL;
   thread->state = STARTED;
   if (currentThread == null)
   {
     currentThread = thread;
-    thread->nextThread = thread;
+    thread->nextThread = (REFERENCE) thread;
   }
   thread->nextThread = currentThread->nextThread;
-  currentThread->nextThread = thread;
+  currentThread->nextThread = (REFERENCE) thread;
 }
 
 /**
@@ -66,11 +89,15 @@ void switch_thread()
   nextThread = (Thread *) currentThread->nextThread;
   if (nextThread->state == WAITING)
   {
+    #ifdef VERIFY
+    assert (nextThread->waitingOn != JNULL, THREADS3);
+    #endif
+
     if (get_thread_id((Object *) (nextThread->waitingOn)) == NO_OWNER)
     {
       nextThread->state = RUNNING;
       #ifdef SAFE
-      nextThread->waitingOn = (REFERENCE) null;
+      nextThread->waitingOn = JNULL;
       #endif
     }
   }
@@ -83,16 +110,16 @@ void switch_thread()
       return;
     }
     #if REMOVE_DEAD_THREADS
-    free_array (nextThread->stackFrameArray);
-    free_array (nextThread->stackArray);
+    free_array ((Object *) nextThread->stackFrameArray);
+    free_array ((Object *) nextThread->stackArray);
 
     #ifdef SAFE
-    nextThread->stackFrameArray = null;
-    nextThread->stackArray = null;
+    nextThread->stackFrameArray = JNULL;
+    nextThread->stackArray = JNULL;
     #endif SAFE
 
-    nextThread = nextThread->nextThread;
-    currentThread->nextThread = nextThread;
+    nextThread = (Thread *) nextThread->nextThread;
+    currentThread->nextThread = (REFERENCE) nextThread;
     #endif REMOVE_DEAD_THREADS
   }
   else
@@ -104,7 +131,7 @@ void switch_thread()
   if (currentThread->state == STARTED)
   {
     currentThread->state = RUNNING;
-    dispatch_virtual ((Object *) currentThread, RUN_V);
+    dispatch_virtual ((Object *) currentThread, RUN_V, null);
   }
   if (currentThread->state != RUNNING)
     goto LABEL_TASKLOOP;
@@ -127,7 +154,7 @@ void enter_monitor (Object* obj)
   if (owner != NO_OWNER && tid != owner)
   {
     currentThread->state = WAITING;
-    currentThread->waitingOn = obj;
+    currentThread->waitingOn = (REFERENCE) obj;
     // Gotta yield
     switch_thread();
     return;
@@ -138,11 +165,14 @@ void enter_monitor (Object* obj)
 
 void exit_monitor (Object* obj)
 {
+  byte newMonitorCount;
+
   #ifdef VERIFY
-  assert (get_thread_id(obj) == currenThread->threadId, THREADS1);
+  assert (get_thread_id(obj) == currentThread->threadId, THREADS1);
   assert (get_monitor_count(obj) > 0, THREADS2);
   #endif
-  byte newMonitorCount = get_monitor_count(obj)-1;
+
+  newMonitorCount = get_monitor_count(obj)-1;
   if (newMonitorCount == 0)
     set_thread_id (obj, NO_OWNER);
   set_monitor_count (obj, newMonitorCount);
