@@ -37,6 +37,7 @@
 #define MEMORY6        36
 #define MEMORY7        37
 #define MEMORY8        38
+#define MEMORY9        39
 
 #define EXCEPTIONS0    40
 #define EXCEPTIONS1    41
@@ -57,11 +58,13 @@ extern void assert (boolean aCond, int aCode);
 #define DEBUG_THREADS  1
 #define DEBUG_METHODS  1
 #define DEBUG_BYTECODE 1
-
+#define DEBUG_FIELDS   1
+#define DEBUG_OBJECTS  1
 
 #endif
 
 #endif _TRACE_H
+
 
 
 

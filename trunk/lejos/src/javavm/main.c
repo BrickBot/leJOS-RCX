@@ -34,5 +34,6 @@ int main (void)
   // Execute the bytecode interpreter
   engine();
   // Engine never returns?
+  return 0;
 }
 

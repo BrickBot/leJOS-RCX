@@ -113,6 +113,11 @@ Object *new_object_for_class (byte classIndex)
   // Initialize default values
   set_class (ref, classIndex);
   initialize_state (ref, instanceSize);
+
+  #if DEBUG_OBJECTS
+  printf ("new_object_for_class: returning %d\n", (int) ref);
+  #endif
+
   return ref;
 }
 
@@ -207,19 +212,6 @@ Object *new_multi_array (byte elemType, byte totalDimensions,
   return ref;
 }
 
-void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr)
-{
-  STACKWORD auxword = 0;
-
-  while (true) 
-  {   
-    auxword *= 0x100; 
-    auxword |= *ptr; 
-    ptr++;   
-  } 
-  *aWordPtr = auxword;
-}
-
 void save_word (byte *ptr, byte aSize, STACKWORD aWord)
 {
   while (aSize--)
@@ -227,6 +219,48 @@ void save_word (byte *ptr, byte aSize, STACKWORD aWord)
     ptr[aSize] = (byte) (aWord & 0xFF);
     aWord = aWord >> 8;
   }
+}
+
+typedef union 
+{
+  struct
+  {
+    byte byte0;
+    byte byte1;
+    byte byte2;
+    byte byte3;
+  } st;
+  STACKWORD word;
+} AuxStackUnion;
+
+void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr)
+{
+  // This switch statement is 
+  // a workaround for a gcc bug.
+  switch (aSize)
+  {
+    case 1:
+      *aWordPtr = ptr[0];
+      return;
+    case 2:
+      *aWordPtr = ((TWOBYTES) ptr[0] << 8) | ptr[1];
+      return;
+    #ifdef VERIFY
+    default:
+      assert (aSize == 4, MEMORY9);
+    #endif VERIFY
+  }
+  #if EMULATE
+  ((AuxStackUnion *) aWordPtr)->st.byte0 = ptr[3];  
+  ((AuxStackUnion *) aWordPtr)->st.byte1 = ptr[2];  
+  ((AuxStackUnion *) aWordPtr)->st.byte2 = ptr[1];  
+  ((AuxStackUnion *) aWordPtr)->st.byte3 = ptr[0];  
+  #else
+  ((AuxStackUnion *) aWordPtr)->st.byte0 = ptr[0];  
+  ((AuxStackUnion *) aWordPtr)->st.byte1 = ptr[1];  
+  ((AuxStackUnion *) aWordPtr)->st.byte2 = ptr[2];  
+  ((AuxStackUnion *) aWordPtr)->st.byte3 = ptr[3];  
+  #endif
 }
 
 Object *memcheck_allocate (TWOBYTES size)

@@ -44,56 +44,66 @@ byte get_class_index (Object *obj)
 void handle_field (byte hiByte, byte loByte, boolean doPut, boolean aStatic,
                    byte *btAddr)
 {
-  ClassRecord *classRecord;
-  byte *sourcePtr;
-  byte *destPtr;
   byte *fieldBase;
   STATICFIELD fieldRecord;
-  TWOBYTES offset;
   byte fieldSize;
   byte numWordsMinus1;
 
+  #if DEBUG_FIELDS
+  printf ("handleField: %d, %d, %d, %d\n", (int) hiByte, (int) loByte, 
+          (int) doPut, (int) aStatic);
+  #endif
+
   if (aStatic)
   {
-    classRecord = get_class_record (hiByte);
-    if (dispatch_static_initializer (classRecord, btAddr))
+    if (dispatch_static_initializer (get_class_record (hiByte), btAddr))
       return;
     fieldRecord = ((STATICFIELD *) get_static_fields_base())[loByte];
-    fieldSize = get_static_field_size (fieldRecord);
+    fieldSize = ((fieldRecord >> 12) & 0x03) + 1;
+    numWordsMinus1 = fieldRecord >> 14;
     fieldBase = get_static_state_base() + get_static_field_offset (fieldRecord);
   }
   else
   {
+    fieldSize = ((hiByte >> F_SIZE_SHIFT) & 0x03) + 1;
+    numWordsMinus1 = hiByte >> 7;
+    if (doPut)
+      stackTop -= (numWordsMinus1 + 1);
+    #if DEBUG_FIELDS
+    printf ("-- numWords-1  = %d\n", (int) numWordsMinus1);
+    printf ("-- stackTop[0,1] = %d, %d\n", (int) stackTop[0], (int) stackTop[1]);
+    #endif
     if (stackTop[0] == JNULL)
     {
       throw_exception (nullPointerException);
       return;
     }
-    fieldSize = (hiByte >> F_SIZE_SHIFT) + 1;
-    offset = ((TWOBYTES) (hiByte & F_OFFSET_MASK) << 8) | loByte;
-    fieldBase = ((byte *) word2ptr (stackTop[0])) + offset;
-    // Pop object reference
-    stackTop--;
+    fieldBase = ((byte *) word2ptr (stackTop[0])) + 
+                (((TWOBYTES) (hiByte & F_OFFSET_MASK) << 8) | loByte);
+    if (doPut)
+      stackTop++;
   }
 
-  numWordsMinus1 = (fieldSize <= 4) ? 0 : 1;
-  if (numWordsMinus1)
-  {
-    // Adjust field size for one word only 
-    fieldSize = 4;
-    // Backtrack stack pointer
-    stackTop--;
-  }  
+  #if DEBUG_FIELDS
+  printf ("-- fieldSize  = %d\n", (int) fieldSize);
+  printf ("-- fieldBase  = %d\n", (int) fieldBase);
+  #endif
+
+  // fieldRecord is a counter below
+  fieldRecord = 0;
   while (true)
   {
     if (doPut)
-      save_word (fieldBase, fieldSize, *stackTop++);
+      save_word (fieldBase, fieldSize, *stackTop);
     else
-      make_word (fieldBase, fieldSize, ++stackTop);
-    if (numWordsMinus1-- == 0)
+      make_word (fieldBase, fieldSize, stackTop);
+    if (fieldRecord++ >= numWordsMinus1)
       break;
     fieldBase += fieldSize;
+    stackTop++;
   }
+  if (doPut)
+    stackTop -= (numWordsMinus1 + 1);
 }
 
 /**

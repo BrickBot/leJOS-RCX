@@ -31,6 +31,7 @@ STACKWORD gStackWord;
 STACKWORD *gWordPtr;
 int gInt;
 
+
 /**
  * Assumes pc points to 2-byte offset, and jumps.
  */
@@ -38,11 +39,11 @@ void do_goto (boolean aCond)
 {
   #if DEBUG_BYTECODE
   printf ("do_goto: %d, %d (= %d)\n", (int) pc[0], (int) pc[1],
-          (JSHORT) ((pc[0] << 8) | pc[1]));
+          (JSHORT) (((TWOBYTES) pc[0] << 8) | pc[1]));
   #endif
 
   if (aCond)
-    pc += (JSHORT) ((pc[0] << 8) | pc[1]) - 1;
+    pc += (JSHORT) ((((TWOBYTES) pc[0] << 8) | pc[1]) - 1);
   else
     pc += 2;
 }
