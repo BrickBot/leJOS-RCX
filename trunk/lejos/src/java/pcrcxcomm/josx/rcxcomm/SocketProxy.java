@@ -10,9 +10,9 @@ import josx.rcxcomm.*;
  * The RCX send the host, port and path.
  * @author Lawrie Griffiths
  */
-class SocketProxy {
-  static DataInputStream dis;
-  static DataOutputStream dos;
+public class SocketProxy {
+  private static DataInputStream dis;
+  private static DataOutputStream dos;
 
   public static void main(String[] args) {
     try {
@@ -38,7 +38,7 @@ class SocketProxy {
     }
   }
 
-  public static void newSocket() {
+  static void newSocket() {
     try {
       int len = dis.readByte();
 
