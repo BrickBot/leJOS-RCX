@@ -190,7 +190,29 @@ by itself, the standing man figure will appear again.
 To stop a running program, hold the Run button while 
 you press On/Off. Switching off the RCX will also stop
 a running program.
-  
+
+Omitting unused methods
+-----------------------
+
+From release 2.1.0 the lejos linker omits methods that 
+it can deduce are not used. This reduces the size of 
+programs and has been shown to work with all programs 
+tested so far.
+
+You can see which methods have been omitted if you use
+the -verbose flag on the lejos command.
+
+If you suspect that this feature is not working 
+correctly and is causing a problem with your program, 
+you can specify the -all flag on the lejos command. 
+This reverts to the previous behavior and ensures that 
+all methods are included.
+
+Note that the current version does not do a full 
+analysis and detect all unused methods. It may be 
+improved to reduce program sizes further in later 
+versions of lejos.
+
 Emulation
 ---------
 
