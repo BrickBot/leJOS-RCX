@@ -5,7 +5,7 @@ import java.io.InputStream;
 
 import js.common.AbstractTool;
 import js.common.ToolException;
-import js.common.ToolProgressListener;
+import js.common.ToolProgressMonitor;
 import js.tinyvm.Constants;
 
 /**
@@ -16,9 +16,9 @@ public class LejosdlTool extends AbstractTool
   /**
    * Constructor.
    */
-  public LejosdlTool(ToolProgressListener listener)
+  public LejosdlTool (ToolProgressMonitor monitor)
   {
-    super(listener);
+    super(monitor);
   }
 
   /**
@@ -55,7 +55,7 @@ public class LejosdlTool extends AbstractTool
 
     try
     {
-      getProgressListener().operation("read binary");
+      getProgressMonitor().operation("read binary");
       int read;
       while ((read = program.read(buffer, index, 0x10000 - index)) != -1
           && index < 0x10000)
@@ -72,7 +72,7 @@ public class LejosdlTool extends AbstractTool
         }
         throw new LejosdlException("Huge file: " + index + " bytes");
       }
-      getProgressListener().progress(1000);
+      getProgressMonitor().progress(1000);
     }
     catch (IOException e)
     {
@@ -100,8 +100,8 @@ public class LejosdlTool extends AbstractTool
 
     if (download)
     {
-      getProgressListener().operation("download binary");
-      Download d = new Download(getProgressListener());
+      getProgressMonitor().operation("download binary");
+      Download d = new Download(getProgressMonitor());
       try
       {
         d.open(tty, fastMode);
@@ -119,7 +119,7 @@ public class LejosdlTool extends AbstractTool
           d.close();
         }
       }
-      getProgressListener().progress(1000);
+      getProgressMonitor().progress(1000);
     }
   }
 }
