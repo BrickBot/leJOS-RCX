@@ -56,6 +56,12 @@ void init_thread (Thread *thread)
 {
   thread->stackFrameArray = ptr2word (new_primitive_array (T_STACKFRAME, MAX_STACK_FRAMES));
   thread->stackArray = ptr2word (new_primitive_array (T_INT, STACK_SIZE));
+
+  #ifdef VERIFY
+  assert (is_array (word2obj (thread->stackFrameArray)), THREADS0);
+  assert (is_array (word2obj (thread->stackFrameArray)), THREADS1);
+  #endif
+
   thread->stackFrameArraySize = 0;
   thread->state = STARTED;
   if (currentThread == null)
@@ -175,7 +181,10 @@ void switch_thread()
       ClassRecord *classRecord;
 
       classRecord = get_class_record (ENTRY_CLASS);
+      // Push stack frame for main method:
       dispatch_special (classRecord, find_method (classRecord, MAIN_V), null);
+      // Push another if necessary for the static initializer:
+      dispatch_static_initializer (classRecord, pc);
     }
     else
     {

@@ -35,8 +35,8 @@ TinyVM supports most of the Java *language*
 and comes with a set of APIs for controlling
 the RCX.
 
-How does it work?
------------------
+Technical Information
+---------------------
 
 The virtual machine (tinyvm.srec) contains all
 the code necessary to execute (post-processed)
@@ -66,9 +66,6 @@ Requirements
 
 - JDK1.1.7B, available from http://java.sun.com.
   Other VMs should work but they haven't been tested.
-  (The JDK is used for running a few building and
-  linking tools. The fact that they are written in 
-  Java is incidental).
 
 - If you're planning to change the source code and
   rebuild it, you should get Kekoa's librcx package,
@@ -179,17 +176,32 @@ below sensor 2. The meaning of the trace is as follows:
   Y    = Exception class index % 10.
 
 For example, at the time of this writing, 
-if you see a trace that looks like [0000 0],
-it means that an ArrayIndexOutOfBoundsException
-(class index = 10) was thrown in method main(String[])
-(method signature = 0), and uncaught.
+if you see a trace that looks like [0000 7],
+it probably means that a NullPointerException
+(class index = 7) was thrown in method main(String[])
+(method signature = 0), and it wasn't caught.
 
 When you link a program with tvmld -verbose, you will 
 get a list of class indices and (hopefully by the 
 time this is released) one for method signatures.
 
 NOTE: You must press View to continue after you see
-a trace.
+an exception trace.
+
+Footprint
+---------
+
+Even though tinyvm.srec is about 24 Kb (03/04/00), it
+occupies only about 10 Kb in RAM. There's about 18 Kb
+of space left for your programs and objects, which is
+a good amount.
+
+Footprint is an area that can be improved considerably,
+both in native code and linked binaries. On the other
+hand, some firmware usability improvements that appear 
+to be required will increase the size of the VM. Hopefully
+there will be enough contributions in the area of footprint
+reduction to balance out part of the enhancements.
 
 Emulation
 ---------
@@ -197,7 +209,9 @@ Emulation
 You should be able to run linked programs in the 
 development machine. All you need to do is use
 tvmld-emul instead of tvmld, and tvm-emul instead
-of tvm.
+of tvm. In some cases it might be easier to debug
+programs with the emulated VM, and you'll also 
+get slightly more detailed exception information.
 
 Limitations
 -----------
@@ -214,11 +228,10 @@ mind are:
   - Floating point operations are not supported.
   - Operations on variables of type long are not 
     suported.
-  - Strings aren't totally supported.
-  - The instanceof operator will always return true  
-    for interfaces. In bytecode, checkcast is not
-    performed on interface classes (which is a bit
-    unsafe).
+  - Operations on Strings may break your programs.
+  - The instanceof operation will always be true  
+    for interfaces. In bytecode, CHECKCAST succeeds
+    on all interface classes (which is a bit unsafe).
   - There are no objects of type java.lang.Class, 
     which means that the ".class" construct won't
     work. Class.forName() throws NoSuchMethorError.
@@ -227,7 +240,7 @@ mind are:
 Documentation
 -------------
 
-The only documentation currently available is this
+The only TinyVM documentation currently available is this
 README file and the API documentation, which you should
 be able to obtain by running:
 
@@ -237,9 +250,12 @@ be able to obtain by running:
 Questions/Problems
 ------------------
 
-Please contact Jose at jhsolorz@yahoo.com if you 
+You can contact Jose at jhsolorz@yahoo.com if you 
 have any questions, problems, or if you'd like to
 contribute to TinyVM in any way.
+
+Read the "Limitations" section above, just in case 
+the problem you're encountering is a known limitation/bug.
 
 
 

@@ -55,6 +55,11 @@ public class Binary implements SpecialClassConstants, SpecialSignatureConstants
     return iConstantTable.indexOf (aRec);
   }
 
+  public ConstantRecord getConstantRecord (int aIndex)
+  {
+    return (ConstantRecord) iConstantTable.elementAt (aIndex);
+  }
+
   public void processClasses (String aClassName, ClassPath aClassPath)
   throws Exception
   {

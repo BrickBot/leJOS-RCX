@@ -69,6 +69,8 @@ public class HashVector
       Object pElm = iHashtable.get (aKey);
       if (pElm instanceof IntWrap)
         return ((IntWrap) pElm).iV;
+      if (pElm == null)
+        return -1;
       return iVector.indexOf (aKey);
     }
   }
