@@ -11,11 +11,10 @@ import js.common.ToolProgressListener;
 /**
  * Java RCX firmware downloader - replaces lejosfirmdl
  * 
- * @author Lawrie Griffiths
+ * @author Lawrie Griffiths, Markus Heiden
  */
 public class FirmdlTool extends AbstractTool
 {
-  // TODO use js.tinyvm.Constants
   private static final int SEGMENT_BREAK = 1024;
   private static final int IMAGE_START = 0x8000;
   private static final int IMAGE_MAXLEN = 0x8000;
