@@ -104,7 +104,7 @@ Building the Tools (UNIX ONLY):
   directory and type 'make'. 
 
   Note: if you are using USB on Linux, there is a USB driver for
-	the Lego IR tower in tools/linux/legousbtower. See the 
+	the Lego IR tower in src/tools/linux/legousbtower. See the 
 	README in that directory for details.
 
 Downloading the Firmware:
@@ -134,7 +134,7 @@ lejosfirmdl -f              lejosfirmdl -f
 (Wait for double-beep in RCX. This step doesn't have to be
 repeated to run the example again).
 
-cd examples/view            cd examples\view
+cd examples/test/view       cd examples\test\view
 export CLASSPATH=.          set CLASSPATH=.
 lejosc *.java               lejosc *.java
 lejos View                  lejos View
@@ -314,8 +314,9 @@ Please direct feedback to the lejos-discussion mailing list
 <lejos-discussion@lists.sourceforge.net>.  To subscribe
 see http://lists.sourceforge.net/lists/listinfo/lejos-discussion .
 
-Take a look at the Lejos website at http://lejos.sourceforge.net/
-or its project page at http://sourceforge.net/projects/lejos .
+Take a look at the Lejos website at http://www.lejos.org/
+(currently an alias for http://lejos.sourceforge.net/) or
+its project page at http://sourceforge.net/projects/lejos .
 
 Finally, there is a newsgroup at LUGNET for Java on the RCX,
 see http://www.lugnet.com/robotics/rcx/java/ .
