@@ -1,8 +1,9 @@
 CC=$(shell $(LEJOS_HOME)/cctest.sh)
 
 JAVA_INCL="$(JAVA_HOME)"/include
-IRTRCX_H=$(LEJOS_HOME)/src/comms/libirtrcx/rcx_comm.h
-IRTRCX_INCL=$(LEJOS_HOME)/src/comms/libirtrcx
+
+IRTRCX_INCL=$(LEJOS_HOME)/src/comms/libirtrcx2
+IRTRCX_H=$(IRTRCX_INCL)/rcx_comm.h
 
 # Default: Unix
 JIRTRCX=$(LEJOS_HOME)/bin/libjirtrcx.so
