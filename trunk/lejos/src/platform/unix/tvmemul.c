@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <signal.h>
 #include "types.h"
 #include "constants.h"
 #include "classes.h"
@@ -29,6 +30,12 @@ Thread   *bootThread;
 TWOBYTES *gMemory;
 TWOBYTES gMemorySize = MEMORY_SIZE;
 struct timeval gStart;
+struct itimerval itimer =
+{
+  {0, 1000},
+  {0, 1000}
+};
+
 int	verbose = 0;	/* If 1, print descriptive strings. */
 
 int last_sys_time;              /* to generate ticks */
@@ -54,16 +61,20 @@ void switch_thread_hook()
   // NOP
 }
 
+FOURBYTES sys_time = 0;
+struct timeval now;
+
+void timer_handler(int signo)
+{
+  gettimeofday(&now, 0);
+  timersub(&now, &gStart, &now);
+  sys_time = now.tv_sec*1000 + now.tv_usec/1000;
+  signal(SIGALRM, timer_handler);
+}
+
 FOURBYTES get_sys_time_impl()
 {
-  struct timeval now;
-  FOURBYTES sysTime;
-  
-  if (gettimeofday(&now, NULL)) 
-    perror("systime_init: gettimeofday");
-  sysTime = (now.tv_sec  - gStart.tv_sec ) * 1000;
-  sysTime += (now.tv_usec - gStart.tv_usec) / 1000;
-  return sysTime;	
+  return sys_time;
 }
 
 void run(void)
@@ -174,6 +185,12 @@ int main (int argc, char *argv[])
 	readBinary (file);
 	if (gettimeofday(&gStart, NULL)) 
 		perror("main: gettimeofday");
+	signal(SIGALRM, timer_handler);
+	if (setitimer(ITIMER_REAL, &itimer, null) < 0)
+	{
+	  printf ("Failed to set interval timer\n");
+	  exit(1);
+	}
 	run();
 	return 0;
 } 
