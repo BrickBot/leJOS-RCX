@@ -137,7 +137,7 @@ public class TinyVM extends TinyVMTool
       }
       catch (ParseException e)
       {
-        throw new TinyVMException(e.getMessage());
+        throw new TinyVMException(e.getMessage(), e);
       }
 
       if (result.hasOption("h"))
