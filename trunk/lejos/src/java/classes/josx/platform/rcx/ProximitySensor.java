@@ -5,6 +5,8 @@ package josx.platform.rcx;
  * message out of the infra-red port every so often and looks for
  * the reflection using the light sensor (which happens to be
  * very infra-red sensitive).
+ *
+ * @author Paul Andrews
  */
 public class ProximitySensor implements SensorListener {
     static final byte[] data = { -1 };

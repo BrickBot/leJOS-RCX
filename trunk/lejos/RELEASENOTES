@@ -8,6 +8,10 @@ leJOS 1.0.3:
   - Added progress indicator to lejosrun.
   - Fixed uninitialised variable and boundary condition in
     interpreter that could have prevented task switching.
+  - All input listeners now use one thread.
+  - Added Proximity Sensor Class
+  - Added Servo class
+  - Added more accessor methods to sensor and motor classes.
   
   Juergen Stuber has added:
   - LCDConstants.java

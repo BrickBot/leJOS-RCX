@@ -1,5 +1,10 @@
 package josx.platform.rcx;
 
+/**
+ * Utiltity class for dispatching events to button and sensor listeners.
+ *
+ * @author Paul Andrews
+ */
 class ListenerThread extends Thread
 {
   static ListenerThread singleton = new ListenerThread();
