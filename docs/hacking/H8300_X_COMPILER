@@ -6,11 +6,10 @@ Cross-compiler for Unix
 -----------------------
 There are instructions for setting up a cross-compilation environment
 at http://h8300-hms.sourceforge.net/ including both a binary and a
-build-your-own option. I haven't actually tried them on Linux but they
-work flawlessly on cygwin (which is a unix-like environment for
-Windows). This site uses the most recent versions of the GNU
-utilities and has improvements on the h8300 cross-compilation
-environment.
+build-your-own option.  They work flawlessly in Linux and on cygwin
+(which is a unix-like environment for Windows). This site uses the
+most recent versions of the GNU utilities and has improvements on
+the h8300 cross-compilation environment.
 
 Alternatively:
 
