@@ -44,4 +44,10 @@
  */
 #define SAFE                             1
 
+/**
+ * Set to non-zero if we want the scheduler to perform priority
+ * inversion avoidance.
+ */
+#define PI_AVOIDANCE                     1
+
 #endif

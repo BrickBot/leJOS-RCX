@@ -48,7 +48,7 @@
 > play_sound_or_set_data_pointertone freq 0x7d0, duration 0x14
 > play_sound_or_set_data_pointertone freq 0xc8, duration 0x14
 ----------------- Run of Test12.tvm
-> set_lcd_number (unsigned) 27
+> set_lcd_number (unsigned) 25
 > refresh_display
 > set_lcd_number (unsigned) 40
 > refresh_display
@@ -612,6 +612,7 @@
 ----------------- Run of TestDaemon.tvm
 ----------------- Run of TestThreadState.tvm
 ----------------- Run of TestMonitor.tvm
+----------------- Run of PriorityInversion.tvm
 ----------------- Run of TestNat.tvm
 > Setting sensor 0, type LIGHT
 > Setting sensor 0, mode = PERCENT, slope = 0
@@ -629,23 +630,23 @@
 > Reading sensor 1, requested value CANONICAL, returned value 4
 > Reading sensor 2, requested value CANONICAL, returned value 3
 > Reading sensor 1, requested value CANONICAL, returned value 5
-> Reading sensor 1, requested value CANONICAL, returned value 6
 > Reading sensor 2, requested value CANONICAL, returned value 4
+> Reading sensor 1, requested value CANONICAL, returned value 6
 > Reading sensor 1, requested value CANONICAL, returned value 7
 > Reading sensor 2, requested value CANONICAL, returned value 5
 > Reading sensor 1, requested value CANONICAL, returned value 8
-> Reading sensor 1, requested value CANONICAL, returned value 9
 > Reading sensor 2, requested value CANONICAL, returned value 6
+> Reading sensor 1, requested value CANONICAL, returned value 9
 > Reading sensor 1, requested value CANONICAL, returned value 10
 > Reading sensor 2, requested value CANONICAL, returned value 7
 > Reading sensor 1, requested value CANONICAL, returned value 11
-> Reading sensor 1, requested value CANONICAL, returned value 12
 > Reading sensor 2, requested value CANONICAL, returned value 8
+> Reading sensor 1, requested value CANONICAL, returned value 12
 > Reading sensor 1, requested value CANONICAL, returned value 13
 > Reading sensor 2, requested value CANONICAL, returned value 9
 > Reading sensor 1, requested value CANONICAL, returned value 14
-> Reading sensor 1, requested value CANONICAL, returned value 15
 > Reading sensor 2, requested value CANONICAL, returned value 10
+> Reading sensor 1, requested value CANONICAL, returned value 15
 > Reading sensor 1, requested value CANONICAL, returned value 16
 > Reading sensor 1, requested value CANONICAL, returned value 17
 > Reading sensor 1, requested value CANONICAL, returned value 18
