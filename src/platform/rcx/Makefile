@@ -7,7 +7,7 @@ else
   LEJOS_HOME_NATIVE=$(LEJOS_HOME)
 endif
 
-LIBRCX_HOME=$(shell realpath ./librcx)
+LIBRCX_HOME=./librcx
 VMSRC=$(LEJOS_HOME)/src/javavm
 
 include $(LEJOS_HOME)/Makefile.config
