@@ -31,7 +31,7 @@ IRTOWER=../../bin/libirtower.jnilib
   else
     # Linux/Solaris/FreeBSD/other unices.
     IRTOWER=../../bin/libirtower.so
-    CCOPT=-shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) -DLINUX 
+    CCOPT=-shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) 
     CXX=${CC}
   endif
 endif

@@ -17,13 +17,12 @@
 
 #if defined(_WIN32) || defined(__CYGWIN32__)
 #define TOWER_NAME "\\\\.\\LEGOTOWER1"
-#elif defined (LINUX)
-#define TOWER_NAME "/dev/lego0"
 #endif
 
 /* Machine-dependent defines */
 
 #if defined(LINUX) || defined(linux)
+#define TOWER_NAME "/dev/lego0"
 #define DEFAULTTTY   "/dev/ttyS0" /* Linux - COM1 */
 #elif defined(_WIN32) || defined(__CYGWIN32__)
 #define DEFAULTTTY   "usb"       /* Cygwin - USB */
@@ -89,7 +88,7 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport)
   }
 #endif
 
-#if defined(LINUX)
+#if defined(LINUX) || defined(linux)
   if ((strcmp( tty , "usb" ) == 0) ) {
     usb_flag = 1;
     tty = TOWER_NAME;

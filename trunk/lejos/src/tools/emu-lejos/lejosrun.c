@@ -296,7 +296,7 @@ main(int argc, char **argv)
         usb_flag = 1;
         if ( __comm_debug) fprintf(stderr, "USB IR Tower mode.\n");
 	/* Linux usb support */
-#ifdef LINUX 
+#if defined(LINUX) || defined(linux)
 	tty = "/dev/lego0";
 #endif
     }

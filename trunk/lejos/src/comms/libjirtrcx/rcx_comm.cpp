@@ -255,7 +255,7 @@ int mywrite(FILEDESCR fd, const void *buf, size_t len) {
 	FlushFileBuffers(fd);
 	return nBytesWritten;
 
-#elif defined(LINUX)
+#elif defined(LINUX) || defined(linux)
 
 	if (usb_flag == 1) {
 		long actual = 0;
@@ -407,7 +407,7 @@ void rcx_close(FILEDESCR fd)
 
 int rcx_wakeup_tower (FILEDESCR fd, int timeout)
 {
-#if defined(LINUX)
+#if defined(LINUX) || defined(linux)
 	if (usb_flag == 1) {
 		return RCX_OK;
 	} else {
@@ -452,7 +452,7 @@ int rcx_wakeup_tower (FILEDESCR fd, int timeout)
 		else
 			return RCX_BAD_LINK; /* bad link */
 
-#if defined(LINUX)
+#if defined(LINUX) || defined(linux)
 	}
 #endif
 }
