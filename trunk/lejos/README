@@ -252,16 +252,6 @@ Known Bugs
     implicitly synchronized. This could lead to access
     of statics before they are initialized, when
     multiple threads use a class.
-
-  - The last 3K of object memory are in a region where
-    writing to external memory has the hardware side effect
-    of setting the motor state.  This depends on the byte
-    written, and the correct value gets reset every
-    millisecond by the interrupt, so it might be anything
-    between unnoticeable and unacceptable.
-
-    Apart from the side effect the memory works fine.
-    If you have more than 3K free memory you are safe.
     
 Documentation
 -------------

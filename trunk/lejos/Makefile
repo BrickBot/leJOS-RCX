@@ -36,6 +36,7 @@ dir_and_zip:
 	cd ${TEMP}/${TINYVM_VERSION}; make distclean_src
 	cd ${TEMP}; tar cvf ${TINYVM_VERSION}.tar ${TINYVM_VERSION}; gzip ${TINYVM_VERSION}.tar
 	make javadoc
+	make pcjavadoc
 	rm -rf ${TEMP}/${TINYVM_VERSION}.doc
 	mkdir ${TEMP}/${TINYVM_VERSION}.doc
 	tar cf - apidocs pcapidocs docs README RELEASENOTES CLICKME.html LICENSE ACKNOWLEDGMENTS Makefile | (cd ${TEMP}/${TINYVM_VERSION}.doc; tar xfpB -)
@@ -59,6 +60,7 @@ dir_and_zip_win:
 	rm -f ${TINYVM_VERSION}.zip
 	cd ${TEMP}; zip -r ${TINYVM_VERSION}.zip lejos
 	make javadoc
+	make pcjavadoc
 	rm -f ${TEMP}/${TINYVM_VERSION}.doc.zip
 	cd ..; zip -r ${TEMP}/${TINYVM_VERSION}.doc.zip lejos/apidocs lejos/pcapidocs lejos/docs lejos/README lejos/RELEASENOTES lejos/CLICKME.html lejos/LICENSE lejos/ACKNOWLEDGMENTS
 	diff bin/lejos.srec ${TEMP}/lejos/bin/lejos.srec
