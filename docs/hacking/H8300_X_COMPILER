@@ -1,10 +1,18 @@
-
 This document contains information for those interested
 in modifying the C source code of the VM, in particular
 for cross-compilation to the H8300 microcontroller.
 
 Cross-compiler for Unix
 -----------------------
+There are instructions for setting up a cross-compilation environment
+at http://h8300-hms.sourceforge.net/ including both a binary and a
+build-your-own option. I haven't actually tried them on Linux but they
+work flawlessly on cygwin (which is a unix-like environment for
+Windows). This site uses the most recent versions of the GNU
+utilities and has improvements on the h8300 cross-compilation
+environment.
+
+Alternatively:
 
 You should download binutils-2.9.1 and gcc-2.8.1 from
 www.gnu.org, and install them, in that order, using:
@@ -18,10 +26,27 @@ Create Makefile.config containing:
 
   BINDIR=/usr/local/bin
   BINPREFIX=h8300-hitachi-hms-
-	
-Cross-compiler for CygWin
--------------------------
 
+
+Cross-compiler for CygWin 1.3.2
+-------------------------------
+Download and install Cygwin from http://sources.redhat.com/cygwin/
+
+Go to http://h8300-hms.sourceforge.net/ and follow the
+instructions for building the tools yourself. You can
+download the various packages required from
+http://www.gnu.org/order/ftp.html
+
+If you follow the instructions verbatim you will have to modify
+Makefile.config in the lejos root directory to point BINDIR at
+/usr/local/bin.
+
+Following this procedure will provide you with the most up
+to date versions of the tools.
+ 	
+
+Cross-compiler for CygWin B20
+-----------------------------
 (Stolen from legOS pages at SourceForge)
 
 This assumes CygWin B20. Download the cross-compiler from
