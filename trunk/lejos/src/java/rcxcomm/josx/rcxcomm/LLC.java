@@ -20,7 +20,7 @@ public class LLC {
 
   /**
    * read a single byte, if available
-   * @result the byte read, or -1 if no byte is available
+   * @return the byte read, or -1 if no byte is available
    **/
   public static native int read();
 
@@ -28,7 +28,7 @@ public class LLC {
 
   /**
    * Indicate whether the last send is still active
-   * @result true if still sending, else false
+   * @return true if still sending, else false
    **/
   public static native boolean isSending();
 
@@ -42,7 +42,7 @@ public class LLC {
    * Send a number of bytes and wait for completion of transmission
    * @param buf the array of bytes to send
    * @param len the number of bytes to send
-   * *result true if the send is successful, else false
+   * *return true if the send is successful, else false
    **/
   public static boolean sendBytes(byte [] buf, int len) {
     if (isSending()) return false;
@@ -63,7 +63,7 @@ public class LLC {
 
   /**
    * wait a little while for a byte to become available
-   * @result the byte received, or -1 if no byte available
+   * @return the byte received, or -1 if no byte available
    **/
   public static int receive() {
     int r;
