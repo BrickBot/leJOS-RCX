@@ -154,7 +154,7 @@ core_classes:
 	${JAVAC} -classpath  $(CORE_CLASSES_SRC) `find $(CORE_CLASSES_SRC) -name '*.java'`
 	cd $(CORE_CLASSES_SRC); jar cf ../../../lib/classes.jar `find . -name '*.class'`
 
-rcx_comm:
+rcx_comm: core_classes
 	@echo ""
 	@echo "====> Making rcxcomm"
 	@echo ""
