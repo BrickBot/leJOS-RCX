@@ -351,6 +351,7 @@ main(int argc, char **argv)
     long r, index, rest, numToWrite, offset;
 
     if (argc != 2) {
+        fprintf(stderr, "tvm downloads a file written by tvmld.\n");
 	fprintf(stderr, "Use: %s filename\n", argv[0]);
 	exit(1);
     }
@@ -391,8 +392,7 @@ main(int argc, char **argv)
     if (pBinary[0] != ((MAGIC >> 8) & 0xFF) ||
         pBinary[1] != ((MAGIC >> 0) & 0xFF))
     {
-      printf ("Magic number is not right. The input file should've been "
-              "produced using tvmld.\n");
+      printf ("Magic number is not right. The input file should have been produced using tvmld.\n");
       exit (1);
     }
     index = 0;

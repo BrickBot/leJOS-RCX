@@ -27,14 +27,13 @@ STACKWORD *stackTop;
 
 // Temporary globals:
 
-byte gByte;
-byte *gBytePtr;
-JFLOAT gFloat;
-ConstantRecord *gConstRec;
-STACKWORD gStackWord;
-STACKWORD *gWordPtr;
-JINT gInt;
-
+byte tempByte;
+byte *tempBytePtr;
+JFLOAT tempFloat;
+ConstantRecord *tempConstRec;
+STACKWORD tempStackWord;
+STACKWORD *tempWordPtr;
+JINT tempInt;
 
 /**
  * Assumes pc points to 2-byte offset, and jumps.
@@ -83,6 +82,49 @@ void do_fcmp (JFLOAT f1, JFLOAT f2)
   stackTop[0] = 0;
  
   #endif FP_ARITHMETIC
+}
+
+/**
+ * @return A String instance, or JNULL if an exception was thrown
+ *         or the static initializer of String had to be executed.
+ */
+static inline Object *create_string (ConstantRecord *constantRecord, 
+                                     byte *btAddr)
+{
+  Object *ref;
+  Object *arr;
+  JINT    i;
+
+  ref = new_object_checked (JAVA_LANG_STRING, btAddr);
+  if (ref == JNULL)
+    return JNULL;
+  arr = new_primitive_array (T_CHAR, constantRecord->constantSize);
+  if (arr == JNULL)
+  {
+    deallocate (ref, class_size (JAVA_LANG_STRING));    
+    return JNULL;
+  }
+  ((String *) ref)->characters = obj2ref(arr);
+  for (i = 0; i < constantRecord->constantSize; i++)
+    jchararray(arr)[i] = (JCHAR) get_constant_ptr(constantRecord)[i];
+}
+
+/**
+ * Pops the array index off the stack, assigns
+ * both tempInt and tempBytePtr, and checks
+ * bounds and null reference.
+ */
+boolean array_access_helper()
+{
+  tempInt = word2jint(pop_word());
+  tempBytePtr = word2ptr(get_top_word());
+  if (tempBytePtr == JNULL)
+    throw_exception (nullPointerException);
+  else if (tempInt < 0 || tempInt >= get_array_length ((Object *) tempBytePtr))
+    throw_exception (arrayIndexOutOfBoundsException);
+  else
+    return true;
+  return false;
 }
 
 /**

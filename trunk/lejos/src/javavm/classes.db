@@ -3,12 +3,13 @@
 # The VM will index these special classes based on their
 # order here. Rebuild the VM if this file changes.
 
-# Indices start at 1 (because entry class is put at index 0).
+# Indices start at 1 (0 is for entry class).
 
 # One class per line.
 
 java/lang/Object
 java/lang/Thread
+java/lang/String
 java/lang/Throwable
 java/lang/OutOfMemoryError
 java/lang/NoSuchMethodError

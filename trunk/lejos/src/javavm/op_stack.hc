@@ -6,7 +6,7 @@ case OP_BIPUSH:
   // Stack size: +1
   // Arguments: 1
   // TBD: check negatives
-  *(++stackTop) = (STACKWORD) (char) (*pc++);
+  push_word ((JBYTE) (*pc++));
   goto LABEL_ENGINELOOP;
 case OP_SIPUSH:
   // Stack size: +1
@@ -14,42 +14,50 @@ case OP_SIPUSH:
   #if 0
   printf ("  OP_SIPUSH args: %d, %d (%d)\n", (int) pc[0], (int) pc[1], (int) pc[2]);
   #endif
-  *(++stackTop) = (STACKWORD) (short) (((TWOBYTES) pc[0] << 8) | pc[1]);
+  push_word ((JSHORT) (((TWOBYTES) pc[0] << 8) | pc[1]));
   pc += 2;
   goto LABEL_ENGINELOOP;
 case OP_LDC:
   // Stack size: +1
   // Arguments: 1
-  gConstRec = get_constant_record (*pc++);
-  if (gConstRec->constantType == T_REFERENCE)
+  tempConstRec = get_constant_record (*pc++);
+  switch (tempConstRec->constantType)
   {
-    // Strings not supported!!
-    *(++stackTop) = obj2word(nullPointerException);
-  }
-  else
-  {
+    case T_REFERENCE:
+
+      // T_REFERENCE is actually String
+
+      tempWordPtr = (void *) create_string (tempConstRec, pc - 2);
+      if (tempWordPtr == JNULL)
+        goto LABEL_ENGINELOOP;
+      push_ref (ptr2ref (tempWordPtr));
+      break;
+    case T_INT:
+    case T_FLOAT:
+      make_word (get_constant_ptr(tempConstRec), 4, &tempStackWord);
+      push_word (tempStackWord);
+      break;
     #ifdef VERIFY
-    assert (gConstRec->constantType == T_INT, INTERPRETER0);
+    default:
+      assert (false, INTERPRETER0);
     #endif
-    make_word (get_constant_ptr(gConstRec), 4, ++stackTop);
   }
   goto LABEL_ENGINELOOP;
-
-#if 0
 
 case OP_LDC2_W:
   // Stack size: +2
   // Arguments: 2
-  gConstRec = get_constant_record (((TWOBYTES) pc[0] << 8) | pc[1]);
+  tempConstRec = get_constant_record (((TWOBYTES) pc[0] << 8) | pc[1]);
 
   #ifdef VERIFY
-  assert (gConstRec->constantSize == 8, INTERPRETER6);
+  assert (tempConstRec->constantSize == 8, INTERPRETER6);
   #endif VERIFY
 
   gBytePtr = get_constant_ptr (gConstRec);
-  make_word (gBytePtr, sizeof(STACKWORD), ++stackTop);
-  make_word (gBytePtr + sizeof(STACKWORD), sizeof(STACKWORD),
-             ++stackTop);
+  make_word (gBytePtr, 4, &tempStackWord);
+  push_word (tempStackWord);
+  make_word (gBytePtr + 4, 4, &tempStackWord);
+  push_word (tempStackWord);
   pc += 2;
   goto LABEL_ENGINELOOP;
 
@@ -58,8 +66,9 @@ case OP_LDC2_W:
 case OP_ACONST_NULL:
   // Stack size: +1
   // Arguments: 0
-  *(++stackTop) = JNULL;
+  push_ref (JNULL);
   goto LABEL_ENGINELOOP;
+
 case OP_ICONST_M1:
 case OP_ICONST_0:
 case OP_ICONST_1:
@@ -69,106 +78,81 @@ case OP_ICONST_4:
 case OP_ICONST_5:
   // Stack size: +1
   // Arguments: 0
-  *(++stackTop) = *(pc-1) - OP_ICONST_0;
+  push_word ((JINT) (*(pc-1) - OP_ICONST_0));
   goto LABEL_ENGINELOOP;
 case OP_LCONST_0:
 case OP_LCONST_1:
   // Stack size: +2
   // Arguments: 0
-  *(++stackTop) = 0;
-  *(++stackTop) = *(pc-1) - OP_LCONST_0;
+  push_word (0);
+  push_word (*(pc-1) - OP_LCONST_0);
   goto LABEL_ENGINELOOP;
 case OP_DCONST_0:
-  *(++stackTop) = 0;
+  push_word (0);
   // Fall through!
 case OP_FCONST_0:
-  *(++stackTop) = jfloat2word((JFLOAT) 0.0);
+  push_word (jfloat2word((JFLOAT) 0.0));
   goto LABEL_ENGINELOOP;
 case OP_FCONST_1:
-  *(++stackTop) = jfloat2word((JFLOAT) 1.0);
+  push_word (jfloat2word((JFLOAT) 1.0));
   goto LABEL_ENGINELOOP;
 case OP_FCONST_2:
-  *(++stackTop) = jfloat2word((JFLOAT) 2.0);
+  push_word (jfloat2word((JFLOAT) 2.0));
   goto LABEL_ENGINELOOP;
 case OP_DCONST_1:
   // Stack size: +2
   // Arguments: 0
-  *(++stackTop) = 0;
-  *(++stackTop) = jfloat2word((JFLOAT) 1.0);
+  push_word (0);
+  push_word (jfloat2word((JFLOAT) 1.0));
   goto LABEL_ENGINELOOP;
 case OP_POP2:
   // Stack size: -2
   // Arguments: 0
-  stackTop--;
+  just_pop_word();
   // Fall through
 case OP_POP:
   // Stack size: -1
   // Arguments: 0
-  stackTop--;
+  just_pop_word();
   goto LABEL_ENGINELOOP;
 case OP_DUP:
   // Stack size: +1
   // Arguments: 0
-  *(stackTop+1) = *stackTop;
-  stackTop++;
+  dup();
   goto LABEL_ENGINELOOP;
 case OP_DUP2:
   // Stack size: +2
   // Arguments: 0
-  *(stackTop+1) = *(stackTop-1);
-  *(stackTop+2) = *stackTop;
-  stackTop += 2;
+  dup2();
   goto LABEL_ENGINELOOP;
 case OP_DUP_X1:
   // Stack size: +1
   // Arguments: 0
-  stackTop++;
-  *stackTop = *(stackTop-1);
-  *(stackTop-1) = *(stackTop-2);
-  *(stackTop-2) = *stackTop;
+  dup_x1();
   goto LABEL_ENGINELOOP;
 case OP_DUP2_X1:
   // Stack size: +2
   // Arguments: 0
-  stackTop += 2;
-  *stackTop = *(stackTop-2);
-  *(stackTop-1) = *(stackTop-3);
-  *(stackTop-2) = *(stackTop-4);
-  *(stackTop-3) = *stackTop;
-  *(stackTop-4) = *(stackTop-1);
+  dup2_x1();
   goto LABEL_ENGINELOOP;
 case OP_DUP_X2:
   // Stack size: +1
   // Arguments: 0
-  stackTop++;
-  *stackTop = *(stackTop-1);
-  *(stackTop-1) = *(stackTop-2);
-  *(stackTop-2) = *(stackTop-3);
-  *(stackTop-3) = *stackTop;
+  dup_x2();
   goto LABEL_ENGINELOOP;
 case OP_DUP2_X2:
   // Stack size: +2
   // Arguments: 0
-  stackTop += 2;
-  gByte = 4;
-  while (gByte--)
-  {
-    *stackTop = *(stackTop-2);  
-    stackTop--;
-  }
-  stackTop[0] = stackTop[4];
-  stackTop[-1] = stackTop[3];
+  dup2_x2();
   goto LABEL_ENGINELOOP;
 case OP_SWAP:
-  gStackWord = *stackTop;
-  *stackTop = *(stackTop-1);
-  *(stackTop-1) = gStackWord;
+  swap(); 
   goto LABEL_ENGINELOOP;
 
 // Notes:
-// - LDC_W should not occur in tinyvm.
+// - LDC_W should not occur in TinyVM or CompactVM.
 // - Arguments of LDC and LDC2_W are postprocessed.
-// - NOOP is in op_skip.hc.
+// - NOP is in op_skip.hc.
 
 /*end*/
 

@@ -56,6 +56,8 @@ inline void set_monitor_count (Object *obj, byte count)
 
 void init_thread (Thread *thread)
 {
+ TBD: isReference needs to be initialized here.
+
   thread->threadId = ++gThreadCounter;
   thread->stackFrameArray = ptr2word (new_primitive_array (T_STACKFRAME, MAX_STACK_FRAMES));
   thread->stackArray = ptr2word (new_primitive_array (T_INT, STACK_SIZE));

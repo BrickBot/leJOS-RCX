@@ -57,6 +57,13 @@ typedef struct S_Thread
   byte state;
 } Thread;
 
+typedef struct S_String
+{
+  Object _super;
+
+  REFERENCE characters;
+} String;
+
 #endif _CLASSES_H
 
 
