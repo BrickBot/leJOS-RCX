@@ -229,7 +229,7 @@ public class TimingNavigator implements Navigator {
    /**
    * Moves the RCX robot forward until stop() is called.
    *
-   * @see Navigator.stop().
+   * @see Navigator#stop().
    */
    public void forward() {
       // Start timer
@@ -242,7 +242,7 @@ public class TimingNavigator implements Navigator {
    /**
    * Moves the RCX robot backward until stop() is called.
    *
-   * @see Navigator.stop().
+   * @see josx.robotics.Navigator#stop().
    */
    public void backward() {
       // Start timer
@@ -255,7 +255,7 @@ public class TimingNavigator implements Navigator {
    /**
    * Halts the RCX robot and calculates new x, y coordinates.
    *
-   * @see Navigator.forward().
+   * @see Navigator#forward().
    */
    public void stop() {
       // Only call interrupt if travelling

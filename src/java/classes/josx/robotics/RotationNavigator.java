@@ -265,7 +265,7 @@ public class RotationNavigator implements Navigator, SensorConstants {
    /**
    * Moves the RCX robot forward until stop() is called.
    *
-   * @see Navigator.stop().
+   * @see Navigator#stop().
    */
    public void forward() {
       rotLeft.setPreviousValue(0);
@@ -324,7 +324,7 @@ public class RotationNavigator implements Navigator, SensorConstants {
    /**
    * Moves the RCX robot backward until stop() is called.
    *
-   * @see Navigator.stop().
+   * @see Navigator#stop().
    */
    public void backward() {
       rotLeft.setPreviousValue(0);
@@ -335,7 +335,7 @@ public class RotationNavigator implements Navigator, SensorConstants {
    /**
    * Halts the RCX robot and calculates new x, y coordinates.
    *
-   * @see Navigator.forward().
+   * @see Navigator#forward().
    */
    public void stop() {
       if(moving) {
