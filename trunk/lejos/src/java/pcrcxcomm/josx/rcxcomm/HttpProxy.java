@@ -38,11 +38,11 @@ public class HttpProxy {
   }
 
   public static void main(String [] args) throws IOException {
-    boolean start = true;
+    boolean start = false;
     int port=80;
 
     for(int i=0;i<args.length;i++) {
-      if (args[i].equals("-nostart")) start = false;
+      if (args[i].equals("-start")) start = true;
       else if (args[i].equals("-port")) {
         if (i <args.length-1) port = Integer.parseInt(args[i+1]);
         i++;
