@@ -8,14 +8,32 @@
   - Experimental support for USB on MAC OS X
 
   Lawrie Griffiths has added:
-  - a version of javax.servlet.html for writing lejos Web servers
-  - example servlets 
-  - an Integer class that implements toString(int)
-  - additional String methods and a new StringUtils class
-  - removal of memory leaks in Button.waitForPressAndRelease and TextLCD.print 
-  - new floatToIntBits and intBitsToFloat native methods to support data streams
-  - fixes and minor enhancements to josx.rcxcomm
-  - improvements to apidocs including inclusion of josx.utils 
+  - Low level comms (LLC) that allows single bytes to be sent and received
+    over IR, without being limited to the Lego firmware protocol and opcodes
+  - A re-implementation of josx.rcxcomm.RCXPort using LLC which is faster 
+    and reliable.
+  - A similar re-implementation of RCXInputStream and RCXOutputStream.
+  - An abstract interface - PacketHandler - for creating your own multi-layer 
+    comms protocols.
+  - Partial implementations of the LegOS Networking Protocol (LNP) Integrity 
+    and Addressing layers using the PacketHandler interface.
+  - A re-implementation of the 1.0.5 RCXPort protocol, called RCXF7Port - 
+    this uses Serial not LLC on the RCX.
+  - An Abstract RCX port interface - RCXAbstractPort - for creating ports using
+    any protocol, and implementations: RCXPort, RCXF7Port, RCXLNPPort, and 
+    RCXLNPAddrPort.
+  - Partial support for point-to-point connections to multiple RCXs using the
+    LNP addressing protocol via RCXLNPAddrPort of direct use of the packet 
+    handlers.
+  - Versions of the SensorReader examples using all the above protocols.
+  - A version of javax.servlet.html for writing lejos Web servers.
+  - Example servlets including one that sets and reads Sensors via URLs.
+  - An Integer class that implements toString(int).
+  - Additional String methods and a new StringUtils class.
+  - Removal of memory leaks in Button.waitForPressAndRelease and TextLCD.print. 
+  - New floatToIntBits and intBitsToFloat native methods to support data streams.
+  - Fixes and minor enhancements to josx.rcxcomm.
+  - Improvements to apidocs including the inclusion of josx.utils. 
 
 leJOS 1.0.5:
 ------------
