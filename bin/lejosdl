@@ -1,3 +1,11 @@
+#!/bin/sh
+
+#
+# lejosdl: Downloads executables to the RCX
+#
+# 12/12/02  created L. Griffiths
+
+
 if [ $OSTYPE == "cygwin" ]; then
   SEPARATOR=";"
 else
