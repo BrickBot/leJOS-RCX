@@ -161,7 +161,7 @@ public class ColorEffect extends VisionEffect {
 
     // Call the best Color Listener
 
-    if (bestRegion > 0) {
+    if (bestRegion >= 0) {
       regions[bestRegion].getColorListeners()[bestListener].colorDetected(bestRegion+1, regions[bestRegion].getColors()[bestListener]);
     }
 
