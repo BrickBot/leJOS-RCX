@@ -75,7 +75,7 @@ static int timerRead(timeval_t *timer)
 // maxlen: maximum number of bytes to read
 // timeout_ms: timeout in ms
 // Returns number of received bytes or an error code.
-int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout);
+int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout_ms);
 
 // Receive packet in normal mode.
 // port: port handle
@@ -83,7 +83,7 @@ int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout);
 // maxlen: maximum number of bytes to read
 // timeout_ms: timeout in ms
 // Returns number of received bytes or an error code.
-int rcxReceiveSlow (void* port, void* buf, int maxlen, int timeout);
+int rcxReceiveSlow (void* port, void* buf, int maxlen, int timeout_ms);
 
 // Check if echo is correct.
 // port: port handle
@@ -274,12 +274,12 @@ bool rcxCheckEcho (void* port, char* send, int sendLength)
 	return result;
 }
 
-int rcxReceive (void* port, void* buf, int maxlen, int timeout)
+int rcxReceive (void* port, void* buf, int maxlen, int timeout_ms)
 {
-	rcxIsFast(port)?  rcxReceiveFast(port, buf, maxlen, timeout) : rcxReceiveSlow(port, buf, maxlen, timeout);
+	rcxIsFast(port)?  rcxReceiveFast(port, buf, maxlen, timeout_ms) : rcxReceiveSlow(port, buf, maxlen, timeout_ms);
 }
 
-int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout)
+int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout_ms)
 {
 	char *bufp = (char *)buf;
 	unsigned char msg[BUFFERSIZE];
@@ -291,7 +291,7 @@ int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout)
 	// Receive message
 	// TODO better use maxlen + x ???
 	int expected = BUFFERSIZE;
-	int read = rcxRead(port, msg, expected, timeout); 
+	int read = rcxRead(port, msg, expected, timeout_ms); 
  
 	// Check for message
 	if (read == 0)
@@ -381,7 +381,7 @@ int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout)
 	return RCX_BAD_RESPONSE;
 }
 
-int rcxReceiveSlow (void* port, void* buf, int maxlen, int timeout)
+int rcxReceiveSlow (void* port, void* buf, int maxlen, int timeout_ms)
 {
 	char* bufp = (char*) buf;
 	unsigned char msg[BUFFERSIZE];
@@ -392,7 +392,7 @@ int rcxReceiveSlow (void* port, void* buf, int maxlen, int timeout)
 
 	// Receive message
 	int expected = maxlen * 2 + 3 + 2;
-	int read = rcxRead(port, msg, expected, timeout); 
+	int read = rcxRead(port, msg, expected, timeout_ms); 
  
 	// Check for message
 	if (read == 0)
@@ -452,7 +452,7 @@ int rcxReceiveSlow (void* port, void* buf, int maxlen, int timeout)
 }
 
 int rcxSendReceive (void* port, void* send, int sendLength, 
-  void* receive, int receiveLength, int timeout, int retries)
+  void* receive, int receiveLength, int timeout_ms, int retries)
 {
 	int status = 0;
 
@@ -468,7 +468,7 @@ int rcxSendReceive (void* port, void* send, int sendLength,
 			continue;
 		}
 		
-		status = rcxReceive(port, receive, receiveLength, timeout);
+		status = rcxReceive(port, receive, receiveLength, timeout_ms);
 		if (status < 0) 
 		{
 			if (__comm_debug) printf("receive status = %s\n", rcxStrerror(status));
