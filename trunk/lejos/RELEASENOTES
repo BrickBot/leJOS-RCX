@@ -6,7 +6,12 @@ leJOS 1.0.0beta3:
   - Added Christophe Ponsard's remote control example,
     Ryan Vander Bijl's hworld example, and Reinhard Schiedermeier's
     example on RCX-to-RCX communication (serial2rcx).
-  
+  - Added a few methods to the Motor class, based on
+    suggestions sent by Rune Berge.
+  - Copied the entire util/firmdl directory from legOS 0.2.4
+    into tools/firmdl, and made minor modifications to it.
+    This should fix the infamous "Permission Denied" bug.
+  - 
   
 leJOS 1.0.0beta2:
 -----------------

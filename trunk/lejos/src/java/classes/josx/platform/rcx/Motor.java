@@ -1,13 +1,20 @@
 package josx.platform.rcx;
 
 /**
- * Abstraction for a motor. Example:<p>
+ * Abstraction for a motor. Three instances of <code>Motor</code>
+ * are available: <code>Motor.A</code>, <code>Motor.B</code>
+ * and <code>Motor.C</code>. To control each motor use
+ * methods <code>forward, backward, reverseDirection, stop</code>
+ * and <code>flt</code>. To set each motor's power, use
+ * <code>setPower</code>.  
+ * <p>
+ * Example:<p>
  * <code><pre>
  *   Motor.A.setPower(1);
  *   Motor.C.setPower(7);
  *   Motor.A.forward();
  *   Motor.C.forward();
- *   for (int i = 0; i < 1000; i++) { }
+ *   Thread.sleep (1000);
  *   Motor.A.stop();
  *   Motor.C.stop();
  * </pre></code>
@@ -15,7 +22,7 @@ package josx.platform.rcx;
 public class Motor
 {
   private char  iId;
-  private short iMode = 3;
+  private short iMode = 4;
   private short iPower = 3;
 
   /**
@@ -65,7 +72,47 @@ public class Motor
   }
 
   /**
-   * Causes motor to stop.
+   * Reverses direction of the motor. It only has
+   * effect if the motor is moving.
+   */
+  public final void reverseDirection()
+  {
+    if (iMode == 1 || iMode == 2)
+    {
+      iMode = 3 - iMode;
+      controlMotor (iId, iMode, iPower);
+    }
+  }
+
+  /**
+   * Returns the current motor power.
+   */
+  public final int getPower()
+  {
+    return iPower;	  
+  }
+
+  /**
+   * @return true iff the motor is currently in motion.
+   */
+  public final boolean isMoving()
+  {
+    return (iMode == 1 || iMode == 2);	  
+  }
+  
+  /**
+   * @return true iff the motor is currently in float mode.
+   */
+  public final boolean isFloating()
+  {
+    return iMode = 4;	  
+  }
+  
+  /**
+   * Causes motor to stop, pretty much
+   * instantaneously. In other words, the
+   * motor doesn't just stop; it will resist
+   * any further motion.
    */
   public final void stop()
   {
@@ -74,7 +121,10 @@ public class Motor
   }
 
   /**
-   * Causes motor to float.
+   * Causes motor to float. The motor will lose all power,
+   * but this is not the same as stopping. Use this
+   * method if you don't want your robot to trip in
+   * abrupt turns.
    */
   public final void flt()
   {
@@ -84,6 +134,14 @@ public class Motor
 
   /**
    * <i>Low-level API</i> for controlling a motor.
+   * This method is not meant to be called directly.
+   * If called, other methods such as isRunning() will
+   * be unreliable.
+   * @deprecated I've decided to remove this method.
+   *             If you really need it, check its implementation
+   *             in classes/josx/platform/rcx/Motor.java. 
+   *             Note that native methods such as callRom3
+   *             can be declared in any leJOS class.
    * @param aMotor The motor id: 'A', 'B' or 'C'.
    * @param aMode 1=forward, 2=backward, 3=stop, 4=float
    * @param aPower A value in the range [0-7].

@@ -1,13 +1,50 @@
 package josx.platform.rcx;
 
 /**
- * Low-level APIs for serial communications.
- * For details, Kekoa Proudfoot's
- * RCX opcode reference is highly recommended.
+ * Low-level API for infra-red (IR) communication between
+ * an RCX and the IR tower or between two RCXs.
+ * For protocol details, Kekoa Proudfoot's Opcode Reference
+ * is highly recommended. See Kekoa's 
+ * <a href="http://graphics.stanford.edu/~kekoa/rcx/index.html">RCX Internals</a> page.
+ * Kekoa Proudfoot has also written a C based tool
+ * (<a href="http://graphics.stanford.edu/~kekoa/rcx/tools.html">Send</a>)
+ * which you can use to send packets to the RCX. If you prefer
+ * to write everything in Java, you should become familiar with the
+ * <a href="http://java.sun.com/products/javacomm/">Java Communications API</a>.
+ * Frameworks based on this API have already been developed
+ * by Dario Laverde 
+ * (see <a href="http://www.escape.com/~dario/java/rcx/">RCXLoader</a>)
+ * and Scott Lewis (see <a href="http://www.slewis.com/rcxport/">RCXPort</a>).
+ * The Java Communications API is officially supported on Windows and Solaris.
  * <p>
- * NOTE: A call to resetRcx is made by the
- * static initializer of this class. This means
- * sensors will be passivated.
+ * Examples that use the leJOS Serial class can be found in:
+ * <ul>
+ * <li><code>examples/serial</code> --- Receiver for certain opcodes, such as MotorOn.
+ * <li><code>examples/serial2rcx</code> --- Communication between two RCXs.  
+ * <li><code>examples/remotectl</code> --- Receiver for Lego remote control.
+ * </ul>
+ * <p>
+ * The basic pattern for a Receiver is:
+ * <p>
+ * <code>
+ * <pre>
+ *    byte[] packet = new byte[8];
+ *    for (;;)
+ *    {
+ *      if (Serial.isPacketAvailable())
+ *      {
+ *        Serial.readPacket (packet);
+ *        byte opcode = packet[0];
+ *        if (opcode == AN_OPCODE)
+ *          ...
+ *          ...
+ *        // Possibly send a response here
+ *        packet = ~packet[0];
+ *        Serial.sendPacket (packet, 0, PACKET_LENGTH);
+ *      }
+ *    }
+ * </pre>
+ * </code>
  */
 public class Serial
 {
@@ -22,8 +59,10 @@ public class Serial
    * Reads a packet received by the RCX, if one is available.
    * The first
    * byte in the buffer is the opcode. Opcode
-   * 0x45 (Transfer Data) is received in a special way: Use 
-   * setDataBuffer().
+   * 0x45 (Transfer Data) is received in a special way: If you 
+   * had previously called setDataBuffer(), packet data will
+   * be copied into the buffer provided. Note the caveats regarding
+   * setDataBuffer() use.
    *
    * @return The number of bytes received.
    * @see josx.platform.rcx.Serial#isPacketAvailable
@@ -73,7 +112,9 @@ public class Serial
   }
 
   /**
-   * Sends a packet.
+   * Sends a packet to the IR tower or another RCX.
+   * In general, the IR tower will only receive <i>responses</i>
+   * to messages it has sent.
    */
   public static void sendPacket (byte[] aBuffer, int aOffset, int aLen)
   {
@@ -83,9 +124,24 @@ public class Serial
   }
 
   /**
-   * Resets serial communications.
-   * <p>
-   * NOTE: This method will passivate all sensors.
+   * Sets long range transmision.
+   */
+  public static void setRangeLong()
+  {
+    Native.callRom1 ((short) 0x3250, 0x1770);	  
+  }
+
+  /**
+   * Sets short range transmision.
+   */
+  public static void setRangeShort()
+  {
+    Native.callRom1 ((short) 0x3266, 0x1770);	  
+  }
+  
+  /**
+   * Resets serial communications. It can be used
+   * to disable buffers set with <code>setDataBuffer</code>.
    */
   public native static void resetSerial();
 
