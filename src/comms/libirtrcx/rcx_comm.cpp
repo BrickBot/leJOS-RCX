@@ -85,6 +85,14 @@ int rcxReceiveFast (void* port, void* buf, int maxlen, int timeout_ms);
 // Returns number of received bytes or an error code.
 int rcxReceiveSlow (void* port, void* buf, int maxlen, int timeout_ms);
 
+// Encode bytes to correct message format.
+// port: port handle
+// send: buffer with bytes to send as message
+// sendLength: number of bytes to send
+// message: buffer to which the message will be encoded
+// Returns length of encoded message
+int rcxEncodeMessage (void* port, char* send, int sendLength, char* message);
+
 // Check if echo is correct.
 // port: port handle
 // send: buffer with send bytes
@@ -198,38 +206,13 @@ int rcxSend (void* port, void* send, int sendLength)
 	if (__comm_debug) hexdump("S", send, sendLength);
 
 	// Encode message
-	char msg[BUFFERSIZE];
-	int msglen = 0;
-	int sum = 0;
-	if (rcxIsFast(port)) 
-	{
-		msg[msglen++] = 0xff;
-		while (sendLength--) 
-		{
-			msg[msglen++] = *bufp;
-			sum += *bufp++;
-		}
-		msg[msglen++] = sum;
-	}
-	else 
-	{
-		msg[msglen++] = 0x55;
-		msg[msglen++] = 0xff;
-		msg[msglen++] = 0x00;
-		while (sendLength--) 
-		{
-			msg[msglen++] = *bufp;
-			msg[msglen++] = (~*bufp) & 0xff;
-			sum += *bufp++;
-		}
-		msg[msglen++] = sum;
-		msg[msglen++] = ~sum;
-	}
+	char message[BUFFERSIZE];
+	int messageLength = rcxEncodeMessage(port, (char*) send, sendLength, message);
 
 	// Send message
 	rcxPurge(port);
-	int written = rcxWrite(port, msg, msglen);
-	if (written != msglen) 
+	int written = rcxWrite(port, message, messageLength);
+	if (written != messageLength) 
 	{
       if (__comm_debug) printf("wrong number of bytes sent\n");
 		rcxPerror("write");
@@ -239,13 +222,40 @@ int rcxSend (void* port, void* send, int sendLength)
 	// Check echo
    // USB tower does not echo!
    rcxFlush(port);
-	if (!rcxIsUsb(port) && !rcxCheckEcho(port, msg, msglen))
+	if (!rcxIsUsb(port) && !rcxCheckEcho(port, message, messageLength))
 	{
       if (__comm_debug) printf("wrong echo\n");
 		return RCX_BAD_ECHO;
 	}
 
-	return buflen;
+	return sendLength;
+}
+
+int rcxEncodeMessage (void* port, char* send, int sendLength, char* message)
+{
+	bool isFast = rcxIsFast(port);
+	
+	int messageLength = 0;
+	int sum = 0;
+	message[messageLength++] = 0x55;
+	message[messageLength++] = 0xff;
+	message[messageLength++] = 0x00;
+	while (sendLength--) 
+	{
+		message[messageLength++] = *send;
+      if (!isFast) 
+      {
+		  message[messageLength++] = (~*send) & 0xff;
+      }
+		sum += *send++;
+	}
+	message[messageLength++] = sum;
+	if (!isFast) 
+	{
+		message[messageLength++] = ~sum;
+	}
+	
+	return messageLength;
 }
 
 bool rcxCheckEcho (void* port, char* send, int sendLength)
