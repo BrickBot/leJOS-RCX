@@ -30,9 +30,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#if !defined(_WIN32)
 #include <unistd.h>
 #include <termios.h>
 #include <sys/time.h>
+#endif
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
