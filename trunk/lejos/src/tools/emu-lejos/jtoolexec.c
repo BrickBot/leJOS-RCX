@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include "util.h"
 
 #ifdef __CYGWIN__
@@ -100,8 +101,7 @@ int main (int argc, char *argv[])
   char *cpath;
   char **newargv;
 
-  
-  newargv = (char **) malloc (sizeof (char *) * (argc + 3));
+  newargv = (char **) malloc (sizeof (char *) * (argc + 5));
   count = 0;
   cpath = get_classpath (argv[0]);
   
@@ -122,6 +122,10 @@ int main (int argc, char *argv[])
   newargv[count++] = toolName;
   
   #ifdef JAVA2
+  if (strcmp(toolName,"javac") == 0) {
+    newargv[count++] = "-target";
+    newargv[count++] = "1.1";
+  }
   newargv[count++] = "-bootclasspath";
   #else
   newargv[count++] = "-classpath";
