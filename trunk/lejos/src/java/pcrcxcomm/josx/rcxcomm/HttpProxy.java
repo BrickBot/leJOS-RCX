@@ -3,10 +3,22 @@ package josx.rcxcomm;
 import java.net.*;
 import java.io.*;
 
+/**
+ *
+ * A Proxy for sending HTTP requests to the RCX.
+ *
+ * Listens on the port specified by -port <port> (default 80).
+ * If the RCX is currently servicing a request, it returns the massge "RCX is Busy".
+ *
+ * The constructor does not return - it runs forever.
+ *
+ * @author 	Lawrie Griffiths
+ *
+ */
 public class HttpProxy {
-  boolean busy = false;
+  private boolean busy = false;
 
-  public HttpProxy(boolean start, int port) throws IOException {
+  public HttpProxy(int port) throws IOException {
 
     ServerSocket serverSock = new ServerSocket(port);
 
@@ -27,54 +39,53 @@ public class HttpProxy {
         // sock.close();
       } else {
         setBusy(true);
-        RCXThread rcxThread = new RCXThread(this,sock,start);
+        RCXThread rcxThread = new RCXThread(this,sock);
         rcxThread.start();
       }
     }
   }
 
-  public synchronized void setBusy(boolean busy) {
-    this.busy = busy;
+  /**
+   * Called by RCXThread when the RCX has processed a request
+   **/
+  synchronized void setBusy(boolean busy) {
+   this.busy = busy;
   }
 
   public static void main(String [] args) throws IOException {
-    boolean start = false;
     int port=80;
 
     for(int i=0;i<args.length;i++) {
-      if (args[i].equals("-start")) start = true;
-      else if (args[i].equals("-port")) {
+      if (args[i].equals("-port")) {
         if (i <args.length-1) port = Integer.parseInt(args[i+1]);
         i++;
       }
     }
 
-    HttpProxy proxy = new HttpProxy(start,port);
+    // Runs forever
+
+    HttpProxy proxy = new HttpProxy(port);
   }
 
+  /**
+   * Innner class to deal with a single request
+   */
   class RCXThread extends Thread {
     private Socket sock;  
     private HttpProxy proxy;
     private boolean start;
 
-    public RCXThread(HttpProxy proxy,Socket sock, boolean start) {
+    RCXThread(HttpProxy proxy, Socket sock) {
       this.sock = sock;
       this.proxy = proxy;
       this.start = start;
     }
 
     public void run() {
-
-      if (start) {
-        System.out.println("Starting RCX program");
-        Tower tower = new Tower();
-        tower.open();
-        byte [] start = {(byte)0xd2,0x02,0x00};
-        tower.send(start,3);
-        tower.close();
-      }
-
       try {
+
+        // Open the RCXPort and get the port and socket streams
+
         RCXPort port = new RCXPort();
         InputStream is = port.getInputStream();
         OutputStream os = port.getOutputStream();
