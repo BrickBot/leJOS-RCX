@@ -71,6 +71,8 @@
 
 int __comm_debug = 0;
 int usb_flag = 1;
+int fast_flag = 0;
+int use_comp = 0;
 
 /* Timer routines */
 
@@ -115,7 +117,15 @@ int rcx_is_usb()
 	return usb_flag;
 }
 
+void rcx_set_fast(int fast)
+{
+	fast_flag = fast;
+}
 
+int rcx_is_fast()
+{
+	return fast_flag;
+}
 
 // RCX functions
 
@@ -146,7 +156,13 @@ FILEDESCR rcx_init(char *tty, int is_fast)
 	if ((stricmp( tty , "usb" ) == 0) ) {
 		rcx_set_usb(1);
 		tty = TOWER_NAME;
-	}
+	}  else if ((strnicmp(tty,"usb",3) == 0) && strlen(tty) == 4) {
+          	static char buff[20];
+		rcx_set_usb(1);
+    		strcpy(buff, TOWER_NAME);
+    		buff[strlen(TOWER_NAME)-1] = tty[3];
+    		tty = buff;
+  	}  
 
 	// Set debugging if RCXCOMM_DEBUG=Y 
 
