@@ -32,7 +32,7 @@ export JAVA
 default: check all_ctools core_classes rcx_comm all_jtools tinyvm_emul
 	@echo "====> Installation of leJOS done!"
 
-all: default lejos_bin
+all: default 
 
 release:
 	$(MAKE) $(MFLAGS) clean
@@ -60,8 +60,10 @@ dir_and_zip:
 
 release_win:
 	$(MAKE) clean
-	rm -rf apidocs pcapidocs
+	rm -rf apidocs pcapidocs visionapidocs
 	$(MAKE) all
+	$(MAKE) $(MFLAGS) vision
+	$(MAKE) $(MFLAGS) visiondoc
 	export TINYVM_VERSION=lejos_win32_`cat VERSION`; make dir_and_zip_win
 
 dir_and_zip_win:
@@ -136,7 +138,7 @@ pcjavadoc:
 
 visiondoc:
 	if [ ! -d visionapidocs ]; then mkdir visionapidocs; fi
-	javadoc -protected -windowtitle "leJOS Vision API documentation" -author -d visionapidocs -classpath $(JMFHOME)/lib/jmf.jar${PATH_SEP}./lib/pcrcxcomm.jar -sourcepath vision josx.vision
+	javadoc -protected -windowtitle "leJOS Vision API documentation" -author -d visionapidocs -classpath "$(JMFHOME)/lib/jmf.jar${PATH_SEP}./lib/pcrcxcomm.jar" -sourcepath vision josx.vision
 
 clean:
 	rm -f `find . -name '*.class'`
