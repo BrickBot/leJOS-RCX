@@ -35,7 +35,7 @@ IRTOWER=../../bin/libirtower.jnilib
     # Linux/Solaris/FreeBSD/other unices.
     IRTOWER=../../bin/libirtower.so
     CCOPT=-shared -fpic -I${JDK}/include -I${JDK}/include/$(OS) 
-    CXX=${CC}
+    # CXX=${CC}
   endif
 endif
 
