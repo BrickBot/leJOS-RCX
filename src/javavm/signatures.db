@@ -86,8 +86,8 @@ intBitsToFloat(I)F
 
 # josx.rcxcomm.LLC
 init()V
-write(B)V
+write([BI)V
 read()I
-
-
+isSending()Z
+isSendError()Z
 
