@@ -37,7 +37,7 @@ import java.io.*;
   private static String crlf2 = "\r\n\r\n";
 
   private void send(String s) throws IOException {
-    char [] ca = s.toCharArray();
+    char [] ca = StringUtils.getCharacters(s);
     for(int i=0;i<ca.length;i++) os.write((byte) ca[i]); 
   }
 

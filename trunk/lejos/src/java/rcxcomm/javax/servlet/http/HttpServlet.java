@@ -29,12 +29,15 @@ import java.io.*;
 
   private static final int MAX_PATH = 16;
   private static final int MAX_QUERY_STRING = 32;
+  private static final int MAX_STRING = 32;
 
-  private char [] pathChars = new char[MAX_PATH];
-  private char [] queryStringChars = new char[MAX_QUERY_STRING];
+  private char [] tempChars = new char[MAX_STRING];
 
-  private String path = new String(pathChars);
-  private String queryString = new String(queryStringChars);
+  private String path = new String(tempChars, 0, MAX_PATH);
+  private String queryString = new String(tempChars, 0, MAX_QUERY_STRING);
+
+  private char [] pathChars = StringUtils.getCharacters(path);
+  private char [] queryStringChars = StringUtils.getCharacters(queryString);
 
   private int pathLength;
   private int queryStringLength;
