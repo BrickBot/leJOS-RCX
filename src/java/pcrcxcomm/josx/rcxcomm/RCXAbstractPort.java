@@ -127,7 +127,6 @@ public abstract class RCXAbstractPort {
       private byte[] buffer = new byte[bufferSize];
       private int current = 0, last = 0;
       private RCXAbstractPort dataPort;
-      private IOException ioe = new IOException();
 
       /** Creates new RCXInputStream
       * @param port The RCXAbstractPort which should deliver data for to this InputStream
@@ -157,7 +156,7 @@ public abstract class RCXAbstractPort {
          long timeOut = dataPort.getTimeOut();
          while (available() == 0) {
             if (timeOut != 0 && (System.currentTimeMillis()-time1 > timeOut)) {
-                  throw ioe;
+                  throw new IOException("The read timed out");
             }
             try {
                Thread.sleep(10);
@@ -193,7 +192,6 @@ public abstract class RCXAbstractPort {
    private class RCXOutputStream extends OutputStream {
 
       private PacketHandler packetHandler;
-      private IOException ioe = new IOException();
 
       /** Creates new RCXOutputStream
       * @param handler the packet handler used to send data
