@@ -8,7 +8,7 @@ fi
 
 if [ "${TINYVMPATH}" = "" ];
 then
-  echo Warning: TINYVMPATH undefined.
+  echo "Warning: TINYVMPATH undefined. (Use it instead of CLASSPATH)."
 fi
 
 if [ "${JAVAC}" = "" ];

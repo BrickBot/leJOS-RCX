@@ -7,6 +7,7 @@ CLASSES_DIR=${TINYVM_HOME}/classes
 LIB_DIR=${TINYVM_HOME}/lib
 
 JAVAC=javac
+JAVADOC=javadoc
 JAVA=java
 
 export CLASSPATH
@@ -47,8 +48,12 @@ tinyvm_emul:
 	cd vmtest; make
 
 core_classes:
-	${JAVAC} -classpath ${CLASSES_DIR} `find ${CLASSES_DIR} -name '*.java' -printf "%h/%f " `
+	${JAVAC} -classpath "${CLASSES_DIR}" `find ${CLASSES_DIR} -name '*.java' -printf "%h/%f " `
 	cd ${CLASSES_DIR}; jar cf ${LIB_DIR}/classes.jar `find . -name '*.class' -printf "%h/%f " `
+
+javadoc:
+	if [ ! -d apidocs ]; then mkdir apidocs; fi
+	${JAVADOC} -d apidocs -sourcepath "${CLASSES_DIR}" java.lang tinyvm.rcx
 
 clean:
 	rm -rf `find . -name '*.class' -printf "%h/%f "`
