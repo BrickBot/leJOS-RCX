@@ -105,5 +105,12 @@ public class F7Handler extends PacketHandler {
     boolean r = (bytesRead > 0);
     return r;
   }
+
+  /**
+   * Close the Tower.
+   **/
+  public void close() {
+    tower.close();
+  }
 }
 
