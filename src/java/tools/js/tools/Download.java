@@ -70,8 +70,12 @@ public class Download {
 
     actualBuffer[5 + i] = checkSum;
 
-    tower.send(actualBuffer, length + 6);
-    r = tower.receive(response);
+    // Try 10 times
+
+    for(i=0;i<10 && r <=0;i++) {
+      tower.send(actualBuffer, length + 6);
+      r = tower.receive(response);
+    }
 
     if (r >=0 && response[1] == 3)
     {
@@ -90,7 +94,7 @@ public class Download {
    **/
   public static void downloadProgram(byte [] buffer, int len) {
     byte [] send = new byte[3];
-    int numRead, numToWrite, index, status;
+    int numRead = 0, numToWrite, index, status;
     byte [] recv = new byte[3];
     byte opcode = 0x45;
     int offset = 0;
@@ -101,8 +105,12 @@ public class Download {
     send[1] = (byte) (MAGIC >> 8);
     send[2] = (byte) (MAGIC & 0xFF);
 
-    tower.send(send, 3);
-    numRead = tower.receive(recv); 
+    // Try 3 times
+    
+    for(int i=0;i<3 && numRead <= 0;i++) {
+      tower.send(send, 3);
+      numRead = tower.receive(recv);
+    }
 
     if (numRead != 3)
     {
@@ -158,6 +166,7 @@ public class Download {
 
     /* Compute image checksum */
     int cksumlen = (start + len < 0xcc00) ? len : 0xcc00 - start;
+    int r = 0;
 
     for (i = 0; i < cksumlen; i++)
 	cksum += (image[i] < 0 ? image[i] + 256 : image[i]);
@@ -172,8 +181,14 @@ public class Download {
     send[4] = (byte) ((cksum >> 8) & 0xff);
     send[5] = 0;
 
-    tower.send(send,6);
-    if (tower.receive(recv) < 0) {
+    // try 3 times
+    
+    for(i=0;i<3 && r <=0;i++) {
+      tower.send(send,6);
+      r = tower.receive(recv);
+    }
+
+    if (r <= 0) {
       System.err.println("Start firmware download failed");
       System.exit(1);
     }
@@ -209,6 +224,7 @@ public class Download {
   {
     byte [] send = new byte[6];
     byte [] recv = new byte[1];
+    int r=0;
 
     System.err.println("Deleting firmware");
     /* Delete firmware */
@@ -221,15 +237,14 @@ public class Download {
 
     // Needs at least 2 goes to delete firmware 
 
-    for(int i=0;i<5;i++) {
-      // System.err.println("Try " + i);
+    for(int i=0;i<3 && r <= 0;i++) {
       tower.send(send,6);
-      if (tower.receive(recv) != 1) {
-        if (i == 4) {
-          System.err.println("Delete firmware failed");
-          System.exit(1);
-        }
-      } else break;
+      r = tower.receive(recv);
+    }
+
+    if (r != 1) {
+      System.err.println("Delete firmware failed, response = " + r);
+      System.exit(1);
     }
     System.err.println("Firmware deleted");
   }
@@ -241,7 +256,7 @@ public class Download {
   {
     byte [] send = new byte[6];
     byte [] recv = new byte[26];
-    int r;
+    int r = 0;
 
     System.err.println("Unlocking firmware");
 
@@ -255,10 +270,15 @@ public class Download {
 
     /* Use longer timeout so ROM has time to checksum firmware */
 
-    tower.send(send,6);
+    // Try 10 times
+    
+    for(int i=0;i<10 && r <= 0;i++) {
+      tower.send(send,6);
+      r = tower.receive(recv);
+    }
 
-    if ((r=tower.receive(recv)) < 0) {
-      System.err.println("Unlock firmware failed " + r);
+    if (r <= 0) {
+      System.err.println("Unlock firmware failed, response = " + r);
       System.exit(1);
     }
 
