@@ -3,13 +3,49 @@ package javax.servlet.http;
 import josx.rcxcomm.*;
 import java.io.*;
 
-public abstract class HttpServlet {
+/**
+ *
+ * Provides an abstract class to be subclassed to create
+ * an HTTP servlet suitable for a lejos Web Server. A subclass of
+ * <code>HttpServlet</code> must override at least one method.
+ *
+ * The only method currently suported by lejos is:
+ *
+ * <ul>
+ * <li> <code>doGet</code>, for HTTP GET requests
+ * </ul>
+ *
+ * lejos currently supports a single Servlet. You call the parameterless
+ * constructor to create the Servlet, and call th inti() method to
+ * start the Web Server. It loops forever processing GET 
+ * requests. 
+ *
+ * All paths are mapped onto this single servlet. 
+ * 
+ * @author	Lawrie Griffiths
+ *
+ **/
+ public abstract class HttpServlet {
 
   private static final int MAX_PATH = 16;
-  char [] path = new char[MAX_PATH];
-  int pathLength = 0;
+  private static final int MAX_QUERY_STRING = 32;
 
-  public HttpServlet() throws IOException {
+  private char [] pathChars = new char[MAX_PATH];
+  private char [] queryStringChars = new char[MAX_QUERY_STRING];
+
+  private String path = new String(pathChars);
+  private String queryString = new String(queryStringChars);
+
+  private int pathLength;
+  private int queryStringLength;
+
+  /**
+   * Initialize the HTTP servlet 
+   *
+   * @exception IOException		if an input or output error occurs
+   *
+   **/
+  public void init() throws IOException {
     RCXPort port = new RCXPort();
     InputStream is = port.getInputStream();
     OutputStream os = port.getOutputStream();
@@ -19,21 +55,48 @@ public abstract class HttpServlet {
     while (true) {
       byte b = 0, lastB = 0, lastB2 = 0, lastB3;
       pathLength = 0;
+      queryStringLength = 0;
+      int i;
 
-      // Skip the get and leading slash
+      // Skip the get 
 
-      for (int i= 0;i<5;i++) is.read();
+      for (i= 0;i<4;i++) is.read();
 
       // Get the path
 
-      for(;;) {
+      for(i = 0;i<MAX_PATH;i++) {
         b = (byte) is.read();
-        if (b == ' ') break;
-        path[pathLength++] = (char) b;
+        if (b == ' ' || b == '?') break;
+        pathChars[pathLength++] = (char) b;
       } 
+
+      while (b != ' ' && b != '?') b = (byte) is.read();
+
+      // Pad with spaces
+
+      for(i=pathLength;i < MAX_PATH;i++) pathChars[i] = ' ';
+
+      if (b == '?') {
+       
+        // Get the query string
+ 
+        for(i=0;i<MAX_QUERY_STRING;i++) {
+          b = (byte) is.read();
+          if (b == ' ') break;
+          queryStringChars[queryStringLength++] = (char) b;
+        } 
+      }
+
+      // Pad with spaces
+
+      for(i=queryStringLength;i < MAX_QUERY_STRING;i++) queryStringChars[i] = ' ';
+
+      // Set in request
 
       req.setPath(path,pathLength);
  
+      req.setQueryString(queryString,queryStringLength);
+
       // Skip the request and headers
 
       do {
@@ -51,7 +114,20 @@ public abstract class HttpServlet {
       os.write((byte) 0xff);
     }
   }
-  
+
+  /**
+   * doGet must be overridden to allow your Servlet to process GET requests
+   * 
+   *
+   * @param req	the request object that is passed to the servlet
+   *			
+   * @param resp	the response object that the servlet
+   *			uses to return the headers to the clien
+   *
+   * @exception IOException		if an input or output error occurs
+   *
+   * @exception ServletException	not used in lejos version
+   */
   public abstract void doGet(HttpServletRequest request, HttpServletResponse response)
                             throws IOException;
 
