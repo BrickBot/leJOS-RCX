@@ -2,9 +2,9 @@ josx.rcxcomm is a package for communication between a PC and the RCX.
 
 It is based on original code created by the LEGO3 Team at DTU-IAU.
 
-It uses standard Java IO Streams to send primitive Java data types from the 
-PC to the RCX, or from the RCX to the PC. Either end can initiate communication,
-and data can be sent in both directions.
+It uses standard Java IO Streams to send primitive Java data types
+from the  PC to the RCX, or from the RCX to the PC. Either end can
+initiate communication, and data can be sent in both directions.
 
 A simple program to send a byte is:
 
@@ -75,31 +75,32 @@ It is useful for creating Web sites using Java Server Pages (JSPs) that
 access the RCX to read sensors, perform actions, etc.
 
 For serial towers on the PC or Mac, there is an extra method: setListen.
-This is used to keep the serial tower alive for receiving data. Use 
-setListen(true) when you want to receive date and setListen(false) to conserve 
-the serial tower batteries. You don't need to call setListen for USB towers.
-setListen is called automatically by the PC version of getInputStream(). You
-can call setListen(false) if you dont need to listen immediately and you want to 
-conserve batteries.
+This is used to keep the serial tower alive for receiving data.
+Use  setListen(true) when you want to receive date and setListen(false)
+to conserve  the serial tower batteries. You don't need to call setListen
+for USB towers.  setListen is called automatically by the PC version
+of getInputStream(). You can call setListen(false) if you dont need to
+listen immediately and you want to conserve batteries.
 
-With lejos 2.0. low level comms that does not rely on the Lego firmware protocol 
-and opcodes has been added, and RCXPort has been re-implemented using this. This
-makes it faster and reliable. It will continue to try to send data until it gets 
-through, and ensure hat no data is duplicated. Future versions will be faster 
-still by adding buffering and using larger packet sizes.
+With lejos 2.0. low level comms that does not rely on the Lego firmware
+protocol  and opcodes has been added, and RCXPort has been re-implemented
+using this. This makes it faster and reliable. It will continue to try
+to send data until it gets through, and ensure hat no data is duplicated.
+Future versions will be faster still by adding buffering and using larger
+packet sizes.
 
 With lejos 2.0 there are alternative versions of RCXPort. These are:
 
 RCXF7Port - which uses the Lego F7 opcode in the same way as the lejos 1.0.5 
             version of RCXPort
-RCXLNPPort - which uses the LegOS Netwrorking Protocol Integrity layer
+RCXLNPPort - which uses the LegOS Networking Protocol Integrity layer
 RCXLNPAddrPort - which uses the LegOS Netwrorking Protocol Addressing layer
 
 You can also write your own protocol stacks and RCX Ports - see 
 ProtocolStacks.Readme.
 
-There are several example programs that use RCXPort in the rcxcomm/examples directory.
-See the browser example for how to browse the Internet from the RCX using a socket 
-proxy on the PC, and servlet for how to turn he RCX into a Web Server using an Http
-Proxy on the PC.
+There are several example programs that use RCXPort in the rcxcomm/examples
+directory.  See the browser example for how to browse the Internet from the
+RCX using a socket proxy on the PC, and servlet for how to turn he RCX into
+a Web Server using an Http Proxy on the PC.
 
