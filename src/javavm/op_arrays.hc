@@ -11,8 +11,9 @@ case OP_NEWARRAY:
 case OP_MULTIANEWARRAY:
   // Stack size: -N + 1
   // Arguments: 3
-  tempBytePtr = (byte *) new_multi_array (pc[0], pc[1], pc[2], get_stack_ptr());
-  pop_words (pc[2] - 1);
+  tempByte = pc[2] - 1;
+  tempBytePtr = (byte *) new_multi_array (pc[0], pc[1], pc[2], get_stack_ptr() - tempByte);
+  pop_words (tempByte);
   set_top_ref (ptr2ref (tempBytePtr));
   pc += 3;
   goto LABEL_ENGINELOOP;

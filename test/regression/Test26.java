@@ -9,9 +9,9 @@ public class Test26
 
   public static void main (String[] arg) 
   {
-    mda1 = new byte[5][5];
+    mda1 = new byte[5][6];
     for (int i = 0; i < 5; i++)
-      for (int j = 0; j < 5; j++)
+      for (int j = 0; j < 6; j++)
          mda1[i][j] = (byte) (i * 5 + j);
     mda2 = new int[10][][];
     for (int i = 0; i < 10; i++)
