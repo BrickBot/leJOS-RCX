@@ -15,7 +15,7 @@ public class BitSet
   public void clear (int n)
   {
     int idx = n / 8;
-    iBytes[idx] = (byte) ((iBytes[idx] & 0xFF) & (1 << (n%8)));
+    iBytes[idx] = (byte) ((iBytes[idx] & 0xFF) & ~(1 << (n%8)));
   }
   
   public void set (int n)
