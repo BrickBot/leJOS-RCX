@@ -11,7 +11,20 @@
 
 #define TOWER_NAME "\\\\.\\LEGOTOWER1"
 
+/* Machine-dependent defines */
+
+#if defined(LINUX) || defined(linux)
+#define DEFAULTTTY   "/dev/ttyS0" /* Linux - COM1 */
+#elif defined(_WIN32) || defined(__CYGWIN32__)
+#define DEFAULTTTY   "usb"       /* Cygwin - USB */
+#elif defined (sun)
+#define DEFAULTTTY   "/dev/ttya"  /* Solaris - first serial port - untested */
+#else
+#define DEFAULTTTY   "/dev/ttyd2" /* IRIX - second serial port */
+#endif
+
 #define TIME_OUT 500
+#define WAKEUP_TIME_OUT 4000
 
 #if !defined(_WIN32)
 extern int errno;
@@ -20,6 +33,8 @@ int GetLastError() {
   return errno;
 }
 #endif
+
+extern int __comm_debug;
 
 int usb_flag;
 
@@ -33,6 +48,7 @@ Java_josx_rcxcomm_irTower_open(JNIEnv *env, jobject obj, jstring jport)
   int err = 0;
   FILEDESCR fh;
   char *tty = NULL;
+  char *comm_debug = NULL;
   int res = 0;
 
 #ifdef TRACE
@@ -49,13 +65,22 @@ Java_josx_rcxcomm_irTower_open(JNIEnv *env, jobject obj, jstring jport)
 
   if ((!tty) || *tty == 0) tty = getenv("RCXTTY");
 
-  // If still no port, default to USB
+  // If still no port, default to USB on Windows, serial on Linux etc.
 
-  if ( (!tty)|| *tty == 0 || (strcmp( tty , "usb" ) == 0) ) {
+  if ( (!tty) || *tty == 0) tty = DEFAULTTTY;
+
+  if ((strcmp( tty , "usb" ) == 0) ) {
     usb_flag = 1;
     tty = TOWER_NAME;
   }
   else usb_flag = 0;
+
+  // Set debugging if RCXCOMM_DEBUG=Y 
+
+  comm_debug = getenv("RCXCOMM_DEBUG");
+
+  if (comm_debug != NULL && strcmp(comm_debug,"Y") == 0)
+    __comm_debug = 1;
 
   // Get a handle for the tower device
 
@@ -64,7 +89,7 @@ Java_josx_rcxcomm_irTower_open(JNIEnv *env, jobject obj, jstring jport)
   // USB Tower does not need wake-up
   
   if (fh == BADFILE) res = RCX_OPEN_FAIL;
-  else if (!usb_flag) res = rcx_wakeup_tower(fh, TIME_OUT);
+  else if (!usb_flag) res = rcx_wakeup_tower(fh, WAKEUP_TIME_OUT);
 
   // Get the OS error, if a failure has occurred
   
