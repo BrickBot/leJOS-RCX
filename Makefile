@@ -145,4 +145,4 @@ distclean_win: distclean
 	/bin/strip `find . -name '*.exe'`
 
 realclean: distclean_src
-	rm -f `find . -name '*.srec'`
+	rm -f `find bin -name '*.srec'`
