@@ -242,7 +242,7 @@ LABEL_DOWNLOAD_INIT:
   clear_display();
   get_power_status (POWER_BATTERY, &status);
   status = (status * 100L) / 355L;
-  set_lcd_number (LCD_UNSIGNED, status, 3002);
+  set_lcd_number (LCD_SIGNED, status, LCD_DECIMAL_1);
   
 // Show program number
 LABEL_SHOW_PROGRAM_NUMBER:
