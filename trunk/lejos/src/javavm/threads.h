@@ -19,10 +19,12 @@ extern byte gThreadCounter;
 typedef struct S_StackFrame
 {
   MethodRecord *methodRecord;
+  Object *monitor;
   STACKWORD *localsBase;
   STACKWORD *stackTop;
+  boolean *isReferenceBase;
+  boolean *isReference;
   byte *pc;
-  Object *monitor;
 } StackFrame;
 
 extern void start_thread (Thread *thread);
@@ -37,10 +39,12 @@ extern void exit_monitor (Object* obj);
  */
 extern void switch_thread_hook();
 
-#define stackframe_array_ptr() (word2ptr(currentThread->stackFrameArray))
-#define stack_array_ptr()      (word2ptr(currentThread->stackArray))
-#define stackframe_array()     ((StackFrame *) ((byte *) stackframe_array_ptr() + HEADER_SIZE))
-#define stack_array()          ((STACKWORD *) ((byte *) stack_array_ptr() + HEADER_SIZE))
+#define stackframe_array_ptr()   (word2ptr(currentThread->stackFrameArray))
+#define stack_array_ptr()        (word2ptr(currentThread->stackArray))
+#define is_reference_array_ptr() (word2ptr(currentThread->isReferenceArray))
+#define stackframe_array()       ((StackFrame *) ((byte *) stackframe_array_ptr() + HEADER_SIZE))
+#define stack_array()            ((STACKWORD *) ((byte *) stack_array_ptr() + HEADER_SIZE))
+#define is_reference_array()     ((JBYTE *) ((byte *) is_reference_array_ptr() + HEADER_SIZE))
 
 #endif
 

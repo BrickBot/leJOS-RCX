@@ -11,8 +11,9 @@ public abstract class Thread
 
   private Thread _TVM_nextThread;
   private Object _TVM_waitingOn;
-  private int _TVM_stackFrameArray;
-  private int _TVM_stackArray;
+  private Object _TVM_stackFrameArray;
+  private Object _TVM_stackArray;
+  private Object _TVM_isReferenceArray;
   private byte _TVM_stackFrameArraySize;
   private byte _TVM_threadId; 
   private byte _TVM_state; 

@@ -10,9 +10,7 @@
 #include "language.h"
 #include "exceptions.h"
 
-#define F_SIZE_MASK    0xE0
-#define F_SIZE_SHIFT   5
-#define F_OFFSET_MASK  0x1F
+#define F_OFFSET_MASK  0x0F
 
 #if DEBUG_BYTECODE
 extern char *OPCODE_NAME[];
@@ -58,30 +56,22 @@ void do_goto (boolean aCond)
 
 void do_isub (void)
 {
-  stackTop--;
-  stackTop[0] = word2jint(stackTop[0]) - word2jint(stackTop[1]);
+  STACKWORD poppedWord;
+
+  poppedWord = pop_word();
+  set_top_word (word2jint(get_top_word()) - word2jint(poppedWord));
 }
 
-void do_fcmp (JFLOAT f1, JFLOAT f2)
+void do_fcmp (JFLOAT f1, JFLOAT f2, STACKWORD def)
 {
-  // TBD: NaN
-
-  stackTop++;
-
-  #if FP_ARITHMETIC
-
   if (f1 > f2)
-    stackTop[0] = 1;
+    push_word (1);
   else if (f1 == f2)
-    stackTop[0] = 0;
+    push_word (0);
   else if (f1 < f2)
-    stackTop[0] = -1;
-
-  #else
-
-  stackTop[0] = 0;
- 
-  #endif FP_ARITHMETIC
+    push_word (-1);
+  else 
+    push_word (def);
 }
 
 /**
@@ -112,12 +102,14 @@ static inline Object *create_string (ConstantRecord *constantRecord,
 /**
  * Pops the array index off the stack, assigns
  * both tempInt and tempBytePtr, and checks
- * bounds and null reference.
+ * bounds and null reference. The array reference
+ * is the top word on the stack after this operation.
+ * @return True if successful, false if an exception has been scheduled.
  */
-boolean array_access_helper()
+boolean array_load_helper()
 {
   tempInt = word2jint(pop_word());
-  tempBytePtr = word2ptr(get_top_word());
+  tempBytePtr = word2ptr(get_top_ref());
   if (tempBytePtr == JNULL)
     throw_exception (nullPointerException);
   else if (tempInt < 0 || tempInt >= get_array_length ((Object *) tempBytePtr))
@@ -125,6 +117,20 @@ boolean array_access_helper()
   else
     return true;
   return false;
+}
+
+/**
+ * Same as array_load_helper, except that it pops
+ * the reference from the stack.
+ */
+boolean array_store_helper()
+{
+  if (array_load_helper())
+  {
+    pop_ref();
+    return true;
+  }
+  return false;    
 }
 
 /**

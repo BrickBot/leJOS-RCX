@@ -16,13 +16,10 @@ case OP_MULTIANEWARRAY:
   set_top_ref (ptr2ref (tempBytePtr));
   pc += 3;
   goto LABEL_ENGINELOOP;
-
------------------
-
 case OP_AALOAD:
   // Stack size: -2 + 1
   // Arguments: 0
-  if (!array_access_helper())
+  if (!array_load_helper())
     goto LABEL_ENGINE_LOOP;
   // tempBytePtr and tempInt set by call above
   set_top_ref (word_array(tempBytePtr)[tempInt]);
@@ -31,90 +28,84 @@ case OP_IALOAD:
 case OP_FALOAD:
   // Stack size: -2 + 1
   // Arguments: 0
-  if (!array_access_helper())
+  if (!array_load_helper())
     goto LABEL_ENGINE_LOOP;
   set_top_word (word_array(tempBytePtr)[tempInt]);
   goto LABEL_ENGINELOOP;
 case OP_CALOAD:
 case OP_SALOAD:
-  if (!array_access_helper())
+  if (!array_load_helper())
     goto LABEL_ENGINE_LOOP;
   set_top_word (jshort_array(tempBytePtr)[tempInt]);
   goto LABEL_ENGINELOOP;
 case OP_BALOAD:
-  if (!array_access_helper())
+  if (!array_load_helper())
     goto LABEL_ENGINE_LOOP;
   set_top_word (jbyte_array(tempBytePtr)[tempInt]);
   goto LABEL_ENGINELOOP;
 case OP_LALOAD:
 case OP_DALOAD:
-  // Stack size: -2 + 1
+  // Stack size: -2 + 2
   // Arguments: 0
-  if (!array_access_helper())
+  if (!array_load_helper())
     goto LABEL_ENGINE_LOOP;
   tempInt *= 2;
   set_top_word (word_array(tempBytePtr)[tempInt++]);
   push_word (word_array(tempBytePtr)[tempInt]);
   goto LABEL_ENGINELOOP;
-
-----------------------------
-
+case OP_AASTORE:
+  // Stack size: -3
+  tempStackWord = pop_ref();
+  if (!array_store_helper())
+    goto LABEL_ENGINE_LOOP;
+  ref_array(tempBytePtr)[tempInt] = tempStackWord;
+  goto LABEL_ENGINELOOP;
 case OP_IASTORE:
 case OP_FASTORE:
-case OP_AASTORE:
-case OP_DASTORE:
-case OP_LASTORE:
-case OP_BASTORE:
+  // Stack size: -3
+  tempStackWord = pop_word();
+  if (!array_store_helper())
+    goto LABEL_ENGINE_LOOP;
+  jint_array(tempBytePtr)[tempInt] = tempStackWord;
+  goto LABEL_ENGINELOOP;
 case OP_CASTORE:
 case OP_SASTORE:
   // Stack size: -3
-  gByte = *(pc-1);
-  if (gByte == OP_DASTORE || gByte == OP_LASTORE)
-    stackTop -= 2;
-  else
-    stackTop--;
-  gInt = word2jint(stackTop[0]);
-  stackTop--;
-  gBytePtr = word2ptr(stackTop[0]);
-  stackTop--;
+  tempStackWord = pop_word();
+  if (!array_store_helper())
+    goto LABEL_ENGINE_LOOP;
+  jshort_array(tempBytePtr)[tempInt] = tempStackWord;
+  goto LABEL_ENGINELOOP;
+case OP_BASTORE:
+  // Stack size: -3
+  tempStackWord = pop_word();
+  if (!array_store_helper())
+    goto LABEL_ENGINE_LOOP;
+  jbyte_array(tempBytePtr)[tempInt] = tempStackWord;
+  goto LABEL_ENGINELOOP;
+case OP_DASTORE:
+case OP_LASTORE:
+  // Stack size: -4
+  {
+    STACKWORD tempStackWord2;
 
-  if (gBytePtr == JNULL)
-    throw_exception (nullPointerException);
-  else
-  { 
-    if (gInt < 0 || gInt >= get_array_length ((Object *) gBytePtr))
-      throw_exception (arrayIndexOutOfBoundsException);
-    else
-    {
-       switch (gByte)
-       {
-         case OP_IASTORE:
-         case OP_AASTORE:
-         case OP_FASTORE:
-           word_array(gBytePtr)[gInt] = stackTop[3];
-           break;
-         case OP_SASTORE:
-         case OP_CASTORE:
-           jshort_array(gBytePtr)[gInt] = stackTop[3];
-           break;
-         case OP_BASTORE:
-           jbyte_array(gBytePtr)[gInt] = stackTop[3];
-           break;
-         case OP_DASTORE:
-         case OP_LASTORE:
-           gInt *= 2;
-           word_array(gBytePtr)[gInt++] = stackTop[3];
-           word_array(gBytePtr)[gInt] = stackTop[4];
-           break;
-       }  
-    }
+    tempStackWord2 = pop_word();
+    tempStackWord = pop_word();
+    if (!array_store_helper())
+      goto LABEL_ENGINE_LOOP;
+    tempInt *= 2;
+    jint_array(tempBytePtr)[tempInt++] = tempStackWord;
+    jint_array(tempBytePtr)[tempInt] = tempStackWord2;
   }
   goto LABEL_ENGINELOOP;
 case OP_ARRAYLENGTH:
   // Stack size: -1 + 1
   // Arguments: 0
-  // TBD: Check for NPE.
-  *stackTop = get_array_length (word2obj (*stackTop));
+  tempRef = get_top_ref();
+  if (tempRef == JNULL)
+    throw_exception (nullPointerException);
+  else     
+    set_top_word (get_array_length (word2obj (tempRef)));
   goto LABEL_ENGINELOOP;
 
 

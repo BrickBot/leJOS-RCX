@@ -5,6 +5,8 @@
 #ifndef _MEMORY_H
 #define _MEMORY_H
 
+extern byte typeSize[];
+
 extern void init_memory (void *ptr, TWOBYTES size);
 extern void free_array (Object *objectRef);
 extern Object *new_object_checked (byte classIndex, byte *btAddr);
@@ -12,7 +14,7 @@ extern Object *new_object_for_class (byte classIndex);
 extern Object *new_primitive_array (byte primitiveType, STACKWORD length);
 extern Object *new_multi_array (byte elemType, byte totalDimensions, byte reqDimensions, STACKWORD *numElemPtr);
 extern void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr);
-extern void save_word (byte *ptr, byte aSize, STACKWORD aWord);
+extern void store_word (byte *ptr, byte aSize, STACKWORD aWord);
 
 #define HEADER_SIZE (sizeof(Object))
 // Size of object header in 2-byte words

@@ -227,7 +227,7 @@ Object *new_multi_array (byte elemType, byte totalDimensions,
   return ref;
 }
 
-void save_word (byte *ptr, byte aSize, STACKWORD aWord)
+void store_word (byte *ptr, byte aSize, STACKWORD aWord)
 {
   while (aSize--)
   {

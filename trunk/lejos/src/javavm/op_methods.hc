@@ -6,7 +6,7 @@ case OP_INVOKEVIRTUAL:
   // Stack: (see method)
   // Arguments: 2
   // Note: pc is updated by dispatch method
-  dispatch_virtual (word2obj (*(stackTop - (pc[0] >> 4))), 
+  dispatch_virtual (word2obj (get_ref_at (pc[0] >> 4)), 
     (TWOBYTES) pc[1] | (TWOBYTES) (pc[0] & 0x0F), pc + 2);
   goto LABEL_ENGINELOOP;
 case OP_INVOKESPECIAL:

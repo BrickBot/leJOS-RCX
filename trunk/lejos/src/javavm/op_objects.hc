@@ -14,23 +14,20 @@ case OP_NEW:
     trace (-1, (short) gBytePtr, 2);
     trace (-1, get_class_index((Object *) gBytePtr), 3);
     #endif
-    *(++stackTop) = ptr2word(gBytePtr);
+    push_ref (ptr2ref(gBytePtr));
     pc += 2;
   }
   goto LABEL_ENGINELOOP;
-
-
-// Temporary hack here:
-// (Work-around for bug)
-
 case OP_GETSTATIC:
 case OP_PUTSTATIC:
   // Stack: +1 or +2 for GETSTATIC, -1 or -2 for PUTSTATIC
   {
-    byte *fieldBase;
     STATICFIELD fieldRecord;
+    byte *fieldBase;
+    byte fieldType;
     byte fieldSize;
-    byte numWordsMinus1;
+    boolean wideWord;
+    boolean isRef;
 
     #if DEBUG_FIELDS
     printf ("  OP_GET/PUTSTATIC: %d, %d\n", (int) pc[0], (int) pc[1]);
@@ -39,8 +36,12 @@ case OP_PUTSTATIC:
     if (dispatch_static_initializer (get_class_record (pc[0]), pc - 1))
       goto LABEL_ENGINELOOP;
     fieldRecord = ((STATICFIELD *) get_static_fields_base())[pc[1]];
-    fieldSize = ((fieldRecord >> 12) & 0x03) + 1;
-    numWordsMinus1 = fieldRecord >> 14;
+    fieldType = (fieldRecord >> 12) & 0x0F;
+    isRef = (fieldType == T_REFERENCE);
+    fieldSize = typeSize[fieldType];
+    wideWord = (fieldSize > 4);
+    if (wideWord)
+      fieldSize = 4;
     fieldBase = get_static_state_base() + get_static_field_offset (fieldRecord);
 
     #if DEBUG_FIELDS
@@ -50,74 +51,77 @@ case OP_PUTSTATIC:
 
     if (*(pc-1) == OP_GETSTATIC)
     {
-      make_word (fieldBase, fieldSize, ++stackTop);
-      if (numWordsMinus1)
-        make_word (fieldBase + 4, 4, ++stackTop);
+      make_word (fieldBase, fieldSize, &tempStackWord);
+      push_word_or_ref (tempStackWord, isRef);
+      if (wideWord)
+      {
+        make_word (fieldBase + 4, 4, &tempStackWord);
+        push_word (tempStackWord);
+      }
     }
     else
     {
-      if (numWordsMinus1)
-        save_word (fieldBase + 4, 4, *stackTop--);
-      save_word (fieldBase, fieldSize, *stackTop--);
+      if (wideWord)
+        store_word (fieldBase + 4, 4, pop_word());
+      store_word (fieldBase, fieldSize, pop_word_or_ref (isRef));
     }
     pc += 2;
   }
   goto LABEL_ENGINELOOP;
-
-
-
 case OP_GETFIELD:
-case OP_PUTFIELD:
-  // Arguments: 2
   {
     byte *fieldBase;
+    byte fieldType;
     byte fieldSize;
-    byte numWordsMinus1;
-    boolean doPut;
+    boolean wideWord;
 
-    #if DEBUG_FIELDS
-    printf ("OP_GET/PUTFIELD: %d, %d\n", (int) pc[0], (int) pc[1]);
-    #endif
-
-    doPut = (*(pc-1) == OP_PUTFIELD);
-    fieldSize = ((pc[0] >> F_SIZE_SHIFT) & 0x03) + 1;
-    numWordsMinus1 = pc[0] >> 7;
-    if (doPut)
-      stackTop -= (numWordsMinus1 + 1);
-
-    #if DEBUG_FIELDS
-    printf ("-- numWords-1    = %d\n", (int) numWordsMinus1);
-    printf ("-- stackTop[0,1] = %d, %d\n", (int) stackTop[0], (int) stackTop[1]);
-    #endif
-
-    if (stackTop[0] == JNULL)
+    tempStackWord = get_top_ref();
+    if (tempStackWord == JNULL)
     {
       throw_exception (nullPointerException);
       goto LABEL_ENGINELOOP;
     }
-    fieldBase = ((byte *) word2ptr (stackTop[0])) + 
+    fieldType = pc[0] >> 12;
+    fieldSize = typeSize[fieldType];
+    wideWord = (fieldSize > 4);
+    if (wideWord)
+      fieldSize = 4;
+    fieldBase = ((byte *) word2ptr (tempStackWord)) + 
                 (((TWOBYTES) (pc[0] & F_OFFSET_MASK) << 8) | pc[1]);
-    if (doPut)
-      stackTop++;
-
-    #if DEBUG_FIELDS
-    printf ("-- fieldSize  = %d\n", (int) fieldSize);
-    printf ("-- fieldBase  = %d\n", (int) fieldBase);
-    #endif
-
-    if (doPut)
+    make_word (fieldBase, fieldSize, &tempStackWord);
+    set_top_word_or_ref (tempStackWord, (fieldType == T_REFERENCE));
+    if (wideWord)
     {
-      if (numWordsMinus1)
-        save_word (fieldBase + 4, 4, stackTop[1]);
-      save_word (fieldBase, fieldSize, stackTop[0]);
-      stackTop -= 2;
+      make_word (fieldBase + 4, 4, &tempStackWord);
+      push_word (tempStackWord);
     }
-    else
+    pc += 2;
+  }
+  goto LABEL_ENGINELOOP;
+case OP_PUTFIELD:
+  {
+    byte *fieldBase;
+    byte fieldType;
+    byte fieldSize;
+    boolean wideWord;
+
+    fieldType = pc[0] >> 12;
+    fieldSize = typeSize[fieldType];
+    wideWord = (fieldSize > 4);
+    if (wideWord)
+      fieldSize = 4;
+    tempStackWord = get_ref_at (wideWord ? 2 : 1);
+    if (tempStackWord == JNULL)
     {
-      make_word (fieldBase, fieldSize, stackTop);
-      if (numWordsMinus1)
-        make_word (fieldBase + 4, 4, ++stackTop);
+      throw_exception (nullPointerException);
+      goto LABEL_ENGINELOOP;
     }
+    fieldBase = ((byte *) word2ptr (tempStackWord)) + 
+                (((TWOBYTES) (pc[0] & F_OFFSET_MASK) << 8) | pc[1]);
+    if (wideWord)
+      store_word (fieldBase + 4, 4, pop_word());
+    store_word (fieldBase, fieldSize, pop_word_or_ref (fieldType == T_REFERENCE));
+    just_pop_ref();
     pc += 2;
   }
   goto LABEL_ENGINELOOP;
@@ -125,7 +129,7 @@ case OP_INSTANCEOF:
   // Stack: unchanged
   // Arguments: 2
   // Ignore hi byte
-  *stackTop = instance_of (word2obj (*stackTop),  pc[1]);
+  set_top_word (instance_of (word2obj (get_top_ref()),  pc[1]));
   pc += 2;
   goto LABEL_ENGINELOOP;
 case OP_CHECKCAST:
@@ -133,10 +137,16 @@ case OP_CHECKCAST:
   // Arguments: 2
   // Ignore hi byte
   pc++;
-  if (*stackTop != JNULL && !instance_of (word2obj (*stackTop), *pc))
+  tempStackWord = get_top_ref();
+  if (tempStackWord != JNULL && !instance_of (word2obj (tempStackWord), pc[0]))
     throw_exception (classCastException);
   pc++;
   goto LABEL_ENGINELOOP;
+
+// Notes:
+// - NEW, INSTANCEOF, CHECKCAST: 8 bits ignored, 8-bit class index
+// - GETSTATIC and PUTSTATIC: 8-bit class index, 8-bit static field record
+// - GETFIELD and PUTFIELD: 4-bit field type, 12-bit field data offset
 
 /*end*/
 

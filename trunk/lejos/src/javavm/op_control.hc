@@ -12,7 +12,7 @@ case OP_IFEQ:
 case OP_IFNULL:
   // Arguments: 2
   // Stack: -1
-  do_goto (*stackTop-- == 0);
+  do_goto (pop_word() == 0);
   goto LABEL_ENGINELOOP;
 case OP_IF_ICMPNE:
 case OP_IF_ACMPNE:
@@ -20,50 +20,69 @@ case OP_IF_ACMPNE:
   // Fall through!
 case OP_IFNE:
 case OP_IFNONNULL:
-  do_goto (*stackTop-- != 0);
+  do_goto (pop_word() != 0);
   goto LABEL_ENGINELOOP;
 case OP_IF_ICMPLT:
   do_isub();
   // Fall through!
 case OP_IFLT:
-  do_goto (word2jint(*stackTop--) < 0);
+  do_goto (pop_jint() < 0);
   goto LABEL_ENGINELOOP;
 case OP_IF_ICMPLE:
   do_isub();
   // Fall through!
 case OP_IFLE:
-  do_goto (word2jint(*stackTop--) <= 0);
+  do_goto (pop_jint() <= 0);
   goto LABEL_ENGINELOOP;
 case OP_IF_ICMPGE:
   do_isub();
   // Fall through!
 case OP_IFGE:
-  do_goto (word2jint(*stackTop--) >= 0);
+  do_goto (pop_jint() >= 0);
   goto LABEL_ENGINELOOP;
 case OP_IF_ICMPGT:
   do_isub();
   // Fall through!
 case OP_IFGT:
-  do_goto (word2jint(*stackTop--) > 0);
+  do_goto (pop_jint() > 0);
   goto LABEL_ENGINELOOP;
-
 case OP_FCMPL:
 case OP_FCMPG:
   // TBD: no distinction between opcodes
-  stackTop -= 2;
-  do_fcmp (word2jfloat(stackTop[1]), word2jfloat(stackTop[2]));
+  tempStackWord = pop_word();
+  do_fcmp (word2jfloat(pop_word()), word2jfloat(tempStackWord), 0);
   goto LABEL_ENGINELOOP;
 case OP_DCMPL:
 case OP_DCMPG:
-  stackTop -= 4;
-  do_fcmp (word2jfloat(stackTop[2]), word2jfloat(stackTop[4]));
+  // TBD: no distinction between opcodes
+  {
+    STACKWORD wrd1;
+    STACKWORD wrd2;
+
+    wrd2 = pop_word();
+    just_pop_word();
+    wrd1 = pop_word();
+    just_pop_word();
+    do_fcmp (word2jfloat(wrd1), word2jfloat (wrd2), 0);
+  }
   goto LABEL_ENGINELOOP;
+case OP_LCMP:
+  // Arguments: 0
+  // Stack: -4 + 1
+  {
+    JLONG l1, l2;
+    JINT c;
 
-
+    pop_jlong (&l2);
+    pop_jlong (&l1);
+    c = jlong_compare (l1, l2);
+    push_word ((c == 0) ? 0 : ((c < 0) ? -1 : +1));
+  }
+  goto LABEL_ENGINELOOP;    
 case OP_JSR:
   // Arguments: 2
   // Stack: +1
-  *(++stackTop) = ptr2word (pc + 2);
+  push_word (ptr2word (pc + 2));
   // Fall through!
 case OP_GOTO:
   // Arguments: 2
@@ -74,27 +93,16 @@ case OP_GOTO:
 case OP_RET:
   // Arguments: 1
   // Stack: +0
-  pc = word2ptr (localsBase[pc[0]]);
+  pc = word2ptr (get_local_word (pc[0]));
   #if DEBUG_BYTECODE
   printf ("\n  OP_RET: returning to %d\n", (int) pc);
   #endif
   // No pc increment!
   goto LABEL_ENGINELOOP;
 
-#if 0
-
-case OP_LOOKUPSWITCH:
-  gWord = 4 - (pc - current_code_base()) % 4; 
-  if (gWord == 4)
-    gWord = 0;
-  pc += gWord;
-  
-  goto LABEL_ENGINELOOP;
-
-#endif 0
 
 // Notes:
-// - Not supported: TABLESWITCH, LOOKUPSWITCH, GOTO_W, JSR_W, LCMP
+// - Not supported: TABLESWITCH, LOOKUPSWITCH, GOTO_W, JSR_W
 
 /*end*/
 

@@ -61,8 +61,9 @@ void init_thread (Thread *thread)
   thread->threadId = ++gThreadCounter;
   thread->stackFrameArray = ptr2word (new_primitive_array (T_STACKFRAME, MAX_STACK_FRAMES));
   thread->stackArray = ptr2word (new_primitive_array (T_INT, STACK_SIZE));
+  thread->isReferenceArray = ptr2word (new_primitive_array (T_BOOLEAN, STACK_SIZE));
   if (thread->threadId == NO_OWNER || thread->stackFrameArray == JNULL ||
-      thread->stackArray == JNULL)
+      thread->stackArray == JNULL || thread->isReferenceArray == JNULL)
   {
     throw_exception (outOfMemoryError);
     return;
@@ -71,6 +72,7 @@ void init_thread (Thread *thread)
   #ifdef VERIFY
   assert (is_array (word2obj (thread->stackFrameArray)), THREADS0);
   assert (is_array (word2obj (thread->stackArray)), THREADS1);
+  assert (is_array (word2obj (thread->isReferenceArray)), THREADS1);
   #endif
 
   thread->stackFrameArraySize = 0;
@@ -127,15 +129,7 @@ void switch_thread()
 
   if (stackFrame != null)
   {
-    stackFrame->pc = pc;
-    stackFrame->stackTop = stackTop;
-
-    #if DEBUG_THREADS
-    printf ("Saving stackFrame before switching:\n"
-            "-- pc: %d\n"
-            "-- stackTop: %d\n",
-            (int) pc, (int) stackTop);
-    #endif
+    update_stack_frame (stackFrame);
   }
 
   // Loop until a RUNNING frame is found
@@ -173,10 +167,12 @@ void switch_thread()
     #if REMOVE_DEAD_THREADS
     free_array ((Object *) word2ptr (nextThread->stackFrameArray));
     free_array ((Object *) word2ptr (nextThread->stackArray));
+    free_array ((Object *) word2ptr (nextThread->isReferenceArray));
 
     #ifdef SAFE
     nextThread->stackFrameArray = JNULL;
     nextThread->stackArray = JNULL;
+    nextThread->isReferenceArray = JNULL;
     #endif SAFE
 
     nextThread = (Thread *) word2ptr (nextThread->nextThread);
@@ -191,17 +187,17 @@ void switch_thread()
   currentThread = nextThread;
   if (currentThread->state == STARTED)
   {
-    // Put stackTop at the beginning of the stack so we can push arguments
+    // Put stack ptr at the beginning of the stack so we can push arguments
     // to entry methods.
-    stackTop = stack_array();
+    init_stack_ptr();
     currentThread->state = RUNNING;
     if (currentThread == bootThread)
     {
       ClassRecord *classRecord;
 
       classRecord = get_class_record (ENTRY_CLASS);
-      // Push fake parameter:
-      *stackTop = JNULL;
+      // Initialize top word with fake parameter for main():
+      set_top_ref (JNULL);
       // Push stack frame for main method:
       dispatch_special (classRecord, find_method (classRecord, MAIN_V), null);
       // Push another if necessary for the static initializer:
@@ -209,7 +205,7 @@ void switch_thread()
     }
     else
     {
-      *stackTop = ptr2word (currentThread);
+      set_top_ref (ptr2word (currentThread));
       dispatch_virtual ((Object *) currentThread, RUN_V, null);
     }
   }
@@ -222,9 +218,7 @@ void switch_thread()
   if (currentThread->state != RUNNING)
     goto LABEL_TASKLOOP;
   stackFrame = current_stackframe();
-  pc = stackFrame->pc;
-  stackTop = stackFrame->stackTop;
-  localsBase = stackFrame->localsBase;
+  update_registers (stackFrame);
 }
 
 /**
