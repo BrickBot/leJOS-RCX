@@ -37,7 +37,11 @@
   	<!-- delete jars -->
   	<delete>
       <fileset dir="${lib}">
-        <include name="*.jar"/>
+        <include name="classes.jar"/>
+        <include name="rcxcomm.jar"/>
+        <include name="pcrcxcomm.jar"/>
+        <include name="tools.jar"/>
+        <include name="vision.jar"/>
       </fileset>  	
   	</delete>	
   </target>
@@ -121,6 +125,7 @@
     <!-- generate tools -->
     <javac srcdir="${javasrc}/tools" destdir="${build}/tools" fork="yes" optimize="on" debug="on" source="1.4">
       <classpath location="${lib}/pcrcxcomm.jar"/>
+      <classpath location="${lib}/commons-cli-1.0.jar"/>
     </javac>
     <jar destfile="${lib}/jtools.jar" basedir="${build}/tools" update="false">
       <fileset dir="${bin}">
