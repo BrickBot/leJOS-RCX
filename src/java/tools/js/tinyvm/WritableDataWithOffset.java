@@ -2,22 +2,44 @@ package js.tinyvm;
 
 public abstract class WritableDataWithOffset implements WritableData
 {
-   int iOffset = -1;
+   /**
+    * Offset.
+    */
+   private int _offset = -1;
 
-   public int getOffset () throws TinyVMException
+   /**
+    * Init offset.
+    * 
+    * @param startOffset start offset
+    * @throws TinyVMException if offset is not correct
+    */
+   public void initOffset (int startOffset) throws TinyVMException
    {
-      if (iOffset == -1)
+      assert startOffset != -1: "Precondition: aStart != -1";
+
+      if (startOffset < 0 || startOffset > 0xFFFF)
       {
-         throw new TinyVMException(
-            "Bug WDWO-1: Premature getOffset call: Class="
-               + getClass().getName());
+         throw new TinyVMException("Offset out of range (" + startOffset + ")");
       }
-      return iOffset;
+
+      _offset = startOffset;
    }
 
-   public void initOffset (int aStart) throws TinyVMException
+   /**
+    * Offset.
+    * 
+    * @throws TinyVMException if offset is not correct
+    */
+   public int getOffset () throws TinyVMException
    {
-      assert aStart != -1: "Precondition: aStart != -1";
-      iOffset = aStart;
+      assert _offset != -1: "Precondition: _offset != -1";
+
+      if (_offset <= 0 || _offset > 0xFFFF)
+      {
+         throw new TinyVMException("Offset out of range (" + _offset + ")");
+      }
+
+      assert _offset >= 0 && _offset <= 0xFFFF: "Postcondition: result >=0 && result <= 0xFFFF";
+      return _offset;
    }
 }
