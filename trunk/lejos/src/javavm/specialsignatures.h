@@ -46,4 +46,6 @@
 #define setThrottle_4I_5V 39
 #define test_4Ljava_3lang_3String_2Z_5V 40
 #define testEQ_4Ljava_3lang_3String_2II_5V 41
+#define floatToIntBits_4F_5I 42
+#define intBitsToFloat_4I_5F 43
 #endif // _SPECIALSIGNATURES_H
