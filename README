@@ -6,6 +6,8 @@ Summary
 -- You need a Java Development Kit (JDK) 1.4 or above.
 -- Your PATH must contain the JDK's bin directory.
 -- Make sure you have set JAVA_HOME properly to the root directory of the JDK.
+-- You need a Java Media Framework (JMF) 2.1 or above.
+-- Make sure that the jmf.jar is installed properly into your JDK.
 -- You need ANT 1.6 or above.
 -- Your PATH must contain the ant binary.
 -- In Unix, type 'make' to finish installation of leJOS.
