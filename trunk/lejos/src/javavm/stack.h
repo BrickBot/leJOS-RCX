@@ -18,16 +18,12 @@
 #define get_ref_at(DOWN_)          *(stackTop-(DOWN_))
 #define get_stack_ptr()            (stackTop)
 #define get_stack_ptr_at(DOWN_)    (stackTop-(DOWN_))
-#define get_is_ref_ptr()           (isReference)
-#define get_is_ref_ptr_at(DOWN_)   (isReference-(DOWN_))
 
 // Note: The following locals should only be accessed
 // in this header file.
 
 extern STACKWORD *localsBase;
 extern STACKWORD *stackTop;
-extern boolean   *isReference;
-extern boolean   *isReferenceBase;
 
 /**
  * Clears the operand stack for the given stack frame.
@@ -35,7 +31,6 @@ extern boolean   *isReferenceBase;
 static inline void init_sp (StackFrame *stackFrame, MethodRecord *methodRecord)
 {
   stackTop = stackFrame->localsBase + methodRecord->numLocals - 1;
-  isReference = stackFrame->isReferenceBase + methodRecord->numLocals - 1;
 }
 
 /**
@@ -46,7 +41,6 @@ static inline void init_sp (StackFrame *stackFrame, MethodRecord *methodRecord)
 static inline void init_sp_pv (void)
 {
   stackTop = stack_array();
-  isReference = is_reference_array();
 }
 
 /**
@@ -66,48 +60,35 @@ extern void update_registers (StackFrame *stackFrame);
 static inline void update_constant_registers (StackFrame *stackFrame)
 {
   localsBase = stackFrame->localsBase;
-  isReferenceBase = stackFrame->isReferenceBase;
 }
 
 static inline void push_word (const STACKWORD word)
 {
   *(++stackTop) = word;
-  *(++isReference) = false;
 }
 
 static inline void push_ref (const REFERENCE word)
 {
   *(++stackTop) = word;
-  *(++isReference) = true;
-}
-
-static inline void push_word_or_ref (const REFERENCE word, const boolean aIsReference)
-{
-  *(++stackTop) = word;
-  *(++isReference) = aIsReference;
 }
 
 static inline STACKWORD pop_word (void)
 {
-  --isReference;
   return *stackTop--;
 }
 
 static inline REFERENCE pop_ref (void)
 {
-  --isReference;
   return *stackTop--;
 }
 
 static inline JINT pop_jint (void)
 {
-  --isReference;
   return word2jint(*stackTop--);
 }
 
 static inline STACKWORD pop_word_or_ref()
 {
-  --isReference;
   return *stackTop--;
 }
 
@@ -115,48 +96,35 @@ static inline void pop_jlong (JLONG *lword)
 {
   lword->lo = *stackTop--;
   lword->hi = *stackTop--;
-  isReference -= 2;
 }
 
 static inline void pop_words (byte aNum)
 {
-  isReference -= aNum;
   stackTop -= aNum;
 }
 
 static inline void just_pop_word (void)
 {
-  --isReference;
   --stackTop;
 }
 
 static inline void just_pop_ref (void)
 {
-  --isReference;
   --stackTop;
 }
 
 static inline void push_void (void)
 {
-  *(++isReference) = false;
   ++stackTop;
 }
 
 static inline void set_top_ref (REFERENCE aRef)
 {
-  *isReference = true;
   *stackTop = aRef;
 }
 
 static inline void set_top_word (STACKWORD aWord)
 {
-  *isReference = false;
-  *stackTop = aWord;
-}
-
-static inline void set_top_word_or_ref (STACKWORD aWord, boolean aIsRef)
-{
-  *isReference = aIsRef;
   *stackTop = aWord;
 }
 
@@ -164,8 +132,6 @@ static inline void dup (void)
 {
   stackTop++;
   *stackTop = *(stackTop-1);
-  isReference++;
-  *isReference = *(isReference-1);
 }
 
 static inline void dup2 (void)
@@ -173,9 +139,6 @@ static inline void dup2 (void)
   *(stackTop+1) = *(stackTop-1);
   *(stackTop+2) = *stackTop;
   stackTop += 2;
-  *(isReference+1) = *(isReference-1);
-  *(isReference+2) = *isReference;
-  isReference += 2;
 }
 
 static inline void dup_x1 (void)
@@ -184,10 +147,6 @@ static inline void dup_x1 (void)
   *stackTop = *(stackTop-1);
   *(stackTop-1) = *(stackTop-2);
   *(stackTop-2) = *stackTop;
-  isReference++;
-  *isReference = *(isReference-1);
-  *(isReference-1) = *(isReference-2);
-  *(isReference-2) = *isReference;
 }
 
 static inline void dup2_x1 (void)
@@ -198,12 +157,6 @@ static inline void dup2_x1 (void)
   *(stackTop-2) = *(stackTop-4);
   *(stackTop-3) = *stackTop;
   *(stackTop-4) = *(stackTop-1);
-  isReference += 2;
-  *isReference = *(isReference-2);
-  *(isReference-1) = *(isReference-3);
-  *(isReference-2) = *(isReference-4);
-  *(isReference-3) = *isReference;
-  *(isReference-4) = *(isReference-1);
 }
 
 static inline void dup_x2 (void)
@@ -213,11 +166,6 @@ static inline void dup_x2 (void)
   *(stackTop-1) = *(stackTop-2);
   *(stackTop-2) = *(stackTop-3);
   *(stackTop-3) = *stackTop;
-  isReference++;
-  *isReference = *(isReference-1);
-  *(isReference-1) = *(isReference-2);
-  *(isReference-2) = *(isReference-3);
-  *(isReference-3) = *isReference;
 }
 
 static inline void dup2_x2 (void)
@@ -229,13 +177,6 @@ static inline void dup2_x2 (void)
   *(stackTop-3) = *(stackTop-5);
   *(stackTop-4) = *stackTop;
   *(stackTop-5) = *(stackTop-1);
-  isReference += 2;
-  *isReference = *(isReference-2);
-  *(isReference-1) = *(isReference-3);
-  *(isReference-2) = *(isReference-4);
-  *(isReference-3) = *(isReference-5);
-  *(isReference-4) = *isReference;
-  *(isReference-5) = *(isReference-1);
 }
 
 static inline void swap (void)
@@ -243,21 +184,16 @@ static inline void swap (void)
   tempStackWord = *stackTop;
   *stackTop = *(stackTop-1);
   *(stackTop-1) = tempStackWord;
-  tempStackWord = *isReference;
-  *isReference = *(isReference-1);
-  *(isReference-1) = tempStackWord;
 }
 
 static inline void set_local_word (byte aIndex, STACKWORD aWord)
 {
   localsBase[aIndex] = aWord;
-  isReferenceBase[aIndex] = false;
 }
 
 static inline void set_local_ref (byte aIndex, REFERENCE aWord)
 {
   localsBase[aIndex] = aWord;
-  isReferenceBase[aIndex] = true;
 }
 
 #endif

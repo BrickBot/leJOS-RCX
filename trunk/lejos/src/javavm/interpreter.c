@@ -44,8 +44,6 @@ byte    gRequestCode;
 byte *pc;
 STACKWORD *localsBase;
 STACKWORD *stackTop;
-boolean *isReference;
-boolean *isReferenceBase;
 
 // Temporary globals:
 

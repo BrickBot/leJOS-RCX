@@ -364,6 +364,7 @@ LABEL_COMM_LOOP:
       {
 	play_system_sound (SOUND_QUEUED, 0);
 	delay (30000);
+	hookCommand = HC_SHUTDOWN_POWER;
 	goto LABEL_SHUTDOWN_POWER;
       }
       
@@ -452,6 +453,9 @@ LABEL_PROGRAM_STARTUP:
   // Execute the bytecode interpreter.
   engine();
 
+// Go in to standby mode  
+LABEL_SHUTDOWN_POWER:
+
   // Program terminated.
   clear_display();
   refresh_display();
@@ -473,8 +477,6 @@ LABEL_PROGRAM_STARTUP:
   // for some time to allow motors to spin down.
   delay (20000);
 
-// Go in to standby mode  
-LABEL_SHUTDOWN_POWER:
   shutdown_sensors();
   shutdown_buttons();
   shutdown_timer();

@@ -223,10 +223,8 @@ class Actuator extends Thread {
 				
 				// Loop until we end or we loose ownership.				
 				while (owner == this && state != Action.END) {
-/*
-	  	MinLCD.setNumber(0x301f,task * 10 + state,0x3002);
-	  	MinLCD.refresh();
-*/
+					MinLCD.setNumber(0x301f,(state+1)*10+task,0x3002);
+					MinLCD.refresh();
 					try  {
 						// Call wait() because it releases the arbitrator.
 						arbitrator.wait(actions[state].act());
@@ -327,8 +325,10 @@ class SenseBumper extends Sense {
 						bumper.wait();
 					} catch (InterruptedException ie) {
 					}
+					Sound.playTone(440, 10);
 				} while (!bumper.readBooleanValue());
 			}
+			Sound.playTone(500, 10);
 			
 			// Execute our FSM
 			actuator.execute();

@@ -106,7 +106,6 @@ typedef struct S_Thread
   JINT sleepUntil;           // Time to wake up
   JINT stackFrameArray;      // Array of stack frames
   JINT stackArray;           // The stack itself
-  JINT isReferenceArray;     // Array indicating if a stack entry is a reference or not
   JBYTE stackFrameArraySize; // Number of stack frames in use.
   JBYTE monitorCount;        // Saved monitor depth for context switches
   JBYTE threadId;            // Unique thread ID
@@ -118,7 +117,7 @@ typedef struct S_Thread
 
 /**
  * Runtime class native structure. Doesn't actually contain
- * any instance data. Maybe it ought to? Like ALL of the leJOS
+ * any instance data. Maybe it ought to?ere Like ALL of the leJOS
  * specific runtime instance data?
  */
 typedef struct S_Runtime
