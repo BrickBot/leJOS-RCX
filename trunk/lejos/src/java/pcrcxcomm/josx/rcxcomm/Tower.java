@@ -208,15 +208,10 @@ public class Tower
          File jarFile = new File(jarFilename.substring(5, jarFilename
             .indexOf('!')));
 
-         String filename = System.mapLibraryName("irtrcx");
+         String filename = System.mapLibraryName("jirtrcx");
          String path = new File(jarFile.getParentFile(), filename)
             .getAbsolutePath();
-         System.err.println("Loading native lib " + path);
-         // System.load(path);
-
-         filename = System.mapLibraryName("jirtrcx");
-         path = new File(jarFile.getParentFile(), filename).getAbsolutePath();
-         System.err.println("Loading native lib " + path);
+         // System.err.println("Loading native lib " + path);
          System.load(path);
       }
       catch (Throwable e)
@@ -226,15 +221,12 @@ public class Tower
          try
          {
             // try again the default way
-            System.err.println("Loading native lib irtrcx");
-            // System.loadLibrary("irtrcx");
-            System.err.println("Loading native lib jirtrcx");
+            // System.err.println("Loading native lib jirtrcx");
             System.loadLibrary("jirtrcx");
          }
          catch (Throwable e1)
          {
-            System.err.println("Unable to load native lib: "
-               + e1.getMessage());
+            // System.err.println("Unable to load native lib: " + e1.getMessage());
          }
       }
    }
@@ -244,17 +236,15 @@ public class Tower
    //
 
    /**
-    * Handle of tower.
-    * This field is only for native usage!
+    * Handle of tower. This field is only for native usage!
     */
    private long _port;
-   
+
    /**
-    * System error code of last operation.
-    * Read only field!
+    * System error code of last operation. Read only field!
     */
    private int _error;
-   
+
    /**
     * Open the tower
     * 

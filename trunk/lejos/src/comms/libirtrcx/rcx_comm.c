@@ -85,9 +85,9 @@ int rcxIsFast(void* port)
 
 // Open tower on specific port.
 // Returns port handle.
-void* rcxOpen(char* port, int isFast)
+void* rcxOpen(char* portName, int isFast)
 {
-	return __rcx_open(port, isFast);
+	return __rcx_open(portName, isFast);
 }
 
 // Close tower.
@@ -437,7 +437,7 @@ int rcxReceiveSlow (void* port, void* buf, int maxlen, int timeout)
 		return RCX_BAD_RESPONSE;
 	}
 
-	if (__comm_debug) hexdump("R", msg, len);
+	if (__comm_debug) hexdump("R", buf, len);
 
 	// Success
 	return len;
