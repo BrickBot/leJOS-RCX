@@ -46,8 +46,7 @@ public class ConstantRecord implements WritableData
    public boolean equals (Object object)
    {
       return object instanceof ConstantRecord
-         && _constantValue.value().equals(
-            ((ConstantRecord) object)._constantValue.value());
+         && _constantValue.equals(((ConstantRecord) object)._constantValue);
    }
 
    /**
@@ -55,7 +54,7 @@ public class ConstantRecord implements WritableData
     */
    public int hashCode ()
    {
-      return _constantValue.value().hashCode();
+      return _constantValue.hashCode();
    }
 
    /**
