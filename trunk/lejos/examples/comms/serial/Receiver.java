@@ -44,7 +44,7 @@ public class Receiver
 	    // Get battery power
             pPacket[0] = (byte) ~(pPacket[0] & 0xFF);
             pPacket[1] = 0x20;
-            pPacket[2] = 0x00;
+            pPacket[2] = 0x40;
             Serial.sendPacket (pPacket, 0, 3);
 	}
   	else if (pOpCode == 0x65)
