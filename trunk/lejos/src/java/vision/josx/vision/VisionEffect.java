@@ -1,8 +1,11 @@
 package josx.vision;
 
-import javax.media.*;
-import javax.media.format.*;
-import java.awt.*;
+import java.awt.Dimension;
+
+import javax.media.Buffer;
+import javax.media.Effect;
+import javax.media.Format;
+import javax.media.format.RGBFormat;
 
 /**
  * Abstract Effect that specific Vision Effects inherit from

@@ -1,9 +1,26 @@
 package josx.vision;
 
-import java.io.*;
-import javax.media.*;
-import javax.media.format.*;
-import javax.media.protocol.*;
+import java.io.IOException;
+
+import javax.media.CaptureDeviceInfo;
+import javax.media.CaptureDeviceManager;
+import javax.media.Controller;
+import javax.media.ControllerEvent;
+import javax.media.ControllerListener;
+import javax.media.DataSink;
+import javax.media.EndOfMediaEvent;
+import javax.media.Format;
+import javax.media.Manager;
+import javax.media.MediaLocator;
+import javax.media.Processor;
+import javax.media.ProcessorModel;
+import javax.media.ResourceUnavailableEvent;
+import javax.media.StopByRequestEvent;
+import javax.media.format.AudioFormat;
+import javax.media.format.VideoFormat;
+import javax.media.protocol.DataSource;
+import javax.media.protocol.FileTypeDescriptor;
+import javax.media.protocol.SourceCloneable;
 
 /**
  * Video recorder
@@ -108,7 +125,7 @@ public class Recorder extends Thread implements ControllerListener {
 
     p.start();
 
-    waitForState(p.Started);
+    waitForState(Controller.Started);
 
     System.out.println("Recording...");
 

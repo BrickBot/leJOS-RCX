@@ -1,18 +1,51 @@
 package josx.vision;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
-import java.awt.event.*;
-import javax.media.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+import javax.media.CaptureDeviceInfo;
+import javax.media.CaptureDeviceManager;
+import javax.media.Codec;
+import javax.media.ConfigureCompleteEvent;
+import javax.media.Controller;
+import javax.media.ControllerEvent;
+import javax.media.ControllerListener;
+import javax.media.EndOfMediaEvent;
+import javax.media.Format;
+import javax.media.Manager;
+import javax.media.MediaLocator;
+import javax.media.PrefetchCompleteEvent;
+import javax.media.Processor;
+import javax.media.RealizeCompleteEvent;
+import javax.media.ResourceUnavailableEvent;
+import javax.media.UnsupportedPlugInException;
+import javax.media.control.FormatControl;
 import javax.media.control.TrackControl;
-import javax.media.format.*;
-import javax.media.protocol.*;
-import javax.media.datasink.*;
-import javax.media.control.*;
-import javax.sound.sampled.*;
-import com.sun.image.codec.jpeg.*;
-import java.awt.image.*;
+import javax.media.format.RGBFormat;
+import javax.media.format.VideoFormat;
+import javax.media.protocol.CaptureDevice;
+import javax.media.protocol.DataSource;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
+import com.sun.image.codec.jpeg.JPEGCodec;
+import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 /**
  * Java version of Vision Command.
@@ -94,7 +127,7 @@ public class Vision extends Frame implements ControllerListener {
     // Put the Processor into configured state.
 
     p.configure();
-    if (!waitForState(p.Configured)) {
+    if (!waitForState(Processor.Configured)) {
       System.err.println("Failed to configure the processor.");
       return false;
     }
@@ -143,7 +176,7 @@ public class Vision extends Frame implements ControllerListener {
     // Realize the processor.
 	
     p.prefetch();
-    if (!waitForState(p.Prefetched)) {
+    if (!waitForState(Controller.Prefetched)) {
       System.err.println("Failed to realize the processor.");
       return false;
     }
@@ -554,7 +587,7 @@ public class Vision extends Frame implements ControllerListener {
    * Stop recording
    */
   public static void stopRecording() {
-    recorder.stopRecording();
+    Recorder.stopRecording();
   }
 
   /**

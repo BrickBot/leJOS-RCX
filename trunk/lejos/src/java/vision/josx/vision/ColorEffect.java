@@ -1,8 +1,11 @@
 package josx.vision;
 
-import javax.media.*;
-import javax.media.format.*;
-import java.awt.*;
+import java.awt.Dimension;
+
+import javax.media.Buffer;
+import javax.media.Control;
+import javax.media.format.RGBFormat;
+import javax.media.format.VideoFormat;
 
 /*
  * Supports detecting colors and light level in regions

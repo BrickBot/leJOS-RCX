@@ -1,7 +1,9 @@
 package josx.vision;
 
-import josx.rcxcomm.*;
-import java.io.*;
+import java.io.IOException;
+
+import josx.rcxcomm.RCXRemote;
+import josx.rcxcomm.RemoteVisionConstants;
 
 /**
  * Remote execution of commands for vision control.
