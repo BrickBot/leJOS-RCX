@@ -72,9 +72,8 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 {
 	char *bufp = (char*) buf;
 
-	int count;
 	FILEDESCR fd = ((Port*) port)->fileHandle;
-	struct fd_set fds;
+	fd_set fds;
 
 	struct timeval tv;
 	tv.tv_sec = timeout / 1000;
@@ -91,13 +90,13 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
       int selected = select(1, &fds, NULL, NULL, &tv);
 		if (selected > 0)
 		{
-			int read = read(fd, &bufp[len], maxlen - len);
-			if (read < 0) 
+			int count = read(fd, &bufp[len], maxlen - len);
+			if (count < 0) 
 			{
 				perror("read");
 				return RCX_READ_FAIL;
 			}
-			len + = read;
+			len += count;
 		}
 		else if (selected == 0 && (len > 0 || retry-- == 0))
 		{
