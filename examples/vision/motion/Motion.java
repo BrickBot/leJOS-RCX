@@ -19,7 +19,7 @@ public class Motion implements MotionListener {
     if ((System.currentTimeMillis() - lastPlay) > 1000) {
       lastPlay = System.currentTimeMillis();
       Vision.snapshot("Intruder" + image++ + ".jpg");
-      Vision.playSound("Effects/Alarm.wav");
+      Vision.playSound("../../Effects/Alarm.wav");
     }   
   }
 }
