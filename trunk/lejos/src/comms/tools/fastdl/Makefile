@@ -21,11 +21,13 @@ FASTDLPATH = $(LEJOS_HOME)/bin
 
 default: all
 
-all: fastdl2x.srec fastdl4x.srec
+all: fastdl2x.srec fastdl4x.srec install
+	@echo Done building fastdl images
+
+install:
 	rm -f $(LEJOS_HOME)/bin/fastdl2x.srec $(LEJOS_HOME)/bin/fastdl2x.srec
 	cp fastdl2x.srec $(LEJOS_HOME)/bin
 	cp fastdl4x.srec $(LEJOS_HOME)/bin
-	@echo Done building fastdl.srec
 
 fastdl2x.o:
 	$(CC) fastdl.S -o fastdl2x.o -DDISABLE_COMPLEMENTS
