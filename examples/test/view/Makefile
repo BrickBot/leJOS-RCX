@@ -17,6 +17,8 @@ PROGRAMS = View
 BINARY = View.bin
 SIGNATURE = View.sig
 
+.EXPORT_ALL_VARIABLES :
+
 .PHONY : run
 
 default : run
