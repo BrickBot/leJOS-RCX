@@ -9,6 +9,14 @@
 
 #define TIME_OUT 500
 
+#if !defined(_WIN32)
+extern int errno;
+
+int GetLastError() {
+  return errno;
+}
+#endif
+
 int usb_flag;
 
 // open - Open the IR Tower
@@ -227,10 +235,6 @@ Java_josx_rcxcomm_irTower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n
 	if (actual < 0) {
 		err = GetLastError();
 	}
-
-	// Flush buffers
-
-	FlushFileBuffers(fh);
 
     // Set err in the Java class
 
