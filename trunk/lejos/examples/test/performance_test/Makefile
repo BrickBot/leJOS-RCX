@@ -13,6 +13,8 @@ PROGRAMS = PerformanceTest
 BINARY = PerformanceTest.bin
 SIGNATURE = PerformanceTest.sig
 
+.EXPORT_ALL_VARIABLES :
+
 .PHONY : run
 
 default : run
