@@ -217,8 +217,7 @@ LABEL_POWERUP:
   init_power();
   
   // Initialize timer handler.
-  next_poll_time = sys_time = 0l;
-  throttle = 1;
+  sys_time = 0l;
   systime_init();
 
   // Not sure why this is done.  
@@ -409,7 +408,7 @@ LABEL_COMM_LOOP:
 // Run the program.
 LABEL_PROGRAM_STARTUP:
 
-  throttle = 1;
+  init_poller();
   
   // Reinitialize binary
   initialize_binary();
