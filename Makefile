@@ -11,7 +11,7 @@ JAVA=java
 
 export CLASSPATH
 
-default: check all_jtools all_ctools core_classes
+default: check all_jtools all_ctools core_classes tinyvm_emul
 
 all: default tinyvm_bin
 

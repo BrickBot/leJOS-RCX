@@ -29,7 +29,7 @@ JFLOAT gFloat;
 ConstantRecord *gConstRec;
 STACKWORD gStackWord;
 STACKWORD *gWordPtr;
-int gInt;
+JINT gInt;
 
 
 /**
@@ -94,6 +94,8 @@ void engine()
   switch_thread();
   numOpcodes = OPCODES_PER_TIME_SLICE;
  LABEL_ENGINELOOP: 
+  if (gMustExit)
+    return;
   if (!(--numOpcodes))
   {
     #if DEBUG_THREADS

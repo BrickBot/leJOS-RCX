@@ -64,19 +64,6 @@ set_data_pointer (void *ptr)
 
 #if DEBUG_RCX
 
-void wait_for_view_press (void)
-{
-  short status;
-  do {
-    status = 0;
-    read_buttons (BUTTONS_READ, &status);
-  } while (status != 0x04);
-  do {
-    status = 0;
-    read_buttons (BUTTONS_READ, &status);
-  } while ((status & 0x04) != 0);
-}
-
 void wait_for_power_press (void)
 {
   short status;
@@ -93,16 +80,34 @@ void wait_for_power_press (void)
 
 void debug (short s, short n1, short n2)
 {
-  if (s != -1)
-    play_system_sound (SOUND_QUEUED, s);
-  set_lcd_number (LCD_UNSIGNED, (short) n1, 3002);
-  set_lcd_number (LCD_PROGRAM, (short) n2, 0);
-  refresh_display();
-  wait_for_power_press();
-  play_system_sound (SOUND_QUEUED, 0);
+  trace (s, n1, n2);
 }
 
 #endif
+
+void wait_for_view_press (void)
+{
+  short status;
+  do {
+    status = 0;
+    read_buttons (BUTTONS_READ, &status);
+  } while ((status & 0x02) == 0);
+  do {
+    status = 0;
+    read_buttons (BUTTONS_READ, &status);
+  } while ((status & 0x02) != 0);
+}
+
+void trace (short s, short n1, short n2)
+{
+  if (s != -1)
+    play_system_sound (SOUND_QUEUED, s);
+  set_lcd_number (LCD_UNSIGNED, n1, 3002);
+  set_lcd_number (LCD_PROGRAM, n2, 0);
+  refresh_display();
+  wait_for_view_press();
+  play_system_sound (SOUND_QUEUED, 0);
+}
 
 int main (void)
 {

@@ -15,13 +15,22 @@ extern void make_word (byte *ptr, byte aSize, STACKWORD *aWordPtr);
 extern void save_word (byte *ptr, byte aSize, STACKWORD aWord);
 
 #define HEADER_SIZE (sizeof(Object))
+// Size of object header in 2-byte words
+#define NORM_OBJ_SIZE ((HEADER_SIZE + 1) / 2)
+
+#if 0
 
 #define get_array_element_ptr(ARR_,ESIZE_,IDX_) ((byte *) (ARR_) + (IDX_) * (ESIZE_) + HEADER_SIZE)
 #define get_array_word(ARR_,ESIZE_,IDX_,WPT_)        (make_word (get_array_element_ptr(ARR_,ESIZE_,IDX_), ESIZE_, WPT_))
 #define set_array_word(ARR_,ESIZE_,IDX_,WRD_)   (save_word (get_array_element_ptr(ARR_,ESIZE_,IDX_), ESIZE_, WRD_))
 
+#endif
+
+TWOBYTES get_array_size (byte length, byte elemSize);
+
 #define array_start(OBJ_)   ((byte *) (OBJ_) + HEADER_SIZE)
 #define jbyte_array(OBJ_)   ((JBYTE *) array_start(OBJ_))
+#define word_array(OBJ_)    ((STACKWORD *) array_start(OBJ_))
 #define ref_array(OBJ_)     ((REFERENCE *) array_start(OBJ_))
 #define jint_array(OBJ_)    ((JINT *) array_start(OBJ_))
 #define jshort_array(OBJ_)  ((JSHORT *) array_start(OBJ_))
@@ -29,5 +38,6 @@ extern void save_word (byte *ptr, byte aSize, STACKWORD aWord);
 #define jfloat_array(OBJ_)  ((JFLOAT *) array_start(OBJ_))
 
 #endif _MEMORY_H
+
 
 

@@ -1,5 +1,5 @@
 package java.lang;
 
-public class ClassCastException extends Exception
+public class ClassCastException extends RuntimeException
 {
 }

@@ -12,12 +12,15 @@
 #include "interpreter.h"
 #include "memory.h"
 
-Object *outOfMemoryError = null;
-Object *noSuchMethodError = null;
-Object *stackOverflowError = null;
-Object *nullPointerException = null;
-Object *classCastException = null;
-Object *arithmeticException = null;
+Object *outOfMemoryError;
+Object *noSuchMethodError;
+Object *stackOverflowError;
+Object *nullPointerException;
+Object *classCastException;
+Object *arithmeticException;
+Object *arrayIndexOutOfBoundsException;
+
+extern void trace (short s, short n1, short n2);
 
 void init_exceptions()
 {
@@ -27,6 +30,7 @@ void init_exceptions()
   nullPointerException = new_object_for_class (JAVA_LANG_NULLPOINTEREXCEPTION);
   classCastException = new_object_for_class (JAVA_LANG_CLASSCASTEXCEPTION);
   arithmeticException = new_object_for_class (JAVA_LANG_ARITHMETICEXCEPTION);
+  arrayIndexOutOfBoundsException = new_object_for_class (JAVA_LANG_ARRAYINDEXOUTOFBOUNDSEXCEPTION);
 }
 
 void throw_exception_checked (Object *exception)
@@ -71,7 +75,7 @@ void throw_exception (Object *exception)
             (int) get_code_ptr(exceptionMr));
     #else
     
-    // TBD: 
+    trace (4, exceptionMr->signatureId, get_class_index (exception) % 10);
 
     #endif EMULATE
     return;
