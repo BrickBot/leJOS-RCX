@@ -135,11 +135,11 @@ public class DataInputStream extends InputStream {
       return ((long)(readInt()) << 32) + (readInt() & 0xFFFFFFFFL);
    }
    */
-/*
+
    public final float readFloat() throws IOException {
       return Float.intBitsToFloat(readInt());
    }
-*/
+
 /*
    public final double readDouble() throws IOException {
       return Double.longBitsToDouble(readLong());
