@@ -17,6 +17,10 @@ public class Tower {
   long fh;
   private int usbFlag;
 
+  public int open() {
+    return open("");
+  }
+
   public String strerror(int errno) {
     switch (errno) {
     case 0: return "no error";
