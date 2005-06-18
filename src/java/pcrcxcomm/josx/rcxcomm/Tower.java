@@ -240,6 +240,8 @@ public class Tower
 
    /**
     * load native lib.
+    * Note: Mac OS X has the JNI part of its native library named
+    * jirtrcx which links to the irtrcx library. Hence the retries below.
     */
    static
    {
@@ -267,18 +269,25 @@ public class Tower
       catch (Throwable e)
       {
          // System.err.println("Unable to load native lib: " + e.getMessage());
-
          try
          {
             // try again the default way
             // System.err.println("Loading native lib irtrcx");
             System.loadLibrary("irtrcx");
-            // System.err.println("Loading native lib jirtrcx");
-            System.loadLibrary("jirtrcx");
          }
          catch (Throwable e1)
          {
             // System.err.println("Unable to load native lib: " + e1.getMessage());
+            try
+            {
+               // try again the default way
+               // System.err.println("Loading native lib jirtrcx");
+               System.loadLibrary("jirtrcx");
+            }
+            catch (Throwable e2)
+            {
+               System.err.println("Unable to load irtcx native library: " + e2.getMessage());
+            }
          }
       }
       init();
