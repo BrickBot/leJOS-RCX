@@ -104,7 +104,6 @@ public abstract class VisionEffect implements Effect
       int maxDataLength = incoming.getMaxDataLength();
       int lineStride = incoming.getLineStride();
       float frameRate = incoming.getFrameRate();
-      int endian = incoming.getEndian();
 
       if (size == null)
          return null;

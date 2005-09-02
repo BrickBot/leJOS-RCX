@@ -19,7 +19,6 @@ public class RegionControl implements Control, ActionListener
    private Component component;
    private JButton button;
    private RegionEffect effect;
-   private boolean debug;
 
    /**
     * Create the Region Control
