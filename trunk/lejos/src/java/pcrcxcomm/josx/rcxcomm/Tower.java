@@ -18,7 +18,7 @@ public class Tower
    //
 
    public static final int DEFAULT_READ_TIMEOUT = 100;
-   
+
    private String _tty;
    private boolean _isOpen;
 
@@ -185,7 +185,8 @@ public class Tower
    public int sendPacketReceivePacket (byte[] data, byte[] response, int retries)
       throws TowerException
    {
-      return sendPacketReceivePacket(data, response, retries, DEFAULT_READ_TIMEOUT);
+      return sendPacketReceivePacket(data, response, retries,
+         DEFAULT_READ_TIMEOUT);
    }
 
    /**
@@ -196,8 +197,8 @@ public class Tower
     * @param timeout read timeout in ms
     * @return number of bytes read
     */
-   public int sendPacketReceivePacket (byte[] data, byte[] response, int retries, int timeout)
-      throws TowerException
+   public int sendPacketReceivePacket (byte[] data, byte[] response,
+      int retries, int timeout) throws TowerException
    {
       TowerException towerException = null;
       int numRead = -1;
@@ -239,9 +240,8 @@ public class Tower
    //
 
    /**
-    * load native lib.
-    * Note: Mac OS X has the JNI part of its native library named
-    * jirtrcx which links to the irtrcx library. Hence the retries below.
+    * load native lib. Note: Mac OS X has the JNI part of its native library
+    * named jirtrcx which links to the irtrcx library. Hence the retries below.
     */
    static
    {
@@ -261,33 +261,33 @@ public class Tower
          System.load(path);
 
          filename = System.mapLibraryName("jirtrcx");
-         path = new File(jarFile.getParentFile(), filename)
-            .getAbsolutePath();
+         path = new File(jarFile.getParentFile(), filename).getAbsolutePath();
          // System.err.println("Loading native lib " + path);
          System.load(path);
       }
       catch (Throwable e)
       {
          // System.err.println("Unable to load native lib: " + e.getMessage());
+         // try again the default way
          try
          {
-            // try again the default way
             // System.err.println("Loading native lib irtrcx");
             System.loadLibrary("irtrcx");
          }
          catch (Throwable e1)
          {
-            // System.err.println("Unable to load native lib: " + e1.getMessage());
-            try
-            {
-               // try again the default way
-               // System.err.println("Loading native lib jirtrcx");
-               System.loadLibrary("jirtrcx");
-            }
-            catch (Throwable e2)
-            {
-               System.err.println("Unable to load irtcx native library: " + e2.getMessage());
-            }
+            // System.err.println("Unable to load irtcx native library: " +
+            // e1.getMessage());
+         }
+         try
+         {
+            // System.err.println("Loading native lib jirtrcx");
+            System.loadLibrary("jirtrcx");
+         }
+         catch (Throwable e2)
+         {
+            // System.err.println("Unable to load jirtcx native library: " +
+            // e2.getMessage());
          }
       }
       init();
