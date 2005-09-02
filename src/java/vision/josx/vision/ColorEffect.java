@@ -237,9 +237,8 @@ public class ColorEffect extends VisionEffect
 
                      // Count the pixel if each of R, G and B is above the
                      // threshold
-
                      if (tr >= LIGHT_THRESHOLD && tg >= LIGHT_THRESHOLD
-                        && tr >= LIGHT_THRESHOLD)
+                        && tb >= LIGHT_THRESHOLD)
                      {
                         pixCount++;
                      }
