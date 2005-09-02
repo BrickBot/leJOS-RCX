@@ -222,8 +222,6 @@ public class FirmdlTool extends AbstractTool
             }
             line++;
 
-            int error;
-
             /* Decode line */
             try
             {

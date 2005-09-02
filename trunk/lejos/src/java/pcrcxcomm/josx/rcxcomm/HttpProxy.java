@@ -19,7 +19,7 @@ import java.net.Socket;
  * The constructor does not return - it runs forever.
  * 
  * @author Lawrie Griffiths
- *  
+ * 
  */
 public class HttpProxy
 {
@@ -40,7 +40,7 @@ public class HttpProxy
             System.out.println("RCX is busy");
             BufferedReader in = new BufferedReader(new InputStreamReader(sock
                .getInputStream()));
-            String s = in.readLine();
+            in.readLine();
             PrintWriter pw = new PrintWriter(sock.getOutputStream());
             pw.println("HTTP/1.0 200");
             pw.println("Content-Type: text/html");
@@ -81,8 +81,7 @@ public class HttpProxy
       }
 
       // Runs forever
-
-      HttpProxy proxy = new HttpProxy(port);
+      new HttpProxy(port);
    }
 
    /**
@@ -170,4 +169,3 @@ public class HttpProxy
       }
    }
 }
-
