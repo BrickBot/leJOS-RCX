@@ -28,7 +28,6 @@ public class ColorDetectionControl
    private JLabel proportionLabel;
    private ColorEffect effect;
    private boolean debug;
-   private int thresholdValue;
 
    /**
     * Create the Motion Detection Control

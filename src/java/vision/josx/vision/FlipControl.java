@@ -19,7 +19,6 @@ public class FlipControl implements Control, ActionListener
    private Component component;
    private JButton button;
    private FlipEffect effect;
-   private boolean debug;
 
    /**
     * Create the Motion Detection Control

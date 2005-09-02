@@ -153,13 +153,6 @@ public class MotionDetectionEffect extends VisionEffect
       int pixStrideIn = vfIn.getPixelStride();
       int lineStrideIn = vfIn.getLineStride();
 
-      int y, x;
-
-      // Get the input demensions
-
-      int width = sizeIn.width;
-      int height = sizeIn.height;
-
       int r, g, b;
       int ip, op;
       byte result;
@@ -435,7 +428,7 @@ public class MotionDetectionEffect extends VisionEffect
    void sample_down (byte[] inData, byte[] outData, int X, int Y, int width,
       int height, int lineStrideIn, int pixStrideIn)
    {
-      int p1, p2, p3, p4, op, x, y;
+      int p1, p2, p3, p4, op, y;
 
       for (y = 0; y < (height / 2); y++)
       {
