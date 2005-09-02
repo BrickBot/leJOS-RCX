@@ -2,6 +2,9 @@ package josx.rcxcomm.remotecontrol;
 
 /*
  * $Log$
+ * Revision 1.5  2005/03/01 19:09:22  mpscholz
+ * throws Unsatisfied link error
+ *
  * Revision 1.4  2004/07/20 17:02:34  markus_heiden
  * mh: reworked tower jni implementation
  *
@@ -125,7 +128,10 @@ public class RemoteControlMessenger
 
    ////////////////////////////////////////////
    /**
-    * creates a new instance of RemoteControlMessenger
+    * Creates a new instance of RemoteControlMessenger.
+    * 
+    * TODO do not throw UnsatisfiedLinkError here.
+    * TODO pass lego tower port as parameter.
     */
    public RemoteControlMessenger() throws UnsatisfiedLinkError
    {
