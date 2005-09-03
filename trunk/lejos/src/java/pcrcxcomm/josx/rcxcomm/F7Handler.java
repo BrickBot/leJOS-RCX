@@ -20,7 +20,6 @@ public class F7Handler extends PacketHandler
    private int usbFlag;
    private int bytesRead = 0;
    private long sendTime;
-   private int r;
    private boolean listen = false;
    boolean debug = false;
 
@@ -37,7 +36,6 @@ public class F7Handler extends PacketHandler
       {
          e.printStackTrace();
       }
-      r = tower.getError();
    }
 
    /**
