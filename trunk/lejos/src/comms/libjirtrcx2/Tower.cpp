@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "rcx_comm.h"
 #include "Tower.h"
@@ -271,13 +272,15 @@ void setError (JNIEnv* env, jobject obj, bool error)
 void setPort (JNIEnv* env, jobject obj, void* port)
 {
    // the warning regarding this cast may be ignored
-   env->SetLongField(obj, _fieldIDPort, (jlong) port);
+   intptr_t int_port = (intptr_t) port;
+   env->SetLongField(obj, _fieldIDPort, (jlong) int_port);
 }
 
 void* getPort (JNIEnv* env, jobject obj)
 {
    // the warning regarding this cast may be ignored
-   return (void*) env->GetLongField(obj, _fieldIDPort);
+   intptr_t int_port = (intptr_t) env->GetLongField(obj, _fieldIDPort);
+   return (void*) int_port;
 }
 
 // init - Init class
