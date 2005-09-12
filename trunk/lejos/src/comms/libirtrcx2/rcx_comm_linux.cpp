@@ -111,7 +111,7 @@ int __rcx_read (void* port, void *buf, int maxlen, int timeout)
 	return len;
 }
 
-int __rcx_write(void* port, void* buf, int len) 
+int __rcx_write(void* port, const void* buf, int len) 
 {
 	int written = TEMP_FAILURE_RETRY (write(((Port*) port)->fileHandle, buf, len));
 	if (written < 0)

@@ -140,7 +140,7 @@ extern int __rcx_read(void* port, void* buffer, int maxLength, int timeout_ms);
 // buffer: buffer to write from
 // length: number of bytes to write
 // Returns number of written bytes or an error code.
-extern int __rcx_write(void* port, void* buffer, int length);
+extern int __rcx_write(void* port, const void* buffer, int length);
 
 // Purge input buffers.
 // port: port handle
