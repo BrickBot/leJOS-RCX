@@ -67,4 +67,4 @@ $(OBJS): $(SRCS)
 
 clean:
 	rm -f *.o
-	rm -f $(LIBIRTRCX)
+	rm -f $(IRTRCX)
