@@ -5,18 +5,16 @@
 #
 # 12/12/02  created L. Griffiths
 
-
 if [ -z "$LEJOS_HOME" ]; then 
   LEJOS_HOME="$(dirname $(dirname $0))"
 fi
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LEJOS_HOME/bin
-export LD_PRELOAD=$LEJOS_HOME/bin/libirtrcx.so:$LEJOS_HOME/bin/libjirtrcx.so
 
 if [ $OSTYPE == "cygwin" ]; then
-    SEP=";"
+  SEP=";"
 else
-    SEP=":"
+  SEP=":"
 fi
 
 java -Djava.library.path="$LEJOS_HOME/bin" -classpath "$LEJOS_HOME/lib/commons-cli-1.0.jar$SEP$LEJOS_HOME/lib/jtools.jar$SEP$LEJOS_HOME/lib/pcrcxcomm.jar" js.tools.Lejosdl --tty ${RCXTTY:-usb} "$@"
