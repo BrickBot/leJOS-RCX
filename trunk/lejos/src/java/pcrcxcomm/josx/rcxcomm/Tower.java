@@ -251,8 +251,7 @@ public class Tower
          URL url = Tower.class.getResource("Tower.class");
          String jarFilename = url.getFile();
          // cut "file:" and jar part beginning with "!"
-         File jarFile = new File(jarFilename.substring(5, jarFilename
-            .indexOf('!')));
+         File jarFile = new File(jarFilename.substring(jarFilename.indexOf(':') + 1, jarFilename.indexOf('!')));
 
          String filename = System.mapLibraryName("irtrcx");
          String path = new File(jarFile.getParentFile(), filename)
