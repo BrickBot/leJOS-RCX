@@ -240,8 +240,34 @@ public class Tower
    //
 
    /**
-    * load native lib. Note: Mac OS X has the JNI part of its native library
-    * named jirtrcx which links to the irtrcx library. Hence the retries below.
+    * Load libraries from directory.
+    * 
+    * @param dir directory
+    */
+   private static void loadLibs (File dir) throws Throwable
+   {
+      loadLib(dir, "irtrcx");  
+      loadLib(dir, "jirtrcx");  
+   }
+
+   /**
+    * Load libraries from directory.
+    * 
+    * @param dir directory
+    * @param name name of the lib
+    */
+   private static void loadLib (File dir, String name) throws Throwable
+   {
+      String filename = System.mapLibraryName(name);
+      String path = new File(dir, filename).getAbsolutePath();
+      System.err.println("Loading native lib " + path);
+      System.load(path);
+   }
+
+   /**
+    * load native lib. 
+    * Note: Mac OS X has the JNI part of its native library named jirtrcx 
+    * which links to the irtrcx library. Hence the retries below.
     */
    static
    {
@@ -251,42 +277,23 @@ public class Tower
          URL url = Tower.class.getResource("Tower.class");
          String jarFilename = url.getFile();
          // cut "file:" and jar part beginning with "!"
-         File jarFile = new File(jarFilename.substring(jarFilename.indexOf(':') + 1, jarFilename.indexOf('!')));
-
-         String filename = System.mapLibraryName("irtrcx");
-         String path = new File(jarFile.getParentFile(), filename)
-            .getAbsolutePath();
-         // System.err.println("Loading native lib " + path);
-         System.load(path);
-
-         filename = System.mapLibraryName("jirtrcx");
-         path = new File(jarFile.getParentFile(), filename).getAbsolutePath();
-         // System.err.println("Loading native lib " + path);
-         System.load(path);
+         File jarFile = new File(jarFilename.substring(jarFilename.indexOf(':') + 1, jarFilename.indexOf('!'))).getParentFile();
+         
+         loadLibs(jarFile);
       }
       catch (Throwable e)
       {
-         // System.err.println("Unable to load native lib: " + e.getMessage());
+         System.err.println("Unable to load native lib: " + e.getMessage());
          // try again the default way
          try
          {
-            // System.err.println("Loading native lib irtrcx");
+            System.err.println("Loading native libs");
             System.loadLibrary("irtrcx");
+            System.loadLibrary("jirtrcx");
          }
          catch (Throwable e1)
          {
-            // System.err.println("Unable to load irtcx native library: " +
-            // e1.getMessage());
-         }
-         try
-         {
-            // System.err.println("Loading native lib jirtrcx");
-            System.loadLibrary("jirtrcx");
-         }
-         catch (Throwable e2)
-         {
-            // System.err.println("Unable to load jirtcx native library: " +
-            // e2.getMessage());
+            System.err.println("Unable to load native libraries: " + e1.getMessage());
          }
       }
       init();
