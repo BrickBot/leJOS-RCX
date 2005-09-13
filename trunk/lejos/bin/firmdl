@@ -5,13 +5,11 @@
 #
 # 12/12/02  created L. Griffiths
 
-
 if [ -z "$LEJOS_HOME" ]; then 
   LEJOS_HOME="$(dirname $(dirname $0))"
 fi
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LEJOS_HOME/bin
-export LD_PRELOAD=$LEJOS_HOME/bin/libirtrcx.so:$LEJOS_HOME/bin/libjirtrcx.so
 
 if [ $OSTYPE == "cygwin" ]; then
   SEP=";"
