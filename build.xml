@@ -20,6 +20,10 @@
   <property name="lib" value="${basedir}/lib"/>
 
   <property name="org.lejos" value="${basedir}/../org.lejos"/>
+  <property name="org.lejos.lib" value="${org.lejos}/lib"/>
+  <property name="org.lejos.src" value="${org.lejos}/src"/>
+  <property name="driver_win32" value="${org.lejos}/os/win32/x86"/>
+  <property name="driver_linux" value="${org.lejos}/os/linux/x86"/>
 
   <!--
     ==================================================
@@ -157,39 +161,51 @@
   -->
   <target name="deploy" depends="" description="deploy all files">
   	<!-- all leJOS libs -->
-    <mkdir dir="${org.lejos}/lib"/>
+    <mkdir dir="${org.lejos.lib}"/>
     <delete>
-      <fileset dir="${org.lejos}/lib">
+      <fileset dir="${org.lejos.lib}">
         <include name="*.jar"/>
       </fileset>
     </delete>
-    <copy todir="${org.lejos}/lib">
+    <copy todir="${org.lejos.lib}">
       <fileset dir="${lib}">
         <include name="*.jar"/>
       </fileset>
     </copy>
   	<!-- sources for all leJOS libs -->
-    <mkdir dir="${org.lejos}/src"/>
+    <mkdir dir="${org.lejos.src}"/>
     <delete>
-      <fileset dir="${org.lejos}/src">
+      <fileset dir="${org.lejos.src}">
         <include name="*.zip"/>
       </fileset>
     </delete>
-    <copy todir="${org.lejos}/src">
+    <copy todir="${org.lejos.src}">
       <fileset dir="${build}">
         <include name="*.zip"/>
       </fileset>
     </copy>
-  	<!-- OS specific drivers (currently only win32) -->
-    <mkdir dir="${org.lejos}/os/win32/x86"/>
-    <delete>
-      <fileset dir="${org.lejos}/os/win32/x86">
+  	<!-- OS specific drivers (win32) -->
+    <mkdir dir="${driver_win32}"/>
+    <!--delete>
+      <fileset dir="${driver_win32}">
         <include name="*.dll"/>
       </fileset>
-    </delete>
-    <copy todir="${org.lejos}/os/win32/x86">
+    </delete-->
+   <copy todir="${driver_win32}" overwrite="true">
       <fileset dir="${bin}">
         <include name="*.dll"/>
+      </fileset>
+    </copy>
+  	<!-- OS specific drivers (linux) -->
+  	<mkdir dir="${driver_linux}"/>
+    <!--delete>
+      <fileset dir="${driver_linux}">
+        <include name="*.so"/>
+      </fileset>
+    </delete-->
+    <copy todir="${driver_linux}" overwrite="true">
+      <fileset dir="${bin}">
+        <include name="*.so"/>
       </fileset>
     </copy>
   </target>
