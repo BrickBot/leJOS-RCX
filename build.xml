@@ -35,6 +35,7 @@
   	<delete file="${javasrc}/tools/js/tinyvm/SpecialClassConstants.java"/>
   	<delete file="${javasrc}/tools/js/tinyvm/SpecialSignatureConstants.java"/>
   	<!-- delete classes -->
+    <mkdir dir="${build}"/>
     <delete dir="${build}/classes"/>
     <delete dir="${build}/rcxcomm"/>
     <delete dir="${build}/pcrcxcomm"/>
@@ -67,7 +68,6 @@
     <tstamp/>
     <mkdir dir="${build}"/>
     <mkdir dir="${lib}"/>
-    <mkdir dir="${src}"/>
   </target>
 
   <!--
