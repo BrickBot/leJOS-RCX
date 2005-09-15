@@ -1,24 +1,28 @@
+#
+# leJOS main make file
+#
 
 SHELL=/bin/sh
+
+ANT=ant
+TEMP=/usr/tmp
 
 # OSTYPE is not set by default on Mac OS X
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 endif
 
-ANT=ant
-TEMP=/usr/tmp
-
-LEJOS_HOME=$(shell pwd)
-
-MFLAGS = OSTYPE=$(OSTYPE) LEJOS_HOME=$(LEJOS_HOME)
-
+# determine LEJOS_HOME and path separators
+PWD=$(shell pwd)
 ifneq (,$(findstring cygwin,$(OSTYPE)))
+  LEJOS_HOME=$(shell cygpath -m "$(PWD)")
   PATH_SEP=;
 else
+  LEJOS_HOME=$(PWD)
   PATH_SEP=:
 endif
 
+MFLAGS = OSTYPE=$(OSTYPE) LEJOS_HOME=$(LEJOS_HOME)
 
 REGRESSION_SRC="test/regression"
 JVM_SRC="src/javavm"
@@ -107,8 +111,8 @@ irtrcx_libs:
 	@echo ""
 	@echo "====> Making IR RCX communication libraries"
 	@echo ""
-	cd $(IRTRCX_LIB_SRC); $(MAKE) $(MFLAGS)
-	cd $(JIRTRCX_LIB_SRC); $(MAKE) $(MFLAGS)
+	cd $(IRTRCX_LIB_SRC); $(MAKE) $(MFLAGS) clean; $(MAKE) $(MFLAGS)
+	cd $(JIRTRCX_LIB_SRC); $(MAKE) $(MFLAGS) clean; $(MAKE) $(MFLAGS)
 
 lejos_bin:
 	@echo ""
