@@ -49,7 +49,7 @@
         <include name="jtools.jar"/>
         <include name="vision.jar"/>
       </fileset>  	
-      <fileset dir="${src}">
+      <fileset dir="${lib}/src">
         <include name="classes-src.zip"/>
         <include name="rcxcomm-src.zip"/>
         <include name="pcrcxcomm-src.zip"/>
@@ -79,7 +79,7 @@
     <mkdir dir="${build}/classes"/>
     <javac srcdir="${javasrc}/classes" destdir="${build}/classes" fork="yes" optimize="on" debug="on" source="1.3" target="1.1"/>
     <jar destfile="${lib}/classes.jar" basedir="${build}/classes" update="false"/>
-    <zip destfile="${build}/classes-src.zip" basedir="${javasrc}/classes" update="false"/>
+    <zip destfile="${lib}/src/classes-src.zip" basedir="${javasrc}/classes" update="false"/>
   </target>
 
   <!--
@@ -93,7 +93,7 @@
       <classpath location="${lib}/classes.jar"/>
     </javac>
     <jar destfile="${lib}/rcxcomm.jar" basedir="${build}/rcxcomm" update="false"/>
-    <zip destfile="${build}/rcxcomm-src.zip" basedir="${javasrc}/rcxcomm" update="false"/>
+    <zip destfile="${lib}/src/rcxcomm-src.zip" basedir="${javasrc}/rcxcomm" update="false"/>
   </target>
 
   <!--
@@ -105,7 +105,7 @@
     <mkdir dir="${build}/pcrcxcomm"/>
     <javac srcdir="${javasrc}/pcrcxcomm" destdir="${build}/pcrcxcomm" fork="yes" optimize="on" debug="on" source="1.4"/>
     <jar destfile="${lib}/pcrcxcomm.jar" basedir="${build}/pcrcxcomm" update="false"/>
-    <zip destfile="${build}/pcrcxcomm-src.zip" basedir="${javasrc}/pcrcxcomm" update="false"/>
+    <zip destfile="${lib}/src/pcrcxcomm-src.zip" basedir="${javasrc}/pcrcxcomm" update="false"/>
   </target>
 
   <!--
@@ -124,7 +124,7 @@
       <classpath path="${lib}/jmf.jar:${lib}/pcrcxcomm.jar" />
     </javac>
     <jar destfile="${lib}/vision.jar" basedir="${build}/vision" update="false"/>
-    <zip destfile="${build}/vision-src.zip" basedir="${javasrc}/vision" update="false"/>
+    <zip destfile="${lib}/src/vision-src.zip" basedir="${javasrc}/vision" update="false"/>
   </target>
 
   <!--
@@ -172,7 +172,7 @@
         <include name="*.jar"/>
       </fileset>
     </copy>
-  	<!-- sources for all leJOS libs -->
+  	<!-- sources for all leJOS and external libs -->
     <mkdir dir="${org.lejos.src}"/>
     <delete>
       <fileset dir="${org.lejos.src}">
@@ -180,8 +180,9 @@
       </fileset>
     </delete>
     <copy todir="${org.lejos.src}">
-      <fileset dir="${build}">
+      <fileset dir="${lib}/src">
         <include name="*.zip"/>
+        <exclude name="bcel*"/>
       </fileset>
     </copy>
   	<!-- OS specific drivers (win32) -->
