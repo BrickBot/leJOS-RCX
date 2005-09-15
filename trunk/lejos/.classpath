@@ -7,5 +7,5 @@
 	<classpathentry kind="lib" path="lib/commons-cli-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jmf.jar"/>
 	<classpathentry sourcepath="lib/bcel-5.1-src.zip" kind="lib" path="lib/bcel-5.1.jar"/>
-	<classpathentry kind="output" path="build/classes"/>
+	<classpathentry kind="output" path="build/bin"/>
 </classpath>
