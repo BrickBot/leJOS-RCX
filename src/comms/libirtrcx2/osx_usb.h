@@ -22,64 +22,32 @@
  *
  *  OS X specific code taken in parts from Dave Baum's OS X implementation of NCQ.
  *
+ *  13/2/2005 Made interface generic C to avoid all the IOKit and Mach types impacting
+ *  all the other code. Andy Belk
+ *
  */
 
 #ifndef osx_usb_h
 #define osx_usb_h
 
-#include <AvailabilityMacros.h>
-#include <CoreFoundation/CoreFoundation.h>
-#include <unistd.h>
-#include <sys/time.h>
-
-#include <IOKit/IOKitLib.h>
-#include <IOKit/IOCFPlugIn.h>
-#include <IOKit/usb/IOUSBLib.h>
-#include <IOKit/usb/USBSpec.h>
-
-#define LegoUSBRelease 256
-
-#define LEGO_SEND_PIPE 2
-#define LEGO_RECV_PIPE 1
-
-#ifndef RCX_COMM_H_INCLUDED
-#include "rcx_comm.h"
-#endif
-
-/*#ifndef OSX_DEBUG
- #define OSX_DEBUG 1
-#endif */
 #if defined (__cplusplus)
 extern "C" {
 #endif
-static io_iterator_t		gRawAddedIter;
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_0
-    // On 10.1 and later use a more complete USB interface,
-    #define IOUSBDeviceInterface IOUSBDeviceInterface182
-    #define IOUSBInterfaceInterface IOUSBInterfaceInterface182
-#endif
-    
+#include <stdint.h>
+
 /* Get a InterfaceInterface for the usb tower.
    Fast mode currently unsupported, and ignored.
    The first matching device is used for communication.
 */
-IOUSBInterfaceInterface** osx_usb_rcx_init (int is_fast);
+intptr_t osx_usb_rcx_init (int is_fast);
 
 /* Close an Interface opened by osx_usb_rcx_init */
-void osx_usb_rcx_close (IOUSBInterfaceInterface** intf);
+void osx_usb_rcx_close (intptr_t intf);
 
-int osx_usb_rcx_is_alive (IOUSBInterfaceInterface **intf, int use_comp);
+int osx_usb_nbread (intptr_t intf, void *buf, int maxlen, int timeout);
 
-int osx_usb_rcx_sendrecv (IOUSBInterfaceInterface **intf, void *send, int slen, void *recv, int rlen, int timeout, int retries, int use_comp);
-
-int osx_usb_rcx_recv (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int timeout, int use_comp);
-
-int osx_usb_rcx_send(IOUSBInterfaceInterface **intf, void *buf, int len, int use_comp);
-
-int osx_usb_nbread (IOUSBInterfaceInterface **intf, void *buf, int maxlen, int timeout);
-
-int osx_usb_write(IOUSBInterfaceInterface **intf, const void *msg, int msglen);
+int osx_usb_write(intptr_t intf, const void *msg, int msglen);
 
 #if defined(__cplusplus)
 }
