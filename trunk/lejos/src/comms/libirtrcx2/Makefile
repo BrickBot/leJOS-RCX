@@ -43,7 +43,7 @@ endif
 
 # MacOS X
 ifneq (,$(findstring darwin,$(OSTYPE)))
-	RCXCOMM=rcx_comm_osx.cpp osx_usb.cpp
+	RCXCOMM=rcx_comm_darwin.cpp osx_usb.cpp
 	CFLAGS=-g
 	LFLAGS=-dynamiclib -framework IOKit -framework CoreFoundation
 	IRTRCX=$(LEJOS_HOME)/bin/libirtrcx.dylib
@@ -61,7 +61,7 @@ $(IRTRCX): $(OBJS)
 $(OBJS): $(SRCS)
 
 %.o: %.cpp
-	$(CC) -c -o $@ $(COPT) $(CFLAGS) "$<"
+	$(CXX) -c -o $@ $(COPT) $(CFLAGS) "$<"
 
 .SUFFIXES: .cpp .o
 
