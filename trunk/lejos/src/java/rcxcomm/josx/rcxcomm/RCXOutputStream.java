@@ -1,7 +1,7 @@
 package josx.rcxcomm;
 
-import java.io.*;
-import josx.platform.rcx.*;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /** Cut down version of RCXPort, which only supports writes.
  */

@@ -1,7 +1,11 @@
 package java.net;
 
-import josx.rcxcomm.*;
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import josx.rcxcomm.RCXPort;
 
 /** An RCX version of Socket that connects to TCP/IP ports via a 
  * proxy called SocketProxy running on the PC. It uses the 

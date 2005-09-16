@@ -1,6 +1,6 @@
 package josx.rcxcomm;
 
-import josx.platform.rcx.*;
+import josx.platform.rcx.ROM;
 
 /**
  * Low-level comms (LLC). This class provide native methods to read and write 

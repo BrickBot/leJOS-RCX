@@ -1,8 +1,5 @@
 package josx.rcxcomm;
 
-import java.io.File;
-import java.net.URL;
-
 /**
  * Low-level interface to the Lego IR Tower Used by RCXPort to send and receive
  * messages to and from the RCX. Can be used to send any packet or any sequence

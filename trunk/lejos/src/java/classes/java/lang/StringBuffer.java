@@ -1,7 +1,5 @@
 package java.lang;
 
-import josx.platform.rcx.LCD;
-
 /**
  * An expandable string of characters. Actually not very expandable!
  * 09/25/2001 added number formatting thanks to Martin E. Nielsen.

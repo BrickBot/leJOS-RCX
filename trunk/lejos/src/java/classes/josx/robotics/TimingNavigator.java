@@ -1,7 +1,6 @@
 package josx.robotics;
 
-import josx.platform.rcx.*;
-import josx.util.*;
+import josx.platform.rcx.Motor;
 
 // !! Should all methods call stop() first in case it was roaming?
 // OR methods account for RCX currently in moving mode
@@ -218,7 +217,7 @@ public class TimingNavigator implements Navigator {
       
       sleepThread = Thread.currentThread();
       try {
-         sleepThread.sleep(delay);
+         Thread.sleep(delay);
          travel = false;
          stop(); // Will not be called if Interrupted
       } catch (InterruptedException ie) {

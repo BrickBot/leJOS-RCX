@@ -1,6 +1,6 @@
 package josx.rcxcomm;
 
-import java.io.*;
+import java.io.IOException;
 
 /** RCXPort provides an interface similar to java.net.Socket
  * Adapted from original code created by the LEGO3 Team at DTU-IAU

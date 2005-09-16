@@ -1,7 +1,8 @@
 package josx.robotics;
 
-import josx.platform.rcx.*;
-import josx.util.*;
+import josx.platform.rcx.Motor;
+import josx.platform.rcx.Sensor;
+import josx.platform.rcx.SensorConstants;
 
 // !! For rotation, it should straighten out when stopped to try to keep
 // the angle somewhat accurate.

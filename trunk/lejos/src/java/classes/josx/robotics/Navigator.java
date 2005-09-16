@@ -1,7 +1,5 @@
 package josx.robotics;
 
-import josx.platform.rcx.*;
-
 /**
  * The Navigator interface contains methods for performing basic navigational
  * movements. Normally the Navigator class is instantiated as an object and

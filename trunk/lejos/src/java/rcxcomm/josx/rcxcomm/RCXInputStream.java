@@ -1,7 +1,7 @@
 package josx.rcxcomm;
 
-import java.io.*;
-import josx.platform.rcx.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 /** RCXInputStream provides an interface similar to FileInputStream.
  * It is a cut down version of RCXPort, which provides just read access.
