@@ -1,3 +1,7 @@
+#
+# Makefile for jni adapter for librcx
+#
+
 CC=$(shell $(LEJOS_HOME)/cctest.sh)
 
 JAVA_INCL="$(JAVA_HOME)"/include
@@ -30,7 +34,6 @@ default: all
 all: ${JIRTRCX}
 	@echo Built $(JIRTRCX)
 
-# Use CXX to get correct linkage (need C++ libraries)
 ${JIRTRCX}: Tower.cpp
 	$(CXX) $(CCOPT) -DTRACE -o $@ *.cpp
 
