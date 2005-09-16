@@ -1,6 +1,8 @@
 package java.net;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /** An RCX version of URLConnection that uses the RCX version of Socket. 
  * Socket uses a proxy called SocketProxy running on the PC. It connects  

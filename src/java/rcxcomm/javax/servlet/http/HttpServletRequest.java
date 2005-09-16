@@ -1,7 +1,5 @@
 package javax.servlet.http;
 
-import java.io.*;
-
 /**
  *
  * Provides request information for HTTP servlets. 

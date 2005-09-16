@@ -1,6 +1,7 @@
 package javax.servlet.http;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  *

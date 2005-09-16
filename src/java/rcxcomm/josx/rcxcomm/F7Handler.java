@@ -1,6 +1,6 @@
 package josx.rcxcomm;
 
-import josx.platform.rcx.*;
+import josx.platform.rcx.Serial;
 
 /**
  * Packet handler that uses the Lego Firmware F7

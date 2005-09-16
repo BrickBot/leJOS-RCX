@@ -1,5 +1,8 @@
 /*
 * $Log$
+* Revision 1.1  2003/05/09 21:44:00  mpscholz
+* moved remote control classes to josx.rcxcomm
+*
 * Revision 1.1  2002/09/28 10:32:27  mpscholz
 * initial version of the remotecontrol package
 *
@@ -7,7 +10,7 @@
 
 package josx.rcxcomm.remotecontrol;
 
-import josx.platform.rcx.*;
+import josx.platform.rcx.Motor;
 
 /////////////////////////////////////////////////////////
 /**

@@ -1,6 +1,6 @@
 package java.net;
 
-import java.io.*;
+import java.io.IOException;
 
 /** An RCX version of URL that uses the RCX version of Socket.
  * Socket connects to TCP/IP ports via a 

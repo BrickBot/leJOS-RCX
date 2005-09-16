@@ -1,5 +1,8 @@
 /*
  * $Log$
+ * Revision 1.1  2003/05/09 21:44:00  mpscholz
+ * moved remote control classes to josx.rcxcomm
+ *
  * Revision 1.2  2002/11/01 16:03:35  mpscholz
  * support of LEGO F7 protocol
  *
@@ -10,9 +13,13 @@
 
 package josx.rcxcomm.remotecontrol;
 
-import java.io.*;
-import java.util.*;
-import josx.platform.rcx.*;
+import java.util.Vector;
+
+import josx.platform.rcx.Motor;
+import josx.platform.rcx.Opcode;
+import josx.platform.rcx.Serial;
+import josx.platform.rcx.SerialListener;
+import josx.platform.rcx.Sound;
 
 /////////////////////////////////////////////////////////
 /**
