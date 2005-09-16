@@ -15,9 +15,19 @@
 <custom value="false"/>
 </item>
 <item id="org.eclipse.cdt.core.pathentry">
-<pathentry kind="src" path=""/>
-<pathentry kind="out" path=""/>
+<pathentry kind="src" path="src/javavm"/>
+<pathentry kind="src" path="src/comms/tools"/>
+<pathentry kind="src" path="src/comms/libjirrcx"/>
+<pathentry kind="src" path="src/comms/libirtrcx"/>
+<pathentry kind="src" path="src/comms/libirtrcx2"/>
+<pathentry kind="src" path="src/comms/libjirtrcx"/>
+<pathentry kind="src" path="src/comms/libjirtrcx2"/>
+<pathentry kind="src" path="src/platform/gameboy"/>
+<pathentry kind="src" path="src/platform/rcx"/>
+<pathentry kind="src" path="src/platform/unix"/>
+<pathentry kind="src" path="src/tools/emu-lejos"/>
 <pathentry kind="con" path="org.eclipse.cdt.make.core.DISCOVERED_SCANNER_INFO"/>
+<pathentry kind="out" path=""/>
 </item>
 <item id="cdt_indexer">
 <indexEnabled indexValue="true"/>
