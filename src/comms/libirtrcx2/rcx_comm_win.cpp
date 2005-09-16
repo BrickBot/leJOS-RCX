@@ -62,8 +62,6 @@ int __rcx_read_usb (void* port, void* buf, int maxlen, int timeout_ms);
 // Read from serial port.
 int __rcx_read_serial (void* port, void *buf, int maxlen, int timeout_ms);
 
-void gettimeofday(struct timeval *tv, void *tzp);
-
 //
 // implementation
 //
