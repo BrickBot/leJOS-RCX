@@ -178,6 +178,34 @@ void* rcxOpen(char* portName, bool fast)
 	return __rcx_open(portName, fast);
 }
 
+void __rcx_open_setDevice (Port* port, char* symbolicName, bool fast)
+{
+    strncpy(port->symbolicName, symbolicName, 32);
+    port->symbolicName[31] = 0;
+   
+    int length = strlen(symbolicName);
+    if (strncmp(symbolicName, "usb", 3) == 0 && length <= 4)
+    {
+        // usb mode (does _not_ support doubled baud rate)
+      strncpy(port->deviceName, USB_TOWER_NAME, 32);
+      if (length == 4)
+      {
+        // multiple usb tower mode
+        port->deviceName[strlen(USB_TOWER_NAME) - 1] = symbolicName[3];
+      }
+      port->usb = true; 
+      port->fast = fast; // 2x: no complements
+    }
+    else
+    {
+      // serial mode
+      strncpy(port->deviceName, symbolicName, 32);
+      port->deviceName[31] = 0;
+      port->usb = false;    
+      port->fast = fast; // 4x: no complements, doubled baud rate
+    }
+}
+
 void rcxClose(void* port)
 {
 	__rcx_close(port);
