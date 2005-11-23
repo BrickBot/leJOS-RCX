@@ -271,7 +271,7 @@ public class Tower
    /**
     * Open the tower
     * 
-    * @param port port to use, e.g. usb or COM1
+    * @param p port to use, e.g. usb or COM1
     * @param fastMode open port for fast mode transmissions?
     */
    protected final native int open (String p, boolean fastMode);

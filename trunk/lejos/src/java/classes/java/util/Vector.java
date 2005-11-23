@@ -1,6 +1,10 @@
 package java.util;
 /*
 * $Log$
+* Revision 1.5  2003/08/17 14:59:42  mpscholz
+* enhanced Vector
+* added Stack and Queue and associated exception classes
+*
 */
 
 /**
@@ -281,7 +285,7 @@ public class Vector
 	/////////////////////////////////////////////////////
   	/**
 	* delivers the index of the last occurrence of the object
-	* @param Object the object 
+	* @param anObject the object 
 	* @return the index of the last occurrence of the object
 	* or -1, if object is not found
 	*/
@@ -293,8 +297,8 @@ public class Vector
 	/**
 	* delivers the index of the last occurrence of the object
 	* starting from some index
-	* @param Object the object
-	* @param int the starting index 
+	* @param anObject the object
+	* @param anIndex the starting index 
 	* @return the index of the last occurrence of the object
 	* or -1, if object is not found
 	* @throws ArrayIndexOutOfBoundsException

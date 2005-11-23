@@ -75,7 +75,7 @@ package java.lang;
      * Then the floating-point result equals the value of the mathematical 
      * expression <i>s&#183;m&#183;2<sup>e-150</sup></i>.
      *
-     * @param   bits   an integer.
+     * @param   value an integer.
      * @return  the single-format floating-point value with the same bit
      *          pattern.
      */

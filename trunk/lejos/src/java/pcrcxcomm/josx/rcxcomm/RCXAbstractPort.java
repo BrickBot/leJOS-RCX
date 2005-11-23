@@ -48,7 +48,7 @@ public abstract class RCXAbstractPort
     * the RCX.
     * 
     * @param port the port name, eg com1 or usb
-    * @param handler, the packet handler
+    * @param handler the packet handler
     */
    public RCXAbstractPort (String port, PacketHandler handler)
       throws IOException

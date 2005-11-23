@@ -2,6 +2,9 @@ package josx.rcxcomm.remotecontrol;
 
 /*
  * $Log$
+ * Revision 1.6  2005/09/02 19:46:08  markus_heiden
+ * mh: added some todos
+ *
  * Revision 1.5  2005/03/01 19:09:22  mpscholz
  * throws Unsatisfied link error
  *
@@ -153,7 +156,7 @@ public class RemoteControlMessenger
    /**
     * sends a message via the LEGO Tower to the RCX
     * 
-    * @param int the message to send (in terms of RemoteControlMessenger
+    * @param aMessageCode the message to send (in terms of RemoteControlMessenger
     *           constants)
     * @throws IOException 
     */

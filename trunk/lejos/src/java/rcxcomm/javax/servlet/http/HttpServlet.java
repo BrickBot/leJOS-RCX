@@ -127,13 +127,9 @@ import josx.rcxcomm.RCXPort;
    * doGet must be overridden to allow your Servlet to process GET requests
    * 
    *
-   * @param req	the request object that is passed to the servlet
-   *			
-   * @param resp	the response object that the servlet
-   *			uses to return the headers to the clien
-   *
+   * @param request	the request object that is passed to the servlet
+   * @param response the response object that the servlet uses to return the headers to the client
    * @exception IOException		if an input or output error occurs
-   *
    * @exception ServletException	not used in lejos version
    */
   public abstract void doGet(HttpServletRequest request, HttpServletResponse response)

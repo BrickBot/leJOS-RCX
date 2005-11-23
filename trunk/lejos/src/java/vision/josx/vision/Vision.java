@@ -725,7 +725,7 @@ public class Vision extends Frame implements ControllerListener
    /**
     * Flip the image in the image viewer horizontally
     * 
-    * @param true to flip, else false
+    * @param flip true to flip, else false
     */
    public static void flipHorizontal (boolean flip)
    {
