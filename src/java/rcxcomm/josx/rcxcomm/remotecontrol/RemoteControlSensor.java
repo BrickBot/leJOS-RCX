@@ -1,5 +1,8 @@
 /*
  * $Log$
+ * Revision 1.2  2005/09/16 16:37:10  markus_heiden
+ * mh: organized imports
+ *
  * Revision 1.1  2003/05/09 21:44:00  mpscholz
  * moved remote control classes to josx.rcxcomm
  *
@@ -108,8 +111,8 @@ public class RemoteControlSensor implements SerialListener,Opcode {
      * implements the SerialListener interface
      * <br>listens for incoming packets on the IR port
      * and notifies the registered listeners.
-     * @param byte[] the packet data received
-     * @param int the length of the packet
+     * @param aPacket the packet data received
+     * @param aLength the length of the packet
     */
     public void packetAvailable(byte[] aPacket, int aLength) {
         // length must be 3 at least

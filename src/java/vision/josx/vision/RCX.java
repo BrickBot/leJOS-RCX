@@ -226,7 +226,6 @@ public class RCX implements RemoteVisionConstants
    /**
     * Spin right until stop or another command is executed.
     * 
-    * @param n the number of units to move
     */
    public static void spinRight ()
    {
@@ -373,7 +372,7 @@ public class RCX implements RemoteVisionConstants
     * Set the power of selected motors
     * 
     * @param motors the selected motors
-    * @param the power value 0-7
+    * @param power value 0-7
     */
    public static void setPower (byte motors, byte power)
    {

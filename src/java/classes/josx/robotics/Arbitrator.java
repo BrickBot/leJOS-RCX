@@ -23,7 +23,7 @@ public class Arbitrator {
    * be changed once the arbitrator is initialized.<BR>
    * <B>NOTE:</B> Once the Arbitrator is initialized, the method start() must be
    * called to begin the arbitration.
-   * @param behavior An array of Behavior objects.
+   * @param behaviors An array of Behavior objects.
    */
    public Arbitrator(Behavior [] behaviors) {
       this.behavior = behaviors;

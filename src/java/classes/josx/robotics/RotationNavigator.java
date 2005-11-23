@@ -117,7 +117,7 @@ public class RotationNavigator implements Navigator, SensorConstants {
    * Left rotation sensor = Sensor.S1   Right rotation sensor = Sensor.S3
    * @param wheelDiameter The diameter of the wheel, usually printed right on the
    * wheel, in centimeters (e.g. 49.6 mm = 4.96 cm) 
-   * @param axleLength The distance from the center of the left tire to the center
+   * @param driveLength The distance from the center of the left tire to the center
    * of the right tire, in centimeters.
    * @param ratio The ratio of sensor rotations to wheel rotations.<BR>
    *  e.g. 3 complete rotations of the sensor for every one turn of the wheel = 3f<BR>

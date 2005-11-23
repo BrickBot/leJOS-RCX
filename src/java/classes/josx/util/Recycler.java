@@ -20,7 +20,6 @@ public abstract class Recycler {
 	
     /**
      * Constructs a recycler.
-     * @param capacity Maximum number of allocated (non garbage) objects at any given time.
      */
     public Recycler() {
     }

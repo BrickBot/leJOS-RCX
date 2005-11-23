@@ -53,7 +53,7 @@ public class Motor
 
   /**
    * Sets motor power to a <i>value between 0 and 7</i>.
-   * @param A value in the range [0-7].
+   * @param aPower value in the range [0-7].
    */
   public final void setPower (int aPower)
   {

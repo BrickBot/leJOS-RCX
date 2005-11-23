@@ -203,7 +203,7 @@ public class TimingNavigator implements Navigator {
    * Moves the RCX robot a specific distance. A positive value moves it forwards and
    * a negative value moves it backwards. Method returns when movement is done.
    *
-   * @param centimeters The positive or negative distance to move the robot (in centimeters).
+   * @param distance The positive or negative distance to move the robot (in centimeters).
    */
    public void travel(int distance) {
       

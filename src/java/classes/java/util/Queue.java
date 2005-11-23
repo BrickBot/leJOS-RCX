@@ -1,6 +1,10 @@
 package java.util;
 /*
 * $Log$
+* Revision 1.1  2003/08/17 14:59:42  mpscholz
+* enhanced Vector
+* added Stack and Queue and associated exception classes
+*
 */
 
 /////////////////////////////////////////////////////////
@@ -32,7 +36,7 @@ public class Queue extends Vector {
 	////////////////////////////////////////////
 	/**
 	 * pushes an object onto the Queue
-	 * @param Object the object
+	 * @param anObject the object
 	 * @return Object the object pushed onto the Queue
 	 */
     public Object push(Object anObject) {
@@ -45,7 +49,6 @@ public class Queue extends Vector {
 	/**
 	 * fetches an object from the start of the Queue
 	 * and removes it
-	 * @param Object the object
 	 * @return Object the object removed from the start of the stock
 	 * @throws EmptyQueueException
 	 */
@@ -61,7 +64,6 @@ public class Queue extends Vector {
 	/**
 	 * fetches an object from the start of the Queue
 	 * <br>does not remove it!
-	 * @param Object the object
 	 * @return Object the object at the start of the Queue
 	 * @throws EmptyQueueException
 	 */
