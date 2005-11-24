@@ -2,16 +2,12 @@
 TEST_CLASSES="Test04 Test06 Test07 Test11 Test12 Test13 Test14 Test26 Test28 Test33 TestRuntime TestPriorities TestDaemon TestThreadState TestMonitor PriorityInversion TestNat TestStringBuffer TestFloatToIntBits"
 OUT_FILE=regression.log
 GOLD_FILE=regression.gold
-export CLASSPATH=.
-export PATH=.:../bin:$PATH
-
-# allow core dump
 
 rm $OUT_FILE
 for i in $TEST_CLASSES
 do
   echo ------------------ Cleaning $i
-  rm $i.tvm
+  rm -f $i.tvm
   echo ------------------ Compiling $i
   lejosjc $i.java
   echo ------------------ Linking $i

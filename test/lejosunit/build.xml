@@ -11,57 +11,58 @@
 	<property file="build.properties" />
 
 	<target name="build" description="builds the leJOS tests">
-		<mkdir dir="${testclasses.dir}"/>
+		<mkdir dir="${lejosunit.testclasses.dir}"/>
 		<javac 
-			classpath="${lejosunit.home}/${lejosunit.jar};${lejos.home}/lib/classes.jar;${lejos.home}/lib/rcxrcxcomm.jar" 
-			srcdir="${testsources.dir}"
+			classpath="${lejosunit.cp}" 
+			srcdir="${lejosunit.testsources.dir}"
 			target="1.1"
-			destdir="${testclasses.dir}"
+			destdir="${lejosunit.testclasses.dir}"
 		/>
 	</target>
 
 	<target name="runInEmulator" depends="linkForEmulator" description="runs the leJOSUnit test suite for the leJOS tests in emulation mode">
-		<exec executable="${lejos.home}/bin/emu-lejosrun"
-			dir="${testclasses.dir}"
+		<exec executable="${lejosunit.lejos}/bin/emu-lejosrun"
+			dir="${lejosunit.testclasses.dir}"
 			failonerror="true">
 			<arg value="-v"/>
-			<arg value="${testsuite.class}-emu"/>
+			<arg value="${lejosunit.testsuite.class}-emu"/>
 		</exec>
 	</target>
 	
 	<target name="downloadToRCX" depends="linkForRCX" description="runs the leJOSUnit test suite for the leJOS tests on the RCX">
-		<exec executable="${lejos.home}/bin/lejosdl"
-			dir="${testclasses.dir}"
+		<exec executable="${lejosunit.lejos}/bin/lejosdl"
+			dir="${lejosunit.testclasses.dir}"
 			failonerror="true">
 			<arg value="-v"/>
-			<arg value="${testsuite.class}.bin"/>
+			<arg value="${lejosunit.testsuite.class}.bin"/>
 		</exec>
 	</target>
 
 	<target name="linkForEmulator" depends="build" description="creates the emulator input for the leJOS tests in emulation mode">
-		<exec executable="${lejos.home}/bin/emu-lejos"
-			dir="${testclasses.dir}"
+		<exec executable="${lejosunit.lejos}/bin/emu-lejos"
+			dir="${lejosunit.testclasses.dir}"
 			failonerror="true">
 			<arg value="-o"/>
-			<arg value="${testsuite.class}-emu"/>
-			<arg value="${testsuite.class}"/>
+			<arg value="${lejosunit.testsuite.class}-emu"/>
+			<arg value="${lejosunit.testsuite.class}"/>
+  			<env key="CLASSPATH" path="${lejosunit.testclasses.dir}:${lejosunit.cp}"/>
 		</exec>
 	</target>
 	
 	<target name="linkForRCX" depends="build" description="creates the input for the leJOS tests on the RCX">
-		<exec executable="${lejos.home}/bin/lejoslink"
-			dir="${testclasses.dir}"
+		<exec executable="${lejosunit.lejos}/bin/lejoslink"
+			dir="${lejosunit.testclasses.dir}"
 			failonerror="true">
 			<arg value="-v"/>
 			<arg value="-o"/>
-			<arg value="${testsuite.class}.bin"/>
-			<arg value="${testsuite.class}"/>
+			<arg value="${lejosunit.testsuite.class}.bin"/>
+			<arg value="${lejosunit.testsuite.class}"/>
 		</exec>
 	</target>
 
 	<target name="clean" description="deletes created class und emulator files">
-		<delete verbose="true">
-  			<fileset dir="${testclasses.dir}">
+		<delete>
+  			<fileset dir="${lejosunit.testclasses.dir}">
     			<include name="**/*.class"/>
     			<include name="**/*.sig"/>
     			<include name="**/*-emu"/>
