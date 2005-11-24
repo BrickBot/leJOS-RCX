@@ -255,7 +255,6 @@
 		</delete>
 	</target>
 	
-
   <!-- creates the platform API doc -->
   <target name="platform.doc" depends="" description="generate the platform API doc">
     <mkdir dir="${release.docs}/platform"/>
@@ -303,10 +302,13 @@
 	<!-- test leJOS --> 
 	<target name="test" description="tests leJOS">
 		<!-- run regression tests -->
-  		<exec executable="${test.root}/regression/run.sh" failonerror="true" dir="${test.root}/regression">
+		<exec executable="${test.root}/regression/run.sh" failonerror="true" dir="${test.root}/regression">
   			<env key="PATH" path="${test.root}/regression:${release.bin}:${env.PATH}"/>
   			<env key="CLASSPATH" path="${test.root}/regression:${release.lib.cp}:${release.3rdparty.cp}"/>
-  		</exec> 
+  		</exec>
+		<!-- run lejos unit tests -->
+		<ant dir="${test.root}/lejosunit" target="clean" inheritall="true" />
+		<ant dir="${test.root}/lejosunit" target="runInEmulator" inheritall="true" />
 	</target>
 
 
