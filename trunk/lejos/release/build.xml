@@ -10,7 +10,6 @@
 		+ Haupt-Makefile anpassen (it is required any more?)
 		+ ostype may not be set on macOSX
 		+ Should 3rd party libs be included into the release? If so, which ones? If so, adapt bin scripts
-		+ deploy target required?
 		+ update release notes
 		+ Pack release notes, license, acks, legal into distribution
 		+ Tutorial (?)
@@ -312,69 +311,46 @@
 	</target>
 
 
-	<!--
-	  <property name="org.lejos" value="${basedir}/../org.lejos"/>
-	  <property name="org.lejos.lib" value="${org.lejos}/lib"/>
-	  <property name="org.lejos.src" value="${org.lejos}/src"/>
-	  <property name="driver_win32" value="${org.lejos}/os/win32/x86"/>
-	  <property name="driver_linux" value="${org.lejos}/os/linux/x86"/>-->
-
-	  <!--
-	    ==================================================
-	    Target jar: deploy all files (does NOT generate anything)
-	    ==================================================
-	  -->
-	  <target name="deploy" depends="" description="deploy all files">
-	  	<!-- all leJOS libs -->
-	    <mkdir dir="${org.lejos.lib}"/>
-	    <delete>
-	      <fileset dir="${org.lejos.lib}">
-	        <include name="*.jar"/>
-	      </fileset>
-	    </delete>
-	    <copy todir="${org.lejos.lib}">
-	      <fileset dir="${release.lib}">
-	        <include name="*.jar"/>
-	      </fileset>
-	    </copy>
-	  	<!-- sources for all leJOS and external libs -->
-	    <mkdir dir="${org.lejos.src}"/>
-	    <delete>
-	      <fileset dir="${org.lejos.src}">
-	        <include name="*.zip"/>
-	      </fileset>
-	    </delete>
-	    <copy todir="${org.lejos.src}">
-	      <fileset dir="${release.lib}/src">
-	        <include name="*.zip"/>
-	        <exclude name="bcel*"/>
-	      </fileset>
-	    </copy>
-	  	<!-- OS specific drivers (win32) -->
-	    <mkdir dir="${driver_win32}"/>
-	    <!--delete>
-	      <fileset dir="${driver_win32}">
-	        <include name="*.dll"/>
-	      </fileset>
-	    </delete-->
-	   <copy todir="${driver_win32}" overwrite="true">
-	      <fileset dir="${bin}">
-	        <include name="*.dll"/>
-	      </fileset>
-	    </copy>
-	  	<!-- OS specific drivers (linux) -->
-	  	<mkdir dir="${driver_linux}"/>
-	    <!--delete>
-	      <fileset dir="${driver_linux}">
-	        <include name="*.so"/>
-	      </fileset>
-	    </delete-->
-	    <copy todir="${driver_linux}" overwrite="true">
-	      <fileset dir="${bin}">
-	        <include name="*.so"/>
-	      </fileset>
-	    </copy>
-	  </target> 
-	  
+	<!-- deploys the distribution to org.lejos -->
+  	<target name="deploy.to.org.lejos" description="deploys the distribution to org.lejos">
+		<!-- all leJOS libs -->
+		<mkdir dir="${org.lejos.lib}"/>
+			<delete>
+  				<fileset dir="${org.lejos.lib}">
+				<include name="*.jar"/>
+  			</fileset>
+		</delete>
+		<copy todir="${org.lejos.lib}">
+  			<fileset dir="${release.lib}">
+				<include name="*.jar"/>
+  			</fileset>
+		</copy>
+		<!-- sources for all leJOS and external libs -->
+		<mkdir dir="${org.lejos.src}"/>
+			<delete>
+  				<fileset dir="${org.lejos.src}">
+					<include name="*.zip"/>
+  			</fileset>
+		</delete>
+		<copy todir="${org.lejos.src}">
+  			<fileset dir="${release.src}">
+				<include name="*.zip"/>
+  			</fileset>
+		</copy>
+		<!-- OS specific drivers (win32) -->
+		<mkdir dir="${org.lejos.driver.win32.dir}"/>
+   		<copy todir="${org.lejos.driver.win32.dir}" overwrite="true">
+  			<fileset dir="${release.bin}">
+				<include name="*.dll"/>
+  			</fileset>
+		</copy>
+		<!-- OS specific drivers (linux) -->
+		<mkdir dir="${org.lejos.driver.linux.dir}"/>
+		<copy todir="${org.lejos.driver.linux.dir}" overwrite="true">
+  			<fileset dir="${release.bin}">
+				<include name="*.so"/>
+  			</fileset>
+		</copy>
+  	</target>   
 	
 </project>
