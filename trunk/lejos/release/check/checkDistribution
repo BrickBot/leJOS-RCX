@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#
+# checkDistribution: utility to check the lejOS distribution after having downloaded it
+#
+# 02/12/05  created Matthias Paul Scholz
+
+if [ -z "$LEJOS_HOME" ]; 
+then 
+  echo ERROR: environment variable LEJOS_HOME is not set!
+  echo Please export it, pointing to the directory you installed this distribution into.
+  shift
+
+else
+	echo compiling test class
+	. ../bin/lejosjc DistributionSmokeTest.java
+	echo linking test class
+	. ../bin/lejoslink DistributionSmokeTest -o DistributionSmokeTest.bin
+	echo downloading test class
+	. ../bin/lejosdl DistributionSmokeTest.bin
+	echo Done. Now press the RUN Button on your RCX...
+fi
+
+: end

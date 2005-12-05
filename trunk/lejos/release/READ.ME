@@ -1,0 +1,326 @@
+leJOS, a Java system for the Lego Mindstorms RCX
+
+Summary
+-------
+
+-- You need a Java Development Kit (JDK) 1.4 or above.
+-- Your PATH must contain the JDK's bin directory.
+-- Make sure you have set JAVA_HOME properly to the root directory of the JDK.
+-- You need a Java Media Framework (JMF) 2.1 or above.
+-- Make sure that the jmf.jar is installed properly into your JDK.
+-- You need ANT 1.6 or above.
+-- Your PATH must contain the ant binary.
+-- In Unix, type 'make' to finish installation of leJOS.
+-- Add leJOS's bin directory to your PATH.
+-- Set RCXTTY to your 'tower' device (e.g. COM1 or USB or /dev/ttyS0).
+-- Download firmware using lejosfirmdl.
+-- Compile using lejosc (or lejosc1) instead of javac.
+-- Run programs in the RCX using lejos.
+-- Run programs in the host using emu-lejos.
+-- In Unix, if you use the rcxcomm package, set LD_LIBRARY_PATH to the
+   leJOS bin directory. 
+-- Exceptions: Use lejos -verbose. Exceptions are shown in 
+   the RCX as [XXXX Y], where XXXX = method_signature, and 
+   Y = exception_class_index MOD 10.
+	     
+What is leJOS?
+--------------
+
+leJOS is a tiny (~ 16 Kb) Java-based operating system
+that has been ported to the following platforms:
+
+- Lego Mindstorms RCX, i.e. Hitachi H8300
+- Unix (for emulation of RCX programs only)
+
+leJOS was forked out of the TinyVM project
+(http://tinyvm.sourceforge.net). leJOS contains
+a VM for Java bytecodes, and additional software to load
+and run Java programs. These are some of the features
+offered by leJOS:
+
+- Object oriented language (Java).
+- Preemptive threads (tasks).
+- Arrays, including multi-dimensional ones.
+- Recursion.
+- Synchronization.
+- Exceptions.
+- Well-documented API.
+
+The above are also provided by TinyVM. But in addition
+to these, leJOS also offers:
+
+- A Windows version, which doesn't require CygWin.
+- Floating point operations (doubles truncated to 32 bits).
+- String constants.
+- Casting of longs to ints and vice versa.
+- Marks references in the stack (which makes it feasible
+  to implement garbage collection).
+- Multi-program downloading.
+- java.lang.Math class with sin, cos, tan, atan, pow, etc.
+- More APIs.
+
+TinyVM is still around simply as a low-footprint alternative
+to leJOS. TinyVM is about 7 Kb smaller in the RCX.
+
+Compatibility
+-------------
+
+RCX 1.0/2.0 in RIS 1.0/1.5/2.0: yes
+
+Serial IR Tower in RIS 1.0/1.5: yes
+
+USB IR Tower in RIS 2.0: yes (this is supported on Max OSX, 
+Linux and Windows)
+
+How do you pronounce leJOS?
+---------------------------
+
+I pronounce it like the Spanish word "lejos" (which means far).
+
+Requirements
+------------
+
+- A Java Development Kit
+  Lejos is known to work with JDK1.1.x to 1.4.x from SUN
+  (see http://java.sun.com).
+  Other Java environments (for example jikes) may also work.
+
+- leJOS is known to work on Linux and Windows. It should 
+  work on Unix systems in general.
+
+Setup
+-----
+
+Environment:
+  - Your PATH is assumed to point to the 
+    JDK's bin directory.
+  - You should also add $LEJOS_HOME/bin to
+    your PATH.
+  - RCXTTY must be defined to point to the
+    IR device file. For example, in my Linux
+    partition, it's /dev/ttyS1, which corresponds
+    to COM2 under Windows. If you are using USB,
+    you can specify RCXTTY=usb or pass --tty=usb to 
+    the commands.
+
+Building the Tools (UNIX ONLY):
+  If you are building the tools for Linux, go to the installation 
+  directory and type 'make'. 
+
+  Note: if you are using USB on Linux, there is a USB driver for
+	the Lego IR tower in src/tools/linux/legousbtower. See the 
+	README in that directory for details.
+
+Downloading the Firmware:
+  Run the lejosfirmdl utility. When the firmware
+  starts, the LCD shows the battery voltage, and
+  you should hear a double beep.
+  
+  The firmware only needs to be downloaded once.
+  It is also easy to replace, say, with the official
+  Lego firmware. Simply run the Lego GUI and do what
+  you would normally do to download the firmware.
+
+Example
+-------
+
+A nice example to get started is the View example,
+which you can use later if you need to test sensors 
+and motors. To run the View example, 
+execute the following commands (assuming the current 
+directory is the leJOS installation directory):
+
+   LINUX                      WINDOWS
+   -----                      -------
+    
+lejosfirmdl -f              lejosfirmdl -f
+
+(Wait for double-beep in RCX. This step doesn't have to be
+repeated to run the example again).
+
+cd examples/test/view       cd examples\test\view
+export CLASSPATH=.          set CLASSPATH=.
+lejosc *.java               lejosc *.java
+lejos View                  lejos View
+
+(The last step will take about half a minute).
+
+Compiling, Linking and Running
+------------------------------
+
+To compile your Java classes, use lejosc instead of
+javac. If the JDK in your PATH is a 1.1 JDK, use
+lejosc1 instead.
+
+Note that lejosc is not a Java compiler. It's simply
+a small program that calls javac after setting an
+appropriate value for -bootclasspath. If you prefer
+another Java compiler to javac, define the JAVAC
+environment variable.
+
+The basic way to use the linker is to make sure that
+class files can be located in CLASSPATH, and execute 
+'lejos' a you would execute 'java', e.g.
+
+  lejos MyMainClass
+
+The above links and resolves all classes that could
+be used by a program with entry point in MyMainClass.
+The resulting linked binary is downloaded to the
+RCX. (This is done by creating a temporary
+file, so the current directory should be writable).
+
+To simply create a binary file containing the linked
+program, use:
+
+  lejos -o MyProgram.bin MyProgram
+  
+You can download a previously linked program with:
+
+  lejosrun MyProgram.bin
+
+You can also download multiple programs in one shot as 
+follows:
+
+  lejos Class1,Class2,...
+  
+The programs will be linked together, and will replace
+any programs previously in the RCX. You can press Prgm
+to select which program to run.
+  
+After the standing man figure appears in the RCX, you
+can press Run to start a program. If the program exits
+by itself, the standing man figure will appear again.
+To stop a running program, hold the Run button while 
+you press On/Off. Switching off the RCX will also stop
+a running program.
+
+Omitting unused methods
+-----------------------
+
+From release 2.1.0 the lejos linker omits methods that 
+it can deduce are not used. This reduces the size of 
+programs and has been shown to work with all programs 
+tested so far.
+
+You can see which methods have been omitted if you use
+the -verbose flag on the lejos command.
+
+If you suspect that this feature is not working 
+correctly and is causing a problem with your program, 
+you can specify the -all flag on the lejos command. 
+This reverts to the previous behavior and ensures that 
+all methods are included.
+
+Note that the current version does not do a full 
+analysis and detect all unused methods. It may be 
+improved to reduce program sizes further in later 
+versions of lejos.
+
+Emulation
+---------
+
+You should be able to run linked programs in the 
+host computer. All you need to do is use emu-lejos 
+instead of lejos, and emu-lejosrun to run a linked
+binary, e.g.
+
+  emu-lejos -o MyProgram.bin MyProgram
+  emu-lejosrun MyProgram.bin
+
+To get more informative traces, use the -v option:
+
+  emu-lejosrun -v MyProgram.bin
+  
+NOTE: The above is fine for Intel x86 architectures.
+Under Sparc and other systems with big endian 
+byte ordering, use lejos instead of emu-lejos, e.g.
+
+  lejos -o MyProgram.bin MyProgram
+  emu-lejosrun -v MyProgram.bin
+  
+In some cases it might be easier to debug
+programs with the emulated VM, and you'll also 
+get slightly more detailed exception information.
+But this emulation tool does not attempt to
+simulate an RCX graphically or anything like
+that. It simply dumps traces that allow you
+to check what your program is doing.
+
+Limitations
+-----------
+
+Due to size constraints, some language features
+have been omitted. Others just haven't been 
+implemented yet. The limitations that come to 
+mind are:
+
+  - Garbage collection is not performed yet.
+    (The number of objects in your program
+    should be bounded).
+  - Switch statements are not supported.
+  - Arithmetic operations on variables of type 
+    long are not supported, although you can
+    cast ints to longs and vice versa.
+  - Maximum array length is 511.
+  - The instanceof operation will always be true  
+    for interfaces. In bytecode, CHECKCAST succeeds
+    on all interface classes (which is a bit unsafe).
+  - The instanceof and checkcast operations are
+    rejected by the linker when they are performed
+    on array classes (e.g. b instanceof byte[]).
+  - There are no objects of type java.lang.Class, 
+    which means that the ".class" construct won't
+    work. Class.forName() throws ClassNotFoundException
+    at all times.
+  - Most JDK APIs are unavailable.
+
+Known Bugs
+----------
+
+  - MONITOREXIT ignores null objects (it assumes
+    MONITORENTER has handled them). Furthermore, it 
+    doesn't check monitor validity. Until this bug 
+    is fixed (actually, at all times) all monitors should 
+    be constants.
+
+  - Initializers (static or otherwise) are not
+    implicitly synchronized. This could lead to access
+    of statics before they are initialized, when
+    multiple threads use a class.
+    
+Documentation
+-------------
+
+The latest API Reference should be available at
+http://lejos.sourceforge.net/. The API Reference
+for this release can be obtained with 'make javadoc'.
+
+About the License
+-----------------
+
+We are releasing under the Mozilla Public License (see LICENSE)
+for now, since Kekoa Proudfoot's librcx is under that same 
+license, and leJOS is linked against -lrcx and -lfloat, which
+are part of librcx. No changes have been made to those libraries, 
+so they haven't been redistributed. They are only needed if you 
+are planning to modify the native C source code. See docs/hacking.
+
+The founder of leJOS is Jose Solorzano.  Jose has announced
+he will be leaving the leJOS project so he can spend more
+time with his other baby, Mark Humberto.  Paul Andrews and
+Juergen Stuber will be taking over as project leaders.
+
+Questions/Problems
+------------------
+
+Please direct feedback to the lejos-discussion mailing list
+<lejos-discussion@lists.sourceforge.net>.  To subscribe
+see http://lists.sourceforge.net/lists/listinfo/lejos-discussion .
+
+Take a look at the Lejos website at http://www.lejos.org/
+(currently an alias for http://lejos.sourceforge.net/) or
+its project page at http://sourceforge.net/projects/lejos .
+
+Finally, there is a newsgroup at LUGNET for Java on the RCX,
+see http://www.lugnet.com/robotics/rcx/java/ .
