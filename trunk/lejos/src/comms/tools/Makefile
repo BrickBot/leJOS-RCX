@@ -1,12 +1,15 @@
 # Makefile
 # Adapted from config.mk in librcx by Kekoa Proudfoot.
+#
+# 2005.11.21 - Matthias Paul Scholz
+#	- fixed
 
 include $(LEJOS_HOME)/Makefile.config
 
 LIBIRTRCX_HOME=$(shell realpath ../libirtrcx)
 FASTDL_HOME=$(shell realpath ./fastdl)
 
-ifeq (,$(findstring cygwin,$(OSTYPE)))
+ifneq (,$(findstring cygwin,$(OSTYPE)))
   LEJOS_HOME_NATIVE=$(shell cygpath -m $(LEJOS_HOME))
   PLAT_RCX_SRC_NATIVE=$(shell cygpath -m $(PLAT_RCX_SRC))
   EXT=.exe
@@ -16,19 +19,13 @@ else
   EXT=
 endif
 
-CC=$(shell $(LEJOS_HOME)/cctest.sh)
+CC=$(shell $(LEJOS_HOME)/release/cctest.sh)
 LD=ld
 
 SRCS = dump.c mkimg.c mkimgj.c srec.c util.c
 OBJS = $(addsuffix .o, $(basename $(SRCS)))
 
-all: lib tools firmdl
-
-lib:
-	@echo ""
-	@echo "====> Building libirtrcx"
-	@echo ""
-	cd $(LIBIRTRCX_HOME); $(MAKE) all
+all: tools firmdl
 
 tools: $(OBJS)
 	@echo ""
@@ -42,8 +39,8 @@ image:
 	@echo ""
 	@echo "====> Building fastdl.srec"
 	@echo ""
-	cd $(FASTDL_HOME); $(MAKE) all
-	mkimg $(LEJOS_HOME)/bin/fastdl.srec
+	cd $(FASTDL_HOME); $(MAKE) $(MFLAGS) all
+	mkimg $(BIN_TARGET)/fastdl.srec
 
 firmdl: image
 	$(CC) -o firmdl$(EXT) firmdl.c -lc

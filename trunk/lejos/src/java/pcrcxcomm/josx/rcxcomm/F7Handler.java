@@ -77,7 +77,6 @@ public class F7Handler extends PacketHandler
    /**
     * Receive a packet.
     * 
-    * @param buffer the buffer to rceive the packet into
     * @return packet the number of bytes to send
     */
    public int receivePacket (byte[] packet)

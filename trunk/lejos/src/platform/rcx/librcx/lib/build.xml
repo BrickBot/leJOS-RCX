@@ -1,0 +1,95 @@
+<!-- ant file to make librcx -->
+
+<project name="librcx" default="make" basedir=".">
+	
+	<!-- cleans all compilation artifacts -->
+	<target name="clean" description="cleans all compilation artifacts">
+		<delete>
+			<fileset dir=".">
+				<include name="*.o"/>
+				<include name="*.a"/>
+			</fileset>
+		</delete>
+	</target>
+	
+	<!-- make librcx --> 
+	<target name="make" depends="clean" description="makes librcx">
+		<fail message="not implemented yet!"/>
+		<!-- TODO make sure that usr/local/h8300-hms/bin is used -->
+ 	<!--	<cc subsystem="console" 
+  				outfile="librcx"
+  				objdir="." 
+  				outtype="static" 
+  				debug="false"
+  			    exceptions="false"
+  			    rtti="true"
+  			    optimize="speed"
+  				name="${lejos.compiler}">
+  				<fileset dir=".">
+  					<include name="*.o"/>
+  					<include name="*.s"/>
+  				</fileset>
+				<includepath>
+					<pathelement location="."/>
+				</includepath>
+  				<versioninfo refid="${lejos.version}"/>
+  		</cc>-->
+	</target>
+
+	<!-- calls assembler -->
+	<target name="assemble" description="calls assembler"> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="rcall0.s -o rcall0.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="rcall1.s -o rcall1.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="rcall2.s -o rcall2.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="rcall3.s -o rcall3.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="rcall4.s -o rcall4.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="mulhi3.s -o mulhi3.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="divhi3.s -o divhi3.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="modhi3.s -o modhi3.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="udivhi3.s -o udivhi3.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="umodhi3.s -o umodhi3.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="mulsi3.s -o mulsi3.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="divsi3.s -o divsi3.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="modsi3.s -o modsi3.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="udivsi3.s -o udivsi3.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="umodsi3.s -o umodsi3.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="cmpsi2.s -o cmpsi2.o"/>
+		</exec> 
+		<exec executable="${lejos.assembler}" failonerror="true" dir=".">
+			<arg line="ucmpsi2.s -o ucmpsi2.o"/>
+		</exec> 
+	</target>
+
+</project>
+

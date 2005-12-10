@@ -1,6 +1,7 @@
 /**
  * javaexec.c
  * By Jose Solorzano
+ * 2005-11-23 Matthias Paul Scholz removed hard coded classpath
  */
 
 #include <stdio.h>
@@ -34,12 +35,12 @@
 #define PATH_SEPARATOR ":"
 #endif
 
-#define TOOLS_JAR "/lib/jtools.jar"
+/*#define TOOLS_JAR "/lib/jtools.jar" 
 #define LIB_JAR   "/lib/classes.jar"
 #define LIB_COMM_JAR   "/lib/rcxcomm.jar"
 
 #define BCEL_JAR "/lib/bcel-5.1.jar"
-#define LIB_COMMONS_CLI_JAR "/lib/commons-cli-1.0.jar"
+#define LIB_COMMONS_CLI_JAR "/lib/commons-cli-1.0.jar"*/
 
 #define DEFAULT_CLASSPATH  "."
 
@@ -67,7 +68,7 @@ void set_classpath (char *toolsPath)
 
   #if TRACE
   printf ("setting classpath to %s\n", toolsPath);
-  #endif
+  #endif 
   envasg = append ("CLASSPATH=", toolsPath);
   #if TRACE
   printf ("setting %s\n", envasg);
@@ -121,7 +122,7 @@ int main (int argc, char *argv[])
   int pStatus;
   int count, i;
   char *toolName;
-  char *toolsPath, *libPath, *libCommPath;
+  /* char *toolsPath, *libPath, *libCommPath;*/
   char *tinyvmHome;
   char *directory;
   char **newargv;
@@ -144,42 +145,34 @@ int main (int argc, char *argv[])
 
   #if TRACE
   printf ("converted=%s\n", tinyvmHome);
-  #endif
+  #endif 
   
   #endif // __CYGWIN__
 
   newargv = (char **) malloc (sizeof (char *) * (argc + 20));
   count = 0;
-  toolsPath = append (tinyvmHome, TOOLS_JAR);
+  /*toolsPath = append (tinyvmHome, TOOLS_JAR);
 
   toolsPath = append (toolsPath,PATH_SEPARATOR);
   toolsPath = append (toolsPath,tinyvmHome);
   toolsPath = append (toolsPath,LIB_COMMONS_CLI_JAR);
   toolsPath = append (toolsPath,PATH_SEPARATOR);
   toolsPath = append (toolsPath,tinyvmHome);
-  toolsPath = append (toolsPath,BCEL_JAR);
+  toolsPath = append (toolsPath,BCEL_JAR);*/
 
-  libPath = append (tinyvmHome, LIB_JAR);
+  /*libPath = append (tinyvmHome, LIB_JAR);
 
   libPath = append (libPath,PATH_SEPARATOR);
   libPath = append (libPath,tinyvmHome);
   libPath = append (libPath,BCEL_JAR);
 
-  libCommPath = append(tinyvmHome,LIB_COMM_JAR);
+  libCommPath = append(tinyvmHome,LIB_COMM_JAR); */
 
   toolName = getenv (TOOL_ALT_VAR);
   if (toolName == NULL)
     toolName = TOOL_NAME;
   
   newargv[count++] = toolName;
-  /*newargv[count++] = "-Dtinyvm.linker=" LINKER_TOOL;
-  newargv[count++] = "-Dtinyvm.loader=" LOADER_TOOL;
-  newargv[count++] = "-Dtinyvm.write.order=" WRITE_ORDER;
-  newargv[count++] = "-Dtinyvm.loader=" LOADER_TOOL;
-  newargv[count++] = append ("-Dtinyvm.home=", tinyvmHome); 
-  newargv[count++] = CLASS_NAME;  
-  newargv[count++] = "-classpath";
-  newargv[count++] = get_loader_classpath (libPath,libCommPath);*/
 
   newargv[count++] = "-Dtinyvm.linker=" LINKER_TOOL;
   newargv[count++] = "-Dtinyvm.loader=" LOADER_TOOL;
@@ -187,7 +180,8 @@ int main (int argc, char *argv[])
   newargv[count++] = append ("-Dtinyvm.home=", tinyvmHome); 
   newargv[count++] = CLASS_NAME;  
   newargv[count++] = "-cp";
-  newargv[count++] = get_loader_classpath (libPath,libCommPath);
+  /*newargv[count++] = get_loader_classpath (libPath,libCommPath);*/
+  newargv[count++] = getenv("CLASSPATH");
   newargv[count++] = "-wo" ;
   newargv[count++] = WRITE_ORDER;
 
@@ -197,7 +191,7 @@ int main (int argc, char *argv[])
   }
   newargv[count++] = NULL;
     
-  set_classpath (toolsPath);  
+ /* set_classpath (toolsPath);  */
 
   #if TRACE
   printf (" calling %s with\n", toolName);

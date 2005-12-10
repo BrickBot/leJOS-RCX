@@ -21,7 +21,7 @@
 #	- reworked, adapted to refactorings
 #
 
-CC=$(shell $(LEJOS_HOME)/cctest.sh)
+CC=$(shell $(LEJOS_HOME)/release/cctest.sh)
 
 COPT = -O2
 # For debugging:
@@ -31,14 +31,14 @@ COPT = -O2
 RCXCOMM=rcx_comm_linux.cpp
 CFLAGS=-shared -fpic
 LFLAGS=-shared -lstdc++
-IRTRCX=$(LEJOS_HOME)/bin/libirtrcx.so
+IRTRCX=$(BIN_TARGET)/libirtrcx.so
 
 # Windows with CygWin installed
 ifneq (,$(findstring cygwin,$(OSTYPE)))
 	RCXCOMM=rcx_comm_win.cpp
 	CFLAGS=-mno-cygwin -D__CYGWIN32__
 	LFLAGS=-mno-cygwin -Wl,--add-stdcall-alias -shared
-	IRTRCX=$(LEJOS_HOME)/bin/irtrcx.dll
+	IRTRCX=$(BIN_TARGET)/irtrcx.dll
 endif
 
 # MacOS X
@@ -46,7 +46,7 @@ ifneq (,$(findstring darwin,$(OSTYPE)))
 	RCXCOMM=rcx_comm_darwin.cpp osx_usb.cpp
 	CFLAGS=-g
 	LFLAGS=-dynamiclib -framework IOKit -framework CoreFoundation
-	IRTRCX=$(LEJOS_HOME)/bin/libirtrcx.dylib
+	IRTRCX=$(BIN_TARGET)/libirtrcx.dylib
 endif
 
 SRCS = $(RCXCOMM)

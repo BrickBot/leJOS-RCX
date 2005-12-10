@@ -15,4 +15,7 @@ else
   SEP=":"
 fi
 
-java -classpath "$LEJOS_HOME/lib/bcel-5.1.jar$SEP$LEJOS_HOME/lib/commons-cli-1.0.jar$SEP$LEJOS_HOME/lib/jtools.jar$SEP${CLASSPATH:-.}" js.tinyvm.TinyVM --writeorder BE --classpath "$LEJOS_HOME/lib/classes.jar$SEP${CLASSPATH:-.}" "$@"
+THIRDPARTY_LIBS="$LEJOS_HOME/3rdparty/lib"
+LINK_CLASSPATH=.$SEP$THIRDPARTY_LIBS/bcel-5.1.jar$SEP$THIRDPARTY_LIBS/commons-cli-1.0.jar$SEP$LEJOS_HOME/lib/jtools.jar$SEP$LEJOS_HOME/lib/classes.jar$SEP$LEJOS_HOME/lib/rcxcomm.jar
+
+java -classpath "$LINK_CLASSPATH" js.tinyvm.TinyVM --writeorder BE --classpath "$LINK_CLASSPATH" "$@"
