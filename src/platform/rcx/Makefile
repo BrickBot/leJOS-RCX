@@ -27,7 +27,7 @@ OC = $(BINDIR)/$(BINPREFIX)objcopy -I coff-h8300 -O srec
 # other variables
 
 COFF = --oformat coff-h8300
-TINYVMBINARY = $(LEJOS_HOME)/bin/lejos.srec
+TINYVMBINARY = $(BIN_TARGET)/lejos.srec
 
 # special targets
 
@@ -74,7 +74,7 @@ rcx_gen.lds: rcx.map
 	@echo ""
 	@echo "====> Packing lejos.srec"
 	@echo ""
-	${JAVA} -classpath "$(LEJOS_HOME_NATIVE)/lib/jtools.jar" js.tools.CodePacker rcx.lds rcx.map rcx_gen.lds
+	${JAVA} -classpath "$(LEJOS_HOME_NATIVE)/release/lib/jtools.jar" js.tools.CodePacker rcx.lds rcx.map rcx_gen.lds
 
 lib:
 	@echo ""

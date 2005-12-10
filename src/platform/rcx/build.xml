@@ -1,0 +1,25 @@
+<!-- ant file to make the lejos rcx binaries -->
+
+<project name="lejos-rcx-binaries" default="make" basedir=".">
+	
+	<!-- cleans all compilation artifacts -->
+	<target name="clean" description="cleans all compilation artifacts">
+		<delete>
+			<fileset dir=".">
+				<include name="*.o"/>
+				<include name="rcx.map"/>
+				<include name="rcx_gen.lds"/>
+			</fileset>
+		</delete>
+  		<ant dir="./librcx/lib" target="clean" inheritall="true" />
+	</target>
+	
+	<!-- make the lejos rcx binaries --> 
+	<target name="make" depends="clean" description="makes the the lejos rcx binaries">
+		<fail message="not implemented yet!"/>
+  		<!-- <ant dir="./librcx/lib" inheritall="true" />
+  		<ant dir="./librcx/float" inheritall="true" /> -->
+	</target>
+
+</project>
+

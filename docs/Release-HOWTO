@@ -2,6 +2,10 @@ This is intended as guidance, your mileage may vary, use your discretion.
 It assumes CVSROOT is set appropriately, alternatively you can also use
 the -d global option on cvs commands.
 
+-------- msz: my additions -------
+a) install H8300-hms-gcc cross-compiler
+b) copy cygwin1.dll nach /lejos/bin 
+-------- msz: end my additions -------
 
 0) Get CVS in shape for release
    (update to check for modifications, ...)

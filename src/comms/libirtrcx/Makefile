@@ -22,7 +22,7 @@
 #
 
 PWD := $(shell pwd)
-CC = $(shell $(LEJOS_HOME)/cctest.sh)
+CC = $(shell $(LEJOS_HOME)/release/cctest.sh)
 
 COPT = -O2
 # For debugging:
@@ -32,14 +32,14 @@ COPT = -O2
 EXTRA_OS_SRCS = 
 CFLAGS = -Wall -shared -fpic
 LFLAGS = -shared
-IRTRCX = $(LEJOS_HOME)/bin/libirtrcx.so
+IRTRCX = $(BIN_TARGET)/libirtrcx.so
 LINK = $(CC)
 
 # Windows with CygWin installed
 ifneq (,$(findstring cygwin,$(OSTYPE)))
 	CFLAGS=-mno-cygwin -D__CYGWIN32__
 	LFLAGS=-mno-cygwin -Wl,--add-stdcall-alias -shared
-	IRTRCX=$(LEJOS_HOME)/bin/irtrcx.dll
+	IRTRCX=$(BIN_TARGET)/irtrcx.dll
 endif
 
 # MacOS X
@@ -47,7 +47,7 @@ ifneq (,$(findstring darwin,$(OSTYPE)))
 	EXTRA_OS_SRCS = osx_usb.cpp
 	CFLAGS=-g
 	LFLAGS=-dynamiclib -framework IOKit -framework CoreFoundation
-	IRTRCX=$(LEJOS_HOME)/bin/libirtrcx.dylib
+	IRTRCX=$(BIN_TARGET)/libirtrcx.dylib
 	override LINK=$(CXX)
 endif
 
@@ -73,4 +73,4 @@ $(OBJS): $(SRCS) rcx_comm.h rcx_comm_os.h rcx_comm_$(OSTYPE).h
 
 clean:
 	rm -f *.o
-	rm -f $(LIBIRTRCX)
+	rm -f $(IRTRCX)

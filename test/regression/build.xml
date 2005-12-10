@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ !  @(#)build.xml
+ !  Ant script for building and running the regression tests for leJOS
+-->
+
+<project name="leJOSRegressionTests" default="test" basedir="./">
+
+	<!-- perform the regression tests --> 
+	<target name="test" depends="clean,compile" description="performs the regression tests">
+	</target>
+
+	<!-- clean the regression test classes --> 
+	<target name="clean" description="cleans the regression classes">
+		<delete>
+			<fileset dir="."> 
+				<include name="**/*.class"/>
+				<include name="**/*.tvm"/>
+			</fileset>
+		</delete>
+	</target>
+
+	<!-- compile the regression tests --> 
+	<target name="compile" description="compiles the regression tests">
+  		<exec executable="lejosjc" failonerror="true" dir=".">
+  			<arg line="Test00.java"/>
+  		</exec> 
+	</target>
+	
+</project>

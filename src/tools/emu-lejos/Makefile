@@ -1,8 +1,8 @@
 
 EMU_NAME=emu-lejos
-EMU_BIN=$(LEJOS_HOME)/bin/${EMU_NAME}
+EMU_BIN=$(BIN_TARGET)/${EMU_NAME}
 
-CC=$(shell ../../../cctest.sh)
+CC=$(shell $(LEJOS_HOME)/release/cctest.sh)
 
 CCOPT=-I../vmsrc -Wall -Wno-unused -O2 -DWRITE_ORDER=\"LE\" -DLOADER_TOOL=\"emu-lejosrun\" -DLINKER_TOOL=\"emu-lejos\"
 
@@ -20,4 +20,4 @@ ${EMU_NAME}: javaexec.c util.o
 	${CC} javaexec.o util.o -o ${EMU_BIN}
 
 clean:
-	rm -rf *.o *~ core ${EMU_BIN}
+	rm -rf *.o *~ 

@@ -1,0 +1,37 @@
+<!-- ant file to make the emu-lejos utility -->
+
+<project name="emu-lejos" default="make" basedir=".">
+	
+	<!-- cleans all compilation artifacts -->
+	<target name="clean" description="cleans all compilation artifacts">
+		<delete>
+			<fileset dir=".">
+				<include name="*.o"/>
+			</fileset>
+		</delete>
+	</target>
+	
+	<!-- make emu-lejos --> 
+	<target name="make" depends="clean" description="makes emu-lejos">
+  		<cc subsystem="console" 
+  				outfile="${release.bin}/emu-lejos"
+  				objdir="." 
+  				outtype="executable" 
+  				debug="false"
+  			    exceptions="false"
+  			    rtti="true"
+  			    optimize="speed"
+  				name="${lejos.compiler}">
+  				<fileset dir="." includes="*.c"/>
+  				<includepath path="."/>
+  				<defineset>
+  					<define name="WRITE_ORDER" value="&quot;LE&quot;"/>
+  					<define name="LOADER_TOOL" value="&quot;emu-lejosrun&quot;"/>
+  					<define name="LINKER_TOOL" value="&quot;emu-lejos&quot;"/>
+  				</defineset>
+  				<versioninfo refid="${lejos.version}"/>
+  		</cc>
+	</target>
+
+</project>
+

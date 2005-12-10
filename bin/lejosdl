@@ -17,4 +17,6 @@ else
   SEP=":"
 fi
 
-java -Djava.library.path="$LEJOS_HOME/bin" -classpath "$LEJOS_HOME/lib/commons-cli-1.0.jar$SEP$LEJOS_HOME/lib/jtools.jar$SEP$LEJOS_HOME/lib/pcrcxcomm.jar" js.tools.Lejosdl --tty ${RCXTTY:-usb} "$@"
+THIRDPARTY_LIBS="$LEJOS_HOME/3rdparty/lib"
+
+java -Djava.library.path="$LEJOS_HOME/bin" -classpath "$THIRDPARTY_LIBS/commons-cli-1.0.jar$SEP$LEJOS_HOME/lib/jtools.jar$SEP$LEJOS_HOME/lib/pcrcxcomm.jar" js.tools.Lejosdl --tty ${RCXTTY:-usb} "$@"

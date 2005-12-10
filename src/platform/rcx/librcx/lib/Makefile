@@ -34,4 +34,4 @@ all: librcx.a
 librcx.a: $(OBJECTS)
 
 clean:
-	rm -f $(OBJECTS) librcx.a
+	rm -f *.o librcx.a

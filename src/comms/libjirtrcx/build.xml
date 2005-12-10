@@ -1,0 +1,43 @@
+<!-- ant file to make the jirtrcx library -->
+
+<project name="jirtrcx" default="make" basedir=".">
+	
+	<property environment="env"/>
+	<property name="java.includes" value="${env.JAVA_HOME}/include"/>
+
+	<!-- cleans all compilation artifacts -->
+	<target name="clean" description="cleans all compilation artifacts">
+		<delete>
+			<fileset dir=".">
+				<include name="*.o"/>
+			</fileset>
+		</delete>
+	</target>
+	
+	<!-- make the jirtrcx library --> 
+	<target name="make" depends="clean" description="makes the jirtrcx library">
+  		<cc subsystem="console" 
+  				outfile="${make.out}/jirtrcx"
+  				objdir="." 
+  				outtype="shared" 
+  				debug="false"
+  			    exceptions="false"
+  			    rtti="true"
+  			    optimize="size"
+  				name="${lejos.compiler}">
+  				<fileset dir=".">
+  					<include name="tower.c"/>
+  				</fileset>
+  				<includepath>
+  					<pathelement location="."/>
+  					<pathelement location="${irctrcx.lib.src}"/>
+  					<pathelement location="${java.includes}"/>
+  					<pathelement location="${java.includes}/${lejos.ostype}"/>
+				</includepath>
+  				<libset dir="${make.out}" libs="irtrcx" type="shared" />
+  				<versioninfo refid="${lejos.version}"/>
+  		</cc>
+	</target>
+
+</project>
+

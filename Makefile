@@ -22,7 +22,7 @@ else
   PATH_SEP=:
 endif
 
-MFLAGS = OSTYPE=$(OSTYPE) LEJOS_HOME=$(LEJOS_HOME)
+MFLAGS = OSTYPE=$(OSTYPE) LEJOS_HOME=$(LEJOS_HOME) BIN_TARGET=$(LEJOS_HOME)/bin
 
 REGRESSION_SRC="test/regression"
 JVM_SRC="src/javavm"
@@ -74,7 +74,7 @@ dir_and_zip_win:
 	mkdir ${TEMP}/lejos
 	cp -r . ${TEMP}/lejos
 	cd ${TEMP}/lejos; make distclean_win
-	cp /bin/cygwin1.dll ${TEMP}/lejos/bin
+	# msz disabled: do we need cygwin1.dll?  cp /bin/cygwin1.dll ${TEMP}/lejos/bin
 	rm -f ${TINYVM_VERSION}.zip
 	cd ${TEMP}; zip -r ${TINYVM_VERSION}.zip lejos
 	$(MAKE) $(MFLAGS) javadoc
@@ -82,7 +82,6 @@ dir_and_zip_win:
 	rm -f ${TEMP}/${TINYVM_VERSION}.doc.zip
 	cd ..; zip -r ${TEMP}/${TINYVM_VERSION}.doc.zip lejos/apidocs lejos/pcapidocs lejos/visionapidocs lejos/docs lejos/README lejos/RELEASENOTES lejos/CLICKME.html lejos/LICENSE lejos/ACKNOWLEDGMENTS
 	diff bin/lejos.srec ${TEMP}/lejos/bin/lejos.srec
-
 
 check_release:
 	@echo TINYVM_HOME=${TINYVM_HOME}
@@ -92,7 +91,7 @@ check_release:
 	cd $(REGRESSION_SRC); ./run.sh
 
 all_java:
-	${ANT} all
+	${ANT} jar.libs
 
 scripts:
 	chmod 775 $(LEJOS_HOME)/bin/lejosjc
@@ -162,8 +161,8 @@ distclean_src: distclean
 	rm -f `find . -name '.DS_Store'`	# Mac OS X Finder droppings
 	rm -f `find . -name '*.exe'`
 
-distclean_win: distclean
-	/bin/strip `find . -name '*.exe'`
+distclean_win: # msz: disabled: distclean
+	# msz: disabled: bin/strip `find . -name '*.exe'`
 
 realclean: distclean_src
 	rm -f `find bin -name '*.srec'`
