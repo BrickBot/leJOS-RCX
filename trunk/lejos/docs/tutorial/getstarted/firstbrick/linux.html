@@ -1,0 +1,276 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+    <head>
+        <title>Your First Brick of leJOS (for Linux)</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <meta NAME="Author" CONTENT="Matthias Paul Scholz">
+        <meta name="expires" content="0">
+        <link rel="stylesheet" type="text/css" href="../../tutorial.css">
+    </head>
+
+    <body>
+
+        <!-- navigation header -->
+        <b><font SIZE="-1">The leJOS Tutorial</font></b>
+        <br>
+        <table width="550">
+            <tr>
+                <td align="left" valign="center">
+                    <a href="win32.html" target="_top"><img src="../../images/previous.gif" align="center" border="0" alt="Previous Page"></a>
+                    <a href="../toc.html#firstbrick" target="_top"><img src="../../images/toc.gif" align="center" border="0" alt="Lesson Contents"></a>
+                    <a href="macosx.html" target="_top"><img src="../../images/next.gif" align="center" border="0" alt="Next Page"></a></td>
+
+                <td align="center" valign="center">
+                    <font size="-1">
+                    <a href="../../index.html" target="_top">Start of Tutorial</a>
+                    &gt;
+                    <a href="../index.html" target="_top">Start of Trail</a>
+                    </font>
+                </td>
+            </tr>
+        </table>
+        <!-- end navigation header -->
+        <hr>
+
+        <font size="-1">
+            <b>Trail</b>: Getting Started<br>
+            <b>Lesson</b>: Your First Brick of leJOS
+        </font>
+
+        <!-- headline -->
+        <h1>Your First Brick of leJOS  (for Linux)</h1>
+        <p>
+
+        The following instructions, which refer to the Linux platform,
+        will help you to run your first leJOS program.
+        <br>
+        We presume that you are familiar with the Java language on an elementary level at least.
+        If this is not the case, we encourage you to consult the first trails of the 
+        <a href="http://java.sun.com/docs/books/tutorial/index.html">The Java Tutorial</a>
+        provided by <em>Sun Microsystems</em>.
+        <p>
+        Besides the <b>LEGO MINDSTORMS RCX</b>, the associated <b>IR Tower</b>
+        and the leJOS environment (see below), you will need:
+        <ul>
+            <li>
+                <b>The Java<sup><font size=-2>TM</font></sup> 2 Platform, Standard Edition.</b>
+                We propose to download it from
+                <a target="_blank" href="http://java.sun.com/j2se/1.4/download.html">
+                http://java.sun.com/j2se/1.4/download.html</a> and to consult the
+                associated <a target="_blank" href="http://java.sun.com/j2se/1.4/install-linux.html">
+                installation instructions</a> (make sure to download the SDK, not the JRE!).
+                <br>
+                Note: if there's a Java SDK installed on your 
+                machine already, you may use it - any version from 1.1 to 1.4 will work.
+            </li>
+        </ul>
+        That's all you need except for the leJOS environment.
+        
+        <!-- download -->
+        <h2>Download of the leJOS environment</h2>
+        You can find the actual version of the leJOS environment from the
+        <a href="http://lejos.sourceforge.net/download.html">Download section of 
+        http://www.lejos.org</a>.
+
+        <!-- installation -->
+        <h2>Installation of the leJOS environment</h2>
+        <ol>
+            <li>
+                After you have downloaded the leJOS environment tar file, extract it to an arbitrary directory.
+            </li>
+            <li>
+                Add the SDK's bin directory to your PATH environment variable.
+            </li>
+            <li>
+                Set the <b>LEJOS_HOME</b> evironment variable to the directory you installed lejos into:<br>
+                <code>export LEJOS_HOME=< your lejos directory ></code>   
+            </li>
+            <li>
+                Add leJOS's bin directory to your <b>PATH</b> environment variable:<br>
+                <code>export PATH=$PATH:$LEJOS_HOME/bin</code>
+            </li>
+            <li>
+                Add the leJOS classes to your <b>CLASSPATH</b> environment variable:<br>
+                <code>export CLASSPATH=$CLASSPATH:.:$LEJOS_HOME/lib/classes.jar:$LEJOS_HOME/lib/pcrcxcomm.jar</code>
+            </li>
+            <li>
+                Set the <b>RCXTTY</b> environment variable to your 'tower' device:<br>
+                <code>export RCXTTY=com1</code> or <code>export RCXTTY=usb</code>.   
+            </li>
+            <li>
+                Open a shell and change to the directory you installed leJOS into; type <code>make</code>.   
+            </li>
+       </ol>
+
+        <!-- lego usb tower -->
+        <h2>Install the LEGO<sup>&reg;</sup> usb tower</h2>
+	If you are using an usb tower, you'll have to install the referring
+                driver first:  
+	<ol>
+	<li>If the tower is plugged in yet, plug it out</li>
+	<li>Log in as root</li>
+	<li>Install the kernel sources (e.g. on SuSE Linux, you may call
+                <code>yast -i kernel-source</code> and copy  <code>/boot/vmlinuz.version.h</code> to
+		<code>/lib/modules/[your kernel version]/build/include/linux/version.h</code>)</li>
+	<li>Check out the most recent version of leJOS' legousbtower from cvs</li>
+	<li>Change to <code>$LEJOS_HOME/src/tools/linux/legousbtower</code></li>
+	<li>Call <code>make clean</code></li>
+	<li>Call <code>make</code></li>
+	<li>Call <code>make install</code></li>
+	<li>If your usb ports use ohci (in this case <code>usb-ohci</code> is
+                listed as a module when calling <code>lsmod</code>), your
+                LEGO<sup>&reg;</sup> tower will freeze when plugged in. Hence
+                you will have to patch usb-ohci first 
+		- follow the instructions in <code>$LEJOS_HOME/src/tools/linux/ohci/README</code></li>
+	<li>Plug in the LEGO tower. It will blink for a short time, afterwards
+                the light will go out</li>	
+	</ol>        
+
+        <span class="remark">
+                You may find it more convenient to load the legousbtower
+		module already on booting time, so you don't have to call
+		<code>modprobe legousbtower</code> every time you want to work
+		with the tower.
+		<br>To do so, copy <code>legousbtower.o</code> (and <code>usb-ohci.o</code> if
+		required) to <code>lib/modules/[your kernel
+		version]/kernel/driver/usb</code> and add a
+		<code>legousbtower</code> entry to your
+		<code>INITRD_MODULES</code> variable. 
+        </span>
+
+        <!-- firmware -->
+        <h2>leJOS-enable your RCX</h2>
+        To enable your RCX for the execution of leJOS programs, you will have to replace the original 
+        LEGO<sup>&reg;</sup> with the leJOS operating system. This is easily done:
+        <ol>
+            <li>Place the IR sensor of the RCX in front of the IR Tower</li>
+            <li>Turn on the RCX</li>
+            <li>Open a shell and change to the <code>bin</code> 
+                directory of your leJOS installation</li>
+            <li>call <code>firmdl</code></li>
+            <li>the progress of the download is displayed in the command shell and on the display of the
+            RCX; the RCX will double beep when the download is complete and display the battery voltage</li>
+        </ol>
+
+        <span class="remark">
+                Alternatively you may use the older C-based tool <code>lejosfirmdl</code> instead of the 
+                Java-based <code>firmdl</code> 
+        </span>
+        <p>
+
+        If the download doesn't work, make sure that
+        <ul> 
+            <li>your RCX is turned on</li>
+            <li>your RCX's IR port (the dark panel on the front) is facing towards the IR tower</li> 
+            <li>your RCXTTY environment variable is set accordingly</li> 
+        </ul>
+        The tower should blink green, when you start <code>lejosfirmdl</code>.
+        <p>
+
+        <span class="remark">
+                The original LEGO<sup>&reg;</sup> firmware isn't deleted from the RCX, but stored away. 
+                Hence you may re-activate it by just removing the batteries
+		for some minutes and replacing it.<br>
+		The leJOS firmware will be lost in this case, though, and will
+		have to be downloaded again to be useable on the RCX.
+                <br>Note that you have to install the leJOS firmware only once
+		(unless removing the batteries); 
+                nevertheless it may be downloaded as often as you wish, but the leJOS programs
+                you have installed will be lost in this case.
+        </span>
+                
+        
+        <!-- hello world -->
+        <h2>Create and Run your first leJOS program</h2>
+        There's a simple "Hello World" style example program available in the <em>examples\hworld</em> 
+        section of the leJOS tree:
+        <pre><code>
+            import josx.platform.rcx.*;
+
+            /**
+             * @author <a mailto="rvbijl39<at>calvin<dot>edu">Ryan VanderBijl</a>
+             */
+
+            /* This class uses char[] to display text on the LCD.
+             * Strings aren't really supported by TinyVM. :-(
+             * 
+             * This program, after d/ling, waits for you to press the RUN
+             * button, and then displays "hello", for a small delay, and then
+             * displays "world". (Then a small delay, and then it returns to
+             * the TinyVM OS).
+             */
+
+            public class HelloWorld
+            {
+              public static void main (String[] aArg)
+              throws Exception
+              {
+                 LCD.clear();
+                 TextLCD.print ("hello");
+                 Thread.sleep(2000);
+                 TextLCD.print ("world");
+                 Thread.sleep(2000);
+              }
+            }
+        </code></pre>
+        <p>
+        To run this program, you will: 
+        <ol>
+            <li>Open a shell and change to the <code>examples/hworld</code> 
+                directory of your leJOS installation</li>
+            <li>Compile it using <code>lejosjc</code> instead of <code>javac</code>:<br>
+                <code>lejosjc HelloWorld.java</code>
+            </li>
+            <li>Create a binary file containing the linked program with 
+                <code>lejoslink -o HelloWorld.bin HelloWorld</code></li>
+            <li>Download it to the RCX using <code>lejosdl</code>:<br>
+                <code>lejosdl HelloWorld.bin</code>
+            </li>
+            <li>the progress of the download is displayed in the shell and on the display of the
+            RCX; the RCX will double beep when the download is complete and displays a standing man</li>
+            <li>Press Run to start the program; The words "hello" and afterwards "world" will be displayed
+            on the RCX</li>
+        </ol>
+        If <code>lejosc</code> or <code>lejos</code> isn't found, make sure your PATH variable is set accordingly.
+        <br>If the leJOS classes arent found, check your CLASSPATH variable.
+        <p>
+
+        <span class="remark">
+	    Alternatively you may use the older C-based tools 
+            <code>lejosc</code> (for compiling) and <code>lejos</code> for linking 
+            and downloading.
+            <br>
+            You can also download multiple programs in one shot as follows:<br>
+            <code>lejosdl Bin1,Bin2,...</code>
+            <br>The programs will be linked together, and will replace
+            any programs previously in the RCX. You can press the <b>Prgm</b> button
+            to select which program to run.
+        </span>
+        <p>
+
+        <b>Congratulations! You have run your first leJOS program on your RCX.</b>
+
+        <hr>
+        <!-- navigation footer -->
+        <b><font SIZE="-1">The leJOS Tutorial</font></b>
+        <br>
+        <table width="550">
+            <tr>
+                <td align="left" valign="center">
+                    <a href="win32.html" target="_top"><img src="../../images/previous.gif" align="center" border="0" alt="Previous Page"></a>
+                    <a href="../toc.html#firstbrick" target="_top"><img src="../../images/toc.gif" align="center" border="0" alt="Lesson Contents"></a>
+                    <a href="macosx.html" target="_top"><img src="../../images/next.gif" align="center" border="0" alt="Next Page"></a></td>
+
+                <td align="center" valign="center">
+                    <font size="-1">
+                    <a href="../../index.html" target="_top">Start of Tutorial</a>
+                    &gt;
+                    <a href="../index.html" target="_top">Start of Trail</a>
+                    </font>
+                </td>
+            </tr>
+        </table>
+        <!-- end navigation footer -->
+</body>
+
+</html>
