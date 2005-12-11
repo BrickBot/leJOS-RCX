@@ -5,20 +5,28 @@
 #
 # 02/12/05  created Matthias Paul Scholz
 
-if [ -z "$LEJOS_HOME" ]; 
+echo checking environment
+cd ..
+
+if test "$LEJOS_HOME" != "$PWD" 
 then 
-  echo ERROR: environment variable LEJOS_HOME is not set!
-  echo Please export it, pointing to the directory you installed this distribution into.
+  echo ERROR: environment variable LEJOS_HOME is pointing to $LEJOS_HOME presently
+  echo however, it has to point to $PWD. 
+  echo please set it accordingly.
+  cd ./check
   shift
 
 else
+    echo environment seems to be ok
+    cd ./check
 	echo compiling test class
 	. ../bin/lejosjc DistributionSmokeTest.java
 	echo linking test class
 	. ../bin/lejoslink DistributionSmokeTest -o DistributionSmokeTest.bin
 	echo downloading test class
 	. ../bin/lejosdl DistributionSmokeTest.bin
-	echo Done. Now press the RUN Button on your RCX...
+	echo done. 
+	echo if no error occurred, please press the RUN Button on your RCX now...
 fi
 
 : end
