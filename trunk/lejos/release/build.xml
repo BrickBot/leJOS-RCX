@@ -9,8 +9,7 @@
 	<!-- to do
 		+ update release notes, read.me (first steps)
 		+ How about RELEASE.OSX (legacy?)?
-		+ Pack release notes, license, acks, legal into distribution
-		+ Tutorial (?)
+		+ update tutorial
 		+ why do we need cygwin1.dll in windows release?
 		+ how about the src/comms/libXXX2 and libjrrcx folders?
 		+ adjust sample makefiles (at need)
@@ -22,11 +21,13 @@
   	<property file="build.properties"/>
 	<property environment="env"/>
 	<property name="lejos.root" value="${basedir}/.."/>
+	<property name="3rdparty.libs" value="${lejos.root}/3rdparty/lib" />
 	<property name="release" value="${lejos.root}/release"/>
 	<property name="release.bin" value="${release}/bin"/>
 	<property name="src" value="${lejos.root}/src"/>
 	<property name="javasrc" value="${src}/java"/>
 	<property name="javavm.src" value="${src}/javavm"/>
+	<property name="lejos.tutorial" value="${lejos.root}/docs/tutorial"/>
 	<property name="release.tmp" value="${release}/tmp"/>
 	<property name="release.lib" value="${release}/lib"/>
 	<property name="release.src" value="${release}/src"/>
@@ -54,17 +55,17 @@
 	<!-- cpptasks task & type def -->
 	<taskdef resource="cpptasks.tasks">
 	  <classpath>
-	    <pathelement location="${release.3rdparty.libs}/cpptasks.jar"/>
+	    <pathelement location="${3rdparty.libs}/cpptasks.jar"/>
 	  </classpath>
 	</taskdef>
 	<typedef resource="cpptasks.types">
 	  <classpath>
-	    <pathelement location="${release.3rdparty.libs}/cpptasks.jar"/>
+	    <pathelement location="${3rdparty.libs}/cpptasks.jar"/>
 	  </classpath>
 	</typedef>
 	
 	<!-- release leJOS --> 
-	<target name="release" depends ="clean,emulator,irctrcx.libs,jirctrcx.libs,lejos.libs,lejos.sources,emu.runtime,lejos.firmware,apidocs,scripts,license,samples,test" 
+	<target name="release" depends ="clean,create.folders,emulator,irctrcx.libs,jirctrcx.libs,lejos.libs,lejos.sources,emu.runtime,lejos.firmware,docu,scripts,license,samples,test" 
 		description="releases leJOS">
 		<!-- clean distribution -->
 		<delete>
@@ -88,6 +89,8 @@
 		    	<include name = "**/*.tar"/>
 		    </fileset>
 		</delete>
+		<!-- notify -->
+		<echo message="The packed distribution might be found in ${release.dist} now"/>
 	</target>
 
   	<!-- cleans the distribution -->
@@ -101,6 +104,7 @@
 	  	<delete dir="${release.src}"/>
 	  	<delete dir="${release.docs}"/>
 	  	<delete dir="${release.samples}"/>
+	  	<delete dir="${release.3rdparty.libs}"/>
 		<!-- delete generated artifacts -->
 	  	<delete>
 	  		<fileset dir="${release.bin}">
@@ -204,8 +208,15 @@
     	<mkdir dir="${release.lib}"/>
     	<mkdir dir="${release.src}"/>
     	<mkdir dir="${release.docs}"/>
+    	<mkdir dir="${release.docs}/tutorial"/>
     	<mkdir dir="${release.dist}"/>
     	<mkdir dir="${release.samples}"/>
+    	<mkdir dir="${release.3rdparty.libs}"/>
+ 		<copy todir="${release.3rdparty.libs}">
+ 			<fileset dir="${3rdparty.libs}">
+ 				<include name="*.jar"/>
+ 			</fileset>
+ 		</copy>
   	</target>
 
   	<!-- creates the classes jar (RCX: JDK 1.1) -->
@@ -299,8 +310,13 @@
   		<!--<ant antfile="${plat.rcx.src}/build.xml" dir="${plat.rcx.src}" inheritall="true" />-->
   	</target>
 	
-	<!-- creates the api docs  -->
-	<target name="apidocs" depends="create.folders,platform.doc,pcrcxcomm.doc,vision.doc" description="creates the api docs">
+	<!-- creates the documentation -->
+	<target name="docu" depends="create.folders,platform.doc,pcrcxcomm.doc,vision.doc" description="creates the documentation">
+ 		<copy todir="${release.docs}/tutorial">
+ 			<fileset dir="${lejos.tutorial}">
+ 				<include name="**/*"/>
+ 			</fileset>
+ 		</copy>
 	</target>
 
 	<!-- copies the run scripts -->
@@ -351,7 +367,7 @@
 			    <include name="RELEASENOTES"/>
 			    <include name="READ.ME"/>
 			    <include name="lib/*.jar"/>
-			    <include name="src/*.zip"/>
+			    <include name="src/**"/>
 			    <include name="bin/*"/>
 			 	<exclude name="bin/*.xml"/>
 			    <include name="samples/**"/>
@@ -371,10 +387,12 @@
 			    <include name="RELEASENOTES"/>
 			    <include name="READ.ME"/>
 			    <include name="lib/*.jar"/>
-			    <include name="lib/**/*src.zip"/>
-			    <include name="bin/**"/>
+			    <include name="src/**"/>
+			    <include name="bin/*"/>
+			 	<exclude name="bin/*.xml"/>
 			    <include name="samples/**"/>
 			    <include name="check/**"/>
+<!--			 	<include name="build/*"/>-->
 			 	<include name="3rdparty/**"/>
 			  </fileset>
 		</zip>
