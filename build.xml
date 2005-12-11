@@ -1,287 +1,243 @@
 <!--
   ==================================================
-  Buildfile for java build of leJOS.
-  $Id$
+  Buildfile for building the cvs cut of leJOS
   ==================================================
 -->
-<project name="leJOS java build" default="all" basedir=".">
+<project name="leJOS" default="build" basedir=".">
+	
+	<!-- Setting up the global properties for the build -->
+  	<property file="build.properties"/>
+	<property environment="env"/>
+	<property name="lejos.root" value="${basedir}"/>
+	<property name="3rdparty.libs" value="${lejos.root}/3rdparty/lib" />
+	<property name="bin" value="${lejos.root}/bin"/>
+	<property name="lib" value="${lejos.root}/lib"/>
+	<property name="src" value="${lejos.root}/src"/>
+	<property name="javasrc" value="${src}/java"/>
+	<property name="javavm.src" value="${src}/javavm"/>
+	<property name="emu.src" value="${src}/tools/emu-lejos"/>
+	<property name="irctrcx.lib.src" value="${src}/comms/libirtrcx"/>
+	<property name="jirctrcx.lib.src" value="${src}/comms/libjirtrcx"/>
+	<property name="plat.unix.src" value="${src}/platform/unix"/>
+	<property name="plat.rcx.src" value="${src}/platform/rcx"/>
+	<property name="fastdl.src" value="${src}/comms/tools/fastdl"/>
+	<property name="test.root" value="${lejos.root}/test"/>
+	<property name="make.out" value="${bin}"/>
+	<property name="build.tmp" value="${lejos.root}/build"/>
+	<!-- org.lejos settings (adjust when required) -->
+	<property name="org.lejos" value="${lejos.root}/../org.lejos"/>
+	<property name="org.lejos.lib" value="${org.lejos}/lib"/>
+	<property name="org.lejos.src" value="${org.lejos}/src"/>
+	<property name="org.lejos.driver.win32.dir" value="${org.lejos}/os/win32/x86"/>
+	<property name="org.lejos.driver.linux.dir" value="${org.lejos}/os/linux/x86"/>
 
-  <!--
-    ==================================================
-    Setting up the global properties for the build
-    all paths should be relative
-    ==================================================
-  -->
+	<!-- cpptasks task & type def -->
+	<taskdef resource="cpptasks.tasks">
+	  <classpath>
+	    <pathelement location="${3rdparty.libs}/cpptasks.jar"/>
+	  </classpath>
+	</taskdef>
+	<typedef resource="cpptasks.types">
+	  <classpath>
+	    <pathelement location="${3rdparty.libs}/cpptasks.jar"/>
+	  </classpath>
+	</typedef>
+	
+	<!-- build leJOS --> 
+	<target name="build" depends ="clean,emulator,irctrcx.libs,jirctrcx.libs,lejos.libs,emu.runtime,lejos.firmware" 
+		description="builds leJOS">
+		<!-- adjust permissions -->
+  		<chmod perm="755">
+  			<fileset dir="${bin}">
+  	      	</fileset>
+  		</chmod>
+	</target>
 
-  <property name="src" value="${basedir}/src"/>
-  <property name="javasrc" value="${src}/java"/>
-  <property name="build" value="${basedir}/build"/>
-  <property name="bin" value="${basedir}/bin"/>
-  <property name="lib" value="${basedir}/lib"/>
+  	<!-- cleans the distribution -->
+	<target name="clean" description="clean up all generated files">
+	    <!-- delete generated files -->
+	  	<delete file="${javasrc}/tools/js/tinyvm/SpecialClassConstants.java"/>
+	  	<delete file="${javasrc}/tools/js/tinyvm/SpecialSignatureConstants.java"/>
+		<!-- delete generated artifacts -->
+	  	<delete>
+	  		<fileset dir="${bin}">
+				<include name="*.so"/>
+				<include name="*.dll"/>
+			</fileset>
+	  		<fileset dir="${lib}">
+				<include name="*.jar"/>
+			</fileset>
+	  	</delete>
+		<!-- delete compiled and generated artifacts -->
+		<delete>
+			<fileset dir="${lejos.root}"> 
+				<include name="**/*.o"/>
+				<include name="**/*~"/>
+				<include name="**/*.core"/>
+				<include name="**/*.tvm"/>
+				<include name="**/*.class"/>
+				<include name="**/*.bin"/>
+				<include name="**/*.sig"/>
+				<include name="**/*.bak"/>
+				<include name="**/*.stackdump"/>
+				<include name="**/*.backtrace"/>
+				<include name="**/*.#"/>
+				<include name="**/*.lst"/>
+				<include name="**/*.log"/>
+			</fileset>
+		</delete>
+  	</target>
+  	
+  	<!-- builds the emulator -->
+  	<target name="emulator" depends="clean" description="builds the emulator">
+  		<ant antfile="${emu.src}/build.xml" dir="${emu.src}" inheritall="true" />
+  	</target>
+	  	
+  	<!-- builds the irctrcx libraries -->
+  	<target name="irctrcx.libs" depends="clean" description="builds the irctrcx libraries">
+  		<ant antfile="${irctrcx.lib.src}/build.xml" dir="${irctrcx.lib.src}" inheritall="true" />
+  	</target>
 
-  <property name="org.lejos" value="${basedir}/../org.lejos"/>
-  <property name="org.lejos.lib" value="${org.lejos}/lib"/>
-  <property name="org.lejos.src" value="${org.lejos}/src"/>
-  <property name="driver_win32" value="${org.lejos}/os/win32/x86"/>
-  <property name="driver_linux" value="${org.lejos}/os/linux/x86"/>
+  	<!-- builds the jirctrcx libraries -->
+  	<target name="jirctrcx.libs" depends="irctrcx.libs" description="builds the jirctrcx libraries">
+  		<ant antfile="${jirctrcx.lib.src}/build.xml" dir="${jirctrcx.lib.src}" inheritall="true" /> 
+  	</target>
 
-  <!--
-    ==================================================
-    Target clean removes the class directory
-    ==================================================
-  -->
-  <target name="clean" description="clean up all generated files">
-    <!-- delete generated files -->
-  	<delete file="${javasrc}/tools/js/tinyvm/SpecialClassConstants.java"/>
-  	<delete file="${javasrc}/tools/js/tinyvm/SpecialSignatureConstants.java"/>
-  	<!-- delete classes -->
-    <mkdir dir="${build}"/>
-    <delete dir="${build}/classes"/>
-    <delete dir="${build}/rcxcomm"/>
-    <delete dir="${build}/pcrcxcomm"/>
-    <delete dir="${build}/tools"/>
-    <delete dir="${build}/vision"/>
-  	<!-- delete jars -->
-  	<delete>
-      <fileset dir="${lib}">
-        <include name="classes.jar"/>
-        <include name="rcxcomm.jar"/>
-        <include name="pcrcxcomm.jar"/>
-        <include name="jtools.jar"/>
-        <include name="vision.jar"/>
-      </fileset>  	
-      <fileset dir="${lib}/src">
-        <include name="classes-src.zip"/>
-        <include name="rcxcomm-src.zip"/>
-        <include name="pcrcxcomm-src.zip"/>
-        <include name="vision-src.zip"/>
-      </fileset>  	
-  	</delete>	
-  </target>
+	<!-- create all lejos library jar files  -->
+	<target name="lejos.libs" depends="classes.jar, rcxcomm.jar, pcrcxcomm.jar, vision.jar, jtools.jar" description="make all lejos library jars">
+	</target>
+  				
+  	<!-- creates the classes jar (RCX: JDK 1.1) -->
+  	<target name="classes.jar" depends="clean" description="generate classes jar">
+    	<mkdir dir="${build.tmp}/classes"/>
+    	<javac srcdir="${javasrc}/classes" destdir="${build.tmp}/classes" fork="yes" optimize="on" debug="on" source="1.3" target="1.1"/>
+    	<jar destfile="${lib}/classes.jar" basedir="${build.tmp}/classes" update="false"/>
+  	</target>
 
-  <!--
-    ==================================================
-    Target init: makes a timestamp and the build dir
-    ==================================================
-  -->
-  <target name="init" description="setup build">
-    <tstamp/>
-    <mkdir dir="${build}"/>
-    <mkdir dir="${lib}"/>
-  </target>
+  	<!--creates the rcxcomm jar (RCX: JDK 1.1) -->
+  	<target name="rcxcomm.jar" depends="classes.jar" description="generate rcxcomm jar">
+    	<mkdir dir="${build.tmp}/rcxcomm"/>
+    	<javac srcdir="${javasrc}/rcxcomm" destdir="${build.tmp}/rcxcomm" fork="yes" optimize="on" debug="on" source="1.3" target="1.1">
+      		<classpath location="${lib}/classes.jar"/>
+    	</javac>
+    	<jar destfile="${lib}/rcxcomm.jar" basedir="${build.tmp}/rcxcomm" update="false"/>
+  	</target>
 
-  <!--
-    ==================================================
-    Target jar: create classes jar (RCX: JDK 1.1)
-    ==================================================
-  -->
-  <target name="classes" depends="init" description="generate classes jar">
-    <mkdir dir="${build}/classes"/>
-    <javac srcdir="${javasrc}/classes" destdir="${build}/classes" fork="yes" optimize="on" debug="on" source="1.3" target="1.1"/>
-    <jar destfile="${lib}/classes.jar" basedir="${build}/classes" update="false"/>
-    <zip destfile="${lib}/src/classes-src.zip" basedir="${javasrc}/classes" update="false"/>
-  </target>
+  	<!--creates the pcrcxcomm jar (PC: JDK 1.4) -->
+  	<target name="pcrcxcomm.jar" depends="clean" description="generate pcrcxcomm jar">
+    	<mkdir dir="${build.tmp}/pcrcxcomm"/>
+    	<javac srcdir="${javasrc}/pcrcxcomm" destdir="${build.tmp}/pcrcxcomm" fork="yes" optimize="on" debug="on" source="1.4"/>
+    	<jar destfile="${lib}/pcrcxcomm.jar" basedir="${build.tmp}/pcrcxcomm" update="false"/>
+  	</target>
 
-  <!--
-    ==================================================
-    Target jar: create rcxcomm jar (RCX: JDK 1.1)
-    ==================================================
-  -->
-  <target name="rcxcomm" depends="init, classes" description="generate rcxcomm jar">
-    <mkdir dir="${build}/rcxcomm"/>
-    <javac srcdir="${javasrc}/rcxcomm" destdir="${build}/rcxcomm" fork="yes" optimize="on" debug="on" source="1.3" target="1.1">
-      <classpath location="${lib}/classes.jar"/>
-    </javac>
-    <jar destfile="${lib}/rcxcomm.jar" basedir="${build}/rcxcomm" update="false"/>
-    <zip destfile="${lib}/src/rcxcomm-src.zip" basedir="${javasrc}/rcxcomm" update="false"/>
-  </target>
+  	<!--creates the vision jar (PC: JDK 1.4) -->
+  	<target name="vision.jar" depends="pcrcxcomm.jar" description="generate vision jar">
+    	<mkdir dir="${build.tmp}/vision"/>
+    	<copy todir="${build.tmp}/vision">
+      		<fileset dir="${javasrc}/vision">
+        		<include name="**/*.properties"/>
+      		</fileset>
+    	</copy>
+    	<javac srcdir="${javasrc}/vision" destdir="${build.tmp}/vision" fork="yes" optimize="on" debug="on" source="1.4">
+      		<classpath path="${3rdparty.libs}/jmf.jar;${lib}/pcrcxcomm.jar" />
+    	</javac>
+    	<jar destfile="${lib}/vision.jar" basedir="${build.tmp}/vision" update="false"/>
+  	</target>
 
-  <!--
-    ==================================================
-    Target jar: create pcrcxcomm jar (PC: JDK 1.4)
-    ==================================================
-  -->
-  <target name="pcrcxcomm" depends="init" description="generate pcrcxcomm jar">
-    <mkdir dir="${build}/pcrcxcomm"/>
-    <javac srcdir="${javasrc}/pcrcxcomm" destdir="${build}/pcrcxcomm" fork="yes" optimize="on" debug="on" source="1.4"/>
-    <jar destfile="${lib}/pcrcxcomm.jar" basedir="${build}/pcrcxcomm" update="false"/>
-    <zip destfile="${lib}/src/pcrcxcomm-src.zip" basedir="${javasrc}/pcrcxcomm" update="false"/>
-  </target>
-
-  <!--
-    ==================================================
-    Target jar: create vision jar (PC: JDK 1.4)
-    ==================================================
-  -->
-  <target name="vision" depends="init, pcrcxcomm" description="generate pcrcxcomm jar">
-    <mkdir dir="${build}/vision"/>
-    <copy todir="${build}/vision">
-      <fileset dir="${javasrc}/vision">
-        <include name="**/*.properties"/>
-      </fileset>
-    </copy>
-    <javac srcdir="${javasrc}/vision" destdir="${build}/vision" fork="yes" optimize="on" debug="on" source="1.4">
-      <classpath path="${lib}/jmf.jar:${lib}/pcrcxcomm.jar" />
-    </javac>
-    <jar destfile="${lib}/vision.jar" basedir="${build}/vision" update="false"/>
-    <zip destfile="${lib}/src/vision-src.zip" basedir="${javasrc}/vision" update="false"/>
-  </target>
-
-  <!--
-    ==================================================
-    Target jar: create jtools jar (PC: JDK 1.4)
-    ==================================================
-  -->
-  <target name="jtools" depends="init, pcrcxcomm" description="generate jtools jar">
-    <mkdir dir="${build}/tools"/>
-    <!-- generate constants first -->
-    <javac srcdir="${javasrc}/tools" destdir="${build}/tools" fork="yes" optimize="on" debug="on" source="1.4" includes="**/GenerateConstants.java"/>
-    <java classpath="${build}/tools" classname="js.tinyvm.GenerateConstants">
-      <sysproperty key="tinyvm.home" value="${src}"/>
-    </java>
-    <!-- generate tools -->
-    <javac srcdir="${javasrc}/tools" destdir="${build}/tools" fork="yes" optimize="on" debug="on" source="1.4">
-      <classpath location="${lib}/pcrcxcomm.jar"/>
-      <classpath location="${lib}/commons-cli-1.0.jar"/>
-      <classpath location="${lib}/bcel-5.1.jar"/>
-    </javac>
-    <jar destfile="${lib}/jtools.jar" basedir="${build}/tools" update="false">
-      <fileset dir="${bin}">
-        <include name="lejos.srec"/>
-        <include name="fastdl2x.srec"/>
-        <include name="fastdl4x.srec"/>
-      </fileset>
-    </jar>
-  </target>
-
-  <!--
-    ==================================================
-    Target jar: deploy all files (does NOT generate anything)
-    ==================================================
-  -->
-  <target name="deploy" depends="" description="deploy all files">
-  	<!-- all leJOS libs -->
-    <mkdir dir="${org.lejos.lib}"/>
-    <delete>
-      <fileset dir="${org.lejos.lib}">
-        <include name="*.jar"/>
-      </fileset>
-    </delete>
-    <copy todir="${org.lejos.lib}">
-      <fileset dir="${lib}">
-        <include name="*.jar"/>
-      </fileset>
-    </copy>
-  	<!-- sources for all leJOS and external libs -->
-    <mkdir dir="${org.lejos.src}"/>
-    <delete>
-      <fileset dir="${org.lejos.src}">
-        <include name="*.zip"/>
-      </fileset>
-    </delete>
-    <copy todir="${org.lejos.src}">
-      <fileset dir="${lib}/src">
-        <include name="*.zip"/>
-        <exclude name="bcel*"/>
-      </fileset>
-    </copy>
-  	<!-- OS specific drivers (win32) -->
-    <mkdir dir="${driver_win32}"/>
-    <!--delete>
-      <fileset dir="${driver_win32}">
-        <include name="*.dll"/>
-      </fileset>
-    </delete-->
-   <copy todir="${driver_win32}" overwrite="true">
-      <fileset dir="${bin}">
-        <include name="*.dll"/>
-      </fileset>
-    </copy>
-  	<!-- OS specific drivers (linux) -->
-  	<mkdir dir="${driver_linux}"/>
-    <!--delete>
-      <fileset dir="${driver_linux}">
-        <include name="*.so"/>
-      </fileset>
-    </delete-->
-    <copy todir="${driver_linux}" overwrite="true">
-      <fileset dir="${bin}">
-        <include name="*.so"/>
-      </fileset>
-    </copy>
-  </target>
-  
-  <!--
-    ==================================================
-    Target jar: create all jar files
-    ==================================================
-  -->
-  <target name="all" depends="classes, rcxcomm, pcrcxcomm, vision, jtools, deploy" description="make all"/>
-	  
-  <!--
-    ==================================================
-    Target jar: create leJOS API docs
-    ==================================================
-  -->
-  <target name="doc" depends="" description="generate leJOS API docs">
-    <delete dir="${basedir}/apidocs"/>
-    <mkdir dir="${basedir}/apidocs"/>
-    <!-- packages: java.io java.lang java.util josx.platform.rcx josx.util josx.robotics josx.rcxcomm java.net javax.servlet.http -->
-    <javadoc protected="true"
-             windowtitle="leJOS API documentation"
-             author="true"
-             destdir="${basedir}/apidocs"
-             source="1.1"
-             defaultexcludes="yes">
-      <fileset dir="${javasrc}/classes"/>
-      <fileset dir="${javasrc}/rcxcomm"/>
-    </javadoc>
-  </target>
-
-  <!--
-    ==================================================
-    Target jar: create leJOS PC API docs
-    ==================================================
-  -->
-  <target name="pcdoc" depends="init" description="generate leJOS PC API docs">
-    <delete dir="${basedir}/pcapidocs"/>
-    <mkdir dir="${basedir}/pcapidocs"/>
-    <!-- packages: josx.rcxcomm -->
-    <javadoc protected="true"
-             windowtitle="leJOS PC API documentation"
-             author="true"
-             destdir="${basedir}/pcapidocs"
-             source="1.4"
-             defaultexcludes="yes">
-      <fileset dir="${javasrc}/pcrcxcomm"/>
-    </javadoc>
-  </target>
-
-  <!--
-    ==================================================
-    Target jar: create leJOS Vision API docs
-    ==================================================
-  -->
-  <target name="visiondoc" depends="init, pcrcxcomm" description="generate leJOS Vision API docs">
-    <delete dir="${basedir}/pcapidocs"/>
-    <mkdir dir="${basedir}/pcapidocs"/>
-    <!-- packages: josx.vision -->
-    <javadoc protected="true"
-             windowtitle="leJOS Vision API documentation"
-             author="true"
-             destdir="${basedir}/visionapidocs"
-             source="1.4"
-             defaultexcludes="yes">
-      <classpath location="${lib}/pcrcxcomm.jar"/>
-      <fileset dir="${javasrc}/vision"/>
-    </javadoc>
-  </target>
-
-  <!--
-    ==================================================
-    Target jar: create leJOS Vision API docs
-    ==================================================
-  -->
-  <target name="alldocs" depends="doc, pcdoc, visiondoc" description="generate all API docs"/>
-
+  	<!-- creates the jtools jar (PC: JDK 1.4) -->
+  	<target name="jtools.jar" depends="pcrcxcomm.jar" description="generate jtools jar">
+    	<mkdir dir="${build.tmp}/tools"/>
+    	<!-- generate constants first -->
+    	<javac srcdir="${javasrc}/tools" destdir="${build.tmp}/tools" fork="yes" optimize="on" debug="on" source="1.4" 
+    		includes="**/GenerateConstants.java">
+    	</javac>
+   		<java classpath="${build.tmp}/tools" classname="js.tinyvm.GenerateConstants">
+      		<sysproperty key="tinyvm.home" value="${src}"/>
+    	</java>
+    	<!-- generate tools -->
+    	<javac srcdir="${javasrc}/tools" destdir="${build.tmp}/tools" fork="yes" optimize="on" debug="on" source="1.4">
+      		<classpath location="${lib}/pcrcxcomm.jar"/>
+      		<classpath location="${3rdparty.libs}/commons-cli-1.0.jar"/>
+      		<classpath location="${3rdparty.libs}/bcel-5.1.jar"/>
+    	</javac>
+    	<jar destfile="${lib}/jtools.jar" basedir="${build.tmp}/tools" update="false">
+    	</jar>
+  	</target>
+  		
+  	<!-- builds the emu runtime tools (emu-dump & emu-lejosrun) -->
+  	<target name="emu.runtime" depends="emulator" description="builds the emu runtime tools">
+  		<ant antfile="${plat.unix.src}/build.xml" dir="${plat.unix.src}" inheritall="true" />
+  	</target>
+  		
+	<!-- packages the lejos firmware files -->	
+ 	<target name="lejos.firmware" depends="jtools.jar,lejos.srec" description="packages the lejos firmware">
+  		<!-- update jtools.jar -->
+    	<jar destfile="${lib}/jtools.jar" basedir="${build.tmp}/tools" update="true">
+			<fileset dir="${bin}">
+        		<include name="lejos.srec"/>
+        		<include name="fastdl2x.srec"/>
+        		<include name="fastdl4x.srec"/> 
+      		</fileset> 
+    	</jar>
+ 	</target>
+ 		
+  	<!-- builds the lejos firmware (*.srec) -->
+  	<target name="lejos.srec" description="builds the lejos firmware (*.srec)" if="build.lejos.firmware">
+  		<exec executable="make" failonerror="true" dir="${plat.rcx.src}">
+  			<arg line="clean OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
+  		</exec> 
+  		<exec executable="make" failonerror="true" dir="${plat.rcx.src}">
+  			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
+  		</exec> 
+  		<exec executable="make" failonerror="true" dir="${fastdl.src}">
+  			<arg line="clean OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
+  		</exec>
+  		<exec executable="make" failonerror="true" dir="${fastdl.src}">
+  			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
+  		</exec>
+  		<!--<ant antfile="${plat.rcx.src}/build.xml" dir="${plat.rcx.src}" inheritall="true" />-->
+  	</target>
+	
+	<!-- deploys the distribution to org.lejos -->
+  	<target name="deploy.to.org.lejos" description="deploys the distribution to org.lejos">
+		<!-- all leJOS libs -->
+		<mkdir dir="${org.lejos.lib}"/>
+			<delete>
+  				<fileset dir="${org.lejos.lib}">
+				<include name="*.jar"/>
+  			</fileset>
+		</delete>
+		<copy todir="${org.lejos.lib}">
+  			<fileset dir="${lib}">
+				<include name="*.jar"/>
+  			</fileset>
+		</copy>
+		<!-- sources for all leJOS and external libs -->
+		<mkdir dir="${org.lejos.src}"/>
+			<delete>
+  				<fileset dir="${org.lejos.src}">
+					<include name="*.zip"/>
+  			</fileset>
+		</delete>
+		<copy todir="${org.lejos.src}">
+  			<fileset dir="${src}">
+				<include name="*.zip"/>
+  			</fileset>
+		</copy>
+		<!-- OS specific drivers (win32) -->
+		<mkdir dir="${org.lejos.driver.win32.dir}"/>
+   		<copy todir="${org.lejos.driver.win32.dir}" overwrite="true">
+  			<fileset dir="${bin}">
+				<include name="*.dll"/>
+  			</fileset>
+		</copy>
+		<!-- OS specific drivers (linux) -->
+		<mkdir dir="${org.lejos.driver.linux.dir}"/>
+		<copy todir="${org.lejos.driver.linux.dir}" overwrite="true">
+  			<fileset dir="${bin}">
+				<include name="*.so"/>
+  			</fileset>
+		</copy>
+  	</target>   
+	
 </project>
