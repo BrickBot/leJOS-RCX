@@ -240,7 +240,6 @@
 		4009A2C6095D2F1F00378282 /* Rover.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Rover.java; sourceTree = "<group>"; };
 		4009A2CE095D2F2000378282 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		4009A2CF095D2F2000378282 /* Makefile.config.renameme */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.config.renameme; sourceTree = "<group>"; };
-		4009A2D0095D2F2000378282 /* notes_ab.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = notes_ab.txt; sourceTree = "<group>"; };
 		4009A2D3095D2F2000378282 /* fastdl2x.srec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = fastdl2x.srec; sourceTree = "<group>"; };
 		4009A2D4095D2F2000378282 /* fastdl4x.srec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = fastdl4x.srec; sourceTree = "<group>"; };
 		4009A2D5095D2F2000378282 /* lejos.srec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lejos.srec; sourceTree = "<group>"; };
@@ -1654,7 +1653,6 @@
 				4009A327095D2F2100378282 /* h8300-compiler */,
 				4009A32B095D2F2100378282 /* java */,
 				4009A48F095D2F2700378282 /* javavm */,
-				4009A4B8095D2F2800378282 /* macosx */,
 				4009A4BC095D2F2800378282 /* platform */,
 				4009A531095D2F2A00378282 /* tools */,
 			);
@@ -2427,13 +2425,6 @@
 			path = javavm;
 			sourceTree = "<group>";
 		};
-		4009A4B8095D2F2800378282 /* macosx */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = macosx;
-			sourceTree = "<group>";
-		};
 		4009A4BC095D2F2800378282 /* platform */ = {
 			isa = PBXGroup;
 			children = (
@@ -2887,18 +2878,17 @@
 		88230FFA05D9926E00FE8D22 = {
 			isa = PBXGroup;
 			children = (
-				4009A01A095D2F1500378282 /* 3rdparty */,
+				4009A2E3095D2F2000378282 /* src */,
 				4009A020095D2F1600378282 /* bin */,
-				4009A1BE095D2F1C00378282 /* build.xml */,
 				4009A1BF095D2F1C00378282 /* docs */,
 				4009A22B095D2F1D00378282 /* examples */,
 				4009A2C7095D2F1F00378282 /* lib */,
-				4009A2CE095D2F2000378282 /* Makefile */,
+				4009A1BE095D2F1C00378282 /* build.xml */,
 				4009A5F5095D3C1300378282 /* build.properties */,
+				4009A2CE095D2F2000378282 /* Makefile */,
 				4009A2CF095D2F2000378282 /* Makefile.config.renameme */,
-				4009A2D0095D2F2000378282 /* notes_ab.txt */,
+				4009A01A095D2F1500378282 /* 3rdparty */,
 				4009A2D1095D2F2000378282 /* release */,
-				4009A2E3095D2F2000378282 /* src */,
 				4009A562095D2F2B00378282 /* test */,
 			);
 			sourceTree = "<group>";
