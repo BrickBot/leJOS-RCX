@@ -22,16 +22,14 @@ public class Tower
    /**
     * Create the tower class.
     */
-   public Tower ()
-   {
+   public Tower () {
       this("");
    }
 
    /**
     * Create the tower class.
     */
-   public Tower (String tty)
-   {
+   public Tower (String tty) {
       assert tty != null: "Precondition: tty != null";
 
       _tty = tty;
@@ -41,8 +39,7 @@ public class Tower
    /**
     * Open the tower.
     */
-   public void openTower (boolean fastMode) throws TowerException
-   {
+   public void openTower (boolean fastMode) throws TowerException {
       int status = open(_tty, fastMode);
       if (status != 0)
       {
@@ -54,8 +51,7 @@ public class Tower
    /**
     * Close tower.
     */
-   public void closeTower () throws TowerException
-   {
+   public void closeTower () throws TowerException {
       int status = close();
       _isOpen = false;
       if (status != 0)
@@ -69,8 +65,7 @@ public class Tower
     * 
     * @deprecated use exception handling instead of status codes
     */
-   public int getError ()
-   {
+   public int getError () {
       return _error;
    }
 
@@ -79,13 +74,11 @@ public class Tower
     * 
     * @param data bytes to send
     */
-   public void writeBytes (byte[] data) throws TowerException
-   {
+   public void writeBytes (byte[] data) throws TowerException {
       assert data != null: "Precondition: data != null";
 
       int status = write(data, data.length);
-      if (status < 0)
-      {
+      if (status < 0) {
          throw new TowerException(status);
       }
    }
@@ -95,13 +88,11 @@ public class Tower
     * 
     * @param data packet to send
     */
-   public void sendPacket (byte[] data) throws TowerException
-   {
+   public void sendPacket (byte[] data) throws TowerException {
       assert data != null: "Precondition: data != null";
 
       int status = send(data, data.length);
-      if (status < 0)
-      {
+      if (status < 0) {
          throw new TowerException(status);
       }
    }
@@ -112,8 +103,7 @@ public class Tower
     * @param data buffer to receive bytes
     * @return number of bytes read
     */
-   public int readBytes (byte[] data) throws TowerException
-   {
+   public int readBytes (byte[] data) throws TowerException {
       return readBytes(data, DEFAULT_READ_TIMEOUT);
    }
 
@@ -124,14 +114,12 @@ public class Tower
     * @param timeout read timeout in ms
     * @return number of bytes read
     */
-   public int readBytes (byte[] data, int timeout) throws TowerException
-   {
+   public int readBytes (byte[] data, int timeout) throws TowerException {
       assert data != null: "Precondition: data != null";
       assert timeout > 0: "Precondition: timeout > 0";
 
       int result = read(data, timeout);
-      if (result < 0)
-      {
+      if (result < 0) {
          throw new TowerException(result);
       }
 
@@ -145,8 +133,7 @@ public class Tower
     * @param data buffer to receive packet
     * @return number of bytes read
     */
-   public int receivePacket (byte[] data) throws TowerException
-   {
+   public int receivePacket (byte[] data) throws TowerException {
       return receivePacket(data, DEFAULT_READ_TIMEOUT);
    }
 
@@ -157,14 +144,12 @@ public class Tower
     * @param timeout read timeout in ms
     * @return number of bytes read
     */
-   public int receivePacket (byte[] data, int timeout) throws TowerException
-   {
+   public int receivePacket (byte[] data, int timeout) throws TowerException {
       assert data != null: "Precondition: data != null";
       assert timeout > 0: "Precondition: timeout > 0";
 
       int result = receive(data, timeout);
-      if (result < 0)
-      {
+      if (result < 0) {
          throw new TowerException(result);
       }
 
@@ -180,8 +165,7 @@ public class Tower
     * @return number of bytes read
     */
    public int sendPacketReceivePacket (byte[] data, byte[] response, int retries)
-      throws TowerException
-   {
+      throws TowerException {
       return sendPacketReceivePacket(data, response, retries,
          DEFAULT_READ_TIMEOUT);
    }
@@ -195,36 +179,27 @@ public class Tower
     * @return number of bytes read
     */
    public int sendPacketReceivePacket (byte[] data, byte[] response,
-      int retries, int timeout) throws TowerException
-   {
+      int retries, int timeout) throws TowerException {
       TowerException towerException = null;
       int numRead = -1;
-      for (; retries > 0; retries--)
-      {
+      for (; retries > 0; retries--) {
          towerException = null;
-         try
-         {
+         try {
             sendPacket(data);
             numRead = receivePacket(response, timeout);
             break;
-         }
-         catch (TowerException e)
-         {
+         } catch (TowerException e) {
             towerException = e;
             // wait 100ms before trying again
-            try
-            {
+            try {
                Thread.sleep(100);
-            }
-            catch (InterruptedException e1)
-            {
+            } catch (InterruptedException e1) {
                throw new TowerException("interrupted");
             }
          }
       }
 
-      if (towerException != null)
-      {
+      if (towerException != null) {
          throw towerException;
       }
 
@@ -239,17 +214,12 @@ public class Tower
    /**
     * Load native lib. 
     */
-   static
-   {
-      try
-      {
+   static {
+      try {
          System.err.println("Loading native libs");
-         System.loadLibrary("irtrcx");
          System.loadLibrary("jirtrcx");
          init();
-      }
-      catch (Throwable e1)
-      {
+      } catch (Throwable e1) {
          System.err.println("Unable to load native libraries: " + e1.getMessage());
       }
    }
