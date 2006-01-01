@@ -3,6 +3,10 @@
 
 #include "rcx_comm.h"
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 /* Structures */
 
 struct _rcx_port {
@@ -56,4 +60,8 @@ void __rcx_flush(rcx_dev_t *port);
  */
 void __rcx_perror(char *message);
 
+#if defined(__cplusplus)
+}
+#endif
+    
 #endif
