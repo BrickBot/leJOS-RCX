@@ -44,16 +44,16 @@
 	</typedef>
 	
 	<!-- build leJOS --> 
-	<target name="build" depends ="clean,emulator,irctrcx.libs,jirctrcx.libs,lejos.libs,emu.runtime,lejos.firmware" 
+	<target name="build" depends ="irctrcx.libs,jirctrcx.libs,lejos.libs,emulator,emu.runtime,lejos.firmware" 
 		description="builds leJOS">
 		<!-- adjust permissions -->
-  		<chmod perm="755">
-  			<fileset dir="${bin}">
-  	      	</fileset>
-  		</chmod>
+		<chmod perm="755">
+			<fileset dir="${bin}">
+		</fileset>
+		</chmod>
 	</target>
 
-  	<!-- cleans the distribution -->
+	<!-- cleans the distribution -->
 	<target name="clean" description="clean up all generated files">
 	    <!-- delete generated files -->
 	  	<delete file="${javasrc}/tools/js/tinyvm/SpecialClassConstants.java"/>
@@ -63,6 +63,8 @@
 	  		<fileset dir="${bin}">
 				<include name="*.so"/>
 				<include name="*.dll"/>
+				<include name="*.dylib"/>
+				<include name="*.jnilib"/>
 			</fileset>
 	  		<fileset dir="${lib}">
 				<include name="*.jar"/>
@@ -86,21 +88,30 @@
 				<include name="**/*.log"/>
 			</fileset>
 		</delete>
-  	</target>
-  	
-  	<!-- builds the emulator -->
-  	<target name="emulator" depends="clean" description="builds the emulator">
-  		<ant antfile="${emu.src}/build.xml" dir="${emu.src}" inheritall="true" />
-  	</target>
-	  	
-  	<!-- builds the irctrcx libraries -->
-  	<target name="irctrcx.libs" depends="clean" description="builds the irctrcx libraries">
-  		<ant antfile="${irctrcx.lib.src}/build.xml" dir="${irctrcx.lib.src}" inheritall="true" />
-  	</target>
+	</target>
+ 	
+	<!-- builds the irctrcx libraries -->
+	<target name="irctrcx.libs" description="builds the irctrcx libraries">
+		<!-- Don't force a make clean every time
+		<exec executable="make" failonerror="true" dir="${irctrcx.lib.src}">
+			<arg line="clean OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
+		</exec> 
+		-->
+		<exec executable="make" failonerror="true" dir="${irctrcx.lib.src}">
+			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
+		</exec> 
+	</target>
 
-  	<!-- builds the jirctrcx libraries -->
-  	<target name="jirctrcx.libs" depends="irctrcx.libs" description="builds the jirctrcx libraries">
-  		<ant antfile="${jirctrcx.lib.src}/build.xml" dir="${jirctrcx.lib.src}" inheritall="true" /> 
+	<!-- builds the jirctrcx libraries -->
+	<target name="jirctrcx.libs" depends="irctrcx.libs" description="builds the jirctrcx libraries">
+		<!-- Don't force a make clean every time
+		<exec executable="make" failonerror="true" dir="${jirctrcx.lib.src}">
+			<arg line="clean OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
+		</exec> 
+		-->
+		<exec executable="make" failonerror="true" dir="${jirctrcx.lib.src}">
+			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
+		</exec> 
   	</target>
 
 	<!-- create all lejos library jar files  -->
@@ -108,7 +119,7 @@
 	</target>
   				
   	<!-- creates the classes jar (RCX: JDK 1.1) -->
-  	<target name="classes.jar" depends="clean" description="generate classes jar">
+  	<target name="classes.jar" description="generate classes jar">
     	<mkdir dir="${build.tmp}/classes"/>
     	<javac srcdir="${javasrc}/classes" destdir="${build.tmp}/classes" fork="yes" optimize="on" debug="on" source="1.3" target="1.1"/>
     	<jar destfile="${lib}/classes.jar" basedir="${build.tmp}/classes" update="false"/>
@@ -124,7 +135,7 @@
   	</target>
 
   	<!--creates the pcrcxcomm jar (PC: JDK 1.4) -->
-  	<target name="pcrcxcomm.jar" depends="clean" description="generate pcrcxcomm jar">
+  	<target name="pcrcxcomm.jar" description="generate pcrcxcomm jar">
     	<mkdir dir="${build.tmp}/pcrcxcomm"/>
     	<javac srcdir="${javasrc}/pcrcxcomm" destdir="${build.tmp}/pcrcxcomm" fork="yes" optimize="on" debug="on" source="1.4"/>
     	<jar destfile="${lib}/pcrcxcomm.jar" basedir="${build.tmp}/pcrcxcomm" update="false"/>
@@ -164,6 +175,11 @@
     	</jar>
   	</target>
   		
+  	<!-- builds the emulator -->
+  	<target name="emulator" description="builds the emulator">
+  		<ant antfile="${emu.src}/build.xml" dir="${emu.src}" inheritall="true" />
+  	</target>
+	  	
   	<!-- builds the emu runtime tools (emu-dump & emu-lejosrun) -->
   	<target name="emu.runtime" depends="emulator" description="builds the emu runtime tools">
   		<ant antfile="${plat.unix.src}/build.xml" dir="${plat.unix.src}" inheritall="true" />
@@ -172,34 +188,38 @@
 	<!-- packages the lejos firmware files -->	
  	<target name="lejos.firmware" depends="jtools.jar,lejos.srec" description="packages the lejos firmware">
   		<!-- update jtools.jar -->
-    	<jar destfile="${lib}/jtools.jar" basedir="${build.tmp}/tools" update="true">
+		<jar destfile="${lib}/jtools.jar" basedir="${build.tmp}/tools" update="true">
 			<fileset dir="${bin}">
         		<include name="lejos.srec"/>
         		<include name="fastdl2x.srec"/>
         		<include name="fastdl4x.srec"/> 
-      		</fileset> 
-    	</jar>
+			</fileset> 
+		</jar>
  	</target>
  		
   	<!-- builds the lejos firmware (*.srec) -->
   	<target name="lejos.srec" description="builds the lejos firmware (*.srec)" if="build.lejos.firmware">
-  		<exec executable="make" failonerror="true" dir="${plat.rcx.src}">
-  			<arg line="clean OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
-  		</exec> 
+		<!-- Don't force a make clean every time
+		<exec executable="make" failonerror="true" dir="${plat.rcx.src}">
+			<arg line="clean OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
+		</exec> 
+		-->
   		<exec executable="make" failonerror="true" dir="${plat.rcx.src}">
   			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
-  		</exec> 
-  		<exec executable="make" failonerror="true" dir="${fastdl.src}">
+		</exec>
+		<!-- Don't force a make clean every time
+		<exec executable="make" failonerror="true" dir="${fastdl.src}">
   			<arg line="clean OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
-  		</exec>
-  		<exec executable="make" failonerror="true" dir="${fastdl.src}">
+		</exec>
+		-->
+		<exec executable="make" failonerror="true" dir="${fastdl.src}">
   			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
   		</exec>
   		<!--<ant antfile="${plat.rcx.src}/build.xml" dir="${plat.rcx.src}" inheritall="true" />-->
   	</target>
 	
 	<!-- deploys the distribution to org.lejos -->
-  	<target name="deploy.to.org.lejos" description="deploys the distribution to org.lejos">
+	<target name="deploy.to.org.lejos" description="deploys the distribution to org.lejos">
 		<!-- all leJOS libs -->
 		<mkdir dir="${org.lejos.lib}"/>
 			<delete>
