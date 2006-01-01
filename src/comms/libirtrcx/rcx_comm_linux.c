@@ -47,7 +47,7 @@
 #include "rcx_comm_os.h"
 #include "rcx_comm_linux.h"
 
-
+    
 /* Defines */
 
 #define BUFFERSIZE  4096

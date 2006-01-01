@@ -34,7 +34,9 @@
 #include <stdint.h>
 #define FILEDESCR	intptr_t
 #define BADFILE	-1
-/* O_SYNC not defined on Mac OS X */
-#define O_SYNC 0
+/* O_SYNC not defined on earlier Mac OS X versions */
+#ifndef O_SYNC
+#define O_SYNC 0x0080
+#endif
 
 #endif /* RCX_COMM_OSX_H_INCLUDED */

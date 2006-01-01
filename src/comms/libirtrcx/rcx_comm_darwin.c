@@ -151,7 +151,7 @@ rcx_dev_t *__rcx_open(char *tty, int is_fast)
 	rcx_dev_t *port = NULL;
 
 	if (__comm_debug) printf("mode = %s\n", is_fast ? "fast" : "slow");
-	if (__comm_debug) printf("tty= %s\n", tty);
+	if (__comm_debug) printf("tty = %s\n", tty);
 
 	port = (rcx_dev_t *)malloc(sizeof(rcx_dev_t));
 	if (!port) {
@@ -172,10 +172,12 @@ rcx_dev_t *__rcx_open(char *tty, int is_fast)
 		if (port->fast) {
 			fprintf(stderr, "FAST mode not allowed with USB OS X\n");
 			exit(1);
-		} 
+		}
+		port->usb = 1;
 		if (__comm_debug) printf("port->usb = %d\n", port->usb);
 		port->fd = (FILEDESCR) osx_usb_rcx_init(0);
-		if (port->fd == NULL) {
+		if (__comm_debug) printf("port->fd = %p\n", port->fd);
+		if (port->fd == (FILEDESCR)NULL) {
 			exit(1);
 		}
 	} else {
