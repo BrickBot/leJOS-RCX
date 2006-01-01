@@ -33,7 +33,7 @@ void poll_inputs()
   short i;
   short *pOldValue = old_sensor_values;
   sensor_t *pSensor = &sensors[0];
-  byte packet_available;
+  char packet_available;
 
   throttle_count--;
   if( throttle_count == 0){
