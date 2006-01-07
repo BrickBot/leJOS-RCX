@@ -16,6 +16,7 @@
 			classpath="${lejosunit.cp}" 
 			srcdir="${lejosunit.testsources.dir}"
 			target="1.1"
+			source="1.2"
 			destdir="${lejosunit.testclasses.dir}"
 		/>
 	</target>
@@ -61,7 +62,7 @@
 	</target>
 
 	<target name="clean" description="deletes created class und emulator files">
-		<delete>
+		<delete quiet="true">
   			<fileset dir="${lejosunit.testclasses.dir}">
     			<include name="**/*.class"/>
     			<include name="**/*.sig"/>
