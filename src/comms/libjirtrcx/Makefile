@@ -1,6 +1,7 @@
 #
 # Full paths work best inside emacs
 #
+
 PWD = $(shell pwd)
 SRCS = $(addprefix $(PWD)/, tower.c)
 
