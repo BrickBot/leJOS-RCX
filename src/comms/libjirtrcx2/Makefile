@@ -2,7 +2,10 @@
 # Makefile for jni adapter for librcx
 #
 
-CC=$(shell $(LEJOS_HOME)/cctest.sh)
+PWD = $(shell pwd)
+SRCS = $(addprefix $(PWD)/, Tower.cpp)
+
+CC=$(shell $(LEJOS_HOME)/release/cctest.sh)
 
 JAVA_INCL="$(JAVA_HOME)"/include
 
