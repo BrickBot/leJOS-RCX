@@ -1,6 +1,6 @@
 <!--
   ==================================================
-  Buildfile for building the cvs cut of leJOS
+  Buildfile for building the cvs TOT of leJOS
   ==================================================
 -->
 <project name="leJOS" default="build" basedir=".">
@@ -16,8 +16,8 @@
 	<property name="javasrc" value="${src}/java"/>
 	<property name="javavm.src" value="${src}/javavm"/>
 	<property name="emu.src" value="${src}/tools/emu-lejos"/>
-	<property name="irctrcx.lib.src" value="${src}/comms/libirtrcx"/>
-	<property name="jirctrcx.lib.src" value="${src}/comms/libjirtrcx"/>
+	<property name="irctrcx.lib.src" value="${src}/comms/libirtrcx2"/>
+	<property name="jirctrcx.lib.src" value="${src}/comms/libjirtrcx2"/>
 	<property name="plat.unix.src" value="${src}/platform/unix"/>
 	<property name="plat.rcx.src" value="${src}/platform/rcx"/>
 	<property name="fastdl.src" value="${src}/comms/tools/fastdl"/>
@@ -92,11 +92,6 @@
  	
 	<!-- builds the irctrcx libraries -->
 	<target name="irctrcx.libs" description="builds the irctrcx libraries">
-		<!-- Don't force a make clean every time
-		<exec executable="make" failonerror="true" dir="${irctrcx.lib.src}">
-			<arg line="clean OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
-		</exec> 
-		-->
 		<exec executable="make" failonerror="true" dir="${irctrcx.lib.src}">
 			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
 		</exec> 
@@ -104,11 +99,6 @@
 
 	<!-- builds the jirctrcx libraries -->
 	<target name="jirctrcx.libs" depends="irctrcx.libs" description="builds the jirctrcx libraries">
-		<!-- Don't force a make clean every time
-		<exec executable="make" failonerror="true" dir="${jirctrcx.lib.src}">
-			<arg line="clean OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
-		</exec> 
-		-->
 		<exec executable="make" failonerror="true" dir="${jirctrcx.lib.src}">
 			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
 		</exec> 
@@ -177,7 +167,9 @@
   		
   	<!-- builds the emulator -->
   	<target name="emulator" description="builds the emulator">
-  		<ant antfile="${emu.src}/build.xml" dir="${emu.src}" inheritall="true" />
+		<exec executable="make" failonerror="true" dir="${emu.src}">
+			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
+		</exec> 
   	</target>
 	  	
   	<!-- builds the emu runtime tools (emu-dump & emu-lejosrun) -->
@@ -199,23 +191,12 @@
  		
   	<!-- builds the lejos firmware (*.srec) -->
   	<target name="lejos.srec" description="builds the lejos firmware (*.srec)" if="build.lejos.firmware">
-		<!-- Don't force a make clean every time
-		<exec executable="make" failonerror="true" dir="${plat.rcx.src}">
-			<arg line="clean OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
-		</exec> 
-		-->
   		<exec executable="make" failonerror="true" dir="${plat.rcx.src}">
   			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
 		</exec>
-		<!-- Don't force a make clean every time
-		<exec executable="make" failonerror="true" dir="${fastdl.src}">
-  			<arg line="clean OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
-		</exec>
-		-->
 		<exec executable="make" failonerror="true" dir="${fastdl.src}">
   			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
   		</exec>
-  		<!--<ant antfile="${plat.rcx.src}/build.xml" dir="${plat.rcx.src}" inheritall="true" />-->
   	</target>
 	
 	<!-- deploys the distribution to org.lejos -->
