@@ -9,8 +9,8 @@ CC=$(shell $(LEJOS_HOME)/release/cctest.sh)
 
 JAVA_INCL="$(JAVA_HOME)"/include
 
-IRTRCX_INCL=$(LEJOS_HOME)/src/comms/libirtrcx2
-IRTRCX_H=$(IRTRCX_INCL)/rcx_comm.h
+IRTRCX_INCL="$(LEJOS_HOME)/src/comms/libirtrcx2"
+IRTRCX_H="$(IRTRCX_INCL)/rcx_comm.h"
 
 # Default: Unix
 JIRTRCX=$(BIN_TARGET)/libjirtrcx.so
@@ -19,7 +19,7 @@ CCOPT=-rdynamic -ldl -shared -fpic -I${JAVA_INCL} -I${JAVA_INCL}/$(OSTYPE) -I$(I
 # Windows with CygWin installed
 ifneq (,$(findstring cygwin,$(OSTYPE)))
   JIRTRCX=$(BIN_TARGET)/jirtrcx.dll
-  CCOPT= -mno-cygwin -I${JAVA_INCL} -I${JAVA_INCL}/win32 -I$(IRTRCX_INCL) -Wl,--add-stdcall-alias -shared -L$(BIN_TARGET) -lirtrcx
+  CCOPT= -mno-cygwin -D__CYGWIN32__ -I$(JAVA_INCL) -I$(JAVA_INCL)/win32 -I$(IRTRCX_INCL) -Wl,--add-stdcall-alias -shared -L"$(BIN_TARGET)" -lirtrcx
 endif
 
 # MacOS X
@@ -34,12 +34,12 @@ endif
 .EXPORT_ALL_VARIABLES :
 
 default: all
-all: ${JIRTRCX}
-	@echo Built $(JIRTRCX)
+all: $(JIRTRCX)
+	#@echo Built $(JIRTRCX)
 
-${JIRTRCX}: Tower.cpp
-	$(CXX) $(CCOPT) -DTRACE -o $@ *.cpp
+$(JIRTRCX): Tower.cpp
+	$(CXX) $(CCOPT) -DTRACE -o "$@" *.cpp
 
 clean:
 	rm -rf *.o
-	rm -f ${JIRTRCX}
+	rm -f $(JIRTRCX)
