@@ -11,11 +11,10 @@
 		+ How about README.OSX (legacy?)?
 		+ update tutorial
 		+ why do we need cygwin1.dll in windows release?
-		+ how about the src/comms/libXXX2 and libjrrcx folders?
-		+ adjust sample makefiles (at need)
 		+ add samples tests
 	    + diff between distribution and current cvs state: which files are obsolete now?
 	    + update "HOWTO release" (set LEJOSUNIT_HOME etc.)
+	    + regression test script for windows also
 	-->
 
 	<!-- Setting up the global properties for the build -->
@@ -37,8 +36,8 @@
 	<property name="release.docs" value="${release}/docs"/>
 	<property name="release.samples" value="${release}/samples"/>
 	<property name="emu.src" value="${src}/tools/emu-lejos"/>
-	<property name="irctrcx.lib.src" value="${src}/comms/libirtrcx"/>
-	<property name="jirctrcx.lib.src" value="${src}/comms/libjirtrcx"/>
+	<property name="irctrcx.lib.src" value="${src}/comms/libirtrcx2"/>
+	<property name="jirctrcx.lib.src" value="${src}/comms/libjirtrcx2"/>
 	<property name="release.3rdparty.libs" value="${release}/3rdparty/lib"/>
 	<property name="plat.unix.src" value="${src}/platform/unix"/>
 	<property name="plat.rcx.src" value="${src}/platform/rcx"/>
@@ -48,7 +47,7 @@
 	<property name="release.lib.cp" value="${release.lib}/classes.jar:${release.lib}/jtools.jar"/>
 	<property name="test.compilation.class" value="SimpleTest"/>
 	<property name="make.out" value="${release.bin}"/>
-	<property name="lejosunit.cp" value="${release.lib.cp}:${release.3rdparty.cp}:${lejosunit.home}/lib/lejosunit-1.0.2.jar"/>
+	<property name="lejosunit.cp" value="${release.lib.cp}:${release.3rdparty.cp}:${lejosunit.home}/build/lib/lejosunit-1.0.2.jar"/>
 	<property name="lejosunit.lejos" value="${release}"/>
 	<property name="build.tmp" value="${release.tmp}"/>
 	<property name="lib" value="${release.lib}"/>
@@ -84,13 +83,12 @@
 		</delete>
 		<!-- tar/zip os dependent file -->
 		<antcall target="distribution.${lejos.ostype}"/> 
-		<!-- tar & gzip leJOS doc distribution -->
-		<tar destfile="${release.dist}/${lejos.version}-doc.tar">
-			 <tarfileset dir="${release}" >
+		<!-- zip leJOS doc distribution -->
+		<zip destfile="${release.dist}/${lejos.version}-doc.zip">
+			 <fileset dir="${release}" >
 			    <include name="docs/**"/>
-			  </tarfileset>
-		</tar>
-		<gzip zipfile="${release.dist}/${lejos.version}-doc.tar.gz" src="${release.dist}/${lejos.version}-doc.tar"/>
+			  </fileset>
+		</zip>
 		<!-- clean temp files -->
 		<delete>
 		    <fileset dir="${release.dist}">
@@ -278,7 +276,7 @@
 	</target>
 	
 	<!-- packages the windows distribution -->
-	<target name="distribution.windows" description="packages the windows distribution">
+	<target name="distribution.cygwin" description="packages the windows distribution">
 		<!-- zip leJOS windows distribution -->
 		<zip destfile="${release.dist}/${lejos.version}-win32.zip">
 			 <fileset dir="${release}" >
@@ -343,7 +341,7 @@
 	<!-- test leJOS --> 
 	<target name="test" description="tests leJOS">
 		<!-- run regression tests -->
-		<exec executable="${test.root}/regression/run.sh" failonerror="true" dir="${test.root}/regression">
+		<exec os="Linux" executable="${test.root}/regression/run.sh" failonerror="true" dir="${test.root}/regression">
   			<env key="PATH" path="${test.root}/regression:${release.bin}:${env.PATH}"/>
   			<env key="CLASSPATH" path="${test.root}/regression:${release.lib.cp}:${release.3rdparty.cp}"/>
   		</exec>
