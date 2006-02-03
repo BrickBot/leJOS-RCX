@@ -100,7 +100,7 @@
 	<!-- builds the jirctrcx libraries -->
 	<target name="jirctrcx.libs" depends="irctrcx.libs" description="builds the jirctrcx libraries">
 		<exec executable="make" failonerror="true" dir="${jirctrcx.lib.src}">
-			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
+			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out} TRACE=${trace}"/>
 		</exec> 
   	</target>
 
@@ -168,7 +168,7 @@
   	<!-- builds the emulator -->
   	<target name="emulator" description="builds the emulator">
 		<exec executable="make" failonerror="true" dir="${emu.src}">
-			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out}"/>
+			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.root} BIN_TARGET=${make.out} TRACE=${trace}"/>
 		</exec> 
   	</target>
 	  	

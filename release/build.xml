@@ -156,14 +156,14 @@
             	<include name="**/build.xml"/>
           	</fileset>
 		</copy>
-		<copy todir="${release.src}/comms/libirtrcx">
+		<copy todir="${release.src}/comms/libirtrcx2">
           	<fileset dir="${irctrcx.lib.src}">
             	<include name="**/*.c"/>
             	<include name="**/*.h"/>
             	<include name="**/build.xml"/>
           	</fileset>
 		</copy>
-		<copy todir="${release.src}/comms/libjirtrcx">
+		<copy todir="${release.src}/comms/libjirtrcx2">
           	<fileset dir="${jirctrcx.lib.src}">
             	<include name="**/*.c"/>
             	<include name="**/*.h"/>

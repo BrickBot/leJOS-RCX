@@ -38,7 +38,7 @@ all: $(JIRTRCX)
 	#@echo Built $(JIRTRCX)
 
 $(JIRTRCX): Tower.cpp
-	$(CXX) $(CCOPT) -DTRACE -o "$@" *.cpp
+	$(CXX) $(CCOPT) $(TRACE) -o "$@" *.cpp
 
 clean:
 	rm -rf *.o
