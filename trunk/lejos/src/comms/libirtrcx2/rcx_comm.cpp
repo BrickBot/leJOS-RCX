@@ -184,7 +184,10 @@ void __rcx_open_setDevice (Port* port, char* symbolicName, bool fast)
     port->symbolicName[31] = 0;
    
     int length = strlen(symbolicName);
-    if (strncmp(symbolicName, "usb", 3) == 0 && length <= 4)
+    if (
+       ((strncmp(symbolicName, "usb", 3) == 0) 
+       || (strncmp(symbolicName, "USB", 3) == 0))
+       && length <= 4)
     {
         // usb mode (does _not_ support doubled baud rate)
       strncpy(port->deviceName, USB_TOWER_NAME, 32);

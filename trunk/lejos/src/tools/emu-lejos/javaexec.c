@@ -14,7 +14,6 @@
 #include <sys/cygwin.h>
 #endif
 
-#define TRACE 0
 #define MAX_PATH 255
 
 #define TOOL_NAME "java"

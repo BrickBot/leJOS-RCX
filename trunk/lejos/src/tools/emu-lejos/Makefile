@@ -16,7 +16,7 @@ programs: ${EMU_NAME}
 
 
 ${EMU_NAME}: javaexec.c util.o
-	${CC} ${CCOPT} -c javaexec.c
+	${CC} ${CCOPT} $(TRACE) -c javaexec.c
 	${CC} javaexec.o util.o -o ${EMU_BIN}
 
 clean:

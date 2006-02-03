@@ -209,18 +209,16 @@ void* __rcx_open(char* tty, bool fast)
 
 	Port* result = (Port*) malloc(sizeof(Port));
 	__rcx_open_setDevice(result, tty, fast);
-			
+		
+	if (__comm_debug) printf("creating file handle for device %s\n", result->deviceName);
+
 	result->fileHandle = CreateFile(
-	  result->deviceName, 
+	  result->deviceName,
 	  GENERIC_READ | GENERIC_WRITE, 
-	  0, 
-	  NULL, 
-	  OPEN_EXISTING, 
-	  0, 
-	  NULL);
+	  0,NULL,OPEN_EXISTING,0,NULL);
 	if (result->fileHandle == INVALID_HANDLE_VALUE) 
     {
-		if (__comm_debug) printf("Error %lu: Opening %s\n", (unsigned long) GetLastError(), result->deviceName);
+		if (__comm_debug) printf("Error %lu: Opening %s failed: file handle is invalid\n", (unsigned long) GetLastError(), result->deviceName);
 		success = false;
 	}
 	else if (!result->usb)
