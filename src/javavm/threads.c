@@ -321,6 +321,7 @@ find_next:
             	}
             }
 done_pi:
+		break;
 	    ;
 #endif // PI_AVOIDANCE
           
