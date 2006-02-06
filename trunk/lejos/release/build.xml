@@ -7,6 +7,7 @@
 <project name="leJOS release" default="release" basedir=".">
 	
 	<!-- to do
+	    + update/write howtorelease
 		+ update release notes, read.me (first steps)
 		+ How about README.OSX (legacy?)?
 		+ update tutorial

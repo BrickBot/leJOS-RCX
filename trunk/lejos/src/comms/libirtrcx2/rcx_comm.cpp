@@ -1,5 +1,5 @@
 /*
- *  rcx_comm.c
+ *  rcx_comm.cpp
  *
  *  RCX communication routines.
  *
@@ -268,6 +268,7 @@ int rcxRead (void* port, void* read, int readMaxLength, int timeout_ms)
 
 	if (__comm_debug) 
 	{
+		printf("received:\n");
 		hexdump("R", read, result);
 	}
 

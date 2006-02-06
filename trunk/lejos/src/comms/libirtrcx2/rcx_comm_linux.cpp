@@ -1,5 +1,5 @@
 /*
- *  rcx_comm_linux.c
+ *  rcx_comm_linux.cpp
  *
  *  Platform specific RCX communication routines.
  *
