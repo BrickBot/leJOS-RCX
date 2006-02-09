@@ -16,14 +16,6 @@
 #else
 #include <errno.h>
 
-#ifndef trace
-#ifdef TRACE
-#define trace(msg)  do { printf("%s", msg); } while (0)
-#else
-#define trace(msg)  do {} while (0)
-#endif
-#endif
-
 int GetLastError() 
 {
 	return errno;
@@ -48,20 +40,28 @@ static rcx_dev_t *get_port(JNIEnv *env, jobject obj);
 JNIEXPORT void JNICALL 
 Java_josx_rcxcomm_Tower_init(JNIEnv *env, jclass clazz)
 {
-	trace("Entering init\n");
+#ifdef TRACE
+	printf("Entering init\n");
+#endif	
 	_fieldIDPort = (*env)->GetFieldID(env, clazz, "_port", "J");
 	if (_fieldIDPort == NULL)
 	{
-		trace("Could not get port field.\n");
+#ifdef TRACE	
+		printf("Could not get port field.\n");
+#endif			
 		return;
 	}
 	_fieldIDError = (*env)->GetFieldID(env, clazz, "_error", "I");
 	if (_fieldIDError == NULL)
 	{
-		trace("Could not get error code field.\n");
+#ifdef TRACE	
+		printf("Could not get error code field.\n");
+#endif	
 		return;
 	}
-	trace("Exiting init\n");
+#ifdef TRACE	
+	printf("Exiting init\n");
+#endif	
 }
 
 /* Open the IR Tower */
@@ -74,8 +74,8 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport, jboolean f
 
 #ifdef TRACE
 	rcx_set_debug(1);
+	printf("Entering open\n");
 #endif
-	trace("Entering open\n");
 
 	/* Get the port parameter  */
 	tty = (char*)(*env)->GetStringUTFChars(env, jport, 0);
@@ -95,7 +95,9 @@ Java_josx_rcxcomm_Tower_open(JNIEnv *env, jobject obj, jstring jport, jboolean f
 
 	(*env)->ReleaseStringUTFChars(env, jport, tty);
 
-	trace("Exiting open\n");
+#ifdef TRACE
+	printf("Exiting open\n");
+#endif	
 	return (jint)result;
 }
 
@@ -104,21 +106,25 @@ JNIEXPORT jint JNICALL
 Java_josx_rcxcomm_Tower_close(JNIEnv *env, jobject obj)
 {
 	rcx_dev_t *port = NULL;
-
-	trace("Entering close\n");
+#ifdef TRACE
+	printf("Entering close\n");
+#endif	
 
 	/* Close the handle */
 	port = get_port(env, obj);
 	if (port == NULL) {
-		trace("File already closed\n");
+#ifdef TRACE
+		printf("File already closed\n");
+#endif		
 		return (jint) RCX_ALREADY_CLOSED;
 	}
   
 	rcx_close(port);
 	set_port(env, obj, NULL);
 
-	trace("Exiting close\n");
-
+ #ifdef TRACE
+	printf("Exiting close\n");
+#endif
 	return RCX_OK;
 }
 
@@ -126,21 +132,24 @@ Java_josx_rcxcomm_Tower_close(JNIEnv *env, jobject obj)
 JNIEXPORT jint JNICALL
 Java_josx_rcxcomm_Tower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 {
-	trace("Entering write\n");
-
+#ifdef TRACE
+	printf("Entering write\n");
+#endif
 	// Check that file is open
 	rcx_dev_t *port = get_port(env, obj);
 	if (!port) {
-		trace("File not open\n");
+#ifdef TRACE
+		printf("File not open\n");
+#endif
 		return (jint) RCX_NOT_OPEN;
 	}
 	jbyte *body = (*env)->GetByteArrayElements(env, arr, 0);
 	int result = rcx_write(port, body, n);
 	set_error(env, obj, result < 0);
 	(*env)->ReleaseByteArrayElements(env, arr, body, 0);
-
-	trace("Exiting write\n");
-
+#ifdef TRACE
+	printf("Exiting write\n");
+#endif
 	return (jint)result;
 }
 
@@ -148,12 +157,15 @@ Java_josx_rcxcomm_Tower_write(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 JNIEXPORT jint JNICALL
 Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr, jint timeout)
 {
-	trace("Entering read\n");
-
+#ifdef TRACE
+	printf("Entering read\n");
+#endif
 	/* Check that file is open */
 	rcx_dev_t *port = get_port(env, obj);
 	if (!port) {
-		trace("File not open\n");
+#ifdef TRACE	
+		printf("File not open\n");
+#endif
 		return (jint)RCX_NOT_OPEN;
 	}
 
@@ -163,9 +175,9 @@ Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr, jint time
 	(*env)->ReleaseByteArrayElements(env, arr, body, 1);
 
 	set_error(env, obj, result < 0);
-
-	trace("Exiting read\n");
-
+#ifdef TRACE
+	printf("Exiting read\n");
+#endif
 	return (jint) result;
 }
 
@@ -173,13 +185,15 @@ Java_josx_rcxcomm_Tower_read(JNIEnv *env, jobject obj, jbyteArray arr, jint time
 JNIEXPORT jint JNICALL
 Java_josx_rcxcomm_Tower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 {
-	trace("Entering send\n");
-
+#ifdef TRACE
+	printf("Entering send\n");
+#endif
 	/* Check that file is open */
 	rcx_dev_t *port = get_port(env, obj);
 	if (!port) {
-		trace("File not open\n");
-
+#ifdef TRACE	
+		printf("File not open\n");
+#endif
 		return (jint) RCX_NOT_OPEN;
 	}
 	jbyte* body = (*env)->GetByteArrayElements(env, arr, 0);
@@ -187,8 +201,9 @@ Java_josx_rcxcomm_Tower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 	(*env)->ReleaseByteArrayElements(env, arr, body, 0);
 
 	set_error(env, obj, result < 0);
-
-	trace("Exiting send\n");
+#ifdef TRACE
+	printf("Exiting send\n");
+#endif
 	return (jint) result;
 }
 
@@ -196,12 +211,15 @@ Java_josx_rcxcomm_Tower_send(JNIEnv *env, jobject obj, jbyteArray arr, jint n)
 JNIEXPORT jint JNICALL
 Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr, jint timeout)
 {
-	trace("Entering receive\n");
-
+#ifdef TRACE
+	printf("Entering receive\n");
+#endif
 	/* Check that file is open */
 	rcx_dev_t *port = get_port(env, obj);
 	if (!port) {
-		trace("File not open\n");
+#ifdef TRACE	
+		printf("File not open\n");
+#endif
 		return (jint) RCX_NOT_OPEN;
 	}
 	int size = (*env)->GetArrayLength(env, arr);
@@ -210,8 +228,9 @@ Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr, jint t
 	(*env)->ReleaseByteArrayElements(env, arr, body, 1);
 
 	set_error(env, obj, actual < 0);
-
-	trace("Exiting receive\n");
+#ifdef TRACE
+	printf("Exiting receive\n");
+#endif
 	return (jint) actual;
 }
 
@@ -219,13 +238,15 @@ Java_josx_rcxcomm_Tower_receive(JNIEnv *env, jobject obj, jbyteArray arr, jint t
 JNIEXPORT jboolean JNICALL
 Java_josx_rcxcomm_Tower_isRCXAlive(JNIEnv *env, jobject obj)
 {
-	trace("Entering isRCXAlive\n");
-  
+#ifdef TRACE
+	printf("Entering isRCXAlive\n");
+#endif  
 	/* Check if RCX is alive */
 	rcx_dev_t *port = get_port(env, obj);
 	int result = rcx_is_alive(port) == 1;
-
-	trace("Exiting isRCXAlive\n");
+#ifdef TRACE
+	printf("Exiting isRCXAlive\n");
+#endif
 	return result? JNI_TRUE : JNI_FALSE;
 }
 
@@ -233,14 +254,15 @@ Java_josx_rcxcomm_Tower_isRCXAlive(JNIEnv *env, jobject obj)
 JNIEXPORT jboolean JNICALL
 Java_josx_rcxcomm_Tower_isUSB(JNIEnv *env, jobject obj)
 {
-	trace("Entering isUSB\n");
-  
+#ifdef TRACE
+	printf("Entering isUSB\n");
+#endif  
 	/* Check if RCX is alive */
 	rcx_dev_t *port = get_port(env, obj);
 	int result = rcx_is_usb(port);
-
-	trace("Exiting isUSB\n");
-
+#ifdef TRACE
+	printf("Exiting isUSB\n");
+#endif
 	return result ? JNI_TRUE : JNI_FALSE;
 }
 
