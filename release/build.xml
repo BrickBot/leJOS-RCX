@@ -37,8 +37,8 @@
 	<property name="release.docs" value="${release}/docs"/>
 	<property name="release.samples" value="${release}/samples"/>
 	<property name="emu.src" value="${src}/tools/emu-lejos"/>
-	<property name="irctrcx.lib.src" value="${src}/comms/libirtrcx2"/>
-	<property name="jirctrcx.lib.src" value="${src}/comms/libjirtrcx2"/>
+	<property name="irctrcx.lib.src" value="${src}/comms/libirtrcx"/>
+	<property name="jirctrcx.lib.src" value="${src}/comms/libjirtrcx"/>
 	<property name="release.3rdparty.libs" value="${release}/3rdparty/lib"/>
 	<property name="plat.unix.src" value="${src}/platform/unix"/>
 	<property name="plat.rcx.src" value="${src}/platform/rcx"/>
