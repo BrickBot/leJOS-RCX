@@ -43,16 +43,14 @@
 		<li>You need a Java Development Kit (JDK) 1.4 or above</li>
 		<li>Your PATH must contain the JDK's bin directory</li>
 		<li>Make sure you have set JAVA_HOME properly to the root directory of the JDK</li>
-		<li>You need a Java Media Framework (JMF) 2.1 or above (will be brought along by the leJOS distribution)</li>
-		<li>You need ANT 1.6 or above</li>
-		<li>Your PATH must contain the ant binary</li>
+		<li>For the vision parts, you need a Java Media Framework (JMF) 2.1 or above (will be brought along by the leJOS distribution)</li>
+		<li>In case you want to build the distribution, your PATH must contain the ant binary (ant 1.6 or above)</li>
 		<li>Add leJOS's bin directory to your PATH</li>
-		<li>Set RCXTTY to your 'tower' device (e.g. COM1 or USB or /dev/ttyS0)</li>
+		<li>Set RCXTTY to your 'tower' device (e.g. COM1 or usb)</li>
 		<li>Download firmware using firmdl</li>
 		<li>Compile using lejosc instead of javac</li>
 		<li>Downaod programs in the RCX using lejoslink and lejosdl</li> 
 		<li>Run programs in the host using emu-lejos</li>
-		<li>When using the rcxcomm package on Unix, set LD_LIBRARY_PATH to the leJOS bin directory</li>
 		<li>Exceptions: Use lejosdl -verbose. Exceptions are shown in the RCX as [XXXX Y], where XXXX = method_signature and Y = exception_class_index MOD 10</li>
    	</ul>
 	     
@@ -88,10 +86,16 @@
 	Please download the leJOS documentation from the same location you downloaded this distribution from
 	and consult the "First Steps" section of the <a href="http://lejos.sourceforge.net/tutorial/index.html">
 	Tutorial</a> contained there. 
-	<p>
-	Set your environment variable <em>LEJOS_HOME</em> to the directory you installed this distribution into.
-	<br>
- 	Check the installation by switching to the "check" folder of the lEJOS distribution and run 'checkDistribution'.
+	<ol>
+		<li>Set your environment variable <em>LEJOS_HOME</em> to the directory you installed this distribution into</li>
+		<li>Set your environment variable <em>RCXTTY</em> to <em>usb</em> (for USB towers) or <em>COM1</em> (for serial towers)</li>
+ 	</ol>
+ 	Check the installation by switching to the "check" folder of the lEJOS distribution and run 
+ 	<ol>
+ 		<li>compileDistributionCheck.bat resp. compileDistributionCheck.sh</li>
+ 		<li>linkDistributionCheck.bat resp. linkDistributionCheck.sh</li>
+ 		<li>downloadDistributionCheck.bat resp. downloadDistributionCheck.sh (please switch on RCX before)</li>
+ 	</ol>
   	A very simple test program will be downloaded to the RCX. After the download has finished, press the RCX's 'RUN' button.
   	The RCX's LCD should print the strings "SMOKE" and "TEST".
 
