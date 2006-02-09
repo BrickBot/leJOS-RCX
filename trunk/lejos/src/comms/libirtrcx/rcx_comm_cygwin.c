@@ -62,7 +62,7 @@ int __rcx_open_setSerialPortParameters (Port* port);
 int __rcx_read_isTimedOut (struct timeval *begin, int timeout_ms);
 
 /* Read from USB port */
-int __rcx_read_usb (void* port, void* buf, int maxlen, int timeout_ms);
+int __rcx_read_usb (rcx_dev_t *port, void* buf, int maxlen, int timeout_ms);
 
 /* Read from serial port */
 int __rcx_read_serial (void* port, void *buf, int maxlen, int timeout_ms);
@@ -96,7 +96,7 @@ int __rcx_read_isTimedOut (struct timeval *begin, int timeout_ms)
    return elapsed_ms >= timeout_ms;
 }
 
-int __rcx_read_usb (void* port, void* buf, int maxlen, int timeout_ms)
+int __rcx_read_usb (rcx_dev_t *port, void* buf, int maxlen, int timeout_ms)
 {
 	char* bufp = (char*) buf;
 	int len = 0;
@@ -109,7 +109,8 @@ int __rcx_read_usb (void* port, void* buf, int maxlen, int timeout_ms)
 	do 
 	{
       count = 0;
-		if (ReadFile(((Port*) port)->fileHandle, bufp, maxlen, &count, NULL) == FALSE)
+/*      	if (__comm_debug) printf("trying to read file handle: %s\n", ((Port*) port)->fileHandle);*/
+		if (ReadFile(port->fd, bufp, maxlen, &count, NULL) == FALSE)
 		{
 			if (__comm_debug) printf("usb mode: read error %lu\n", (unsigned long) GetLastError());
 			__rcx_perror("ReadFile");
