@@ -1,9 +1,9 @@
 @echo off
 
 rem
-rem checkDistribution: utility to check the lejOS distribution after having downloaded it
+rem compileDistributionCheck: utility to compile a test class for the lejOS distribution
 rem
-rem 02/12/05  created Matthias Paul Scholz
+rem 09/02/06  created Matthias Paul Scholz
 
 
 echo checking environment
@@ -24,11 +24,5 @@ if not "%LEJOS_HOME%" == "%PWD%" goto lejos_home_set
     cd .\check
 	echo compiling test class
 	..\bin\lejosjc.bat DistributionSmokeTest.java
-	echo linking test class
-	..\bin\lejoslink.bat DistributionSmokeTest -o DistributionSmokeTest.bin
-	echo downloading test class
-	..\bin\lejosdl.bat DistributionSmokeTest.bin
-	echo done. 
-	echo if no error occurred, please press the RUN Button on your RCX now...
 
 : end
