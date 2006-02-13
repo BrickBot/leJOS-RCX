@@ -45,10 +45,11 @@ endif
 # MacOS X
 ifneq (,$(findstring darwin,$(OSTYPE)))
 	EXTRA_OS_SRCS = osx_usb.cpp
-	CFLAGS=-g
-	LFLAGS=-dynamiclib -framework IOKit -framework CoreFoundation
+	CFLAGS = -g
+	CFLAGS += $(shell $(LEJOS_HOME)/release/osx_universalbinary_flags.sh)
+	LFLAGS = -dynamiclib -framework IOKit -framework CoreFoundation
 	IRTRCX=$(BIN_TARGET)/libirtrcx.dylib
-	override LINK=$(CXX)
+	override LINK=$(CXX) $(CFLAGS)
 endif
 
 SRCS = $(addprefix $(PWD)/, rcx_comm.c rcx_comm_$(OSTYPE).c $(EXTRA_OS_SRCS))
