@@ -21,44 +21,48 @@
 #	- reworked, adapted to refactorings
 #
 
-CC=$(shell $(LEJOS_HOME)/release/cctest.sh)
+PWD := $(shell pwd)
+CC = $(shell $(LEJOS_HOME)/release/cctest.sh)
 
 COPT = -O2
 # For debugging:
 # COPT = -O0
 
-# Default: Unix
-RCXCOMM=rcx_comm_linux.cpp
-CFLAGS=-shared -fpic
-LFLAGS=-shared -lstdc++
-IRTRCX=$(BIN_TARGET)/libirtrcx.so
+# Default: Linux
+RCXCOMM = rcx_comm_linux.cpp
+CFLAGS = -shared -fpic
+LFLAGS = -shared -lstdc++
+IRTRCX = $(BIN_TARGET)/libirtrcx.so
+LINK = $(CC)
 
 # Windows with CygWin installed
 ifneq (,$(findstring cygwin,$(OSTYPE)))
-	RCXCOMM=rcx_comm_win.cpp
-	CFLAGS=-mno-cygwin -D__CYGWIN32__
-	LFLAGS=-mno-cygwin -Wl,--add-stdcall-alias -shared
-	IRTRCX=$(BIN_TARGET)/irtrcx.dll
+	RCXCOMM = rcx_comm_win.cpp
+	CFLAGS = -mno-cygwin -D__CYGWIN32__
+	LFLAGS = -mno-cygwin -Wl,--add-stdcall-alias -shared
+	IRTRCX = $(BIN_TARGET)/irtrcx.dll
 endif
 
 # MacOS X
 ifneq (,$(findstring darwin,$(OSTYPE)))
-	RCXCOMM=rcx_comm_darwin.cpp osx_usb.cpp
-	CFLAGS=-g
-	LFLAGS=-dynamiclib -framework IOKit -framework CoreFoundation
-	IRTRCX=$(BIN_TARGET)/libirtrcx.dylib
+	RCXCOMM = rcx_comm_darwin.cpp osx_usb.cpp
+	CFLAGS = -g
+	CFLAGS += $(shell $(LEJOS_HOME)/release/osx_universalbinary_flags.sh)
+	LFLAGS = -dynamiclib -framework IOKit -framework CoreFoundation
+	IRTRCX = $(BIN_TARGET)/libirtrcx.dylib
+	override LINK = $(CXX) $(CFLAGS)
 endif
 
-SRCS = $(RCXCOMM)
+SRCS = $(addprefix $(PWD)/, $(RCXCOMM))
 OBJS = $(addsuffix .o, $(basename $(SRCS)))
 
 default: all
 all: $(IRTRCX)
 
 $(IRTRCX): $(OBJS)
-	$(CC) -o $(IRTRCX) $(OBJS) $(LFLAGS)
+	$(LINK) -o $(IRTRCX) $(OBJS) $(LFLAGS)
 
-$(OBJS): $(SRCS)
+$(OBJS): $(SRCS) rcx_comm.h rcx_comm_$(OSTYPE).h
 
 %.o: %.cpp
 	$(CXX) -c -o $@ $(COPT) $(CFLAGS) "$<"
