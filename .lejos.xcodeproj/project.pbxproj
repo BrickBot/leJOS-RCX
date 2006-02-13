@@ -830,6 +830,7 @@
 		4009A5A7095D2F2C00378282 /* TestStringBuffer.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = TestStringBuffer.java; sourceTree = "<group>"; };
 		4009A5A8095D2F2C00378282 /* TestThreadState.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = TestThreadState.java; sourceTree = "<group>"; };
 		4009A5F5095D3C1300378282 /* build.properties */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = build.properties; sourceTree = "<group>"; };
+		4041507609A0597E004E32EC /* rcx_comm_darwin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rcx_comm_darwin.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -1704,6 +1705,7 @@
 				4009A2FF095D2F2000378282 /* rcx_comm.cpp */,
 				4009A300095D2F2000378282 /* rcx_comm.h */,
 				4009A301095D2F2000378282 /* rcx_comm_darwin.c */,
+				4041507609A0597E004E32EC /* rcx_comm_darwin.cpp */,
 				4009A302095D2F2000378282 /* rcx_comm_darwin.h */,
 				4009A303095D2F2000378282 /* rcx_comm_linux.cpp */,
 				4009A304095D2F2000378282 /* rcx_comm_linux.h */,
