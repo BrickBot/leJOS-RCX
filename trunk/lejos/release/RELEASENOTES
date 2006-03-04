@@ -1,11 +1,11 @@
-leJOS 3.0.0-M1
---------------
+leJOS 3.0.0
+-----------
 
-  Matthias Paul Scholz has added:
-  - The LeJOS Tutorial in docs/tutorial
-
- ? has added:
- - ?
+- leJOS supports Lunix kernel 2.6 now
+- There has been a major restructuring and refactoring of leJOS' classes
+- The tutorial is part of the leJOS release now (see doc/tutorial)
+- The third party libraries have been factored out to a "3rdparty" folder
+- There is a folder "check" now that contains three scripts for checking the distribution after having installed it  
  
 leJOS 2.1.0
 -----------

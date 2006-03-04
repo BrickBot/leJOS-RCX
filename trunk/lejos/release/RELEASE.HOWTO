@@ -1,0 +1,18 @@
+For running the ant based release utilities successfully, you will need to have
+
+- an ANT installation (at least 1.6)
+- a leJOSUnit installation for the automated integration tests (see http://lejosunit.sourceforge.net/)
+
+To create a new release of leJOS, please perform the following steps:
+
+1. Change into the lejos/release folder
+2. Edit the build.properties file:
+   - set the property "lejos.version" to the new label of the relase
+   - set the property "lejos.ostype" to either "linux", "cygwin" or "darwin" 
+3. Open a shell (on Windows, you will need a cygwin shell) and change there to lejos/release
+4. Set the environment LEJOS_HOME to your lejos installation path
+5. Set the environment LEJOSUNIT_HOME to your leJOSUnit installation path
+6. Run "ant"
+7. After the ant script has finished (including contained tests), the packed distribution may be found at lejos/release/dist
+8. Expand the packed distribution to a temporary folder and run the scripts in the lejos/release/check folder for a smoke test of the distribution
+9. It is recommended to tag all sources in the cvs that have been packed into a published release     
