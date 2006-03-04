@@ -7,15 +7,10 @@
 <project name="leJOS release" default="release" basedir=".">
 	
 	<!-- to do
-	    + update/write howtorelease
-		+ update release notes, read.me (first steps)
-		+ How about README.OSX (legacy?)?
 		+ update tutorial
-		+ why do we need cygwin1.dll in windows release?
+		+ add UML diagrams
 		+ add samples tests
-	    + diff between distribution and current cvs state: which files are obsolete now?
-	    + update "HOWTO release" (set LEJOSUNIT_HOME etc.)
-	    + regression test script for windows also
+		+ update API page(s) on lejos.org
 	-->
 
 	<!-- Setting up the global properties for the build -->
@@ -73,7 +68,7 @@
 	</typedef>
 	
 	<!-- release leJOS --> 
-	<target name="release" depends ="clean,create.folders,emulator,irctrcx.libs,jirctrcx.libs,lejos.libs,lejos.sources,emu.runtime,lejos.firmware,docu,scripts,license,samples,test" 
+	<target name="release" depends ="clean,create.folders,emulator,irctrcx.libs,jirctrcx.libs,lejos.libs,lejos.sources,emu.runtime,lejos.firmware,license,docu,scripts,samples,test" 
 		description="releases leJOS">
 		<!-- clean distribution -->
 		<delete>
@@ -214,6 +209,9 @@
  				<include name="**/*"/>
  			</fileset>
  		</copy>
+ 		<copy file="README.html" todir="${release.docs}"/>
+ 		<copy file="RELEASENOTES" todir="${release.docs}"/>
+ 		<copy file="LICENSE" todir="${release.docs}"/>
 	</target>
 
 	<!-- copies the run scripts -->
