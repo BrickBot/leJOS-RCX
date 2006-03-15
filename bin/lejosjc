@@ -15,5 +15,6 @@ else
   SEP=":"
 fi
 
-javac -target 1.1 -source 1.2 -bootclasspath "$LEJOS_HOME/lib/classes.jar$SEP$LEJOS_HOME/lib/rcxrcxcomm.jar$SEP${CLASSPATH:-.}" "$@"
+javac -bootclasspath "$LEJOS_HOME/lib/classes.jar$SEP$LEJOS_HOME/lib/rcxrcxcomm.jar$SEP${CLASSPATH:-.}" "$@"
+#javac -target 1.1 -source 1.2 -bootclasspath "$LEJOS_HOME/lib/classes.jar$SEP$LEJOS_HOME/lib/rcxrcxcomm.jar$SEP${CLASSPATH:-.}" "$@"
 

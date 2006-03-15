@@ -83,7 +83,7 @@
             </li>
             <li>
                 Set the <b>LEJOS_HOME</b> evironment variable to the directory you installed lejos into:<br>
-                <code>export LEJOS_HOME=< your lejos directory ></code>   
+                <code>export LEJOS_HOME=<em>your lejos directory</em></code>   
             </li>
             <li>
                 Add leJOS's bin directory to your <b>PATH</b> environment variable:<br>
@@ -95,10 +95,13 @@
             </li>
             <li>
                 Set the <b>RCXTTY</b> environment variable to your 'tower' device:<br>
-                <code>export RCXTTY=com1</code> or <code>export RCXTTY=usb</code>.   
+                <code>export RCXTTY=com1</code> or <code>export RCXTTY=/dev/usb/legousbtower0</code>.   
             </li>
             <li>
-                Open a shell and change to the directory you installed leJOS into; type <code>make</code>.   
+                Open a shell and change to the directory you installed leJOS into; type <code>ant</code>.   
+            </li>
+            <li>
+            	You might need to adjust the execution permissions in the <code>bin</code> folder.
             </li>
        </ol>
 
@@ -249,6 +252,12 @@
         <p>
 
         <b>Congratulations! You have run your first leJOS program on your RCX.</b>
+
+        <h2>Troubleshooting</h2>
+        One of the steps above did not work for you? A look into the <a href="../problems.html">Common problems</a>
+        section might help.
+        <p>
+        Yet, if it doesn't, feel free to post your question to the <a href="http://lists.sourceforge.net/lists/listinfo/lejos-discussion">lejos discussion list</a>. 
 
         <hr>
         <!-- navigation footer -->
