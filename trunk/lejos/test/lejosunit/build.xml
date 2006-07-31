@@ -40,13 +40,13 @@
 	</target>
 
 	<target name="linkForEmulator" depends="build" description="creates the emulator input for the leJOS tests in emulation mode">
-		<exec executable="${lejosunit.lejos}/bin/emu-lejos"
+		<exec executable="${lejosunit.lejos}/bin/emulate_lejoslink"
 			dir="${lejosunit.testclasses.dir}"
 			failonerror="true">
 			<arg value="-o"/>
 			<arg value="${lejosunit.testsuite.class}-emu"/>
 			<arg value="${lejosunit.testsuite.class}"/>
-  			<env key="CLASSPATH" path="${lejosunit.testclasses.dir}:${lejosunit.cp}"/>
+  			<!-- <env key="CLASSPATH" path="${lejosunit.testclasses.dir}:${lejosunit.cp}"/>-->
 		</exec>
 	</target>
 	

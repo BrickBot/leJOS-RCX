@@ -226,6 +226,8 @@
 				<include name="lejosjc.bat"/>
         		<include name="lejoslink"/>
 				<include name="lejoslink.bat"/>
+				<include name="emulate_lejoslink"/>
+				<include name="emulate_lejoslink.bat"/>
       		</fileset>
     	</copy>
 		<!-- adjust permissions -->

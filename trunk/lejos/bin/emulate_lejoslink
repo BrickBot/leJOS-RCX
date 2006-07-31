@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#
+# emulate_lejoslink: Java tool to emulate the linking of java programs for LeJOS
+#
+# 31/07/06  created mpscholz
+
+if [ -z "$LEJOS_HOME" ]; then 
+  LEJOS_HOME="$(dirname $(dirname $0))"
+fi
+
+if [ $OSTYPE == "cygwin" ]; then
+  SEP=";"
+else
+  SEP=":"
+fi
+
+THIRDPARTY_LIBS="$LEJOS_HOME/3rdparty/lib"
+LINK_CLASSPATH=.$SEP$THIRDPARTY_LIBS/bcel-5.1.jar$SEP$THIRDPARTY_LIBS/commons-cli-1.0.jar$SEP$LEJOS_HOME/lib/jtools.jar$SEP$LEJOS_HOME/lib/classes.jar$SEP$LEJOS_HOME/lib/rcxcomm.jar
+CLASSPATH=$CLASSPATH:$LINK_CLASSPATH
+
+emu-lejos "$@"

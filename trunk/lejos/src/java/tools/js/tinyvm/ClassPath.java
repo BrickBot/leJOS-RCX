@@ -32,4 +32,8 @@ public class ClassPath implements IClassPath
    {
       return _classPath.getClassFile(className).getInputStream();
    }
+   
+   public String toString() {
+	   return _classPath.toString();
+   }
 }

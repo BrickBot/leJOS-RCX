@@ -9,6 +9,7 @@ import java.io.StringWriter;
 
 import js.common.CLIToolProgressMonitor;
 import js.common.ToolProgressMonitor;
+import js.tinyvm.util.TinyVMCommandLineParser;
 import js.tools.LejosdlException;
 
 import org.apache.commons.cli.CommandLine;
@@ -23,6 +24,8 @@ import org.apache.commons.cli.ParseException;
  */
 public class TinyVM extends TinyVMTool
 {
+	private TinyVMCommandLineParser fParser;
+	
    /**
     * Main entry point for command line usage.
     * 
@@ -48,6 +51,7 @@ public class TinyVM extends TinyVMTool
    public TinyVM (ToolProgressMonitor monitor)
    {
       super(monitor);
+      fParser = new TinyVMCommandLineParser();
    }
 
    /**
@@ -60,7 +64,7 @@ public class TinyVM extends TinyVMTool
    {
       assert args != null: "Precondition: args != null";
 
-      CommandLine commandLine = parse(args);
+      CommandLine commandLine = fParser.parse(args);
 
       // options
       boolean verbose = commandLine.hasOption("v");
@@ -103,85 +107,4 @@ public class TinyVM extends TinyVMTool
       }
    }
 
-   /**
-    * Parse commandline.
-    * 
-    * @param args command line
-    * @throws LejosdlException
-    */
-   protected CommandLine parse (String[] args) throws TinyVMException
-   {
-      assert args != null: "Precondition: args != null";
-
-      Options options = new Options();
-      options.addOption("v", "verbose", false,
-         "print class and signature information");
-      options.addOption("h", "help", false, "help");
-      Option classpathOption = new Option("cp", "classpath", true, "classpath");
-      classpathOption.setArgName("classpath");
-      options.addOption(classpathOption);
-      Option outputOption = new Option("o", "output", true,
-         "dump binary to file");
-      outputOption.setArgName("binary");
-      options.addOption(outputOption);
-      options.addOption("a", "all", false, "do not filter classes");
-      Option writerOrderOption = new Option("wo", "writeorder", true,
-         "write order (BE or LE)");
-      writerOrderOption.setArgName("write order");
-      options.addOption(writerOrderOption);
-
-      CommandLine result;
-      try
-      {
-         try
-         {
-            result = new GnuParser().parse(options, args);
-         }
-         catch (ParseException e)
-         {
-            throw new TinyVMException(e.getMessage(), e);
-         }
-
-         if (result.hasOption("h"))
-         {
-            throw new TinyVMException("Help:");
-         }
-
-         if (!result.hasOption("cp"))
-         {
-            throw new TinyVMException("No classpath defined");
-         }
-
-         if (!result.hasOption("wo"))
-         {
-            throw new TinyVMException("No write order specified");
-         }
-         String writeOrder = result.getOptionValue("wo").toLowerCase();
-         if (!"be".equals(writeOrder) && !"le".equals(writeOrder))
-         {
-            throw new TinyVMException("Wrong write order: " + writeOrder);
-         }
-
-         if (result.getArgs().length == 0)
-         {
-            throw new TinyVMException("No classes specified");
-         }
-      }
-      catch (TinyVMException e)
-      {
-         StringWriter writer = new StringWriter();
-         PrintWriter printWriter = new PrintWriter(writer);
-         printWriter.println(e.getMessage());
-
-         String usage = getClass().getName() + " [options] class1[,class2,...]";
-         // TODO check format parameters
-         new HelpFormatter().printHelp(printWriter, 80, usage.toString(), null,
-            options, 0, 2, null);
-
-         throw new TinyVMException(writer.toString());
-      }
-
-      assert result != null: "Postconditon: result != null";
-      return result;
-   }
 }
