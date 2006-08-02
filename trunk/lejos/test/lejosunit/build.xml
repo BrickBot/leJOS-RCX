@@ -46,7 +46,7 @@
 			<arg value="-o"/>
 			<arg value="${lejosunit.testsuite.class}-emu"/>
 			<arg value="${lejosunit.testsuite.class}"/>
-  			<!-- <env key="CLASSPATH" path="${lejosunit.testclasses.dir}:${lejosunit.cp}"/>-->
+  			<env key="CLASSPATH" path="${lejosunit.testclasses.dir}:${lejosunit.cp}"/>
 		</exec>
 	</target>
 	

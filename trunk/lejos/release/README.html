@@ -6,7 +6,19 @@
    </HEAD>
     <body BGCOLOR="#FFFFFF">
 	
-	<h1>What is leJOS?</h1>
+	<ul>
+		<li><a href="#what_is_lejos">What is leJOS?</li>
+		<li><a href="#preliminiaries">Preliminiaries</li>
+		<li><a href="#compatibility">Compatibility</li>
+		<li><a href="#installation_and_set_up">Installation and Set Up</li>
+		<li><a href="#limitations">Known limitations</li>
+		<li><a href="#bugs">Known bugs</li>
+		<li><a href="#documentation">Documentation</li>
+		<li><a href="#license">License</li>
+		<li><a href="#questions">Questions and Problems</li>
+	</ul>
+	
+	<h1><a name="what_is_lejos">What is leJOS?</h1>
 	leJOS (pronounced like the Spanish word "lejos" for "far") is a tiny (~ 16 Kb) Java-based operating system that has been ported to the following platforms:
 	<ul>
 		<li>Lego Mindstorms RCX, i.e. Hitachi H8300</li>
@@ -38,7 +50,7 @@
 	</ul>
 	TinyVM is still around simply as a low-footprint alternative to leJOS. TinyVM is about 7 Kb smaller in the RCX.
 	
-	<h1>Preliminaries</h1>
+	<h1><a name="preliminiaries">Preliminaries</h1>
 	<ul>
 		<li>You need a Java Development Kit (JDK) 1.4 or above</li>
 		<li>Your PATH must contain the JDK's bin directory</li>
@@ -49,12 +61,12 @@
 		<li>Set RCXTTY to your 'tower' device (e.g. COM1 or usb)</li>
 		<li>Download firmware using firmdl</li>
 		<li>Compile using lejosc instead of javac</li>
-		<li>Downaod programs in the RCX using lejoslink and lejosdl</li> 
-		<li>Run programs in the host using emu-lejos</li>
+		<li>Download programs in the RCX using lejoslink and lejosdl</li> 
+		<li>Emulate leJOS programs on the host using emulate_lejoslink and emu-lejos</li>
 		<li>Exceptions: Use lejosdl -verbose. Exceptions are shown in the RCX as [XXXX Y], where XXXX = method_signature and Y = exception_class_index MOD 10</li>
    	</ul>
 	     
-	<h1>Compatibility</h1>
+	<h1><a name="compatibility">Compatibility</h1>
 	<table border="1">
 		<tr>
 			<td> </td>
@@ -82,16 +94,21 @@
 		</tr>
 	</table>
 
-	<h1>Installation and Set Up</h1>
+	<h1><a name="installation_and_set_up">Installation and Set Up</h1>
 	Please download the leJOS documentation from the same location you downloaded this distribution from
 	and consult the "First Steps" section of the <a href="http://lejos.sourceforge.net/tutorial/index.html">
 	Tutorial</a> contained there. 
 	<ol>
 		<li>Set your environment variable <em>LEJOS_HOME</em> to the directory you installed this distribution into</li>
-		<li>Set your environment variable <em>RCXTTY</em> to <em>usb</em> (for USB towers) or <em>COM1</em> (for serial towers)</li>
-		<li>On Linux, you might need to adjust the execution permissions in the <em>bin</em> folder</li>
+		<li>Set your environment variable <em>RCXTTY</em> to <em>usb</em> (for USB towers) or <em>COM1</em> (for serial towers); 
+		on Linux, for USB towers <em>RCXTTY</em> might be required to be set to <em>dev/usb/legousbtower0</em></li>
+		<li>On Linux, depending on the privilege settings you might need to adjust the execution permissions in the <em>bin</em> folder</li>
  	</ol>
- 	Check the installation by switching to the "check" folder of the leJOS distribution and run 
+ 	On Linux, you will have to build the distribution first. To do so, switch to the <em>build</em> folder and run <code>ant</code>.
+ 	<br>Note that depending on the privilege settings you might need to adjust the the execution permissions in the <em>release</em> folder.
+ 	<p> 
+ 	Download the firmware to the RCX with <code>firmdl</code>.
+ 	<p>Check the installation by switching to the "check" folder of the leJOS distribution and run 
  	<ol>
  		<li>compileDistributionCheck.bat resp. compileDistributionCheck.sh</li>
  		<li>linkDistributionCheck.bat resp. linkDistributionCheck.sh</li>
@@ -100,7 +117,7 @@
   	A very simple test program will be downloaded to the RCX. After the download has finished, press the RCX's 'RUN' button.
   	The RCX's LCD should print the strings "SMOKE" and "TEST".
 
-	<h1>Known limitations</h1>
+	<h1><a name="limitations">Known limitations</h1>
 	Due to size constraints, some Java language features have been omitted. Others just haven't been 
 	implemented yet. Known limitations are:
 	<ul>
@@ -116,7 +133,7 @@
 		<li>Most JDK APIs are unavailable</li>
 	</ul>
 	
-	<h1>Known Bugs</h1>
+	<h1><a name="bugs">Known Bugs</h1>
 	<ul>
 		<li>MONITOREXIT ignores null objects (it assumes MONITORENTER has handled them). Furthermore, it doesn't check monitor validity. Until this bug 
     		is fixed (actually, at all times) all monitors should be constants</li>
@@ -124,17 +141,17 @@
     		multiple threads use a class</li>
     </ul>
     
-	<h1>Documentation</h1>
+	<h1><a name="documentation">Documentation</h1>
 	Please download the leJOS documentation from the same location you downloaded this distribution from.
 	The documentation contains the API docs and the tutorial.
 	Online versions may be retrieved from <a href="http://lejos.sourceforge.net/">http://lejos.sourceforge.net/</a>.
 
-	<h1>License</h1>
+	<h1><a name="license">License</h1>
 	We are releasing under the Mozilla Public License (see the LICENSE file) for now, since Kekoa Proudfoot's librcx is under that same 
 	license, and leJOS is linked against -lrcx and -lfloat, which are part of librcx. No changes have been made to those libraries, 
 	so they haven't been redistributed. They are only needed if you are planning to modify the native C source code. See docs/hacking.
 
-	<h1>Questions and Problems</h1>
+	<h1><a name="questions">Questions and Problems</h1>
 	Please direct feedback to the lejos-discussion mailing list mailto:lejos-discussion@lists.sourceforge.net.  
 	<br>To subscribe, see <a href="http://lists.sourceforge.net/lists/listinfo/lejos-discussion">http://lists.sourceforge.net/lists/listinfo/lejos-discussion</a>.
 	<p>
