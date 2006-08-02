@@ -29,6 +29,7 @@
 	<property name="release.lib" value="${release}/lib"/>
 	<property name="release.src" value="${release}/src"/>
 	<property name="release.dist" value="${release}/dist"/>
+	<property name="release.release" value="${release}/release"/>
 	<property name="release.docs" value="${release}/docs"/>
 	<property name="release.samples" value="${release}/samples"/>
 	<property name="emu.src" value="${src}/tools/emu-lejos"/>
@@ -52,7 +53,7 @@
 	<property name="lejosunit.testclasses.dir" value="${lejos.root}/test/lejosunit/bin"/>
 	<property name="lejosunit.testsuite.class" value="josx.test.lejosunit.AllTests"/>
 
-	<!-- dispatch some tasks to cvs cut build file --> 
+	<!-- dispatch some tasks to cvs build file --> 
 	<import file="${lejos.root}/build.xml"/>
 
 	<!-- cpptasks task & type def -->
@@ -133,6 +134,8 @@
 		</delete>
 	  	<!-- delete distribution folder -->
 	  	<delete dir="${release.dist}"/>
+	  	<!-- delete release/release folder -->
+	  	<delete dir="${release.release}"/>
   	</target>
   	
 	<!-- copies the lejos sources -->
@@ -152,19 +155,22 @@
             	<include name="**/build.xml"/>
           	</fileset>
 		</copy>
-		<copy todir="${release.src}/comms/libirtrcx2">
+		<copy todir="${release.src}/comms/libirtrcx">
           	<fileset dir="${irctrcx.lib.src}">
             	<include name="**/*.c"/>
             	<include name="**/*.h"/>
+            	<include name="**/*.c"/>
             	<include name="**/build.xml"/>
+            	<include name="**/Makefile"/>
           	</fileset>
 		</copy>
-		<copy todir="${release.src}/comms/libjirtrcx2">
+		<copy todir="${release.src}/comms/libjirtrcx">
           	<fileset dir="${jirctrcx.lib.src}">
             	<include name="**/*.c"/>
             	<include name="**/*.h"/>
             	<include name="**/*.def"/>
             	<include name="**/build.xml"/>
+            	<include name="**/Makefile"/>
           	</fileset>
 		</copy>
 		<copy todir="${release.src}/javavm">
@@ -193,6 +199,7 @@
     	<mkdir dir="${release.docs}"/>
     	<mkdir dir="${release.docs}/tutorial"/>
     	<mkdir dir="${release.dist}"/>
+    	<mkdir dir="${release.release}"/>
     	<mkdir dir="${release.samples}"/>
     	<mkdir dir="${release.3rdparty.libs}"/>
  		<copy todir="${release.3rdparty.libs}">
@@ -230,6 +237,11 @@
 				<include name="emulate_lejoslink.bat"/>
       		</fileset>
     	</copy>
+		<copy todir="${release.release}">
+      		<fileset dir="${release}">
+        		<include name="*.sh"/>
+      		</fileset>
+    	</copy>
 		<!-- adjust permissions -->
   		<chmod perm="755">
   			<fileset dir="${release.bin}">
@@ -262,7 +274,7 @@
 		<tar destfile="${release.dist}/${lejos.version}.tar">
 			 <tarfileset dir="${release}" >
 			    <include name="RELEASENOTES"/>
-			    <include name="READ.ME"/>
+			    <include name="README.html"/>
 			    <include name="lib/*.jar"/>
 			    <include name="src/**"/>
 			    <include name="bin/*"/>
@@ -271,6 +283,7 @@
 			    <include name="check/**"/>
 			 	<include name="build/*"/>
 			 	<include name="3rdparty/**"/>
+			 	<include name="release/*"/>
 			  </tarfileset>
 		</tar>
 		<gzip zipfile="${release.dist}/${lejos.version}.tar.gz" src="${release.dist}/${lejos.version}.tar"/>
@@ -282,7 +295,7 @@
 		<zip destfile="${release.dist}/${lejos.version}-win32.zip">
 			 <fileset dir="${release}" >
 			    <include name="RELEASENOTES"/>
-			    <include name="READ.ME"/>
+			    <include name="README.html"/>
 			    <include name="lib/*.jar"/>
 			    <include name="src/**"/>
 			    <include name="bin/*"/>

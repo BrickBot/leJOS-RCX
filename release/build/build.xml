@@ -64,14 +64,18 @@
   		<ant antfile="${lejos.dist.emu.src}/build.xml" dir="${lejos.dist.emu.src}" inheritall="true" />
   	</target>
 
-  	<!-- builds the irctrcx libraries -->
-  	<target name="irctrcx.libs" description="builds the irctrcx libraries">
-  		<ant antfile="${irctrcx.lib.src}/build.xml" dir="${irctrcx.lib.src}" inheritall="true" />
-  	</target>
-	
-  	<!-- builds the jirctrcx libraries -->
-  	<target name="jirctrcx.libs" depends="irctrcx.libs" description="builds the jirctrcx libraries">
-  		<ant antfile="${jirctrcx.lib.src}/build.xml" dir="${jirctrcx.lib.src}" inheritall="true" />
+	<!-- builds the irctrcx libraries -->
+	<target name="irctrcx.libs" description="builds the irctrcx libraries">
+		<exec executable="make" failonerror="true" dir="${irctrcx.lib.src}">
+			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.dist.root} BIN_TARGET=${make.out}"/>
+		</exec> 
+	</target>
+
+	<!-- builds the jirctrcx libraries -->
+	<target name="jirctrcx.libs" depends="irctrcx.libs" description="builds the jirctrcx libraries">
+		<exec executable="make" failonerror="true" dir="${jirctrcx.lib.src}">
+			<arg line="OSTYPE=${lejos.ostype} LEJOS_HOME=${lejos.dist.root} BIN_TARGET=${make.out} TRACE=${trace}"/>
+		</exec> 
   	</target>
 
   	<!-- builds the emu runtime tools (emu-dump & emu-lejosrun) -->
