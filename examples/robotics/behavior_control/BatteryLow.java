@@ -21,7 +21,7 @@ public class BatteryLow implements Behavior {
    
    public boolean takeControl() {
       
-      float voltLevel = (ROM.getBatteryPower() * 10 / 355);
+      float voltLevel = (Battery.getVoltage() * 10 / 355);
       int displayNum = (int)(voltLevel * 100);
       LCD.setNumber(0x301f, displayNum, 0x3004);
       LCD.refresh();

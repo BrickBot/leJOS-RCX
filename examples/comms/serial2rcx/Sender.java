@@ -2,7 +2,7 @@ import josx.platform.rcx.*;
 
 class Sender
 {
-   public static void main(String [] args) {
+   public static void main(String [] args)  throws InterruptedException {
       Sender s = new Sender();
       for(byte i=0;i<200;++i) {
          Button.RUN.waitForPressAndRelease();

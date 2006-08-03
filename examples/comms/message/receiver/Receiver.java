@@ -3,7 +3,7 @@ import josx.platform.rcx.*;
 
 /**
   * This is an RCX class that receives messages from other RCXs.
-  * @author Jürgen Stuber
+  * @author Juergen Stuber
   */
 public class Receiver {
   

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ !  @(#)build.xml
+ !  Ant script for compiling the samples as a test for leJOS
+-->
+
+<project name="leJOSSampleTests" default="compileSamples" basedir="./">
+
+	<target name="compileSamples" description="compiles the samples">
+		<mkdir dir="${lejos.samples.testclasses.dir}"/>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/browser" failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="Browser.java"/>
+		</exec>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/f7_sensor_reader"	failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="F7SensorReader.java"/>
+		</exec>
+		<javac srcdir="${lejos.samples.testsources.dir}/comms/f7_sensor_reader"	destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/pcrcxcomm.jar">
+			<include name="F7ReadSensor.java"/>
+		</javac>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/instream" failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="Read.java"/>
+		</exec>
+		<javac srcdir="${lejos.samples.testsources.dir}/comms/instream"	destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/pcrcxcomm.jar">
+			<include name="Write.java"/>
+		</javac>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/llc_sensor_reader"	failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="SensorReader.java"/>
+		</exec>
+		<javac srcdir="${lejos.samples.testsources.dir}/comms/llc_sensor_reader" destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/pcrcxcomm.jar">
+			<include name="ReadSensor.java"/>
+		</javac>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/lnp_sensor_reader"	failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="LNPSensorReader.java"/>
+		</exec>
+		<javac srcdir="${lejos.samples.testsources.dir}/comms/lnp_sensor_reader" destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/pcrcxcomm.jar">
+			<include name="LNPReadSensor.java"/>
+		</javac>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/lnpaddr_sensor_reader"	failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="LNPAddrSensorReader.java"/>
+		</exec>
+		<javac srcdir="${lejos.samples.testsources.dir}/comms/lnpaddr_sensor_reader" destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/pcrcxcomm.jar">
+			<include name="LNPAddrReadSensor.java"/>
+		</javac>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/message/pingpong"	failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="PingPong.java"/>
+		</exec>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/message/receiver"	failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="Receiver.java"/>
+		</exec>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/message/sender" failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="Sender.java"/>
+		</exec>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/outstream" failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="Write.java"/>
+		</exec>
+		<javac srcdir="${lejos.samples.testsources.dir}/comms/outstream"	destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/pcrcxcomm.jar">
+			<include name="Read.java"/>
+		</javac>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/read_write_int" failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="WriteInt.java"/>
+		</exec>
+		<javac srcdir="${lejos.samples.testsources.dir}/comms/outstream" destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/pcrcxcomm.jar">
+			<include name="ReadInt.java"/>
+		</javac>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/remotectl" failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="Remote.java"/><arg value="RemoteControlTest.java"/>
+		</exec>
+		<javac srcdir="${lejos.samples.testsources.dir}/comms/remotectl" destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/pcrcxcomm.jar">
+			<include name="MessengerTest.java"/>
+		</javac>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/sensor_reader" failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="SensorReader.java"/>
+		</exec>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/serial" failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="Receiver.java"/>
+		</exec>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/serial_listener_test" failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="SerialListenerTest.java"/>
+		</exec>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/comms/serial2rcx" failonerror="true"> 
+			<arg value="-d"/><arg value="${lejos.samples.testclasses.dir}"/>
+			<arg value="Receiver.java"/><arg value="Sender.java"/>
+		</exec>
+		<javac srcdir="${lejos.samples.testsources.dir}/comms/servlet" destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/pcrcxcomm.jar">
+		</javac>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/robotics/behavior_control" failonerror="true"> 
+			<arg value="BatteryLow.java"/><arg value="BehaviorTest.java"/><arg value="DriveForward.java"/><arg value="HitWall.java"/>
+		</exec>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/robotics/rotator" failonerror="true"> 
+			<arg value="Rotator.java"/>
+		</exec>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/robotics/subsumption1" failonerror="true"> 
+			<arg value="Main.java"/>
+		</exec>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/robotics/subsumption2" failonerror="true"> 
+			<arg value="Main.java"/>
+		</exec>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/test/hworld" failonerror="true"> 
+			<arg value="HelloWorld.java"/>
+		</exec>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/test/memory" failonerror="true"> 
+			<arg value="MemoryTest.java"/>
+		</exec>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/test/performance_test" failonerror="true"> 
+			<arg value="PerformanceTest.java"/>
+		</exec>	
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/test/recycling" failonerror="true">
+			<arg value="ArrayRecyclingSample.java"/><arg value="ObjectRecyclingSample.java"/>
+  		</exec>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/test/view" failonerror="true"> 
+			<arg value="BatteryView.java"/><arg value="MotorView.java"/><arg value="PortView.java"/><arg value="SensorView.java"/><arg value="View.java"/>
+		</exec>
+		<javac srcdir="${lejos.samples.testsources.dir}/vision/alarm" destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/vision.jar;${3rdparty.libs}/jmf.jar">
+		</javac>
+		<javac srcdir="${lejos.samples.testsources.dir}/vision/alarm" destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/vision.jar;${3rdparty.libs}/jmf.jar">
+		</javac>
+		<javac srcdir="${lejos.samples.testsources.dir}/vision/alarm" destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/vision.jar;${3rdparty.libs}/jmf.jar">
+		</javac>
+		<javac srcdir="${lejos.samples.testsources.dir}/vision/light/pc" destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/vision.jar;${3rdparty.libs}/jmf.jar">
+		</javac>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/vision/light/rcx" failonerror="true"> 
+			<arg value="Rover.java"/>
+		</exec>
+		<javac srcdir="${lejos.samples.testsources.dir}/vision/motion" destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/vision.jar;${3rdparty.libs}/jmf.jar">
+		</javac>
+		<javac srcdir="${lejos.samples.testsources.dir}/vision/music" destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/vision.jar;${3rdparty.libs}/jmf.jar">
+		</javac>
+		<javac srcdir="${lejos.samples.testsources.dir}/vision/remote/pc" destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/vision.jar;${3rdparty.libs}/jmf.jar">
+		</javac>
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/vision/remote/rcx" failonerror="true"> 
+			<arg value="Rover.java"/>
+		</exec>
+	<!-- no speech API packed with leJOS
+		<javac srcdir="${lejos.samples.testsources.dir}/vision/speech/pc" destdir="${lejos.samples.testclasses.dir}" failonerror="true" 
+			classpath="${lib}/vision.jar;${3rdparty.libs}/jmf.jar">
+		</javac>-->
+		<exec executable="${lejos.root}/bin/lejosjc" dir="${lejos.samples.testsources.dir}/vision/speech/rcx" failonerror="true"> 
+			<arg value="Rover.java"/>
+		</exec>
+	</target>
+
+	<target name="clean" description="deletes created class files">
+		<delete dir="${lejos.samples.testclasses.dir}" quiet="true">
+		</delete>
+  	</target>
+
+</project>

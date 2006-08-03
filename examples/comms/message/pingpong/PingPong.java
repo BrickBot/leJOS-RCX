@@ -5,7 +5,7 @@ import josx.platform.rcx.*;
   * This is an RCX class that sends and receives messages to other RCXs
   * using the SetMessage opcode.  Load it on any number of RCXs and
   * start them, they will collaboratively cout upwards.
-  * @author Jürgen Stuber
+  * @author Juergen Stuber
   */
 public class PingPong
 {
