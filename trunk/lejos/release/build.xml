@@ -52,6 +52,8 @@
 	<property name="lejosunit.testsources.dir" value="${lejos.root}/test/lejosunit/src"/>
 	<property name="lejosunit.testclasses.dir" value="${lejos.root}/test/lejosunit/bin"/>
 	<property name="lejosunit.testsuite.class" value="josx.test.lejosunit.AllTests"/>
+	<property name="lejos.samples.testsources.dir" value="${release.samples}"/>
+	<property name="lejos.samples.testclasses.dir" value="${lejos.root}/test/samples/bin"/>
 
 	<!-- dispatch some tasks to cvs build file --> 
 	<import file="${lejos.root}/build.xml"/>
@@ -354,12 +356,21 @@
 	
 	<!-- test leJOS --> 
 	<target name="test" description="tests leJOS">
+		<!-- run sample tests -->
+		<echo></echo>
+		<echo>Running sample tests</echo>
+		<ant dir="${test.root}/samples" target="clean" inheritall="true" />
+		<ant dir="${test.root}/samples" target="compileSamples" inheritall="true" />
 		<!-- run regression tests -->
+		<echo></echo>
+		<echo>Running regression tests</echo>
 		<exec os="Linux" executable="${test.root}/regression/run.sh" failonerror="true" dir="${test.root}/regression">
   			<env key="PATH" path="${test.root}/regression:${release.bin}:${env.PATH}"/>
   			<env key="CLASSPATH" path="${test.root}/regression:${release.lib.cp}:${release.3rdparty.cp}"/>
   		</exec>
 		<!-- run lejos unit tests -->
+		<echo></echo>
+		<echo>Running lejosunit tests</echo>
 		<ant dir="${test.root}/lejosunit" target="clean" inheritall="true" />
 		<ant dir="${test.root}/lejosunit" target="runInEmulator" inheritall="true" />
 	</target>

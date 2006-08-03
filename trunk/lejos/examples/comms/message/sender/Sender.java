@@ -3,7 +3,7 @@ import josx.platform.rcx.*;
 
 /**
   * This is an RCX class that sends messages to other RCXs.
-  * @author Jürgen Stuber
+  * @author Juergen Stuber
   */
 public class Sender {
   
