@@ -1,6 +1,9 @@
 package org.lejos.eclipse.actions;
 /*
 * $Log$
+* Revision 1.1  2003/10/05 16:34:06  mpscholz
+* lejos plugin for Eclipse
+*
 */
 
 ////////////////////////////////////////////////////////
@@ -118,7 +121,7 @@ public class DownloadAction implements IEditorActionDelegate {  //, IEditorActio
 				String home=LejosPlugin.getDefault().getLejosPath();
 				File cflib=new File(home,"lib/jtools.jar");
 				File rtlib=new File(home,"lib/classes.jar");				
-				File rclib=new File(home,"lib/rcxrcxcomm.jar");			
+				File rclib=new File(home,"lib/rcxcomm.jar");			
 				
 				// get file to link	
 				ICompilationUnit cu=LejosPlugin.getDefault().getCurrentCompilationUnit();

@@ -23,7 +23,7 @@
     <javac target="1.1" srcdir="${src}" destdir="${build}">
       <bootclasspath>
         <pathelement location="${lejos_home}/lib/classes.jar"/>
-        <pathelement location="${lejos_home}/lib/rcxrcxcomm.jar"/>
+        <pathelement location="${lejos_home}/lib/rcxcomm.jar"/>
        </bootclasspath>
     </javac>
   </target>
@@ -37,7 +37,7 @@
       <sysproperty key="tinyvm.write.order" value="BE"/> 
       <sysproperty key="java.library.path" value="${lejos_home}/bin"/>
       <arg value="-classpath"/>
-      <arg path="${lejos_home}/lib/classes.jar;${lejos_home}/lib/rcxrcxcomm.jar;build" /> 
+      <arg path="${lejos_home}/lib/classes.jar;${lejos_home}/lib/rcxcomm.jar;build" /> 
       <arg value="-verbose"/>
       <arg value="${program}"/>
       <arg value="-o"/>
