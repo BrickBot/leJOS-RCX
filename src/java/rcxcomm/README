@@ -49,7 +49,7 @@ Both serial and USB towers are supported on Windows. Currently
 only serial towers are supported for Linux and Mac OSX.
 
 To compile the RCX program, you use lejosc. An extra jar 
-(rcxrcxcomm.jar) is used automatically.
+(rcxcomm.jar) is used automatically.
 
 On the PC or Mac you compile with javac and add pcrcxcomm.jar 
 from the lejos lib directory to your CLASSPATH.

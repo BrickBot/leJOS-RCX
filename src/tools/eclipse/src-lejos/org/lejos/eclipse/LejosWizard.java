@@ -1,6 +1,9 @@
 package org.lejos.eclipse;
 /*
 * $Log$
+* Revision 1.1  2003/10/05 16:34:06  mpscholz
+* lejos plugin for Eclipse
+*
 */
 
 ////////////////////////////////////////////////////////
@@ -59,7 +62,7 @@ public class LejosWizard extends NewProjectCreationWizard {
 				IClasspathEntry icp=JavaCore.newLibraryEntry(cp,null,null);
 				ncp[ncp.length-4]=icp;
 
-				fp=new File(home,"lib/rcxrcxcomm.jar");
+				fp=new File(home,"lib/rcxcomm.jar");
 				cp=new Path(LejosPlugin.getPath(fp));
 				icp=JavaCore.newLibraryEntry(cp,null,null);
 				ncp[ncp.length-3]=icp;
