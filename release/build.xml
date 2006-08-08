@@ -229,6 +229,8 @@
       		<fileset dir="${lejos.root}/bin">
         		<include name="firmdl"/>
         		<include name="firmdl.bat"/>
+        		<include name="lejos"/>
+        		<include name="lejos.bat"/>
         		<include name="lejosdl"/>
         		<include name="lejosdl.bat"/>
         		<include name="lejosjc"/>
