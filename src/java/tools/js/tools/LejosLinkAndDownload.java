@@ -1,6 +1,9 @@
 /*
  * Created on 16.03.2006
  * $Log$
+ * Revision 1.1  2006/08/04 08:04:05  mpscholz
+ * refactord_parser
+ *
  */
 package js.tools;
 
@@ -69,22 +72,17 @@ public class LejosLinkAndDownload {
 			lejosdlArgs = new String[3];
 			lejosdlArgs[2] = binName;
 		}
-		lejosdlArgs[0] = "-tty";
+		lejosdlArgs[0] = "--tty";
 		lejosdlArgs[1] = port;
 		// create progress monitor
 		CLIToolProgressMonitor monitor = new CLIToolProgressMonitor();
 		// link
-		if(isVerbose)
-			System.out.println("linking..."); 
+		System.out.println("linking..."); 
 		TinyVM tinyVM = new TinyVM(monitor);
 		tinyVM.start(tinyVMArgs);
 		// download         
-		if(isVerbose)
-			System.out.println("downloading..."); 
+		System.out.println("downloading..."); 
 		Lejosdl lejosdl = new Lejosdl(monitor);
-		System.out.println("calling lejosdl with ");
-		for(int i=0;i<lejosdlArgs.length;i++)
-			System.out.println(lejosdlArgs[i]);
         lejosdl.start(lejosdlArgs);
 	}
 }

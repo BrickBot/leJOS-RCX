@@ -40,11 +40,15 @@ public class TinyVMCommandLineParser {
       outputOption.setArgName("binary");
       options.addOption(outputOption);
       options.addOption("a", "all", false, "do not filter classes");
-      Option writerOrderOption = new Option("wo", "writeorder", true,
+      Option writeOrderOption = new Option("wo", "writeorder", true,
          "write order (BE or LE)");
-      writerOrderOption.setArgName("write order");
-      options.addOption(writerOrderOption);
+      writeOrderOption.setArgName("write order");
+      options.addOption(writeOrderOption);
 
+      Option deviceOption = new Option("tty", "device", true,"device used (USB, COM1, etc)");
+      deviceOption.setArgName("device");
+      options.addOption(deviceOption);
+      
       CommandLine result;
       try
       {

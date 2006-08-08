@@ -104,7 +104,7 @@ public abstract class ByteWriter implements IByteWriter
    // debug
    //
 
-   protected void debug (byte[] bytes)
+ /*  protected void debug (byte[] bytes)
    {
       String offset = "00000000" + Integer.toHexString(offset());
       offset = offset.substring(offset.length() - 4);
@@ -120,5 +120,5 @@ public abstract class ByteWriter implements IByteWriter
       value = value.substring(value.length() - width * 2);
       System.out.println(offset + ": " + value);
       System.out.flush();
-   }
+   }*/
 }

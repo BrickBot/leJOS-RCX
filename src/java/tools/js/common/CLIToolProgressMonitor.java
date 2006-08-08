@@ -15,7 +15,6 @@ public class CLIToolProgressMonitor implements ToolProgressMonitor
    public void operation (String message)
    {
       assert message != null: "Precondition: message != null";
-
       System.out.println(message);
    }
 
@@ -27,7 +26,6 @@ public class CLIToolProgressMonitor implements ToolProgressMonitor
    public void log (String message)
    {
       assert message != null: "Precondition: message != null";
-
       System.out.println(message);
    }
 
@@ -39,7 +37,6 @@ public class CLIToolProgressMonitor implements ToolProgressMonitor
    public void progress (int progress)
    {
       assert progress >= 0 && progress <= 1000: "Precondition: progress >= 0 && progress <= 1000";
-
       System.out.print("\r  " + (progress/10) + "%\r");
       if (progress >= 1000)
       {
