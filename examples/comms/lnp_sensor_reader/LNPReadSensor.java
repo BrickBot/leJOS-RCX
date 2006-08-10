@@ -15,7 +15,9 @@ public class LNPReadSensor {
 
     try {
 
-      RCXLNPPort port = new RCXLNPPort();
+	  	if(args.length!=1)
+			throw new Exception("first argument must be tower port (USB,COM1 etc)");
+      RCXLNPPort port = new RCXLNPPort(args[0]);
 
       InputStream is = port.getInputStream();
       OutputStream os = port.getOutputStream();
@@ -35,7 +37,7 @@ public class LNPReadSensor {
       System.out.println("Time = " + ((int)System.currentTimeMillis() -  sendTime));
     }
     catch (Exception e) {
-      System.out.println("Exception " + e.getMessage());
+      e.printStackTrace();
     }
   }
 }

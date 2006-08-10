@@ -10,23 +10,28 @@ import josx.rcxcomm.RemoteVisionConstants;
  * 
  * @author Lawrie Griffiths
  */
-public class RCX implements RemoteVisionConstants
-{
+public class RCX implements RemoteVisionConstants {
 
+	private RCXRemote remote;
+	
+	public RCX(String port) throws IOException {
+		remote = new RCXRemote(port);
+	}
+	
    /**
     * Move the robot forwards until stop or another command is executed.
     */
-   public static void forward ()
+   public void forward ()
    {
-      synchronized (RCXRemote.out)
+      synchronized (remote.out)
       {
          try
          {
-            RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_FORWARD_V);
+            remote.out.writeByte(METHOD_JOSX_VISION_RCX_FORWARD_V);
          }
          catch (IOException ioe)
          {
-            RCXRemote.error();
+            remote.error();
          }
       }
    }
@@ -36,21 +41,21 @@ public class RCX implements RemoteVisionConstants
     * 
     * @param n the number of units to move
     */
-   public static void forward (int n)
+   public void forward (int n)
    {
       if (n == 0)
          forward();
       else
-         synchronized (RCXRemote.out)
+         synchronized (remote.out)
          {
             try
             {
-               RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_FORWARD_I);
-               RCXRemote.out.writeByte(n);
+               remote.out.writeByte(METHOD_JOSX_VISION_RCX_FORWARD_I);
+               remote.out.writeByte(n);
             }
             catch (IOException ioe)
             {
-               RCXRemote.error();
+               remote.error();
             }
          }
    }
@@ -58,17 +63,17 @@ public class RCX implements RemoteVisionConstants
    /**
     * Move the robot backwards until stop or another command is executed.
     */
-   public static void backward ()
+   public void backward ()
    {
-      synchronized (RCXRemote.out)
+      synchronized (remote.out)
       {
          try
          {
-            RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_BACKWARD_V);
+            remote.out.writeByte(METHOD_JOSX_VISION_RCX_BACKWARD_V);
          }
          catch (IOException ioe)
          {
-            RCXRemote.error();
+            remote.error();
          }
       }
    }
@@ -78,21 +83,21 @@ public class RCX implements RemoteVisionConstants
     * 
     * @param n the number of units to move
     */
-   public static void backward (int n)
+   public void backward (int n)
    {
       if (n == 0)
          backward();
       else
-         synchronized (RCXRemote.out)
+         synchronized (remote.out)
          {
             try
             {
-               RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_BACKWARD_I);
-               RCXRemote.out.writeByte(n);
+               remote.out.writeByte(METHOD_JOSX_VISION_RCX_BACKWARD_I);
+               remote.out.writeByte(n);
             }
             catch (IOException ioe)
             {
-               RCXRemote.error();
+               remote.error();
             }
          }
    }
@@ -100,17 +105,17 @@ public class RCX implements RemoteVisionConstants
    /**
     * Spin left until stop or another command is executed.
     */
-   public static void spinLeft ()
+   public void spinLeft ()
    {
-      synchronized (RCXRemote.out)
+      synchronized (remote.out)
       {
          try
          {
-            RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_SPIN_LEFT_V);
+            remote.out.writeByte(METHOD_JOSX_VISION_RCX_SPIN_LEFT_V);
          }
          catch (IOException ioe)
          {
-            RCXRemote.error();
+            remote.error();
          }
       }
    }
@@ -120,21 +125,21 @@ public class RCX implements RemoteVisionConstants
     * 
     * @param n the number of units to move
     */
-   public static void spinLeft (int n)
+   public void spinLeft (int n)
    {
       if (n == 0)
          spinLeft();
       else
-         synchronized (RCXRemote.out)
+         synchronized (remote.out)
          {
             try
             {
-               RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_SPIN_LEFT_I);
-               RCXRemote.out.writeByte(n);
+               remote.out.writeByte(METHOD_JOSX_VISION_RCX_SPIN_LEFT_I);
+               remote.out.writeByte(n);
             }
             catch (IOException ioe)
             {
-               RCXRemote.error();
+               remote.error();
             }
          }
    }
@@ -142,17 +147,17 @@ public class RCX implements RemoteVisionConstants
    /**
     * Turn left until stop or another command is executed.
     */
-   public static void turnLeft ()
+   public void turnLeft ()
    {
-      synchronized (RCXRemote.out)
+      synchronized (remote.out)
       {
          try
          {
-            RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_TURN_LEFT_V);
+            remote.out.writeByte(METHOD_JOSX_VISION_RCX_TURN_LEFT_V);
          }
          catch (IOException ioe)
          {
-            RCXRemote.error();
+            remote.error();
          }
       }
    }
@@ -162,21 +167,21 @@ public class RCX implements RemoteVisionConstants
     * 
     * @param n the number of units to move
     */
-   public static void turnLeft (int n)
+   public void turnLeft (int n)
    {
       if (n == 0)
          spinLeft();
       else
-         synchronized (RCXRemote.out)
+         synchronized (remote.out)
          {
             try
             {
-               RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_TURN_LEFT_I);
-               RCXRemote.out.writeByte(n);
+               remote.out.writeByte(METHOD_JOSX_VISION_RCX_TURN_LEFT_I);
+               remote.out.writeByte(n);
             }
             catch (IOException ioe)
             {
-               RCXRemote.error();
+               remote.error();
             }
          }
    }
@@ -184,17 +189,17 @@ public class RCX implements RemoteVisionConstants
    /**
     * Scan left until stop or another command is executed.
     */
-   public static void scanLeft ()
+   public void scanLeft ()
    {
-      synchronized (RCXRemote.out)
+      synchronized (remote.out)
       {
          try
          {
-            RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_SCAN_LEFT_V);
+            remote.out.writeByte(METHOD_JOSX_VISION_RCX_SCAN_LEFT_V);
          }
          catch (IOException ioe)
          {
-            RCXRemote.error();
+            remote.error();
          }
       }
    }
@@ -204,21 +209,21 @@ public class RCX implements RemoteVisionConstants
     * 
     * @param n the number of units to move
     */
-   public static void scanLeft (int n)
+   public void scanLeft (int n)
    {
       if (n == 0)
          spinLeft();
       else
-         synchronized (RCXRemote.out)
+         synchronized (remote.out)
          {
             try
             {
-               RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_SCAN_LEFT_I);
-               RCXRemote.out.writeByte(n);
+               remote.out.writeByte(METHOD_JOSX_VISION_RCX_SCAN_LEFT_I);
+               remote.out.writeByte(n);
             }
             catch (IOException ioe)
             {
-               RCXRemote.error();
+               remote.error();
             }
          }
    }
@@ -227,17 +232,17 @@ public class RCX implements RemoteVisionConstants
     * Spin right until stop or another command is executed.
     * 
     */
-   public static void spinRight ()
+   public void spinRight ()
    {
-      synchronized (RCXRemote.out)
+      synchronized (remote.out)
       {
          try
          {
-            RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_SPIN_RIGHT_V);
+            remote.out.writeByte(METHOD_JOSX_VISION_RCX_SPIN_RIGHT_V);
          }
          catch (IOException ioe)
          {
-            RCXRemote.error();
+            remote.error();
          }
       }
    }
@@ -247,21 +252,21 @@ public class RCX implements RemoteVisionConstants
     * 
     * @param n the number of units to move
     */
-   public static void spinRight (int n)
+   public void spinRight (int n)
    {
       if (n == 0)
          spinRight();
       else
-         synchronized (RCXRemote.out)
+         synchronized (remote.out)
          {
             try
             {
-               RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_SPIN_RIGHT_I);
-               RCXRemote.out.writeByte(n);
+               remote.out.writeByte(METHOD_JOSX_VISION_RCX_SPIN_RIGHT_I);
+               remote.out.writeByte(n);
             }
             catch (IOException ioe)
             {
-               RCXRemote.error();
+               remote.error();
             }
          }
    }
@@ -269,17 +274,17 @@ public class RCX implements RemoteVisionConstants
    /**
     * Turn right until stop or another command is executed.
     */
-   public static void turnRight ()
+   public void turnRight ()
    {
-      synchronized (RCXRemote.out)
+      synchronized (remote.out)
       {
          try
          {
-            RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_TURN_RIGHT_V);
+            remote.out.writeByte(METHOD_JOSX_VISION_RCX_TURN_RIGHT_V);
          }
          catch (IOException ioe)
          {
-            RCXRemote.error();
+            remote.error();
          }
       }
    }
@@ -289,21 +294,21 @@ public class RCX implements RemoteVisionConstants
     * 
     * @param n the number of units to move
     */
-   public static void turnRight (int n)
+   public void turnRight (int n)
    {
       if (n == 0)
          spinRight();
       else
-         synchronized (RCXRemote.out)
+         synchronized (remote.out)
          {
             try
             {
-               RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_TURN_RIGHT_I);
-               RCXRemote.out.writeByte(n);
+               remote.out.writeByte(METHOD_JOSX_VISION_RCX_TURN_RIGHT_I);
+               remote.out.writeByte(n);
             }
             catch (IOException ioe)
             {
-               RCXRemote.error();
+               remote.error();
             }
          }
    }
@@ -311,17 +316,17 @@ public class RCX implements RemoteVisionConstants
    /**
     * Scan right until stop or another command is executed.
     */
-   public static void scanRight ()
+   public void scanRight ()
    {
-      synchronized (RCXRemote.out)
+      synchronized (remote.out)
       {
          try
          {
-            RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_SCAN_RIGHT_V);
+            remote.out.writeByte(METHOD_JOSX_VISION_RCX_SCAN_RIGHT_V);
          }
          catch (IOException ioe)
          {
-            RCXRemote.error();
+            remote.error();
          }
       }
    }
@@ -331,21 +336,21 @@ public class RCX implements RemoteVisionConstants
     * 
     * @param n the number of units to move
     */
-   public static void scanRight (int n)
+   public void scanRight (int n)
    {
       if (n == 0)
          spinRight();
       else
-         synchronized (RCXRemote.out)
+         synchronized (remote.out)
          {
             try
             {
-               RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_SCAN_RIGHT_I);
-               RCXRemote.out.writeByte(n);
+               remote.out.writeByte(METHOD_JOSX_VISION_RCX_SCAN_RIGHT_I);
+               remote.out.writeByte(n);
             }
             catch (IOException ioe)
             {
-               RCXRemote.error();
+               remote.error();
             }
          }
    }
@@ -353,17 +358,17 @@ public class RCX implements RemoteVisionConstants
    /**
     * Stop all motors
     */
-   public static void stop ()
+   public void stop ()
    {
-      synchronized (RCXRemote.out)
+      synchronized (remote.out)
       {
          try
          {
-            RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_STOP);
+            remote.out.writeByte(METHOD_JOSX_VISION_RCX_STOP);
          }
          catch (IOException ioe)
          {
-            RCXRemote.error();
+            remote.error();
          }
       }
    }
@@ -374,19 +379,19 @@ public class RCX implements RemoteVisionConstants
     * @param motors the selected motors
     * @param power value 0-7
     */
-   public static void setPower (byte motors, byte power)
+   public void setPower (byte motors, byte power)
    {
-      synchronized (RCXRemote.out)
+      synchronized (remote.out)
       {
          try
          {
-            RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_SET_POWER);
-            RCXRemote.out.writeByte(motors);
-            RCXRemote.out.writeByte(power);
+            remote.out.writeByte(METHOD_JOSX_VISION_RCX_SET_POWER);
+            remote.out.writeByte(motors);
+            remote.out.writeByte(power);
          }
          catch (IOException ioe)
          {
-            RCXRemote.error();
+            remote.error();
          }
       }
    }
@@ -398,20 +403,20 @@ public class RCX implements RemoteVisionConstants
     * @param direction the direction to move in 0 - foreards, 1 backwards
     * @param n the number of units to move
     */
-   public static void controlMotors (byte motors, byte direction, byte n)
+   public void controlMotors (byte motors, byte direction, byte n)
    {
-      synchronized (RCXRemote.out)
+      synchronized (remote.out)
       {
          try
          {
-            RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_CONTROL_MOTORS);
-            RCXRemote.out.writeByte(motors);
-            RCXRemote.out.writeByte(direction);
-            RCXRemote.out.writeByte(n);
+            remote.out.writeByte(METHOD_JOSX_VISION_RCX_CONTROL_MOTORS);
+            remote.out.writeByte(motors);
+            remote.out.writeByte(direction);
+            remote.out.writeByte(n);
          }
          catch (IOException ioe)
          {
-            RCXRemote.error();
+            remote.error();
          }
       }
    }
@@ -422,19 +427,19 @@ public class RCX implements RemoteVisionConstants
     * @param frequency the tone frequency
     * @param duration the duration of the tone
     */
-   public static void playTone (short frequency, byte duration)
+   public void playTone (short frequency, byte duration)
    {
-      synchronized (RCXRemote.out)
+      synchronized (remote.out)
       {
          try
          {
-            RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_PLAY_TONE);
-            RCXRemote.out.writeShort(frequency);
-            RCXRemote.out.writeByte(duration);
+            remote.out.writeByte(METHOD_JOSX_VISION_RCX_PLAY_TONE);
+            remote.out.writeShort(frequency);
+            remote.out.writeByte(duration);
          }
          catch (IOException ioe)
          {
-            RCXRemote.error();
+            remote.error();
          }
       }
    }
@@ -444,18 +449,18 @@ public class RCX implements RemoteVisionConstants
     * 
     * @param n the number of units to move
     */
-   public static void tiltUp (int n)
+   public void tiltUp (int n)
    {
-      synchronized (RCXRemote.out)
+      synchronized (remote.out)
       {
          try
          {
-            RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_TILT_UP_I);
-            RCXRemote.out.writeByte(n);
+            remote.out.writeByte(METHOD_JOSX_VISION_RCX_TILT_UP_I);
+            remote.out.writeByte(n);
          }
          catch (IOException ioe)
          {
-            RCXRemote.error();
+            remote.error();
          }
       }
    }
@@ -465,18 +470,18 @@ public class RCX implements RemoteVisionConstants
     * 
     * @param n the number of units to move
     */
-   public static void tiltDown (int n)
+   public void tiltDown (int n)
    {
-      synchronized (RCXRemote.out)
+      synchronized (remote.out)
       {
          try
          {
-            RCXRemote.out.writeByte(METHOD_JOSX_VISION_RCX_TILT_DOWN_I);
-            RCXRemote.out.writeByte(n);
+            remote.out.writeByte(METHOD_JOSX_VISION_RCX_TILT_DOWN_I);
+            remote.out.writeByte(n);
          }
          catch (IOException ioe)
          {
-            RCXRemote.error();
+            remote.error();
          }
       }
    }

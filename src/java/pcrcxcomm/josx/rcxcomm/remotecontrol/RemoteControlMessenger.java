@@ -2,6 +2,9 @@ package josx.rcxcomm.remotecontrol;
 
 /*
  * $Log$
+ * Revision 1.7  2005/11/23 17:46:45  mpscholz
+ * minor javadoc related changes
+ *
  * Revision 1.6  2005/09/02 19:46:08  markus_heiden
  * mh: added some todos
  *
@@ -133,15 +136,11 @@ public class RemoteControlMessenger
    /**
     * Creates a new instance of RemoteControlMessenger.
     * 
-    * TODO do not throw UnsatisfiedLinkError here.
-    * TODO pass lego tower port as parameter.
     */
-   public RemoteControlMessenger() throws UnsatisfiedLinkError
+   public RemoteControlMessenger(String port) throws UnsatisfiedLinkError
    {
       // instantiate tower
-   	  // TODO use default constructor
-   	  // fTower = new Tower();
-      fTower = new Tower("/dev/usb/legousbtower0");
+      fTower = new Tower(port);
       // instantiate packet
       fPacket = new byte[3];
       // set lego remote opcode

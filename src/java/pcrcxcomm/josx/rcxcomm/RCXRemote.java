@@ -11,37 +11,28 @@ import java.io.IOException;
  */
 public class RCXRemote
 {
-   private static RCXPort port;
-   public static DataInputStream in;
-   public static DataOutputStream out;
+   private RCXPort rcxPort;
+   public DataInputStream in;
+   public DataOutputStream out;
 
-   static
+   public RCXRemote(String port) throws IOException{
+	   System.out.println("Starting remoting");
+	   start(port);
+   }
+   
+   public void start(String port) throws IOException
    {
-      try
-      {
-         System.out.println("Starting remoting");
-         start();
-      }
-      catch (IOException e)
-      {
-         System.out.println("Remoting failed");
-      }
-      System.out.println("Remoting started");
+      rcxPort = new RCXPort(port);
+      in = new DataInputStream(rcxPort.getInputStream());
+      out = new DataOutputStream(rcxPort.getOutputStream());
    }
 
-   public static void start () throws IOException
+   public void stop ()
    {
-      port = new RCXPort();
-      in = new DataInputStream(port.getInputStream());
-      out = new DataOutputStream(port.getOutputStream());
+	   rcxPort.close();
    }
 
-   public static void stop ()
-   {
-      port.close();
-   }
-
-   public static void error ()
+   public void error ()
    {
       System.out.println("Error in remote execution");
    }

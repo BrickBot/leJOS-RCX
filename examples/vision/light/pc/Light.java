@@ -1,10 +1,22 @@
 import josx.vision.*;
+import java.io.*;
 
 public class Light implements LightListener {
   private long lastPlay = 0;
-
+  private RCX _rcx;
+  
+  public Light(String port) throws IOException {
+	  _rcx = new RCX(port);
+  }
+  
   public static void main(String [] args) {
-    (new Light()).run();
+	  try {
+	  	if(args.length!=1)
+			throw new Exception("first argument must be tower port (USB,COM1 etc)");
+		(new Light(args[0])).run();
+	  } catch(Exception e) {
+		  e.printStackTrace();
+	  }
   }
 
   private void run() {
@@ -24,13 +36,13 @@ public class Light implements LightListener {
       lastPlay = System.currentTimeMillis();
       Vision.playSound("../../../Effects/Dogbark.wav");
       if (region == 1) {
-        RCX.spinRight(1);
+        _rcx.spinRight(1);
       }
       else if (region == 3) {
-        RCX.spinLeft(1);
+        _rcx.spinLeft(1);
       }
       else if (region == 2) {
-        RCX.forward(2);
+        _rcx.forward(2);
       }
     }   
   }

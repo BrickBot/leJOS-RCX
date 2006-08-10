@@ -13,6 +13,8 @@ public class LNPSensorReader {
     int sensorID, sensorValue;
     RCXLNPPort port = null;
     try {
+//	  	if(args.length!=1)
+//			throw new Exception("first argument must be tower port (USB,COM1 etc)");
       port = new RCXLNPPort();
       DataOutputStream out = new DataOutputStream(port.getOutputStream());   
       while (true) {
@@ -23,9 +25,10 @@ public class LNPSensorReader {
         out.flush();
       }
     } catch (IOException ioE) {
-      LCD.showNumber(1111);
+    	LCD.showNumber(1111);
     } finally {
-      port.close();
+    	if(port!=null)
+    		port.close();
     }
   }
 }

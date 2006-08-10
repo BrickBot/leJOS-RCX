@@ -6,9 +6,8 @@ import josx.rcxcomm.*;
  * communicate over the Lego IR link with a
  * corresponding program, WriteInt.
  * It receives int values and sends replies
- * of double the value. It works on either the
- * PC or the  RCX, and so demonsrates either
- * the PC or the RCX initiating communication.
+ * of double the value. It works on the
+ * PC and demonstrates the PC initiating communication.
  * It demonstrates the use of DataInputStream
  * and DataOutputStream.
  */
@@ -17,7 +16,9 @@ public class ReadInt {
   public static void main(String[] args) {
 
     try {
-      RCXPort port = new RCXPort();
+	  	if(args.length!=1)
+			throw new Exception("first argument must be tower port (USB,COM1 etc)");
+      RCXPort port = new RCXPort(args[0]);
 
       InputStream is = port.getInputStream();
       OutputStream os = port.getOutputStream();
@@ -34,6 +35,7 @@ public class ReadInt {
       }
     }     
     catch (Exception e) {
+    	e.printStackTrace();
     }
   }
 }

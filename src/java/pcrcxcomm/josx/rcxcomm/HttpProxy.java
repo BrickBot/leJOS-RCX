@@ -13,7 +13,7 @@ import java.net.Socket;
  * 
  * A Proxy for sending HTTP requests to the RCX.
  * 
- * Listens on the port specified by -port <port>(default 80). If the RCX is
+ * Listens on the httpPort specified by -httpPort <httpPort>(default 80). If the RCX is
  * currently servicing a request, it returns the massge "RCX is Busy".
  * 
  * The constructor does not return - it runs forever.
@@ -25,14 +25,14 @@ public class HttpProxy
 {
    private boolean busy = false;
 
-   public HttpProxy (int port) throws IOException
+   public HttpProxy (int httpPort,String towerPort) throws IOException
    {
 
-      ServerSocket serverSock = new ServerSocket(port);
+      ServerSocket serverSock = new ServerSocket(httpPort);
 
       while (true)
       {
-         System.out.println("Waiting for request on port " + port);
+         System.out.println("Waiting for request on httpPort " + httpPort);
          Socket sock = serverSock.accept();
          System.out.println("Received request");
          if (busy)
@@ -52,7 +52,7 @@ public class HttpProxy
          else
          {
             setBusy(true);
-            RCXThread rcxThread = new RCXThread(this, sock);
+            RCXThread rcxThread = new RCXThread(this,sock,towerPort);
             rcxThread.start();
          }
       }
@@ -66,22 +66,34 @@ public class HttpProxy
       this.busy = busy;
    }
 
+   /**
+    * 
+    * @param args -httpPort <http port> -towerPort <tower port>
+    * @throws IOException
+    */
    public static void main (String[] args) throws IOException
    {
-      int port = 80;
+      int httpPort = 80;
+      String towerPort = "USB";
 
       for (int i = 0; i < args.length; i++)
       {
-         if (args[i].equals("-port"))
+         if (args[i].equals("-httpPort"))
          {
             if (i < args.length - 1)
-               port = Integer.parseInt(args[i + 1]);
+               httpPort = Integer.parseInt(args[i + 1]);
+            i++;
+         }
+         if (args[i].equals("-towerPort"))
+         {
+            if (i < args.length - 1)
+               towerPort = args[i + 1];
             i++;
          }
       }
 
       // Runs forever
-      new HttpProxy(port);
+      new HttpProxy(httpPort,towerPort);
    }
 
    /**
@@ -91,8 +103,9 @@ public class HttpProxy
    {
       private Socket sock;
       private HttpProxy proxy;
+      private String towerPort;
 
-      RCXThread (HttpProxy proxy, Socket sock)
+      RCXThread (HttpProxy proxy, Socket sock,String towerPort)
       {
          this.sock = sock;
          this.proxy = proxy;
@@ -103,11 +116,11 @@ public class HttpProxy
          try
          {
 
-            // Open the RCXPort and get the port and socket streams
+            // Open the RCXPort and get the httpPort and socket streams
 
-            RCXPort port = new RCXPort();
-            InputStream is = port.getInputStream();
-            OutputStream os = port.getOutputStream();
+            RCXPort httpPort = new RCXPort(towerPort);
+            InputStream is = httpPort.getInputStream();
+            OutputStream os = httpPort.getOutputStream();
 
             InputStream in = sock.getInputStream();
             OutputStream out = sock.getOutputStream();
@@ -161,11 +174,13 @@ public class HttpProxy
             }
             while (inb != 0xff);
 
-            port.close();
+            httpPort.close();
             proxy.setBusy(false);
          }
          catch (IOException ioe)
-         {}
+         {
+        	 ioe.printStackTrace();
+         }
       }
    }
 }

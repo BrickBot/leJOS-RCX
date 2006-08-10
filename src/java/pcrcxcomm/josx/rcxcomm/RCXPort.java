@@ -16,18 +16,10 @@ import java.io.IOException;
  */
 public class RCXPort extends RCXAbstractPort
 {
-   public RCXPort () throws IOException
-   {
-      super((PacketHandler) new LLCReliableHandler(
-         (PacketHandler) new LLCHandler()));
-      if (packetHandler.getError() != 0)
-         throw new IOException("Tower open failed");
-   }
-
    public RCXPort (String port) throws IOException
    {
       super(port, (PacketHandler) new LLCReliableHandler(
-         (PacketHandler) new LLCHandler()));
+         (PacketHandler) new LLCHandler(port)));
       if (packetHandler.getError() != 0)
          throw new IOException("Tower open failed");
    }

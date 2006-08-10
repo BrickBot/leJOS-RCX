@@ -22,10 +22,11 @@ public class SensorReader {
         out.writeInt(sensorValue);          
         out.flush();
       }
-    } catch (IOException ioE) {
-      LCD.showNumber(1111);   
+    } catch (Exception ioE) {
+    	LCD.showNumber(1111);   
     } finally {
-      port.close();
+    	if(port!=null)
+    		port.close();
     }
   }
 }

@@ -10,9 +10,11 @@ import josx.platform.rcx.*;
 public class F7SensorReader {
   
   public static void main(String args[]) {
-    int sensorID, sensorValue;
-    RCXF7Port port = null;
-    try {
+	  RCXF7Port port = null;
+	  try {
+	//  	if(args.length!=1)
+//			throw new Exception("first argument must be tower port (USB,COM1 etc)");
+	  	int sensorID, sensorValue;
       port = new RCXF7Port();
       DataOutputStream out = new DataOutputStream(port.getOutputStream());   
       while (true) {
@@ -25,7 +27,8 @@ public class F7SensorReader {
     } catch (IOException ioE) {
       LCD.showNumber(1111);
     } finally {
-      port.close();
+    	if(port!=null)
+    		port.close();
     }
   }
 }

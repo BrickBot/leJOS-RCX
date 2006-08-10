@@ -1,5 +1,8 @@
 /*
  * $Log$
+ * Revision 1.2  2004/05/01 13:52:08  starblue
+ * update imported package name
+ *
  * Revision 1.1  2003/05/01 11:58:07  mpscholz
  * an example for using the RemoteControlMessenger
  *
@@ -38,11 +41,15 @@ public class MessengerTest {
     ////////////////////////////////////////////
     /**
      * main method for test reasons
+     * argument: port ("USB", "COM1" etc)
      */
     public static void main(String[] args) { 
-        // instantiate messenger instance
-        RemoteControlMessenger remoteControlMessenger = new RemoteControlMessenger();
         try {
+	    	if(args.length!=0) {
+	    		throw new Exception("first argument must be the tower port (USB, COM1, etc)");
+	    	}
+	        // instantiate messenger instance
+	        RemoteControlMessenger remoteControlMessenger = new RemoteControlMessenger(args[0]);
             // send some commands
             // start program 1
             System.out.println("starting program 1");
@@ -70,7 +77,7 @@ public class MessengerTest {
             remoteControlMessenger.send(RemoteControlMessenger.STOP);
             // accomplished
             System.out.println("accomplished");
-        } catch(IOException exc) {
+        } catch(Exception exc) {
             // something went wrong
             System.out.println("an error occurred: " + exc.getMessage());
             exc.printStackTrace();

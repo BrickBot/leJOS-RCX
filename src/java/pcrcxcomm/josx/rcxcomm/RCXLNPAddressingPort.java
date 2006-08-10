@@ -21,22 +21,12 @@ import java.io.IOException;
  */
 public class RCXLNPAddressingPort extends RCXAbstractPort
 {
-   public RCXLNPAddressingPort (byte source, byte dest) throws IOException
-   {
-      super((PacketHandler) new LNPAddressingHandler(
-         (PacketHandler) new LNPIntegrityHandler(
-            (PacketHandler) new LNPHandler(), (byte) 0xf1)));
-      if (packetHandler.getError() != 0)
-         throw new IOException("Tower open failed");
-      packetHandler.open(source, dest);
-   }
-
    public RCXLNPAddressingPort (String port, byte source, byte dest)
       throws IOException
    {
       super(port, (PacketHandler) new LNPAddressingHandler(
          (PacketHandler) new LNPIntegrityHandler(
-            (PacketHandler) new LNPHandler(), (byte) 0xf1)));
+            (PacketHandler) new LNPHandler(port), (byte) 0xf1)));
       if (packetHandler.getError() != 0)
          throw new IOException("Tower open failed");
       packetHandler.open(source, dest);

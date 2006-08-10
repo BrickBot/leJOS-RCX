@@ -20,9 +20,8 @@ public class LNP extends Thread
 {
    private static final int MAX_HANDLERS = 4;
    private static final int MAX_PORTS = 4;
-   private static LNPIntegrityHandler packetHandler = new LNPIntegrityHandler(
-      new LNPHandler(), (byte) 0xf0); // opcode is ignored
-   private static LNP singleton = new LNP();
+   private static LNPIntegrityHandler packetHandler;
+   private static LNP singleton;
    private static byte[] outPacket = new byte[64];
    private static byte[] inPacket = new byte[64];
    private static byte[] buff = new byte[64];
@@ -32,9 +31,16 @@ public class LNP extends Thread
    private static AddressingHandler[][] addressingHandler = new AddressingHandler[MAX_PORTS][MAX_HANDLERS];
    private static int[] numAddressingHandlers = new int[MAX_HANDLERS];
 
-   private LNP ()
-   {}
+   private LNP (String port) {
+	   packetHandler = new LNPIntegrityHandler(new LNPHandler(port), (byte) 0xf0); // opcode is ignored
+   }
 
+   public static LNP getLNP(String port) {
+	   if(singleton==null)
+		   singleton = new LNP(port);
+	   return singleton;
+   }
+   
    /**
     * Sends packet of up to 59 bytes to the destination address from the source
     * address. The source address is used for replying to the packet.

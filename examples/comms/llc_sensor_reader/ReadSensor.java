@@ -15,7 +15,9 @@ public class ReadSensor {
 
     try {
 
-      RCXPort port = new RCXPort();
+	  	if(args.length!=1)
+			throw new Exception("first argument must be tower port (USB,COM1 etc)");
+      RCXPort port = new RCXPort(args[0]);
 
       InputStream is = port.getInputStream();
       OutputStream os = port.getOutputStream();

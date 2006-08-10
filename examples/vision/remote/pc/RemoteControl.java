@@ -14,8 +14,10 @@ public class RemoteControl implements ColorListener {
   static private JPanel colorPanel1;  
   static private JPanel colorPanel2;
   static private JPanel colorPanel3;
+  private RCX _rcx;
 
-  public RemoteControl() {
+  public RemoteControl(String port) throws IOException {
+	  _rcx = new RCX(port);
 
     // Create the Icon buttons
     
@@ -34,37 +36,37 @@ public class RemoteControl implements ColorListener {
 
     upButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        RCX.forward();
-        RCX.playTone((short) 500, (byte) 100);
+        _rcx.forward();
+        _rcx.playTone((short) 500, (byte) 100);
       }
     });
     arrowPanel.add(labelledComponent("Forwards",upButton, true), BorderLayout.NORTH);
 
     downButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        RCX.backward();
-        RCX.playTone((short) 1000,(byte) 100);
+        _rcx.backward();
+        _rcx.playTone((short) 1000,(byte) 100);
       }
     });
     arrowPanel.add(labelledComponent("Backwards",downButton, true), BorderLayout.SOUTH);   
 
     stopButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        RCX.stop();
+        _rcx.stop();
       }
     });
     arrowPanel.add(labelledComponent("Stop",stopButton, true), BorderLayout.CENTER);
 
     leftButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        RCX.spinLeft();
+        _rcx.spinLeft();
       }
     });
     arrowPanel.add(labelledComponent("Left",leftButton, true), BorderLayout.WEST);
 
     rightButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        RCX.spinRight();
+        _rcx.spinRight();
       }
     });
     arrowPanel.add(labelledComponent("Right",rightButton, true), BorderLayout.EAST);
@@ -76,14 +78,14 @@ public class RemoteControl implements ColorListener {
 
     tiltUpButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        RCX.tiltUp(1);
+        _rcx.tiltUp(1);
       }
     });
     tiltPanel.add(labelledComponent("Tilt Camera up",tiltUpButton, true), BorderLayout.NORTH);
 
     tiltDownButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        RCX.tiltDown(1);
+        _rcx.tiltDown(1);
       }
     });
     tiltPanel.add(labelledComponent("Tilt Camera down",tiltDownButton, true), BorderLayout.SOUTH);
@@ -156,14 +158,14 @@ public class RemoteControl implements ColorListener {
     if ((System.currentTimeMillis() - lastPlay) > 2000) {
       lastPlay = System.currentTimeMillis();
       if (region == 2) {
-        RCX.forward(1);
+        _rcx.forward(1);
         Vision.playSound("../../../Effects/CarHorn.wav");
       } else if (region == 1) {
         System.out.println("Region 1");
-        RCX.spinLeft(1);
+        _rcx.spinLeft(1);
       } else if (region == 3) {
         System.out.println("Region 3");
-        RCX.spinRight(1);
+        _rcx.spinRight(1);
       }
     }
   }
@@ -173,9 +175,12 @@ public class RemoteControl implements ColorListener {
 
   public static void main(String [] args) { 
 
+	  try {
+		  	if(args.length!=1)
+				throw new Exception("first argument must be tower port (USB,COM1 etc)");
+	  
     // Create an instance of this class for listening
-
-    RemoteControl listener = new RemoteControl(); 
+    RemoteControl listener = new RemoteControl(args[0]); 
 
     // Create 3 regions and set them to look for a red object
     // Looking for darker red at the edges as color is not as bright there
@@ -218,5 +223,9 @@ public class RemoteControl implements ColorListener {
         Thread.sleep(500);
       } catch (InterruptedException ie) {}
     }
+	  } catch(Exception e) {
+		  e.printStackTrace();
+	  }
+
   }
 }

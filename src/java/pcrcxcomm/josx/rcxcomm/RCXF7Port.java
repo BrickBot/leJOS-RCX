@@ -23,18 +23,10 @@ import java.io.IOException;
  */
 public class RCXF7Port extends RCXAbstractPort
 {
-   public RCXF7Port () throws IOException
-   {
-      super((PacketHandler) new F7DeliveryHandler(
-         (PacketHandler) new F7Handler()));
-      if (packetHandler.getError() != 0)
-         throw new IOException("Tower open failed");
-   }
-
    public RCXF7Port (String port) throws IOException
    {
       super(port, (PacketHandler) new F7DeliveryHandler(
-         (PacketHandler) new F7Handler()));
+         (PacketHandler) new F7Handler(port)));
       if (packetHandler.getError() != 0)
          throw new IOException("Tower open failed");
    }
