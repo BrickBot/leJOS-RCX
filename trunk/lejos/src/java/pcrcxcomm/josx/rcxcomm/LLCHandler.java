@@ -24,13 +24,12 @@ public class LLCHandler extends PacketHandler
    };
    private long sendTime;
 
-   public LLCHandler ()
+   public LLCHandler(String port)
    {
-      // TODO rework
       try
       {
          if (tower == null)
-            tower = new Tower();
+            tower = new Tower(port);
          if (!open)
             tower.openTower(false);
          usbFlag = tower.isUSB()? 1 : 0;

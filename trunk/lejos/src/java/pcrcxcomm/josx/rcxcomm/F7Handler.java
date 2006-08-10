@@ -23,12 +23,11 @@ public class F7Handler extends PacketHandler
    private boolean listen = false;
    boolean debug = false;
 
-   F7Handler ()
+   F7Handler(String port)
    {
-      // TODO rework
       try
       {
-         tower = new Tower();
+         tower = new Tower(port);
          tower.openTower(false);
          usbFlag = tower.isUSB()? 1 : 0;
       }

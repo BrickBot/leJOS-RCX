@@ -6,10 +6,16 @@ import java.io.*;
  */
 public class Read {
   public static void main(String [] args) throws IOException {
-    RCXPort port = new RCXPort();
-    InputStream in = port.getInputStream();
-    int b = in.read();
-    System.out.println("Read: " + b);
+	  try {
+		  	if(args.length!=1)
+				throw new Exception("first argument must be tower port (USB,COM1 etc)");
+		  	RCXPort port = new RCXPort(args[0]);
+		    InputStream in = port.getInputStream();
+		    int b = in.read();
+		    System.out.println("Read: " + b);
+	  } catch(Exception exc) {
+		  exc.printStackTrace();
+	  }
   }
 }
 

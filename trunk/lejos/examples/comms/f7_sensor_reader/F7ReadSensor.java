@@ -14,8 +14,11 @@ public class F7ReadSensor {
   public static void main(String[] args) {
 
     try {
+    	
+    	if(args.length!=1)
+    		throw new Exception("first argument must be tower port (USB,COM1 etc)");
 
-      RCXF7Port port = new RCXF7Port();
+      RCXF7Port port = new RCXF7Port(args[0]);
 
       InputStream is = port.getInputStream();
       OutputStream os = port.getOutputStream();

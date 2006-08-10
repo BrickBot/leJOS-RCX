@@ -15,7 +15,10 @@ public class LNPAddrReadSensor {
 
     try {
 
-      RCXLNPAddressingPort port = new RCXLNPAddressingPort((byte) 0x20,(byte) 0x00);
+	  	if(args.length!=1)
+			throw new Exception("first argument must be tower port (USB,COM1 etc)");
+
+      RCXLNPAddressingPort port = new RCXLNPAddressingPort(args[0],(byte) 0x20,(byte) 0x00);
 
       InputStream is = port.getInputStream();
       OutputStream os = port.getOutputStream();

@@ -23,7 +23,7 @@ public class LNPAddrSensorReader {
         out.flush();
       }
     } catch (IOException ioE) {
-      LCD.showNumber(1111);
+    	LCD.showNumber(1111);
     } finally {
       port.close();
     }

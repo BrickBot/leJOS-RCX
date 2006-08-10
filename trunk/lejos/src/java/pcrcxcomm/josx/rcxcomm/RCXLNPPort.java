@@ -17,18 +17,10 @@ import java.io.IOException;
  */
 public class RCXLNPPort extends RCXAbstractPort
 {
-   public RCXLNPPort () throws IOException
-   {
-      super((PacketHandler) new LNPIntegrityHandler(
-         (PacketHandler) new LNPHandler(), (byte) 0xf0));
-      if (packetHandler.getError() != 0)
-         throw new IOException("Tower open failed");
-   }
-
    public RCXLNPPort (String port) throws IOException
    {
       super(port, (PacketHandler) new LNPIntegrityHandler(
-         (PacketHandler) new LNPHandler(), (byte) 0xf0));
+         (PacketHandler) new LNPHandler(port), (byte) 0xf0));
       if (packetHandler.getError() != 0)
          throw new IOException("Tower open failed");
    }

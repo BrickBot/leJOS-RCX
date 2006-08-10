@@ -5,11 +5,17 @@ package java.lang;
  */
 public class Throwable
 {
+	private String _message;
   public Throwable() {
+	  _message = "";
   }
-    
+
+  public Throwable(String message) {
+	  _message = message;
+  }
+
   public String getMessage()
   {
-    return "";
+    return _message;
   }
 }

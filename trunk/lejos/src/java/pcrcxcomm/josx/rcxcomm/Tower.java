@@ -22,9 +22,9 @@ public class Tower
    /**
     * Create the tower class.
     */
-   public Tower () {
+ /*  public Tower () {
       this("");
-   }
+   }*/
 
    /**
     * Create the tower class.

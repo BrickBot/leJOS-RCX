@@ -25,12 +25,11 @@ public class LNPHandler extends PacketHandler
    /**
     * Creates an LNP packet handler and opens the tower
     */
-   public LNPHandler ()
+   public LNPHandler (String port)
    {
-      // TODO rework this
       try
       {
-         tower = new Tower();
+         tower = new Tower(port);
          tower.openTower(false);
          usbFlag = tower.isUSB()? 1 : 0;
       }

@@ -18,14 +18,14 @@ public class SocketProxy
    private static DataInputStream dis;
    private static DataOutputStream dos;
 
-   private SocketProxy ()
+   private SocketProxy (String port)
    {
       try
       {
 
          // Open the RCX Port
 
-         RCXPort rcxport = new RCXPort();
+         RCXPort rcxport = new RCXPort(port);
          InputStream is = rcxport.getInputStream();
          OutputStream os = rcxport.getOutputStream();
          dis = new DataInputStream(is);
@@ -47,7 +47,11 @@ public class SocketProxy
 
    public static void main (String[] args)
    {
-      new SocketProxy();
+	   if(args.length!=1) {
+		   System.err.println("argument tower port (USB, COM1 etc) required!");
+		   System.err.println("shutting down");
+	   } else
+		   new SocketProxy(args[0]);
    }
 
    /**

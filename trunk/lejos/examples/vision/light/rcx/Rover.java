@@ -3,7 +3,11 @@ import java.io.*;
 import josx.platform.rcx.*;
 
 public class Rover implements SensorConstants, RemoteVisionConstants {
-  public void run() throws IOException {
+	
+	public Rover() {
+	}
+
+	public void run() throws IOException {
 
     // Open the port for remote commands
 
