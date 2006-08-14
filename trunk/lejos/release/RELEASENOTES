@@ -3,9 +3,10 @@ leJOS 3.0.0
 
 - leJOS supports Lunix kernel 2.6 now
 - There has been a major restructuring and refactoring of leJOS' classes
+- The single "lejos" command for linking and downloading programs in one step is available again
 - The tutorial is part of the leJOS release now (see doc/tutorial)
 - The third party libraries have been factored out to a "3rdparty" folder
-- There is a folder "check" now that contains three scripts for checking the distribution after having installed it  
+- There is a folder "check" now that contains a script for checking the distribution after having installed it  
  
 leJOS 2.1.0
 -----------
