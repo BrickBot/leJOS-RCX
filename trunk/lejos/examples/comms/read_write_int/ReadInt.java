@@ -29,6 +29,7 @@ public class ReadInt {
 
         int n = dis.readInt();
 
+	System.out.println("sending " + (n*2) + " to the RCX");
         dos.writeInt(n*2);
         dos.flush();
 

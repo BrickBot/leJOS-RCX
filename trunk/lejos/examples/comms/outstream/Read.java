@@ -10,9 +10,10 @@ public class Read {
 		  	if(args.length!=1)
 				throw new Exception("first argument must be tower port (USB,COM1 etc)");
 		  	RCXPort port = new RCXPort(args[0]);
+		    System.out.println("waiting for input from RCX");
 		    InputStream in = port.getInputStream();
 		    int b = in.read();
-		    System.out.println("Read: " + b);
+		    System.out.println("received " + b + " from RCX");
 	  } catch(Exception exc) {
 		  exc.printStackTrace();
 	  }
