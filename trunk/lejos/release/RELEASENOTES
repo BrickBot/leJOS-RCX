@@ -7,6 +7,12 @@ leJOS 3.0.0
 - The tutorial is part of the leJOS release now (see doc/tutorial)
 - The third party libraries have been factored out to a "3rdparty" folder
 - There is a folder "check" now that contains a script for checking the distribution after having installed it  
+
+Known compatibility to 2.1.0 issues:
+- the Tower() constructor without port argument is no longer supported (for it lead to errors)
+- the Tower methods return no longer error codes but throw exceptions in case of an error/exception
+- Tower.send(byte[],int) is deprecated now and no longer public
+
  
 leJOS 2.1.0
 -----------
