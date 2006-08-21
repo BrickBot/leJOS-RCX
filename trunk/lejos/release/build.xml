@@ -6,13 +6,6 @@
 -->
 <project name="leJOS release" default="release" basedir=".">
 	
-	<!-- to do
-		+ update tutorial
-		+ add UML diagrams
-		+ add samples tests
-		+ update API page(s) and tutorial on lejos.org
-	-->
-
 	<!-- Setting up the global properties for the build -->
   	<property file="build.properties"/>
 	<property environment="env"/>
@@ -25,6 +18,7 @@
 	<property name="javasrc" value="${src}/java"/>
 	<property name="javavm.src" value="${src}/javavm"/>
 	<property name="lejos.tutorial" value="${lejos.root}/docs/tutorial"/>
+	<property name="lejos.uml" value="${lejos.root}/docs/uml"/>
 	<property name="release.tmp" value="${release}/tmp"/>
 	<property name="release.lib" value="${release}/lib"/>
 	<property name="release.src" value="${release}/src"/>
@@ -71,7 +65,7 @@
 	</typedef>
 	
 	<!-- release leJOS --> 
-	<target name="release" depends ="clean,create.folders,emulator,irctrcx.libs,jirctrcx.libs,lejos.libs,lejos.sources,emu.runtime,lejos.firmware,license,docu,scripts,samples,test" 
+	<target name="release" depends ="clean,create.folders,emulator,irctrcx.libs,jirctrcx.libs,lejos.libs,lejos.sources,emu.runtime,lejos.firmware,license,doc,scripts,samples" 
 		description="releases leJOS">
 		<!-- clean distribution -->
 		<delete>
@@ -200,6 +194,7 @@
     	<mkdir dir="${release.src}"/>
     	<mkdir dir="${release.docs}"/>
     	<mkdir dir="${release.docs}/tutorial"/>
+    	<mkdir dir="${release.docs}/uml"/>
     	<mkdir dir="${release.dist}"/>
     	<mkdir dir="${release.release}"/>
     	<mkdir dir="${release.samples}"/>
@@ -212,10 +207,15 @@
   	</target>
 
 	<!-- creates the documentation -->
-	<target name="docu" depends="create.folders,platform.doc,pcrcxcomm.doc,vision.doc" description="creates the documentation">
+	<target name="doc" depends="create.folders,platform.doc,pcrcxcomm.doc,vision.doc" description="creates the documentation">
  		<copy todir="${release.docs}/tutorial">
  			<fileset dir="${lejos.tutorial}">
  				<include name="**/*"/>
+ 			</fileset>
+ 		</copy>
+ 		<copy todir="${release.docs}/uml">
+ 			<fileset dir="${lejos.uml}">
+ 				<include name="*.jpg"/>
  			</fileset>
  		</copy>
  		<copy file="README.html" todir="${release.docs}"/>
@@ -364,7 +364,7 @@
 		<ant dir="${test.root}/samples" target="clean" inheritall="true" />
 		<ant dir="${test.root}/samples" target="compileSamples" inheritall="true" />
 		<!-- run regression tests -->
-		<echo></echo>
+		<echo></echo> 
 		<echo>Running regression tests</echo>
 		<exec os="Linux" executable="${test.root}/regression/run.sh" failonerror="true" dir="${test.root}/regression">
   			<env key="PATH" path="${test.root}/regression:${release.bin}:${env.PATH}"/>
