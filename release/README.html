@@ -1,158 +1,196 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
-<HTML>
-    <HEAD>
-        <title>leJOS, a Java system for the Lego Mindstorms RCX</title>
-   </HEAD>
-    <body BGCOLOR="#FFFFFF">
-	
-	<ul>
-		<li><a href="#what_is_lejos">What is leJOS?</li>
-		<li><a href="#preliminiaries">Preliminiaries</li>
-		<li><a href="#compatibility">Compatibility</li>
-		<li><a href="#installation_and_set_up">Installation and Set Up</li>
-		<li><a href="#limitations">Known limitations</li>
-		<li><a href="#bugs">Known bugs</li>
-		<li><a href="#documentation">Documentation</li>
-		<li><a href="#license">License</li>
-		<li><a href="#questions">Questions and Problems</li>
-	</ul>
-	
-	<h1><a name="what_is_lejos">What is leJOS?</h1>
-	leJOS (pronounced like the Spanish word "lejos" for "far") is a tiny (~ 16 Kb) Java-based operating system that has been ported to the following platforms:
-	<ul>
-		<li>Lego Mindstorms RCX, i.e. Hitachi H8300</li>
-		<li>Unix (for emulation of RCX programs only)</li>
-	</ul>
-	leJOS has been forked out of the <a href="http://tinyvm.sourceforge.net">TinyVM project</a>. 
-	<br>it contains a VM for Java bytecodes and additional software to load and run Java programs. 
-	These are some of the features offered:
-	<ul>
-		<li>Object oriented language (Java)</li>
-		<li>Preemptive threads (tasks)</li>
-		<li>Arrays, including multi-dimensional ones</li>
-		<li>Recursion</li>
-		<li>Synchronization</li>
-		<li>Exceptions</li>
-		<li>Well-documented API</li>
-	</ul>
-	The features above are also provided by TinyVM. But in addition to these, leJOS also offers
-	<ul>
-		<li>A Windows version, which doesn't require CygWin</li>
-		<li>A MacOSX version</li>
-		<li>Floating point operations (doubles truncated to 32 bits)</li>
-		<li>String constants</li>
-		<li>Casting of longs to ints and vice versa</li>
-		<li>Marks references in the stack (which makes it feasible to implement garbage collection)</li>
-		<li>Multi-program downloading</li>
-		<li>java.lang.Math class with sin, cos, tan, atan, pow, etc.</li>
-		<li>Additional APIs</li>
-	</ul>
-	TinyVM is still around simply as a low-footprint alternative to leJOS. TinyVM is about 7 Kb smaller in the RCX.
-	
-	<h1><a name="preliminiaries">Preliminaries</h1>
-	<ul>
-		<li>You need a Java Development Kit (JDK) 1.4 or above</li>
-		<li>Your PATH must contain the JDK's bin directory</li>
-		<li>Make sure you have set JAVA_HOME properly to the root directory of the JDK</li>
-		<li>For the vision parts, you need a Java Media Framework (JMF) 2.1 or above (will be brought along by the leJOS distribution)</li>
-		<li>In case you want to build the distribution, your PATH must contain the ant binary (ant 1.6 or above)</li>
-		<li>Add leJOS's bin directory to your PATH</li>
-		<li>Set RCXTTY to your 'tower' device (e.g. COM1 or usb)</li>
-		<li>Download firmware using firmdl</li>
-		<li>Compile using lejosc instead of javac</li>
-		<li>Download programs in the RCX using lejoslink and lejosdl</li> 
-		<li>Emulate leJOS programs on the host using emulate_lejoslink and emu-lejos</li>
-		<li>Exceptions: Use lejosdl -verbose. Exceptions are shown in the RCX as [XXXX Y], where XXXX = method_signature and Y = exception_class_index MOD 10</li>
-   	</ul>
-	     
-	<h1><a name="compatibility">Compatibility</h1>
-	<table border="1">
-		<tr>
-			<td> </td>
-			<td>RIS 1.0</td>
-			<td>RIS 1.5</td>
-			<td>RIS 2.0</td>
-		</tr>
-		<tr>
-			<td>RCX 1.0/2.0</td>
-			<th>+</th>
-			<th>+</th>
-			<th>+</th>
-		</tr>
-		<tr>
-			<td>Serial IR Tower</td>
-			<th>+</th>
-			<th>+</th>
-			<th>-</th>
-		</tr>
-		<tr>
-			<td>USB IR Tower</td>
-			<th>-</th>
-			<th>-</th>
-			<th>+</th>
-		</tr>
-	</table>
-
-	<h1><a name="installation_and_set_up">Installation and Set Up</h1>
-	Please download the leJOS documentation from the same location you downloaded this distribution from
-	and consult the "First Steps" section of the <a href="http://lejos.sourceforge.net/tutorial/index.html">
-	Tutorial</a> contained there. 
-	<ol>
-		<li>Set your environment variable <em>LEJOS_HOME</em> to the directory you installed this distribution into</li>
-		<li>Set your environment variable <em>RCXTTY</em> to <em>usb</em> (for USB towers) or <em>COM1</em> (for serial towers); 
-		on Linux, for USB towers <em>RCXTTY</em> might be required to be set to <em>dev/usb/legousbtower0</em></li>
-		<li>On Linux, depending on the privilege settings you might need to adjust the execution permissions in the <em>bin</em> folder</li>
- 	</ol>
- 	On Linux, you will have to build the distribution first. To do so, switch to the <em>build</em> folder and run <code>ant</code>.
- 	<br>Note that depending on the privilege settings you might need to adjust the the execution permissions in the <em>release</em> folder.
- 	<p> 
- 	Download the firmware to the RCX with <code>firmdl</code>.
- 	<p>Check the installation by switching to the "check" folder of the leJOS distribution and run 
- 	<code>checkDistribution.bat resp. checkDistributionCheck.sh</code>.
- 	<br>
-  	A very simple test program will be downloaded to the RCX. After the download has finished, press the RCX's 'RUN' button.
-  	The RCX's LCD should print the strings "SMOKE" and "TEST".
-
-	<h1><a name="limitations">Known limitations</h1>
-	Due to size constraints, some Java language features have been omitted. Others just haven't been 
-	implemented yet. Known limitations are:
-	<ul>
-		<li>Garbage collection is not performed yet. Hence, the number of objects in your program should be limited</li>
-		<li>Switch statements are not supported</li>
-		<li>Arithmetic operations on variables of type long are not supported, although you can cast ints to longs and vice versa</li>
-		<li>Maximum array length is 511</li>
-		<li>The instanceof operation will always be true for interfaces. In bytecode, CHECKCAST succeeds on all interface classes (which is a bit unsafe)</li>
-		<li>The instanceof and checkcast operations are rejected by the linker when they are performed on array classes (e.g. b instanceof byte[])</li>
-		<li>There are no objects of type java.lang.Class, which means that the ".class" construct won't work.
-		Class.forName() throws ClassNotFoundException at all times.
-		As a consequence, reflection is not supported by leJOS</li>
-		<li>Most JDK APIs are unavailable</li>
-	</ul>
-	
-	<h1><a name="bugs">Known Bugs</h1>
-	<ul>
-		<li>MONITOREXIT ignores null objects (it assumes MONITORENTER has handled them). Furthermore, it doesn't check monitor validity. Until this bug 
-    		is fixed (actually, at all times) all monitors should be constants</li>
-		<li>Initializers (static or otherwise) are not implicitly synchronized. This could lead to access of statics before they are initialized, when
-    		multiple threads use a class</li>
-    </ul>
-    
-	<h1><a name="documentation">Documentation</h1>
-	Please download the leJOS documentation from the same location you downloaded this distribution from.
-	The documentation contains the API docs and the tutorial.
-	Online versions may be retrieved from <a href="http://lejos.sourceforge.net/">http://lejos.sourceforge.net/</a>.
-
-	<h1><a name="license">License</h1>
-	We are releasing under the Mozilla Public License (see the LICENSE file) for now, since Kekoa Proudfoot's librcx is under that same 
-	license, and leJOS is linked against -lrcx and -lfloat, which are part of librcx. No changes have been made to those libraries, 
-	so they haven't been redistributed. They are only needed if you are planning to modify the native C source code. See docs/hacking.
-
-	<h1><a name="questions">Questions and Problems</h1>
-	Please direct feedback to the lejos-discussion mailing list mailto:lejos-discussion@lists.sourceforge.net.  
-	<br>To subscribe, see <a href="http://lists.sourceforge.net/lists/listinfo/lejos-discussion">http://lists.sourceforge.net/lists/listinfo/lejos-discussion</a>.
-	<p>
-	Feel free to take a look at the <a href="http://www.lejos.org">Lejos website</a> or its <a href="http://sourceforge.net/projects/lejos">project page</a>.
-
-   </body>
+<html>
+<head>
+  <title>leJOS, a Java system for the Lego Mindstorms RCX</title>
+</head>
+<body style="background-color: rgb(255, 255, 255);">
+<ul>
+  <li><a href="#what_is_lejos">What is leJOS?</a></li>
+  <li><a href="#preliminiaries">Preliminiaries</a></li>
+  <li><a href="#compatibility">Compatibility</a></li>
+  <li><a href="#installation_and_set_up">Installation and Set Up</a></li>
+  <li><a href="#limitations">Known limitations</a></li>
+  <li><a href="#bugs">Known bugs</a></li>
+  <li><a href="#documentation">Documentation</a></li>
+  <li><a href="#license">License</a></li>
+  <li><a href="#questions">Questions and Problems</a></li>
+</ul>
+<a href="#questions"> </a>
+<h1><a name="what_is_lejos">What is leJOS?</a></h1>
+<a name="what_is_lejos"> leJOS (pronounced like the Spanish word
+"lejos" for "far") is a tiny (~ 16 Kb) Java-based operating system that
+has been ported to the following platforms: </a>
+<ul>
+  <a name="what_is_lejos"> <li>Lego Mindstorms RCX, i.e. Hitachi H8300</li>
+  <li>Unix (for emulation of RCX programs only)</li>
+  </a>
+</ul>
+<a name="what_is_lejos"> leJOS has been forked out of the </a><a
+ href="http://tinyvm.sourceforge.net">TinyVM project</a>. <br>
+it contains a VM for Java bytecodes and additional software to load and
+run Java programs. These are some of the features offered:
+<ul>
+  <li>Object oriented language (Java)</li>
+  <li>Preemptive threads (tasks)</li>
+  <li>Arrays, including multi-dimensional ones</li>
+  <li>Recursion</li>
+  <li>Synchronization</li>
+  <li>Exceptions</li>
+  <li>Well-documented API</li>
+</ul>
+The features above are also provided by TinyVM. But in addition to
+these, leJOS also offers
+<ul>
+  <li>A Windows version, which doesn't require CygWin</li>
+  <li>A MacOSX version</li>
+  <li>Floating point operations (doubles truncated to 32 bits)</li>
+  <li>String constants</li>
+  <li>Casting of longs to ints and vice versa</li>
+  <li>Marks references in the stack (which makes it feasible to
+implement garbage collection)</li>
+  <li>Multi-program downloading</li>
+  <li>java.lang.Math class with sin, cos, tan, atan, pow, etc.</li>
+  <li>Additional APIs</li>
+</ul>
+TinyVM is still around simply as a low-footprint alternative to leJOS.
+TinyVM is about 7 Kb smaller in the RCX.
+<h1><a name="preliminiaries">Preliminaries</a></h1>
+<a name="preliminiaries"> </a>
+<ul>
+  <a name="preliminiaries"> <li>You need a Java Development Kit (JDK)
+1.4 or above</li>
+  <li>Your PATH must contain the JDK's bin directory</li>
+  <li>Make sure you have set JAVA_HOME properly to the root directory
+of the JDK</li>
+  <li>For the vision parts, you need a Java Media Framework (JMF) 2.1
+or above (will be brought along by the leJOS distribution)</li>
+  <li>In case you want to build the distribution, your PATH must
+contain the ant binary (ant 1.6 or above)</li>
+  <li>Add leJOS's bin directory to your PATH</li>
+  <li>Set RCXTTY to your 'tower' device (e.g. <em>usb</em>,<em>/dev/usb/legousbtower0</em> or <em>COM1</em>)</li>
+  <li>Download firmware using <em>firmdl</em></li>
+  <li>Compile using <em>lejosc</em> instead of <em>javac</em></li>
+  <li>Link and download programs to the RCX using <em>lejos</em></li>
+  <li>Emulate leJOS programs on the host using <em>emulate_lejoslink</em> and <em>emu-lejos</em></li>
+  <li>Exceptions: Use <em>lejosdl -verbose</em>. Exceptions are shown in the RCX as [XXXX Y], where XXXX = method_signature and Y = exception_class_index MOD 10</li>
+  </a>
+</ul>
+<a name="preliminiaries"> </a>
+<h1><a name="compatibility">Compatibility</a></h1>
+<a name="compatibility"> </a>
+<table border="1">
+  <tbody>
+    <tr>
+      <td> <br>
+      </td>
+      <td>RIS 1.0</td>
+      <td>RIS 1.5</td>
+      <td>RIS 2.0</td>
+    </tr>
+    <tr>
+      <td>RCX 1.0/2.0</td>
+      <th>+</th>
+      <th>+</th>
+      <th>+</th>
+    </tr>
+    <tr>
+      <td>Serial IR Tower</td>
+      <th>+</th>
+      <th>+</th>
+      <th>-</th>
+    </tr>
+    <tr>
+      <td>USB IR Tower</td>
+      <th>-</th>
+      <th>-</th>
+      <th>+</th>
+    </tr>
+  </tbody>
+</table>
+<a name="compatibility"> </a>
+<h1><a name="installation_and_set_up">Installation and Set Up</a></h1>
+<a name="installation_and_set_up"> Please download the leJOS
+documentation from the same location you downloaded this distribution
+from and consult the "First Steps" section of the </a><a
+ href="http://lejos.sourceforge.net/tutorial/index.html"> Tutorial</a>
+contained there.
+<ol>
+  <li>Set your environment variable <em>LEJOS_HOME</em> to the
+directory you installed this distribution into</li>
+  <li>Set your environment variable <em>RCXTTY</em> to <em>usb</em>
+(for USB towers) or <em>COM1</em> (for serial towers); on Linux, for
+USB towers <em>RCXTTY</em> might be required to be set to <em>/dev/usb/legousbtower0</em></li>
+  <li>On Linux, depending on the privilege settings you might need to
+adjust the execution permissions in the <em>bin</em> folder</li>
+</ol>
+On Linux, you will have to build the distribution first. To do so,
+switch to the <em>build</em> folder and run <code>ant</code>. <br>
+Note that depending on the privilege settings you might need to adjust
+the the execution permissions in the <em>release</em> folder.
+<p> Download the firmware to the RCX with <code>firmdl</code>. </p>
+<p>Check the installation by switching to the "check" folder of the
+leJOS distribution and run <code>checkDistribution.bat resp.
+checkDistributionCheck.sh</code>. <br>
+A very simple test program will be downloaded to the RCX. After the
+download has finished, press the RCX's 'RUN' button. The RCX's LCD
+should print the strings "SMOKE" and "TEST". </p>
+<h1><a name="limitations">Known limitations</a></h1>
+<a name="limitations"> Due to size constraints, some Java language
+features have been omitted. Others just haven't been implemented yet.
+Known limitations are: </a>
+<ul>
+  <a name="limitations"> <li>Garbage collection is not performed yet.
+Hence, the number of objects in your program should be limited</li>
+  <li>Switch statements are not supported</li>
+  <li>Arithmetic operations on variables of type long are not
+supported, although you can cast ints to longs and vice versa</li>
+  <li>Maximum array length is 511</li>
+  <li>The instanceof operation will always be true for interfaces. In
+bytecode, CHECKCAST succeeds on all interface classes (which is a bit
+unsafe)</li>
+  <li>The instanceof and checkcast operations are rejected by the
+linker when they are performed on array classes (e.g. b instanceof
+byte[])</li>
+  <li>There are no objects of type java.lang.Class, which means that
+the ".class" construct won't work. Class.forName() throws
+ClassNotFoundException at all times. As a consequence, reflection is
+not supported by leJOS</li>
+  <li>Most JDK APIs are unavailable</li>
+  </a>
+</ul>
+<a name="limitations"> </a>
+<h1><a name="bugs">Known Bugs</a></h1>
+<a name="bugs"> </a>
+<ul>
+  <a name="bugs"> <li>MONITOREXIT ignores null objects (it assumes
+MONITORENTER has handled them). Furthermore, it doesn't check monitor
+validity. Until this bug is fixed (actually, at all times) all monitors
+should be constants</li>
+  <li>Initializers (static or otherwise) are not implicitly
+synchronized. This could lead to access of statics before they are
+initialized, when multiple threads use a class</li>
+  </a>
+</ul>
+<a name="bugs"> </a>
+<h1><a name="documentation">Documentation</a></h1>
+<a name="documentation"> Please download the leJOS documentation from
+the same location you downloaded this distribution from. The
+documentation contains the API docs and the tutorial. Online versions
+may be retrieved from </a><a href="http://lejos.sourceforge.net/">http://lejos.sourceforge.net/</a>.
+<h1><a name="license">License</a></h1>
+<a name="license"> We are releasing under the Mozilla Public License
+(see the LICENSE file) for now, since Kekoa Proudfoot's librcx is under
+that same license, and leJOS is linked against -lrcx and -lfloat, which
+are part of librcx. No changes have been made to those libraries, so
+they haven't been redistributed. They are only needed if you are
+planning to modify the native C source code. See docs/hacking. </a>
+<h1><a name="questions">Questions and Problems</a></h1>
+<a name="questions"> Please direct feedback to the lejos-discussion
+mailing list mailto:lejos-discussion@lists.sourceforge.net. <br>
+To subscribe, see </a><a
+ href="http://lists.sourceforge.net/lists/listinfo/lejos-discussion">http://lists.sourceforge.net/lists/listinfo/lejos-discussion</a>.
+<p> Feel free to take a look at the <a href="http://www.lejos.org">Lejos
+website</a> or its <a href="http://sourceforge.net/projects/lejos">project
+page</a>. </p>
+</body>
 </html>
