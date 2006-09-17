@@ -7,6 +7,11 @@ package josx.rcxcomm;
  * and closed by a call to close(). <code>send</code> can be used to send a
  * packet, and receive to receive one. <code>write</code> can read a sequence
  * of bytes, and read can read them.
+ *
+ * Note that the methods that have returned error codes in former releases are throwing exceptions now 
+ * (in particular the <code>open()</code> methods).
+ * Additionally, the <code>Tower()</code> constructor with no String argument for the port has beeen removed, for it lead to multiple errors.
+ * The <code>send(byte[],int)</code> method is deprecated now and no longer public.
  */
 public class Tower
 {
@@ -18,13 +23,6 @@ public class Tower
 
    private String _tty;
    private boolean _isOpen;
-
-   /**
-    * Create the tower class.
-    */
- /*  public Tower () {
-      this("");
-   }*/
 
    /**
     * Create the tower class.

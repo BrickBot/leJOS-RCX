@@ -1,7 +1,7 @@
 package js.common;
 
 /**
- * Simple implementation of ToolProgressMonitor woith output to System.out.
+ * Simple implementation of ToolProgressMonitor with output to System.out.
  */
 public class CLIToolProgressMonitor implements ToolProgressMonitor
 {
@@ -23,8 +23,9 @@ public class CLIToolProgressMonitor implements ToolProgressMonitor
     * 
     * @see js.tools.ToolProgressMonitor#log(java.lang.String)
     */
-   public void log (String message)
-   {
+   public void log (String message) {
+	   if(!_verbose)
+		   return;
       assert message != null: "Precondition: message != null";
       System.out.println(message);
    }
