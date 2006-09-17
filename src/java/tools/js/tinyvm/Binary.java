@@ -3,6 +3,9 @@ package js.tinyvm;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.ProgressMonitor;
+
+import js.common.ToolProgressMonitor;
 import js.tinyvm.io.IByteWriter;
 import js.tinyvm.util.HashVector;
 
@@ -381,5 +384,21 @@ public class Binary
    }
 
    // private static final Logger _logger = Logger.getLogger("TinyVM");
+
+
+   public void log(ToolProgressMonitor monitor) throws TinyVMException {
+     int pSize = iSignatures.size();
+     for (int i = 0; i < pSize; i++)
+     {
+       Signature pSig = (Signature) iSignatures.elementAt (i);
+       monitor.log("Signature " + i + ": " + pSig.getImage());
+     }
+     monitor.log("Master record : " + iMasterRecord.getLength() + " bytes.");
+     monitor.log("Class records : " + iClassTable.size() + " (" + iClassTable.getLength() + " bytes).");
+     monitor.log("Field records : " + getTotalNumInstanceFields() + " (" + iInstanceFieldTables.getLength() + " bytes).");
+     monitor.log("Method records: " + getTotalNumMethods() + " (" + iMethodTables.getLength() + " bytes).");
+     monitor.log("Code          : " + iCodeSequences.size() + " (" + iCodeSequences.getLength() + " bytes).");
+   }
+   
 }
 

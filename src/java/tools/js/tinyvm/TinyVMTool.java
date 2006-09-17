@@ -43,7 +43,10 @@ public class TinyVMTool extends AbstractTool
       assert stream != null: "Precondition: stream != null";
 
       Binary binary = link(classpath, classes, all);
+      binary.log(getProgressMonitor());
       dump(binary, stream, bigEndian);
+
+   
    }
 
    /**
