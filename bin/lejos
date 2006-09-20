@@ -15,6 +15,8 @@ else
   SEP=":"
 fi
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LEJOS_HOME/bin
+
 THIRDPARTY_LIBS="$LEJOS_HOME/3rdparty/lib"
 LINK_CLASSPATH=.$SEP$THIRDPARTY_LIBS/bcel-5.1.jar$SEP$THIRDPARTY_LIBS/commons-cli-1.0.jar$SEP$LEJOS_HOME/lib/jtools.jar$SEP$LEJOS_HOME/lib/classes.jar$SEP$LEJOS_HOME/lib/rcxcomm.jar$SEP$LEJOS_HOME/lib/pcrcxcomm.jar
 
