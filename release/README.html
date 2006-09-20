@@ -67,7 +67,7 @@ or above (will be brought along by the leJOS distribution)</li>
   <li>In case you want to build the distribution, your PATH must
 contain the ant binary (ant 1.6 or above)</li>
   <li>Add leJOS's bin directory to your PATH</li>
-  <li>Set RCXTTY to your 'tower' device (e.g. <em>usb</em>,<em>/dev/usb/legousbtower0</em> or <em>COM1</em>)</li>
+  <li>Set RCXTTY to your 'tower' device (e.g. <em>usb</em>,<em>/dev/usb/legousbtower0</em>,<em>/dev/legousbtower0</em> or <em>COM1</em>)</li>
   <li>Download firmware using <em>firmdl</em></li>
   <li>Compile using <em>lejosjc</em> instead of <em>javac</em></li>
   <li>Link and download programs to the RCX using <em>lejos</em></li>
@@ -119,7 +119,8 @@ contained there.
 directory you installed this distribution into</li>
   <li>Set your environment variable <em>RCXTTY</em> to <em>usb</em>
 (for USB towers) or <em>COM1</em> (for serial towers); on Linux, for
-USB towers <em>RCXTTY</em> might be required to be set to <em>/dev/usb/legousbtower0</em></li>
+USB towers <em>RCXTTY</em> is required to be set to the tower device depending
+on your particular configuration (e.g. <em>/dev/usb/legousbtower0</em> or <em>/dev/usb/legousbtower0</em>)</li>
   <li>On Linux, depending on the privilege settings you might need to
 adjust the execution permissions in the <em>bin</em> folder</li>
 </ol>
