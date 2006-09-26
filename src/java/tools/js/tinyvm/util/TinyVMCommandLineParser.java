@@ -3,7 +3,6 @@ package js.tinyvm.util;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import js.common.ToolProgressMonitor;
 import js.tinyvm.TinyVMException;
 
 import org.apache.commons.cli.CommandLine;
@@ -16,8 +15,8 @@ import org.apache.commons.cli.ParseException;
 /**
  * CommandLineParser
  */
-public class TinyVMCommandLineParser {
-
+public class TinyVMCommandLineParser 
+{
    /**
     * Parse commandline.
     * 
