@@ -15,6 +15,7 @@ endif
 # determine LEJOS_HOME and path separators
 PWD=$(shell pwd)
 ifneq (,$(findstring cygwin,$(OSTYPE)))
+  OSTYPE=cygwin
   LEJOS_HOME=$(shell cygpath -m "$(PWD)")
   PATH_SEP=;
 else
