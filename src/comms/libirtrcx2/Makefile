@@ -37,7 +37,7 @@ LINK = $(CC)
 
 # Windows with CygWin installed
 ifneq (,$(findstring cygwin,$(OSTYPE)))
-	RCXCOMM = rcx_comm_win.cpp
+	RCXCOMM = rcx_comm_cygwin.cpp
 	CFLAGS = -mno-cygwin -D__CYGWIN32__
 	LFLAGS = -mno-cygwin -Wl,--add-stdcall-alias -shared
 	IRTRCX = $(BIN_TARGET)/irtrcx.dll
