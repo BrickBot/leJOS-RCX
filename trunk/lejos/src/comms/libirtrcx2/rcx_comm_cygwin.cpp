@@ -39,7 +39,7 @@
 
 #define USB_TOWER_NAME "\\\\.\\LEGOTOWER1"
 
-#include "rcx_comm_win.h"
+#include "rcx_comm_cygwin.h"
 #include "rcx_comm.cpp"
 
 //
