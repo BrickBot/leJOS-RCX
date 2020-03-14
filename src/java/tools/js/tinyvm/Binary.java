@@ -43,8 +43,7 @@ public class Binary
    /**
     * Constructor.
     */
-   public Binary ()
-   {}
+   public Binary() {}
 
    /**
     * Dump.
@@ -52,7 +51,7 @@ public class Binary
     * @param writer
     * @throws TinyVMException
     */
-   public void dump (IByteWriter writer) throws TinyVMException
+   public void dump(IByteWriter writer) throws TinyVMException
    {
       iEntireBinary.dump(writer);
    }
@@ -75,11 +74,11 @@ public class Binary
     * @param className class name with '/'
     * @param classRecord
     */
-   protected void addClassRecord (String className, ClassRecord classRecord)
+   protected void addClassRecord(String className, ClassRecord classRecord)
    {
-      assert className != null: "Precondition: className != null";
-      assert classRecord != null: "Precondition: classRecord != null";
-      assert className.indexOf('.') == -1: "Precondition: className is in correct form";
+      assert className != null : "Precondition: className != null";
+      assert classRecord != null : "Precondition: classRecord != null";
+      assert className.indexOf('.') == -1 : "Precondition: className is in correct form";
 
       iClasses.put(className, classRecord);
       iClassTable.add(classRecord);
@@ -91,10 +90,10 @@ public class Binary
     * @param className class name with '/'
     * @return
     */
-   public boolean hasMain (String className)
+   public boolean hasMain(String className)
    {
-      assert className != null: "Precondition: className != null";
-      assert className.indexOf('.') == -1: "Precondition: className is in correct form";
+      assert className != null : "Precondition: className != null";
+      assert className.indexOf('.') == -1 : "Precondition: className is in correct form";
 
       ClassRecord pRec = getClassRecord(className);
       return pRec.hasMethod(new Signature("main", "([Ljava/lang/String;)V"),
@@ -107,10 +106,10 @@ public class Binary
     * @param className class name with '/'
     * @return class record or null if not found
     */
-   public ClassRecord getClassRecord (String className)
+   public ClassRecord getClassRecord(String className)
    {
-      assert className != null: "Precondition: className != null";
-      assert className.indexOf('.') == -1: "Precondition: className is in correct form";
+      assert className != null : "Precondition: className != null";
+      assert className.indexOf('.') == -1 : "Precondition: className is in correct form";
 
       return (ClassRecord) iClasses.get(className);
    }
@@ -121,10 +120,10 @@ public class Binary
     * @param className class name with '/'
     * @return index of class in binary or -1 if not found
     */
-   public int getClassIndex (String className)
+   public int getClassIndex(String className)
    {
-      assert className != null: "Precondition: className != null";
-      assert className.indexOf('.') == -1: "Precondition: className is in correct form";
+      assert className != null : "Precondition: className != null";
+      assert className.indexOf('.') == -1 : "Precondition: className is in correct form";
 
       return getClassIndex(getClassRecord(className));
    }
@@ -135,7 +134,7 @@ public class Binary
     * @param classRecord
     * @return index of class in binary or -1 if not found
     */
-   public int getClassIndex (ClassRecord classRecord)
+   public int getClassIndex(ClassRecord classRecord)
    {
       if (classRecord == null)
       {
@@ -155,7 +154,7 @@ public class Binary
     * @param index
     * @return constant record or null if not found
     */
-   public ConstantRecord getConstantRecord (int index)
+   public ConstantRecord getConstantRecord(int index)
    {
       assert index >= 0: "Precondition: index >= 0";
 
@@ -168,7 +167,7 @@ public class Binary
     * @param constantRecord
     * @return index of constant in binary or -1 if not found
     */
-   public int getConstantIndex (ConstantRecord constantRecord)
+   public int getConstantIndex(ConstantRecord constantRecord)
    {
       if (constantRecord == null)
       {
@@ -207,15 +206,15 @@ public class Binary
       // Post-process code after offsets are set (second pass)
       result.processCode(true);
 
-      assert result != null: "Postconditon: result != null";
+      assert result != null : "Postconditon: result != null";
       return result;
    }
 
-   public void processClasses (String[] entryClassNames, ClassPath classPath)
+   public void processClasses(String[] entryClassNames, ClassPath classPath)
       throws TinyVMException
    {
-      assert entryClassNames != null: "Precondition: entryClassNames != null";
-      assert classPath != null: "Precondition: classPath != null";
+      assert entryClassNames != null : "Precondition: entryClassNames != null";
+      assert classPath != null : "Precondition: classPath != null";
 
       Vector pInterfaceMethods = new Vector();
 
@@ -272,7 +271,7 @@ public class Binary
       }
    }
 
-   public void processSpecialSignatures ()
+   public void processSpecialSignatures()
    {
       for (int i = 0; i < SpecialSignatureConstants.SIGNATURES.length; i++)
       {
@@ -282,12 +281,12 @@ public class Binary
       }
    }
 
-   public boolean isSpecialSignature (Signature aSig)
+   public boolean isSpecialSignature(Signature aSig)
    {
       return iSpecialSignatures.containsKey(aSig);
    }
 
-   public void processConstants () throws TinyVMException
+   public void processConstants() throws TinyVMException
    {
       int pSize = iClassTable.size();
       for (int pIndex = 0; pIndex < pSize; pIndex++)
@@ -303,18 +302,17 @@ public class Binary
     * 
     * @throws TinyVMException
     */
-   public void processMethods (boolean iAll) throws TinyVMException
+   public void processMethods(boolean iAll) throws TinyVMException
    {
       int pSize = iClassTable.size();
       for (int pIndex = 0; pIndex < pSize; pIndex++)
       {
          ClassRecord classRecord = (ClassRecord) iClassTable.get(pIndex);
-         classRecord.storeMethods(iMethodTables, iExceptionTables, iSignatures,
-            iAll);
+         classRecord.storeMethods(iMethodTables, iExceptionTables, iSignatures, iAll);
       }
    }
 
-   public void processFields () throws TinyVMException
+   public void processFields() throws TinyVMException
    {
       int pSize = iClassTable.size();
       for (int pIndex = 0; pIndex < pSize; pIndex++)
@@ -324,7 +322,7 @@ public class Binary
       }
    }
 
-   public void processCode (boolean aPostProcess) throws TinyVMException
+   public void processCode(boolean aPostProcess) throws TinyVMException
    {
       int pSize = iClassTable.size();
       for (int pIndex = 0; pIndex < pSize; pIndex++)
@@ -338,7 +336,7 @@ public class Binary
    // storing
    //
 
-   public void storeComponents ()
+   public void storeComponents()
    {
       // Master record and class table are always the first two:
       iEntireBinary.add(iMasterRecord);
@@ -356,12 +354,12 @@ public class Binary
       iEntireBinary.add(iEntryClassIndices);
    }
 
-   public void initOffsets () throws TinyVMException
+   public void initOffsets() throws TinyVMException
    {
       iEntireBinary.initOffset(0);
    }
 
-   public int getTotalNumMethods ()
+   public int getTotalNumMethods()
    {
       int pTotal = 0;
       int pSize = iMethodTables.size();
@@ -372,7 +370,7 @@ public class Binary
       return pTotal;
    }
 
-   public int getTotalNumInstanceFields ()
+   public int getTotalNumInstanceFields()
    {
       int pTotal = 0;
       int pSize = iInstanceFieldTables.size();
@@ -385,20 +383,23 @@ public class Binary
 
    // private static final Logger _logger = Logger.getLogger("TinyVM");
 
-
    public void log(ToolProgressMonitor monitor) throws TinyVMException {
-     int pSize = iSignatures.size();
-     for (int i = 0; i < pSize; i++)
-     {
-       Signature pSig = (Signature) iSignatures.elementAt (i);
-       monitor.log("Signature " + i + ": " + pSig.getImage());
-     }
-     monitor.log("Master record : " + iMasterRecord.getLength() + " bytes.");
-     monitor.log("Class records : " + iClassTable.size() + " (" + iClassTable.getLength() + " bytes).");
-     monitor.log("Field records : " + getTotalNumInstanceFields() + " (" + iInstanceFieldTables.getLength() + " bytes).");
-     monitor.log("Method records: " + getTotalNumMethods() + " (" + iMethodTables.getLength() + " bytes).");
-     monitor.log("Code          : " + iCodeSequences.size() + " (" + iCodeSequences.getLength() + " bytes).");
+      for (int pIndex = 0; pIndex < iClassTable.size(); pIndex++)
+      {
+         ClassRecord pRec = (ClassRecord) iClassTable.get(pIndex);
+         monitor.log("Class " + pIndex + ": " + pRec.iName);
+      }
+      int pSize = iSignatures.size();
+      for (int i = 0; i < pSize; i++)
+      {
+         Signature pSig = (Signature) iSignatures.elementAt(i);
+         monitor.log("Signature " + i + ": " + pSig.getImage());
+      }
+      monitor.log("Master record : " + iMasterRecord.getLength() + " bytes.");
+      monitor.log("Class records : " + iClassTable.size() + " (" + iClassTable.getLength() + " bytes).");
+      monitor.log("Field records : " + getTotalNumInstanceFields() + " (" + iInstanceFieldTables.getLength() + " bytes).");
+      monitor.log("Method records: " + getTotalNumMethods() + " (" + iMethodTables.getLength() + " bytes).");
+      monitor.log("Code          : " + iCodeSequences.size() + " (" + iCodeSequences.getLength() + " bytes).");
    }
    
 }
-

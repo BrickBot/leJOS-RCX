@@ -24,6 +24,7 @@
 	<property name="test.root" value="${lejos.root}/test"/>
 	<property name="make.out" value="${bin}"/>
 	<property name="build.tmp" value="${lejos.root}/build"/>
+
 	<!-- org.lejos settings (adjust when required) -->
 	<property name="org.lejos" value="${lejos.root}/../org.lejos"/>
 	<property name="org.lejos.lib" value="${org.lejos}/lib"/>
