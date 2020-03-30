@@ -23,7 +23,7 @@
 # source directory
 
 #BINDIR = $(ROOT)/../bin
-BINDIR = /usr/local/bin
+BINDIR = /usr/bin
 
 # Set BINPREFIX to be the prefix on your GNU utilities, if any
 

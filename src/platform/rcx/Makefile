@@ -14,9 +14,9 @@ include $(LEJOS_HOME)/Makefile.config
 
 #CFLAGS += -I${LIBRCX_HOME}/lib -I$(VMSRC) -I. -O2 -Wall
 CFLAGS += -I${LIBRCX_HOME}/lib -I$(VMSRC) -I. -O2 -Wall -fomit-frame-pointer
-LFLAGS += -L${LIBRCX_HOME}/lib --relax -L${LIBRCX_HOME}/float -L/usr/local/h8300-hms/lib
+LFLAGS += -L${LIBRCX_HOME}/lib --relax -L${LIBRCX_HOME}/float -L/usr/local/h8300-hms/lib -L/usr/h8300-hitachi-coff/lib
 
-LIBS = -lrcx -lfloat -lc
+LIBS = -lrcx -lfloat
 
 CC = $(BINDIR)/$(BINPREFIX)gcc
 AS = $(BINDIR)/$(BINPREFIX)as
@@ -74,7 +74,7 @@ rcx_gen.lds: rcx.map
 	@echo ""
 	@echo "====> Packing lejos.srec"
 	@echo ""
-	${JAVA} -classpath "$(LEJOS_HOME_NATIVE)/release/lib/jtools.jar" js.tools.CodePacker rcx.lds rcx.map rcx_gen.lds
+	${JAVA} -classpath "$(LEJOS_HOME_NATIVE)/lib/jtools.jar" js.tools.CodePacker rcx.lds rcx.map rcx_gen.lds
 
 lib:
 	@echo ""
