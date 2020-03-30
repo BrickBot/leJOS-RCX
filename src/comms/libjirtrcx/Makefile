@@ -14,7 +14,7 @@ IRTRCX_INCL="$(LEJOS_HOME)/src/comms/libirtrcx"
 # Default: Unix
 JIRTRCX = $(BIN_TARGET)/libjirtrcx.so
 CCOPT = -Wall -rdynamic -ldl -shared -fpic \
-	-I${JAVA_INCL} -I${JAVA_INCL}/$(OSTYPE) -I$(IRTRCX_INCL) \
+	-I$(JAVA_INCL) -I$(JAVA_INCL)/$(OSTYPE) -I$(IRTRCX_INCL) \
 	-L$(BIN_TARGET) -lirtrcx
 
 # Windows with CygWin installed

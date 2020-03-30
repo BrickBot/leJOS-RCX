@@ -14,7 +14,7 @@ IRTRCX_H="$(IRTRCX_INCL)/rcx_comm.h"
 
 # Default: Unix
 JIRTRCX=$(BIN_TARGET)/libjirtrcx.so
-CCOPT=-rdynamic -ldl -shared -fpic -I${JAVA_INCL} -I${JAVA_INCL}/$(OSTYPE) -I$(IRTRCX_INCL) -L$(BIN_TARGET) -lirtrcx
+CCOPT=-rdynamic -ldl -shared -fpic -I$(JAVA_INCL) -I$(JAVA_INCL)/$(OSTYPE) -I$(IRTRCX_INCL) -L$(BIN_TARGET) -lirtrcx
 
 # Windows with CygWin installed
 ifneq (,$(findstring cygwin,$(OSTYPE)))

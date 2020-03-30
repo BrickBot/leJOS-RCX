@@ -78,6 +78,7 @@ tinyvm_emul:
 clean:
 	${ANT} clean
 	rm -f `find . -name '*.o'`
+	rm -f `find . -name '*.a'`
 	rm -f `find . -name '*~'`
 	rm -f `find . -name '*.core'`
 	rm -f `find . -name '*.tvm'`
@@ -91,15 +92,23 @@ distclean: clean
 	rm -f `find . -name '.#*'`
 	rm -f `find . -name '*.lst'`
 	rm -f `find . -name '*.log'`
+	rm -f `find . -name 'dependencies.xml'`
+	rm -f `find . -name 'history.xml'`
 
 distclean_src: distclean
-	rm -f bin/lejos bin/emu-dump bin/emu-lejos bin/emu-lejosrun
+	rm -f bin/emu-dump bin/emu-lejos bin/emu-lejosrun
 	rm -f src/java/tools/js/tinyvm/SpecialClassConstants.java src/java/tools/js/tinyvm/SpecialSignatureConstants.java src/javavm/specialclasses.h src/javavm/specialsignatures.h
 	rm -f $(PLAT_UNIX_SRC)/dump_config $(PLAT_UNIX_SRC)/platform_config.h
 	rm -f $(EMU_SRC)/mkimg
+	rm -f src/comms/tools/fastdl/rcx.lds  src/comms/tools/fastdl/rcx.map
 	rm -f `find . -name '*.so' -o -name '*.dylib' -o -name '*.jnilib' -o -name '*.dll'`
 	rm -f `find . -name '.DS_Store'`	# Mac OS X Finder droppings
 	rm -f `find . -name '*.exe'`
 
 realclean: distclean_src
-	rm -f `find bin -name '*.srec'`
+	rm -f `find . -name '*.srec'`
+	rm -f `find . -name 'rcx.map'`
+	rm -f `find . -name 'rcx_gen.lds'`
+
+superclean: realclean
+	git clean -fdx
