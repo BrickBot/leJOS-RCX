@@ -27,13 +27,13 @@
 
 #if defined(LINUX) || defined(linux)
 #define TOWER_NAME "/dev/usb/legousbtower0"
-#define DEFAULTTTY   "usb"       /* Linux - USB */
+#define DEFAULT_PORT   "usb"       /* Linux - USB */
 
 #elif defined (sun)
-#define DEFAULTTTY   "/dev/ttya"  /* Solaris - first serial port - untested */
+#define DEFAULT_PORT   "/dev/ttya"  /* Solaris - first serial port - untested */
 
 #else
-#define DEFAULTTTY   "/dev/ttyd2" /* IRIX - second serial port */
+#define DEFAULT_PORT   "/dev/ttyd2" /* IRIX - second serial port */
 #endif
 
 #define FILEDESCR	int

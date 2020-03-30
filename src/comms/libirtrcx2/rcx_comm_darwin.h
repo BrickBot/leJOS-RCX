@@ -26,7 +26,7 @@
 #define RCX_COMM_OSX_H_INCLUDED
 
 #define TOWER_NAME ""
-#define DEFAULTTTY   "usb"	  /* Default to USB on MAC */
+#define DEFAULT_PORT   "usb"	  /* Default to USB on MAC */
 #define stricmp(x, y) strcmp(x, y)
 #define strnicmp(x, y, n) strncmp(x, y, n)
 

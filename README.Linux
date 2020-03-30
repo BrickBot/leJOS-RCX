@@ -49,7 +49,7 @@ Use JDK 1.7 (or 1.8? I will try ;-)):
 Configure the tower:
 
 	sudo chmod a+rw /dev/usb/legousbtower0
-	export RCXTTY=/dev/usb/legousbtower0
+	export RCX_PORT=/dev/usb/legousbtower0
 
 Push to the RCX:
 

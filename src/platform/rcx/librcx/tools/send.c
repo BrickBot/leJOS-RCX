@@ -8,8 +8,8 @@
  *  Unix, although I'd be interested in hearing about compatibility issues
  *  that you are able to fix.
  *
- *  Set DEFAULTTTY to the serial device you want to use.
- *  Set the RCXTTY environment variable to override DEFAULTTTY.
+ *  Set DEFAULT_PORT to the serial device you want to use.
+ *  Set the RCX_PORT environment variable to override DEFAULT_PORT.
  *
  *  Some additional documentation is available at:
  *
@@ -57,9 +57,9 @@
 #include <ctype.h>
 
 #ifdef linux
-#define DEFAULTTTY   "/dev/ttyS0" /* Linux - COM1 */
+#define DEFAULT_PORT   "/dev/ttyS0" /* Linux - COM1 */
 #else
-#define DEFAULTTTY   "/dev/ttyd2" /* IRIX - second serial port */
+#define DEFAULT_PORT   "/dev/ttyd2" /* IRIX - second serial port */
 #endif
 
 #define BUFFERSIZE   4096
@@ -252,8 +252,8 @@ main (int argc, char **argv) {
 
     /* Open the serial port */
 
-    if ((tty = getenv("RCXTTY")) == NULL)
-	tty = DEFAULTTTY;
+    if ((tty = getenv("RCX_PORT")) == NULL)
+	tty = DEFAULT_PORT;
 
     fd = rcx_init(tty);
 

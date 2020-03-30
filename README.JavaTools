@@ -32,7 +32,7 @@ on Linux the equivalent command would be something like:
 export LEJOS_HOME=/home/username/lejos
 
 The port that the IR Tower is connected to is specified in the normal way -
-either by RCXTTY=COM1 or RCXTTY=usb etc, or by a --tty option on the command.
+either by RCX_PORT=COM1 or RCX_PORT=usb etc, or by a --tty option on the command.
 
 The normal usage of the commands is:
 

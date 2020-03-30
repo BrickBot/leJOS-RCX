@@ -64,7 +64,7 @@ LD_LIBRARY_PATH.
 
 The port used for the IR Tower can be set in two ways:
 
-  - You can set RCXTTY and call RCXPort with no parameter
+  - You can set RCX_PORT and call RCXPort with no parameter
   - You can pass the port name on the RCXPort constructor.
 
 For USB the port name is "USB", for a serial tower it is "COM1", "COM2" etc.

@@ -32,9 +32,9 @@
 /*
  *  usage: firmdl [options] srecfile  (e.g. firmdl Firm0309.lgo)
  *
- *  If necessary, set DEFAULTTTY, below, to the serial device you want to use.
- *  Set the RCXTTY environment variable to override DEFAULTTTY.
- *  Use the command-line option --tty=TTY to override RCXTTY and DEFAULTTTY.
+ *  If necessary, set DEFAULT_PORT, below, to the serial device you want to use.
+ *  Set the RCX_PORT environment variable to override DEFAULT_PORT.
+ *  Use the command-line option --tty=TTY to override RCX_PORT and DEFAULT_PORT.
  *
  *  Acknowledgements:
  *
@@ -95,15 +95,15 @@
 /* Machine-dependent defines */
 
 #if defined(LINUX) || defined(linux)
-#define DEFAULTTTY   "/dev/ttyS0" /* Linux - COM1 */
+#define DEFAULT_PORT   "/dev/ttyS0" /* Linux - COM1 */
 #elif defined(_WIN32) || defined(__CYGWIN32__)
-#define DEFAULTTTY   "com1"       /* Cygwin - COM1 */
+#define DEFAULT_PORT   "com1"       /* Cygwin - COM1 */
 #elif defined (sun)
-#define DEFAULTTTY   "/dev/ttya"  /* Solaris - first serial port - untested */
+#define DEFAULT_PORT   "/dev/ttya"  /* Solaris - first serial port - untested */
 #elif defined (__APPLE__)
-#define DEFAULTTTY   "usb"	  /* Default to USB on MAC */
+#define DEFAULT_PORT   "usb"	  /* Default to USB on MAC */
 #else
-#define DEFAULTTTY   "/dev/ttyd2" /* IRIX - second serial port */
+#define DEFAULT_PORT   "/dev/ttyd2" /* IRIX - second serial port */
 #endif
 
 /* Global variables */
@@ -648,11 +648,11 @@ int main (int argc, char **argv)
     /* Get the tty name */
 
     if (!tty)
-	tty = getenv("RCXTTY");
+	tty = getenv("RCX_PORT");
     if (!tty)
     {
-	printf ("RCXTTY undefined. Using: %s\n", DEFAULTTTY);
-	tty = DEFAULTTTY;
+	printf ("RCX_PORT undefined. Using: %s\n", DEFAULT_PORT);
+	tty = DEFAULT_PORT;
     }
 
 #if defined(_WIN32) || defined(__CYGWIN32__)

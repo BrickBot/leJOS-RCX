@@ -70,10 +70,10 @@ variable:<br>
     <code>export
 CLASSPATH=$CLASSPATH:.:$LEJOS_HOME/lib/classes.jar:$LEJOS_HOME/lib/pcrcxcomm.jar</code>
   </li>
-  <li> Set the <b>RCXTTY</b> environment variable to your 'tower'
+  <li> Set the <b>RCX_PORT</b> environment variable to your 'tower'
 device:<br>
-    <code>export RCXTTY=com1</code> or <code>export
-RCXTTY=/dev/usb/legousbtower0</code>. </li>
+    <code>export RCX_PORT=com1</code> or <code>export
+RCX_PORT=/dev/usb/legousbtower0</code>. </li>
   <li> You might need to adjust the execution permissions in the <code>bin</code>
 and in the <code>release</code> folder.</li>
   <li> Open a shell and change to the directory you installed leJOS
@@ -102,7 +102,7 @@ make sure that
   <li>your RCX is turned on</li>
   <li>your RCX's IR port (the dark panel on the front) is facing
 towards the IR tower</li>
-  <li>your RCXTTY environment variable is set accordingly</li>
+  <li>your RCX_PORT environment variable is set accordingly</li>
 </ul>
 The tower should blink green, when you start <code>lejosfirmdl</code>.
 <p> <span class="remark"> The original LEGO<sup>&reg;</sup> firmware

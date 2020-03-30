@@ -140,7 +140,7 @@ leJOS 1.0.3:
 
   Paul Andrews has added:
   - Fixed application download code. Fewer hangs now.
-  - Added experimental USB support to firmdl and lejosrun. Set RCXTTY
+  - Added experimental USB support to firmdl and lejosrun. Set RCX_PORT
     to 'usb'.
   - Added progress indicator to lejosrun.
   - Fixed uninitialised variable and boundary condition in

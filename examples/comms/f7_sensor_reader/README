@@ -1,7 +1,7 @@
 To run do
 
 If necessary prepare tower
-% setenv RCXTTY ...
+% setenv RCX_PORT ...
 
 If necessary download firmware
 % make firmdl

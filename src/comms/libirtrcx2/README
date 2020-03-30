@@ -28,9 +28,9 @@ Running:
 
 usage: firmdl [options] srecfile  (e.g. firmdl Firm0309.lgo)
 
-If necessary, set DEFAULTTTY, below, to the serial device you want to use.
-Set the RCXTTY environment variable to override DEFAULTTTY.
-Use the command-line option --tty=TTY to override RCXTTY and DEFAULTTTY.
+If necessary, set DEFAULT_PORT, below, to the serial device you want to use.
+Set the RCX_PORT environment variable to override DEFAULT_PORT.
+Use the command-line option --tty=TTY to override RCX_PORT and DEFAULT_PORT.
 Use the command-line option --slow to revert to slow downloads.
 Use the command-line option --help for more information.
 

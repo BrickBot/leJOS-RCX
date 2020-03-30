@@ -1,5 +1,5 @@
 # Change these if necessary
-RCXTTY = usb
+RCX_PORT = usb
 LEJOS_HOME = ../../..
 
 # These should be ok

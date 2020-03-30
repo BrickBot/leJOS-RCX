@@ -20,4 +20,4 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH$SEP$LEJOS_HOME/bin
 THIRDPARTY_LIBS="$LEJOS_HOME/3rdparty/lib"
 LINK_CLASSPATH=.$SEP$THIRDPARTY_LIBS/bcel-5.1.jar$SEP$THIRDPARTY_LIBS/commons-cli-1.0.jar$SEP$LEJOS_HOME/lib/jtools.jar$SEP$LEJOS_HOME/lib/classes.jar$SEP$LEJOS_HOME/lib/rcxcomm.jar$SEP$LEJOS_HOME/lib/pcrcxcomm.jar
 
-java -classpath "$LINK_CLASSPATH" js.tools.LejosLinkAndDownload --writeorder BE --classpath "$LINK_CLASSPATH" -tty ${RCXTTY:-usb} "$@"
+java -classpath "$LINK_CLASSPATH" js.tools.LejosLinkAndDownload --writeorder BE --classpath "$LINK_CLASSPATH" -tty ${RCX_PORT:-usb} "$@"

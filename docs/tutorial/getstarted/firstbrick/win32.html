@@ -73,9 +73,9 @@ variable:<br>
     <code>set
 CLASSPATH=%CLASSPATH%;.;%LEJOS_HOME%/lib/classes.jar;%LEJOS_HOME%/lib/pcrcxcomm.jar</code>
   </li>
-  <li> Set the <b>RCXTTY</b> environment variable to your 'tower'
+  <li> Set the <b>RCX_PORT</b> environment variable to your 'tower'
 device:<br>
-    <code>set RCXTTY=COM1</code> or <code>set RCXTTY=usb</code>. </li>
+    <code>set RCX_PORT=COM1</code> or <code>set RCX_PORT=usb</code>. </li>
 </ol>
 <!-- firmware -->
 <h2>leJOS-enable your RCX</h2>
@@ -98,7 +98,7 @@ download is complete and display the battery voltage</li>
   <li>your RCX is turned on</li>
   <li>your RCX's IR port (the dark panel on the front) is facing
 towards the IR tower</li>
-  <li>your RCXTTY environment variable is set accordingly</li>
+  <li>your RCX_PORT environment variable is set accordingly</li>
 </ul>
 The tower should blink green, when you start <code>firmdl</code>.
 <p> <span class="remark"> The original LEGO<sup>&reg;</sup> firmware
