@@ -6,11 +6,10 @@
  *  Unsigned long to floating point conversion, single precision:
  *     r0r1 = (float) unsigned long r0r1
  *
- *  GCC does not directly invoke the unsigned long conversion function
- *  Instead, it wraps the signed long function with a good amount of extra code
- *  You can save space by calling the latter conversion function yourself
- *  If you want to use it, you should invoke it yourself, as a function
- *  The declaration is: extern float __ufloatsisf (unsigned long value);
+ *  Prior to some version of GCC, conversion from unsigned long into
+ *  float went through signed float at the cost of extra code. This
+ *  is no longer the case, and old code that manually invokes __ufloatsisf
+ *  need not do so anymore.
  *
  *  The contents of this file are subject to the Mozilla Public License
  *  Version 1.0 (the "License"); you may not use this file except in
@@ -42,14 +41,14 @@
     .section .text
 
 ;;
-;; function: ufloatsisf
+;; function: floatunsisf
 ;; input: unsigned long in r0r1
 ;; output: float in r0r1
 ;;
 
-    .global ___ufloatsisf
+    .global ___floatunsisf
 
-___ufloatsisf:
+___floatunsisf:
 
     ; Save registers (assume r2 and r3 saved by caller)
 
@@ -135,7 +134,7 @@ ufloatentry:
 
         ; Increase exponent
 
-        adds.w  #1,r4           ; add one to exponent
+        adds    #1,r4           ; add one to exponent
 
         bra     endif_1
 
