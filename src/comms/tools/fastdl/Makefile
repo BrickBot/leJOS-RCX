@@ -45,7 +45,7 @@ fastdl4x.o:
 	$(LD) $(LFLAGS) -T$(PLAT_RCX_SRC)/rcx.lds -Map rcx.map -o $@ $<
 	$(OC) $@
 	${JAVA} -classpath "$(LEJOS_HOME_NATIVE)/lib/jtools.jar" js.tools.CodePacker $(PLAT_RCX_SRC_NATIVE)/rcx.lds rcx.map rcx.lds
-	# LD sometimes seems to fail with a "no input file" error, even though the file is there when manually checked, so we'll sleep briefly
+	# Sleeping briefly: LD sometimes fails with "no input file" error, even though the file is there when checking manually
 	sleep 1
 	$(LD) $(LFLAGS) -Trcx.lds -o $@
 	$(OC) $@

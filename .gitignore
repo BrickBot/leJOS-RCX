@@ -1,3 +1,28 @@
+# leJOS project files
+build/vision/video.properties
+src/comms/tools/fastdl/rcx.lds
+
+# leJOS auto-generated files
+src/java/tools/js/tinyvm/SpecialClassConstants.java
+src/java/tools/js/tinyvm/SpecialSignatureConstants.java
+src/javavm/specialclasses.h
+src/javavm/specialsignatures.h
+src/platform/unix/dump_config
+src/platform/unix/platform_config.h
+
+# RCX and Native files
+bin/emu-*
+*.a
+*.o
+*.so
+*.srec
+rcx.map
+rcx_gen.lds
+
+# Ant files
+dependencies.xml
+history.xml
+
 # Compiled class file
 *.class
 
