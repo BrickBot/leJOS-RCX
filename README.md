@@ -1,6 +1,40 @@
 # leJOS RCX
 A tiny Java Virtual Machine for the Lego MindStorms RCX, containing a VM for Java bytecodes and additional software to load and run Java programs.
 
+## Notes
+* The source code as available in the leJOS RCX repository on SourceForge does not successfully finish a complete build; this project attempts to remediate that
+* The librcx float code has been updated based on the latest patches in brickOS
+* There is an unfortunate mixing and matching of ant and make; as such some configuration settings must be made in multiple places
+* Configuration settings
+  - Build configurations are set to support Debian/Ubuntu to provide support for the greatest number of use cases
+    + Linux, both 32-bit and 64-bit
+    + Windows, via both Windows Subsystem for Linux and as a Hyper-V "Quick Create" option
+  - The "vision.jar" target is disabled for now due to dependencies on deprecated package com.sun.image.codec.jpeg
+  - Floating point arithmetic is currently disabled due to an internal error thrown by the h8300-hms-gcc cross-compiler:
+```
+void do_fcmp (JFLOAT f1, JFLOAT f2, STACKWORD def)
+{
+  if (f1 > f2)
+    push_word (1);
+  else if (f1 == f2)
+    push_word (0);
+  else if (f1 < f2)
+    push_word (-1);
+  else 
+    push_word (def);
+}
+
+src/javavm/Makefile.include:3: recipe for target 'interpreter.o' failed
+src/javavm/interpreter.c: In function `engine':
+src/javavm/interpreter.c:78: internal compiler error: in byte_reg, at config/h8300/h8300.c:342
+Please submit a full bug report,
+with preprocessed source if appropriate.
+See <URL:http://gcc.gnu.org/bugs.html> for instructions.
+make: *** [interpreter.o] Error 1
+
+BUILD FAILED
+```
+
 ## IDE Configurations
 * Eclipse:  Plugins available at the [leJOS-RCX-Eclipse](https://github.com/BrickBot/leJOS-RCX-Eclipse) project site
 * Netbeans: [Archived _Makezine_ article](https://web.archive.org/web/20100117085123/http://www.makezine.com/extras/64.html)
