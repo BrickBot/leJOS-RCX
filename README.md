@@ -1,4 +1,4 @@
-# leJOS RCX
+# leJOS RCX  ![Java CI](https://github.com/BrickBot/leJOS-RCX/workflows/Java%20CI/badge.svg)
 A tiny Java Virtual Machine for the Lego MindStorms RCX, containing a VM for Java bytecodes and additional software to load and run Java programs.
 
 ## Notes
@@ -10,7 +10,14 @@ A tiny Java Virtual Machine for the Lego MindStorms RCX, containing a VM for Jav
     + Linux, both 32-bit and 64-bit
     + Windows, via both Windows Subsystem for Linux and as a Hyper-V "Quick Create" option
   - The "vision.jar" target is disabled for now due to dependencies on deprecated package com.sun.image.codec.jpeg
-  - Floating point arithmetic is currently disabled due to an internal error thrown by the h8300-hms-gcc cross-compiler:
+  - Floating point arithmetic is currently disabled due to an internal error thrown by the h8300-hms-gcc cross-compiler
+  - In build.properties
+    + Change the "lejos.ostype" property according to your particular platform type
+    + Firmware building, which requires the h8/300 cross-toolchain is currently configured to be built by default; comment out the property "build.lejos.firmware" to skip this
+
+
+## Known Issues
+1. Floating Point Disabled:  Internal error thrown by the version of the h8/300 cross-toolchain available on Debian/Ubuntu
 ```
 void do_fcmp (JFLOAT f1, JFLOAT f2, STACKWORD def)
 {
@@ -34,6 +41,17 @@ make: *** [interpreter.o] Error 1
 
 BUILD FAILED
 ```
+
+2. Problems generating firmdl2x.srec and firmdl4x.srec:  Without changing any files, a build might succeed, or it might fail
+```
+From src/comms/tools/fastdl/Makefile
+	# Every once in a while, CodePacker doesn't run correctly,
+	#  and the generated rcx.lds file is missing the added (.text) section
+	#  between the __extra_start and __extra_end lines.
+	#  The "packing size" value output by CodePacker is also usually 0 in these cases.
+	#  A clean and rebuild, with no other changes, usually succeeds.
+```
+
 
 ## IDE Configurations
 * Eclipse:  Plugins available at the [leJOS-RCX-Eclipse](https://github.com/BrickBot/leJOS-RCX-Eclipse) project site

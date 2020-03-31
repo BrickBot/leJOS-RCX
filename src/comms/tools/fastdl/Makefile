@@ -48,7 +48,7 @@ fastdl4x.o:
 	# Every once in a while, CodePacker doesn't run correctly,
 	#  and the generated rcx.lds file is missing the added (.text) section
 	#  between the __extra_start and __extra_end lines.
-	#  The "packing size" value is also usually 0 in these cases.
+	#  The "packing size" value output by CodePacker is also usually 0 in these cases.
 	#  A clean and rebuild, with no other changes, usually succeeds.
 	$(LD) $(LFLAGS) -T$@.rcx.lds -o $@
 	$(OC) $@
