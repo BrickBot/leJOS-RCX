@@ -100,13 +100,14 @@ distclean_src: distclean
 	rm -f src/java/tools/js/tinyvm/SpecialClassConstants.java src/java/tools/js/tinyvm/SpecialSignatureConstants.java src/javavm/specialclasses.h src/javavm/specialsignatures.h
 	rm -f $(PLAT_UNIX_SRC)/dump_config $(PLAT_UNIX_SRC)/platform_config.h
 	rm -f $(EMU_SRC)/mkimg
-	rm -f src/comms/tools/fastdl/rcx.lds  src/comms/tools/fastdl/rcx.map
+	rm -f src/comms/tools/fastdl/*.lds  src/comms/tools/fastdl/*.map
 	rm -f `find . -name '*.so' -o -name '*.dylib' -o -name '*.jnilib' -o -name '*.dll'`
 	rm -f `find . -name '.DS_Store'`	# Mac OS X Finder droppings
 	rm -f `find . -name '*.exe'`
 
 realclean: distclean_src
 	rm -f `find . -name '*.srec'`
+	rm -f `find . -name '*.rcx.map'`
 	rm -f `find . -name 'rcx.map'`
 	rm -f `find . -name 'rcx_gen.lds'`
 

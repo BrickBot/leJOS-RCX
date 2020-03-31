@@ -1,8 +1,8 @@
 # leJOS project files
 build/vision/video.properties
-src/comms/tools/fastdl/rcx.lds
 
 # leJOS auto-generated files
+src/comms/tools/fastdl/*.lds
 src/java/tools/js/tinyvm/SpecialClassConstants.java
 src/java/tools/js/tinyvm/SpecialSignatureConstants.java
 src/javavm/specialclasses.h
@@ -16,6 +16,7 @@ bin/emu-*
 *.o
 *.so
 *.srec
+*.rcx.map
 rcx.map
 rcx_gen.lds
 
