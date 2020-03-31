@@ -67,7 +67,7 @@
 				<include name="*.dylib"/>
 				<include name="*.jnilib"/>
 			</fileset>
-	  		<fileset dir="${lib}">
+	  		<fileset dir="${lib}" errorOnMissingDir="false">
 				<include name="*.jar"/>
 			</fileset>
 	  	</delete>
@@ -106,7 +106,12 @@
   	</target>
 
 	<!-- create all lejos library jar files  -->
+	<!--
+		The "vision.jar" target no longer builds due to dependencies on deprecated package com.sun.image.codec.jpeg
+		The vision functionality would need to be updated to eliminate that dependency
 	<target name="lejos.libs" depends="classes.jar, rcxcomm.jar, pcrcxcomm.jar, vision.jar, jtools.jar" description="make all lejos library jars">
+	-->
+	<target name="lejos.libs" depends="classes.jar, rcxcomm.jar, pcrcxcomm.jar, jtools.jar" description="make all lejos library jars">
 	</target>
   				
   	<!-- creates the classes jar (RCX: JDK 1.1) -->
