@@ -45,9 +45,11 @@ fastdl4x.o:
 	$(LD) $(LFLAGS) -T$(PLAT_RCX_SRC)/rcx.lds -Map $@.rcx.map -o $@ $<
 	$(OC) $@
 	${JAVA} -classpath "$(LEJOS_HOME_NATIVE)/lib/jtools.jar" js.tools.CodePacker $(PLAT_RCX_SRC_NATIVE)/rcx.lds $@.rcx.map $@.rcx.lds
-	# Sleeping briefly: LD sometimes fails with "no input file" error, even though the file is there when checking manually
-	for i in {0..9}; do if [ -f $@.rcx.lds ]; then echo "Found $@.rcx.lds" && break; else echo "$i...waiting for $@.rcx.lds"; fi; done
-	if [ ! -f $@.rcx.lds ]; then echo "Timed out waiting for $@.rcx.lds"; fi;
+	# Every once in a while, CodePacker doesn't run correctly,
+	#  and the generated rcx.lds file is missing the added (.text) section
+	#  between the __extra_start and __extra_end lines.
+	#  The "packing size" value is also usually 0 in these cases.
+	#  A clean and rebuild, with no other changes, usually succeeds.
 	$(LD) $(LFLAGS) -T$@.rcx.lds -o $@
 	$(OC) $@
 
