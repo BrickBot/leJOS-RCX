@@ -2,15 +2,15 @@
 A tiny Java Virtual Machine for the Lego MindStorms RCX, containing a VM for Java bytecodes and additional software to load and run Java programs.
 
 ## Notes
-* The source code as available in the leJOS RCX repository on SourceForge does not successfully finish a complete build; this project attempts to remediate that
+The source code as available in the leJOS RCX repository on SourceForge does not successfully and reliably finish a complete build.
+The following initial updates have been implemented by Matthew Sheets in an effort to be able to reliably build the project:
 * The librcx float code has been updated based on the latest patches in brickOS
+* During builds, CodePacker random size-packing testing would randomly fail to generate a valid file that could be used by the linker, especially for small firmware sizes
 * There is an unfortunate mixing and matching of ant and make; as such some configuration settings must be made in multiple places
 * Configuration settings
   - Build configurations are set to support Debian/Ubuntu to provide support for the greatest number of use cases
     + Linux, both 32-bit and 64-bit
     + Windows, via both Windows Subsystem for Linux and as a Hyper-V "Quick Create" option
-  - The "vision.jar" target is disabled for now due to dependencies on deprecated package com.sun.image.codec.jpeg
-  - Floating point arithmetic is currently disabled due to an internal error thrown by the h8300-hms-gcc cross-compiler
   - In build.properties
     + Change the "lejos.ostype" property according to your particular platform type
     + Firmware building, which requires the h8/300 cross-toolchain is currently configured to be built by default; comment out the property "build.lejos.firmware" to skip this
@@ -42,15 +42,7 @@ make: *** [interpreter.o] Error 1
 BUILD FAILED
 ```
 
-2. Problems generating firmdl2x.srec and firmdl4x.srec:  Without changing any files, a build might succeed, or it might fail
-```
-From src/comms/tools/fastdl/Makefile
-	# Every once in a while, CodePacker doesn't run correctly,
-	#  and the generated rcx.lds file is missing the added (.text) section
-	#  between the __extra_start and __extra_end lines.
-	#  The "packing size" value output by CodePacker is also usually 0 in these cases.
-	#  A clean and rebuild, with no other changes, usually succeeds.
-```
+2. The "vision.jar" target is currently disabled due to dependencies on deprecated package com.sun.image.codec.jpeg
 
 
 ## IDE Configurations

@@ -1,4 +1,4 @@
 #!/bin/sh
 # This file was originally named "clean";
 # Unfortunately, that meant that the target "make clean" never executed
-make superclean
+make realclean

@@ -10,6 +10,14 @@ import java.util.TreeSet;
 
 /**
  * A comparable ArrayList.
+ *
+ * Update by Matthew Sheets — March 31, 2020
+ *   - Randomization process would randomly cause an invalid output file
+ *     to be generated if the size was already less than maxSize.
+ *     In those cases, packSize could be 0, in which case no (.text)
+ *     lines would be generated and the file would fail the ld process
+ *     because there would be nothing to link.
+ *      + LD Error: "no input files"
  */
 class Packing implements Comparable
 {
@@ -21,6 +29,16 @@ class Packing implements Comparable
    {
       array = new Size[CodePacker.list.size()];
       thisSize = 0;
+   }
+
+   Packing (ArrayList sizeList)
+   {
+      this();
+
+      for (int i = 0; i < sizeList.size(); i++)
+      {
+         add(i);
+      }
    }
 
    // Add an element if there is room.
@@ -180,12 +198,23 @@ public class CodePacker
             .toArray(new Packing[populations.size()]);
          Packing offspring = array[i % array.length].breed(array[(int) (Math
             .random() * array.length)]);
+		
+         // If a perfect packing, return it.
          if (offspring.thisSize == maxSize)
+         {
             return offspring;
+         }
 
-         // Add the new offspring and remove the least fit.
-         if (populations.add(offspring))
-            populations.remove(populations.first());
+         // Offspring with a thisSize of 0 will cause problems in the linker,
+         //   with ld error message: "no input files", so skip them
+         if (offspring.thisSize > 0)
+         {
+            // Add the new offspring and remove the least fit.
+            if (populations.add(offspring))
+            {
+               populations.remove(populations.first());
+            }
+         }
       }
 
       return (Packing) populations.last();
@@ -268,7 +297,11 @@ public class CodePacker
          }
       }
 
-      Packing packing = pack();
+      // Prepare to test if packing is even needed (e.g. for "fastdl" firmware)
+      Packing defaultPack = new Packing(list);
+
+      // If the size is less than or equal to maxSize, then packing is not needed
+      Packing packing = (defaultPack.thisSize <= maxSize ? defaultPack : pack());
 
       System.out.println("Segment size=" + maxSize + ", packing size="
          + packing.thisSize);
