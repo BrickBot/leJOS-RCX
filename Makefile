@@ -111,5 +111,5 @@ realclean: distclean_src
 	rm -f `find . -name 'rcx.map'`
 	rm -f `find . -name 'rcx_gen.lds'`
 
-superclean: realclean
+superclean: superclean
 	git clean -fdx
