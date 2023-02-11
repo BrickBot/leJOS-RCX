@@ -60,3 +60,11 @@ BUILD FAILED
   - A visual interface for leJOS. RCXDownload automatically sets the JDK-, leJOS- and ClassPaths, compiles the chosen Java-Source, shows the compiler messages and is able to link and load both the compiled classes and the leJOS-firmware.
 * [leJOS-RCX-TextLCDApplet](https://github.com/BrickBot/leJOS-RCX-TextLCDApplet)
   - Java Applet GUI for testing josx.platform.rcx.TextLCD
+
+
+## Java Support
+As time passes, it has become more of a challenge to use leJOS with newer Java versions.  Some work has been done to try to mitigate these challenges.
++ [oversticht/lego-rcx-lejos](https://github.com/oversticht/lego-rcx-lejos) (external)
+  * Based on leJOS v2.1 instead of v3.0-RC2 that is in the repository in this BrickBot organization
++ [HaikuVM](https://haiku-vm.sourceforge.net) (external)
+  * A spinoff Java VM approach referenced by @oversticht
